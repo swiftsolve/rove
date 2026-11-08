@@ -3,7 +3,17 @@ import './colour.css'
 import figmaVariables from '../src/figma/variables.json'
 import backgrounds from './assets/backgrounds.png'
 import { Code, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
-import { colorDark, colorIn, cssName, flatten, isUsedIn, palette, paletteColor, pointsAt, shadeOf } from './tokens'
+import {
+  colorDark,
+  colorIn,
+  cssVariableName,
+  flatten,
+  isUsedIn,
+  palette,
+  paletteColor,
+  shadeOf,
+  targetFigmaName,
+} from './tokens'
 
 export default { title: 'Colour' }
 
@@ -102,12 +112,12 @@ const COLUMNS = [
   ['Code', 'minmax(180px, 1fr)'],
 ]
 
-const hexText = ({ hex }) => hex.toUpperCase()
+const formatHex = ({ hex }) => hex.toUpperCase()
 
 // The hex, with its alpha after a dot when it's see-through.
 function ShadeValue({ shade }) {
   const alpha = shade.alpha ?? 1
-  return alpha < 1 ? <Joined parts={[hexText(shade), `${Math.round(alpha * 100)}%`]} /> : hexText(shade)
+  return alpha < 1 ? <Joined parts={[formatHex(shade), `${Math.round(alpha * 100)}%`]} /> : formatHex(shade)
 }
 
 // A colour in one theme, on that theme's surface. Text shows as text, on the
@@ -135,14 +145,15 @@ function ModeCell({ theme, path }) {
         <span>
           <ShadeValue shade={shade} />
         </span>
-        <span className="mode-ref">→ {pointsAt(theme, path)}</span>
+        <span className="mode-ref">→ {targetFigmaName(theme, path)}</span>
       </span>
     </span>
   )
 }
 
 // The shadow colours aren't CSS variables; each lives inside a shadow token, which is what code uses.
-const shadowFor = (path) => `var(--shadow-${path[1].replace(/-\d$/, '')})`
+// A layer's number comes off: shadow-color/panel-1 is in var(--shadow-panel).
+const shadowCodeFor = (path) => `var(--shadow-${path[1].replace(/-\d$/, '')})`
 
 function ColourTable({ names }) {
   const tokens = flatten(colorDark)
@@ -156,7 +167,7 @@ function ColourTable({ names }) {
             <Name name={path.join('/')} description={token?.$description} />
             <ModeCell theme="dark" path={path} />
             <ModeCell theme="light" path={path} />
-            <Code>{path[0] === 'shadow-color' ? shadowFor(path) : `var(${cssName(path)})`}</Code>
+            <Code>{path[0] === 'shadow-color' ? shadowCodeFor(path) : `var(${cssVariableName(path)})`}</Code>
           </TableRow>
         )
       })}
@@ -166,9 +177,11 @@ function ColourTable({ names }) {
 
 // What a see-through shade does to whatever is under it, as the Figma page
 // captions it: white lightens, near-black and black darken, a hue tints.
-function effectOf(label) {
+function seeThroughEffect(label) {
   const [base, alpha] = label.split('-a')
-  const verb = base === '0' ? 'Lighten' : ['850', '1000'].includes(base) ? 'Darken' : 'Tint'
+  let verb = 'Tint'
+  if (base === '0') verb = 'Lighten'
+  if (base === '850' || base === '1000') verb = 'Darken'
   return `${verb} ${alpha}%`
 }
 
@@ -185,7 +198,7 @@ function Family({ name, rows, captions }) {
           <div className="swatches">
             {shades.map(({ label, token }) => {
               const color = paletteColor(token.$value)
-              const isAlpha = (token.$value.alpha ?? 1) < 1
+              const isSeeThrough = (token.$value.alpha ?? 1) < 1
               const isDarkOnly = isUsedIn('dark', token.path) && !isUsedIn('light', token.path)
               const isOnDark = isDarkOnly && token.$value.hex !== '#000000'
               const backdrop = isOnDark ? colorIn('dark', 'bg.base') : '#ffffff'
@@ -193,10 +206,10 @@ function Family({ name, rows, captions }) {
                 <div key={label} className="swatch">
                   <span
                     className="swatch-color"
-                    style={{ background: isAlpha ? `linear-gradient(${color}, ${color}), ${backdrop}` : color }}
+                    style={{ background: isSeeThrough ? `linear-gradient(${color}, ${color}), ${backdrop}` : color }}
                   />
                   <span className="swatch-name">{label}</span>
-                  <span className="swatch-hex">{isAlpha ? effectOf(label) : hexText(token.$value)}</span>
+                  <span className="swatch-hex">{isSeeThrough ? seeThroughEffect(label) : formatHex(token.$value)}</span>
                 </div>
               )
             })}
@@ -222,9 +235,9 @@ function PaletteGrid() {
   })
   const hues = [...new Set(shades.map(({ hue }) => hue))]
   return hues.map((hue) => {
-    const own = shades.filter((shade) => shade.hue === hue)
-    const solid = own.filter(({ alpha }) => !alpha)
-    const seeThrough = own.filter(({ alpha }) => alpha).sort((a, b) => a.base - b.base || a.alpha - b.alpha)
+    const hueShades = shades.filter((shade) => shade.hue === hue)
+    const solid = hueShades.filter(({ alpha }) => !alpha)
+    const seeThrough = hueShades.filter(({ alpha }) => alpha).sort((a, b) => a.base - b.base || a.alpha - b.alpha)
     const rows = [solid, seeThrough].filter((row) => row.length)
     return <Family key={hue} name={hue} rows={rows} captions={rows.length > 1 ? ROW_CAPTIONS[hue] : undefined} />
   })
@@ -233,7 +246,7 @@ function PaletteGrid() {
 // Figma's Icon tone and Capability level collections: one variable each, a mode
 // per colour. They have no CSS of their own, so they're read from the export.
 const ICON_TONES = ['Primary', 'Secondary', 'Tertiary', 'Accent', 'Positive', 'Negative', 'On solid']
-const LEVELS = ['Excellent', 'Good', 'Fair', 'Poor', 'Unsupported']
+const CAPABILITY_LEVELS = ['Excellent', 'Good', 'Fair', 'Poor', 'Unsupported']
 
 const modeAliases = (name) => figmaVariables.variables.find((variable) => variable.name === name).values
 
@@ -271,8 +284,8 @@ const HdIcon = ({ color }) => (
 
 // A mode collection in both themes, as Figma's preview frames show it: each
 // mode's glyph over its name, on the theme's base. On solid sits on a tile.
-function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
-  const aliases = modeAliases(variable)
+function ModePanels({ variableName, modes, ModeIcon, isLabelClose = false }) {
+  const aliases = modeAliases(variableName)
   return (
     <div className="mode-panels">
       {['dark', 'light'].map((theme) => (
@@ -287,10 +300,10 @@ function ModePanels({ variable, modes, Glyph, isLabelClose = false }) {
                 <div key={mode} className={`mode-example${isLabelClose ? ' is-label-close' : ''}`}>
                   {mode === 'On solid' ? (
                     <span className="mode-tile" style={{ background: colorIn(theme, 'accent.solid') }}>
-                      <Glyph color={color} />
+                      <ModeIcon color={color} />
                     </span>
                   ) : (
-                    <Glyph color={color} />
+                    <ModeIcon color={color} />
                   )}
                   <span className="mode-example-name" style={{ color: colorIn(theme, 'text.tertiary') }}>
                     {mode}
@@ -331,13 +344,13 @@ export const Colour = {
           </Section>
         ))}
         <Section title="Icon tone" intro="Set the mode on the icon’s parent frame, so swapped icons keep the colour.">
-          <ModePanels variable="icon/color" modes={ICON_TONES} Glyph={ActivityIcon} />
+          <ModePanels variableName="icon/color" modes={ICON_TONES} ModeIcon={ActivityIcon} />
         </Section>
         <Section
           title="Capability level"
           intro="Colours capability glyphs through level/color. Set it on any frame above the glyph."
         >
-          <ModePanels variable="level/color" modes={LEVELS} Glyph={HdIcon} isLabelClose />
+          <ModePanels variableName="level/color" modes={CAPABILITY_LEVELS} ModeIcon={HdIcon} isLabelClose />
         </Section>
         <Section title="Contrast" intro="WCAG 2.2 AA in both themes: text 4.5:1, icons and bars 3:1." />
       </Group>

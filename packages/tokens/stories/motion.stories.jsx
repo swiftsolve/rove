@@ -3,16 +3,23 @@ import './motion.css'
 import { useEffect, useState } from 'react'
 
 import { Code, Name, Page, Section, Table, TableRow } from './blocks'
-import { code, cssName, flatten, motion } from './tokens'
+import { code, cssVariableName, flatten, motion } from './tokens'
 
 export default { title: 'Motion' }
 
-// The curve on a 48px square, time across and progress up.
+// A point on the curve's 48px square, from time (0 to 1, across) and
+// progress (0 to 1, up), inside a 4px margin.
+const curvePoint = (time, progress) => `${4 + time * 40} ${44 - progress * 40}`
+
+// A cubic-bezier curve, from its two control points.
 function Curve({ points: [x1, y1, x2, y2] }) {
-  const at = (x, y) => `${4 + x * 40} ${44 - y * 40}`
   return (
     <svg className="curve" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path d={`M ${at(0, 0)} C ${at(x1, y1)} ${at(x2, y2)} ${at(1, 1)}`} stroke="currentColor" strokeWidth="2" />
+      <path
+        d={`M ${curvePoint(0, 0)} C ${curvePoint(x1, y1)} ${curvePoint(x2, y2)} ${curvePoint(1, 1)}`}
+        stroke="currentColor"
+        strokeWidth="2"
+      />
     </svg>
   )
 }
@@ -20,10 +27,15 @@ function Curve({ points: [x1, y1, x2, y2] }) {
 // A `linear()` curve, such as the spring's, on the same square: its stops are
 // evenly spaced in time. DTCG has no type for it, so it's read from tokens.css.
 function LinearCurve({ name }) {
-  const css = getComputedStyle(document.documentElement).getPropertyValue(name)
-  const stops = (/linear\(([^)]*)\)/.exec(css)?.[1] ?? '').split(',').map(Number)
-  const at = (x, y) => `${4 + x * 40} ${44 - y * 40}`
-  const path = stops.map((y, i) => `${i ? 'L' : 'M'} ${at(i / (stops.length - 1), y)}`).join(' ')
+  const easingValue = getComputedStyle(document.documentElement).getPropertyValue(name)
+  const stopList = /linear\(([^)]*)\)/.exec(easingValue)?.[1] ?? ''
+  const stops = stopList.split(',').map(Number)
+  const path = stops
+    .map((progress, i) => {
+      const command = i === 0 ? 'M' : 'L'
+      return `${command} ${curvePoint(i / (stops.length - 1), progress)}`
+    })
+    .join(' ')
   return (
     <svg className="curve" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <path d={path} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
@@ -31,6 +43,7 @@ function LinearCurve({ name }) {
   )
 }
 
+// A dot that crosses its track with `transition` when the page flips is-at-end.
 const track = (transition) => (
   <span className="track">
     <span className="track-dot" style={{ transition: `left ${transition}` }} />
@@ -63,12 +76,12 @@ function MotionPage() {
   const [isAtEnd, setIsAtEnd] = useState(false)
   useEffect(() => {
     if (!isPlaying) return undefined
-    const timer = setInterval(() => setIsAtEnd((atEnd) => !atEnd), LOOP_MS)
+    const timer = setInterval(() => setIsAtEnd((wasAtEnd) => !wasAtEnd), LOOP_MS)
     return () => clearInterval(timer)
   }, [isPlaying])
   // Play sets off the first move at once; the loop takes it from there.
-  const toggle = () => {
-    if (!isPlaying) setIsAtEnd((atEnd) => !atEnd)
+  const onPlayClick = () => {
+    if (!isPlaying) setIsAtEnd((wasAtEnd) => !wasAtEnd)
     setIsPlaying(!isPlaying)
   }
   const tokens = [...flatten(code), ...flatten(motion)]
@@ -76,7 +89,7 @@ function MotionPage() {
   const durations = tokens.filter((token) => token.$type === 'duration')
   return (
     <Page title="Motion" intro="Ease out over a fast or normal duration. Resizing panels spring.">
-      <button type="button" className="motion-play" aria-pressed={isPlaying} onClick={toggle}>
+      <button type="button" className="motion-play" aria-pressed={isPlaying} onClick={onPlayClick}>
         <PlayIcon isPlaying={isPlaying} />
         {isPlaying ? 'Pause' : 'Play'}
       </button>
@@ -91,7 +104,7 @@ function MotionPage() {
             ]}
           >
             {easings.map((token) => {
-              const name = cssName(token.path)
+              const name = cssVariableName(token.path)
               return (
                 <TableRow key={name}>
                   <Name name={token.path.join('/')} />
@@ -119,8 +132,8 @@ function MotionPage() {
             ]}
           >
             {durations.map((token) => {
-              const name = cssName(token.path)
-              const ease = name === '--duration-spring' ? '--ease-spring' : '--ease-out'
+              const name = cssVariableName(token.path)
+              const easeName = name === '--duration-spring' ? '--ease-spring' : '--ease-out'
               return (
                 <TableRow key={name}>
                   <Name name={token.path.join('/')} />
@@ -128,7 +141,7 @@ function MotionPage() {
                     {token.$value.value}
                     {token.$value.unit}
                   </span>
-                  {track(`var(${name}) var(${ease})`)}
+                  {track(`var(${name}) var(${easeName})`)}
                   <Code>var({name})</Code>
                 </TableRow>
               )

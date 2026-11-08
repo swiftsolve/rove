@@ -20,21 +20,19 @@ export function flatten(tree, path = []) {
   })
 }
 
-// The palette and the shadow colours are marked as not CSS variables.
-export const isCss = (token) => token.$extensions?.['net.swiftsolve.rove-tokens']?.css !== false
-
-export const cssName = (path) => `--${path.join('-')}`
+export const cssVariableName = (path) => `--${path.join('-')}`
 
 // A reference in the Figma name's form: `{neutral.850}` is neutral/850.
-export const refName = (value) => value.slice(1, -1).replaceAll('.', '/')
+export const referenceFigmaName = (reference) => reference.slice(1, -1).replaceAll('.', '/')
 
 // The token's value in the current theme, as tokens.css resolves it. Chrome
-// drops a leading zero (`-.02em`); tokens.css writes it.
-export const cssValue = (name) =>
-  getComputedStyle(document.documentElement)
-    .getPropertyValue(name)
-    .trim()
-    .replace(/(^|[^\d.])\.(\d)/g, '$10.$2')
+// drops a leading zero (`-.02em`); tokens.css writes it, so it's put back.
+const BARE_DECIMAL = /(^|[^\d.])\.(\d)/g
+
+export function cssValue(name) {
+  const computedValue = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return computedValue.replace(BARE_DECIMAL, (match, before, firstDigit) => `${before}0.${firstDigit}`)
+}
 
 // A palette colour as CSS: its hex, or rgb() with its alpha.
 export function paletteColor({ components, alpha = 1, hex }) {
@@ -44,22 +42,24 @@ export function paletteColor({ components, alpha = 1, hex }) {
 }
 
 // The tokens under one top-level group, such as `spacing` or `radius`.
-export const group = (tree, name) => flatten(tree).filter((token) => token.path[0] === name)
+export const tokensInGroup = (tree, name) => flatten(tree).filter((token) => token.path[0] === name)
 
 // The pages show Dark and Light side by side, as Figma's frames do, so they
 // read each theme from its file rather than from tokens.css.
 const THEMES = { dark: colorDark, light: colorLight }
-const at = (tree, path) => path.reduce((node, key) => node?.[key], tree)
-const refPath = (ref) => ref.slice(1, -1).split('.')
+const nodeAtPath = (tree, path) => path.reduce((node, key) => node?.[key], tree)
+const referencePath = (reference) => reference.slice(1, -1).split('.')
 
-// The palette shade a reference (`{accent.default}`) lands on in one theme.
-export function shadeOf(theme, ref) {
-  const token = at(THEMES[theme], refPath(ref))
-  return token ? shadeOf(theme, token.$value) : at(palette, refPath(ref)).$value
+// The palette shade a reference (`{accent.default}`) lands on in one theme,
+// following references between theme tokens until one points at the palette.
+export function shadeOf(theme, reference) {
+  const token = nodeAtPath(THEMES[theme], referencePath(reference))
+  if (token) return shadeOf(theme, token.$value)
+  return nodeAtPath(palette, referencePath(reference)).$value
 }
 
 // What a colour token points at in one theme, in the Figma name's form.
-export const pointsAt = (theme, path) => refName(at(THEMES[theme], path).$value)
+export const targetFigmaName = (theme, path) => referenceFigmaName(nodeAtPath(THEMES[theme], path).$value)
 
 // A colour token's CSS colour in one theme: `colorIn('light', 'bg.surface')`.
 export const colorIn = (theme, name) => paletteColor(shadeOf(theme, `{${name}}`))
@@ -70,8 +70,9 @@ export const isUsedIn = (theme, shadePath) =>
 
 // A shadow token in one theme, as CSS.
 export function shadowIn(theme, name) {
-  return [code[name].$value]
-    .flat()
+  // A shadow is one layer or a list of them.
+  const layers = [code[name].$value].flat()
+  return layers
     .map(({ offsetX, offsetY, blur, spread, color }) => {
       const lengths = [offsetX, offsetY, blur, spread].map((length) => `${length.value}px`).join(' ')
       return `${lengths} ${paletteColor(shadeOf(theme, color))}`

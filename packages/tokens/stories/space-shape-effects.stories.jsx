@@ -2,7 +2,18 @@ import './space-shape-effects.css'
 
 import windowLayout from './assets/window-layout.png'
 import { Code, Codes, Joined, Name, Page, Section, Table, TableRow } from './blocks'
-import { code, colorIn, cssName, cssValue, group, layout, opacity, refName, shadowIn, spacing } from './tokens'
+import {
+  code,
+  colorIn,
+  cssValue,
+  cssVariableName,
+  layout,
+  opacity,
+  referenceFigmaName,
+  shadowIn,
+  spacing,
+  tokensInGroup,
+} from './tokens'
 
 export default { title: 'Space, shape & effects' }
 
@@ -32,20 +43,23 @@ const LEVELS = [
   },
 ]
 
-// A Layout token's size: px('titlebar', 'height') is 56px.
-const px = (...path) => `${path.reduce((node, key) => node[key], layout).$value.value}px`
+// A Layout token's size: layoutSizePx('titlebar', 'height') is 56px.
+function layoutSizePx(...path) {
+  const token = path.reduce((node, key) => node[key], layout)
+  return `${token.$value.value}px`
+}
 
 const WINDOW_LAYOUT = [
   {
     element: 'Title bar',
-    size: `${px('titlebar', 'height')} tall`,
+    size: `${layoutSizePx('titlebar', 'height')} tall`,
     notes: 'Brand left, controls right',
     codes: ['--titlebar-height'],
   },
   {
     element: 'Navigation rail',
     size: '62px wide + 1px border',
-    notes: `${px('rail', 'item-size')} items, 12px apart`,
+    notes: `${layoutSizePx('rail', 'item-size')} items, 12px apart`,
     codes: ['--rail-item-size', '--spacing-12'],
   },
   {
@@ -63,7 +77,7 @@ const WINDOW_LAYOUT = [
   },
   {
     element: 'Card header',
-    size: `${px('card', 'header-height')} tall`,
+    size: `${layoutSizePx('card', 'header-height')} tall`,
     notes: 'Titles line up across cards',
     codes: ['--card-header-height'],
   },
@@ -81,8 +95,8 @@ function SpacingTable() {
         ['Code', 'minmax(140px, 1fr)'],
       ]}
     >
-      {group(spacing, 'spacing').map((token) => {
-        const name = cssName(token.path)
+      {tokensInGroup(spacing, 'spacing').map((token) => {
+        const name = cssVariableName(token.path)
         return (
           <TableRow key={name}>
             <Name name={token.path.join('/')} />
@@ -100,8 +114,8 @@ function SpacingTable() {
 function Radii() {
   return (
     <div className="cards cards-five">
-      {group(spacing, 'radius').map((token) => {
-        const name = cssName(token.path)
+      {tokensInGroup(spacing, 'radius').map((token) => {
+        const name = cssVariableName(token.path)
         return (
           <div key={name} className="doc-card">
             <span
@@ -194,7 +208,7 @@ function Elevation() {
 
 function OpacityTable() {
   // The scale is in Opacity; disabled, named for its job, is in Layout.
-  const tokens = [...group(opacity, 'opacity'), ...group(layout, 'opacity')]
+  const tokens = [...tokensInGroup(opacity, 'opacity'), ...tokensInGroup(layout, 'opacity')]
   return (
     <Table
       columns={[
@@ -207,7 +221,7 @@ function OpacityTable() {
     >
       {OPACITY_ORDER.map((key) => {
         const token = tokens.find((candidate) => candidate.path[1] === key)
-        const name = cssName(token.path)
+        const name = cssVariableName(token.path)
         return (
           <TableRow key={name}>
             <Name name={token.path.join('/')} />
@@ -235,9 +249,10 @@ function FocusTable() {
       ]}
     >
       {FOCUS_ORDER.map((key) => {
-        const token = group(layout, 'focus').find((candidate) => candidate.path[1] === key)
-        const name = cssName(token.path)
-        const from = typeof token.$value === 'string' ? `, from ${refName(token.$value)}` : ''
+        const token = tokensInGroup(layout, 'focus').find((candidate) => candidate.path[1] === key)
+        const name = cssVariableName(token.path)
+        const isReference = typeof token.$value === 'string'
+        const scaleStepNote = isReference ? `, from ${referenceFigmaName(token.$value)}` : ''
         return (
           <TableRow key={name}>
             <Name name={token.path.join('/')} />
@@ -245,7 +260,7 @@ function FocusTable() {
             <span className="focus-sample" />
             <span>
               {token.$description}
-              {from}
+              {scaleStepNote}
             </span>
             <Code>var({name})</Code>
           </TableRow>

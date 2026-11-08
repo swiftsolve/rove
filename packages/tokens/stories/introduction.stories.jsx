@@ -4,33 +4,34 @@ import { useEffect, useRef, useState } from 'react'
 
 import designPackage from '../package.json'
 import { BRAND_ICONS } from './brand-icons'
-import { colorDark, flatten, group, palette, spacing, textStyles } from './tokens'
+import { colorDark, flatten, palette, spacing, textStyles, tokensInGroup } from './tokens'
 
 export default { title: 'Introduction' }
 
-const REPO = 'https://github.com/swiftsolve/rove-tokens'
-const FIGMA = 'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System'
+const REPO_URL = 'https://github.com/swiftsolve/rove-tokens'
+const FIGMA_URL = 'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System'
 // The Rove Components Storybook, built from these tokens.
-const COMPONENTS = 'https://rove.swiftsolve.net/storybook/'
+const COMPONENTS_URL = 'https://rove.swiftsolve.net/storybook/'
 
 // A Storybook page, from inside the preview iframe: `./?path=` is the manager.
-const pageHref = (id) => `./?path=/story/${id}`
+const storyHref = (id) => `./?path=/story/${id}`
 
 // Backticks in the copy below become inline code.
 // A code chip may break only after a slash (`src/` | `code-tokens.json`), never
 // at a hyphen, so a narrow column wraps a path without splitting a name.
-const codeParts = (code) =>
+const codeSegments = (code) =>
   code.split(/(?<=\/)/).map((segment, index) => (
     <span key={index} className="intro-code-part">
       {segment}
     </span>
   ))
 
-const withCode = (text) =>
+// Splitting on backticks puts the code at the odd indexes.
+const withInlineCode = (text) =>
   text.split('`').map((part, index) =>
-    index % 2 ? (
+    index % 2 === 1 ? (
       <code key={index} className="intro-code">
-        {codeParts(part)}
+        {codeSegments(part)}
       </code>
     ) : (
       part
@@ -42,19 +43,19 @@ const withCode = (text) =>
 const EASE_FACTOR = 0.18
 const SNAP_THRESHOLD = 0.05
 
-// A number that counts up to `hover` while its card is hovered or focused, and
-// back down to `to` when it's left, the same way each time, with Rove's readout
+// A number that counts up to `hoverValue` while its card is hovered or focused, and
+// back down to `restingValue` when it's left, the same way each time, with Rove's readout
 // ease. It holds still under reduced motion.
-function CountUp({ to, hover, className }) {
-  const ref = useRef(null)
-  const [value, setValue] = useState(to)
+function CountUp({ restingValue, hoverValue, className }) {
+  const numberRef = useRef(null)
+  const [value, setValue] = useState(restingValue)
   useEffect(() => {
-    const card = ref.current?.closest('.intro-card')
+    const card = numberRef.current?.closest('.intro-card')
     if (!card) return undefined
     let frame = 0
-    let current = to
-    let target = to
-    const step = () => {
+    let current = restingValue
+    let target = restingValue
+    const stepTowardTarget = () => {
       const remaining = target - current
       if (Math.abs(remaining) < SNAP_THRESHOLD) {
         current = target
@@ -64,29 +65,29 @@ function CountUp({ to, hover, className }) {
       }
       current += remaining * EASE_FACTOR
       setValue(current)
-      frame = requestAnimationFrame(step)
+      frame = requestAnimationFrame(stepTowardTarget)
     }
     const easeTo = (next) => {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
       target = next
-      if (!frame) frame = requestAnimationFrame(step)
+      if (!frame) frame = requestAnimationFrame(stepTowardTarget)
     }
-    const up = () => easeTo(hover)
-    const down = () => easeTo(to)
-    card.addEventListener('mouseenter', up)
-    card.addEventListener('mouseleave', down)
-    card.addEventListener('focus', up)
-    card.addEventListener('blur', down)
+    const onEnter = () => easeTo(hoverValue)
+    const onLeave = () => easeTo(restingValue)
+    card.addEventListener('mouseenter', onEnter)
+    card.addEventListener('mouseleave', onLeave)
+    card.addEventListener('focus', onEnter)
+    card.addEventListener('blur', onLeave)
     return () => {
       cancelAnimationFrame(frame)
-      card.removeEventListener('mouseenter', up)
-      card.removeEventListener('mouseleave', down)
-      card.removeEventListener('focus', up)
-      card.removeEventListener('blur', down)
+      card.removeEventListener('mouseenter', onEnter)
+      card.removeEventListener('mouseleave', onLeave)
+      card.removeEventListener('focus', onEnter)
+      card.removeEventListener('blur', onLeave)
     }
-  }, [to, hover])
+  }, [restingValue, hoverValue])
   return (
-    <span ref={ref} className={className}>
+    <span ref={numberRef} className={className}>
       {Math.round(value)}
     </span>
   )
@@ -300,7 +301,7 @@ const CONSUMERS = [
     icon: 'rove',
     name: 'Rove',
     body: 'The app and its component library import `tokens.css`, `text-styles.css` and the Tailwind theme, and style with nothing else.',
-    href: COMPONENTS,
+    href: COMPONENTS_URL,
   },
   {
     icons: ['claude', 'openai', 'cursor', 'copilot', 'gemini'],
@@ -338,7 +339,7 @@ const PRINCIPLES = [
 ]
 
 function Item({ name, body, href }) {
-  const title = withCode(name)
+  const title = withInlineCode(name)
   return (
     <div className="intro-item">
       <strong className="intro-item-name">
@@ -350,12 +351,13 @@ function Item({ name, body, href }) {
           title
         )}
       </strong>
-      <span className="intro-item-body">{withCode(body)}</span>
+      <span className="intro-item-body">{withInlineCode(body)}</span>
     </div>
   )
 }
 
-function Node({ icons, children, style, className = '' }) {
+// A step or a card in the diagram: its icons in a row, then what it says.
+function PipelineNode({ icons, children, style, className = '' }) {
   return (
     <li className={`intro-node ${className}`} style={style}>
       <span className="intro-icons">
@@ -390,19 +392,19 @@ function Pipelines() {
           </div>
           <ol className="intro-steps" aria-label={`${title}, from Figma to what ships`}>
             {steps.map(({ column, icons, items }, index) => {
-              const skipped = index > 0 && column - steps[index - 1].column > 1
+              const isSkippingStage = index > 0 && column - steps[index - 1].column > 1
               return (
-                <Node
+                <PipelineNode
                   key={column}
                   icons={icons}
                   style={{ gridColumn: column }}
-                  className={[index > 0 && 'has-flow', skipped && 'has-skip'].filter(Boolean).join(' ')}
+                  className={[index > 0 && 'has-flow', isSkippingStage && 'has-skip'].filter(Boolean).join(' ')}
                 >
                   <span className="intro-stage intro-stage-inline">{STAGES[column - 1]}</span>
                   {items.map((item) => (
                     <Item key={item.name} {...item} />
                   ))}
-                </Node>
+                </PipelineNode>
               )
             })}
           </ol>
@@ -418,10 +420,11 @@ function Pipelines() {
             <p>{summary}</p>
           </div>
           <ul className="intro-consumers">
+            {/* A card names one icon, or a row of them in icons. */}
             {cards.map(({ icon, icons = [icon], ...item }) => (
-              <Node key={item.name} icons={icons}>
+              <PipelineNode key={item.name} icons={icons}>
                 <Item {...item} />
-              </Node>
+              </PipelineNode>
             ))}
           </ul>
         </div>
@@ -431,7 +434,7 @@ function Pipelines() {
 }
 
 // The pages, each with a small specimen drawn with the tokens it lists.
-const EXPLORE = [
+const EXPLORE_CARDS = [
   {
     id: 'colour--colour',
     title: 'Colour',
@@ -462,14 +465,14 @@ const EXPLORE = [
     specimen: (
       <span className="intro-type-pair">
         <span className="intro-type type-heading-large">Aa</span>
-        <CountUp className="intro-type type-number-display" to={182} hover={240} />
+        <CountUp className="intro-type type-number-display" restingValue={182} hoverValue={240} />
       </span>
     ),
   },
   {
     id: 'space-shape-effects--space-shape-effects',
     title: 'Space, shape & effects',
-    body: `A ${group(spacing, 'spacing').length}-step spacing scale in 2px steps, with the radii, shadows and opacities.`,
+    body: `A ${tokensInGroup(spacing, 'spacing').length}-step spacing scale in 2px steps, with the radii, shadows and opacities.`,
     specimen: (
       // The four kinds, left to right: spacing steps, the radii (each tinted at an
       // opacity token, smallest to largest), and a raised panel's shadow.
@@ -529,11 +532,11 @@ const EXPLORE = [
 
 // Line icons in the link's accent, so the four read as one row.
 const LINKS = [
-  { icon: 'figmaLine', label: 'Figma file', href: FIGMA },
-  { icon: 'fileText', label: 'DESIGN.md', href: `${REPO}/blob/main/DESIGN.md` },
-  { icon: 'lightbulb', label: 'Rationale', href: `${REPO}/blob/main/docs/rationale.md` },
-  { icon: 'github', label: 'GitHub', href: REPO },
-  { icon: 'rove', label: 'Rove components', href: COMPONENTS },
+  { icon: 'figmaLine', label: 'Figma file', href: FIGMA_URL },
+  { icon: 'fileText', label: 'DESIGN.md', href: `${REPO_URL}/blob/main/DESIGN.md` },
+  { icon: 'lightbulb', label: 'Rationale', href: `${REPO_URL}/blob/main/docs/rationale.md` },
+  { icon: 'github', label: 'GitHub', href: REPO_URL },
+  { icon: 'rove', label: 'Rove components', href: COMPONENTS_URL },
 ]
 
 function IntroductionPage() {
@@ -590,7 +593,7 @@ function IntroductionPage() {
                   <Icon name={icon} />
                 </span>
                 <span className="intro-card-title">{lead}</span>
-                <span className="intro-principle-body">{withCode(body)}</span>
+                <span className="intro-principle-body">{withInlineCode(body)}</span>
               </div>
             </li>
           ))}
@@ -603,9 +606,9 @@ function IntroductionPage() {
           Every token in both themes, laid out like the Figma file&rsquo;s Foundations pages.
         </p>
         <ul className="intro-explore">
-          {EXPLORE.map(({ id, title, body, specimen }) => (
+          {EXPLORE_CARDS.map(({ id, title, body, specimen }) => (
             <li key={id}>
-              <a className="intro-card" href={pageHref(id)} target="_top">
+              <a className="intro-card" href={storyHref(id)} target="_top">
                 <span className="intro-specimen" aria-hidden="true">
                   {specimen}
                 </span>

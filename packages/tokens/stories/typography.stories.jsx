@@ -1,11 +1,11 @@
 import { Code, Codes, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
-import { cssName, flatten, group, textStyles, typography } from './tokens'
+import { cssVariableName, flatten, textStyles, tokensInGroup, typography } from './tokens'
 
 export default { title: 'Typography' }
 
 // The Figma page's order: display first.
 // Why each face, in a line; docs/rationale.md has the full case.
-const FAMILIES = {
+const FAMILY_DESCRIPTIONS = {
   display: 'Headings, in Bold. Round and geometric, so titles stand apart.',
   sans: 'Text and numbers. Quiet, with same-width digits at cap height.',
 }
@@ -23,33 +23,38 @@ const SPECIMENS = {
   badge: 'VPN',
 }
 
-const WEIGHTS = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' }
+const WEIGHT_NAMES = { 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' }
 
-const fontSizes = Object.fromEntries(
-  group(typography, 'font-size').map((token) => [`{${token.path.join('.')}}`, token.$value.value]),
+// The weight each family's specimen is set in.
+const SPECIMEN_WEIGHTS = { sans: 'var(--weight-semibold)', display: 700 }
+
+// A text style names its size and family by reference (`{font-size.lg}`), so these look them up.
+const fontSizeByReference = Object.fromEntries(
+  tokensInGroup(typography, 'font-size').map((token) => [`{${token.path.join('.')}}`, token.$value.value]),
 )
-const families = Object.fromEntries(
-  group(typography, 'font-family').map((token) => [`{${token.path.join('.')}}`, token.$value[0]]),
+const familyByReference = Object.fromEntries(
+  tokensInGroup(typography, 'font-family').map((token) => [`{${token.path.join('.')}}`, token.$value[0]]),
 )
 
 // body-medium is Body/Medium, as Figma names the style; semibold is SemiBold.
-const styleName = (key) =>
+const figmaStyleName = (key) =>
   key
     .split('-')
     .map((word) => (word === 'semibold' ? 'SemiBold' : word[0].toUpperCase() + word.slice(1)))
     .join('/')
 
-const percent = (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`
+const formatPercent = (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`
 
+// letterSpacing is in px; the Figma page shows it as a share of the size.
 function Spec({ value, textCase }) {
-  const size = fontSizes[value.fontSize]
+  const size = fontSizeByReference[value.fontSize]
   const letterSpacing = value.letterSpacing.value / size
   const metrics = [`${size}px / ${Math.round(value.lineHeight * size)}px`]
-  if (letterSpacing !== 0) metrics.push(percent(letterSpacing))
+  if (letterSpacing !== 0) metrics.push(formatPercent(letterSpacing))
   return (
     <span className="spec">
       <span>
-        {families[value.fontFamily]} {WEIGHTS[value.fontWeight]}
+        {familyByReference[value.fontFamily]} {WEIGHT_NAMES[value.fontWeight]}
       </span>
       <Joined parts={metrics} />
       {textCase === 'UPPER' && <span>Uppercase</span>}
@@ -60,22 +65,22 @@ function Spec({ value, textCase }) {
 function Families() {
   return (
     <div className="cards cards-three">
-      {Object.keys(FAMILIES).map((key) => {
-        const token = group(typography, 'font-family').find((t) => t.path[1] === key)
-        const name = cssName(token.path)
+      {Object.keys(FAMILY_DESCRIPTIONS).map((key) => {
+        const token = tokensInGroup(typography, 'font-family').find((t) => t.path[1] === key)
+        const name = cssVariableName(token.path)
         return (
           <div key={name} className="doc-card">
             <span
               className="family-specimen"
               style={{
                 fontFamily: `var(${name})`,
-                fontWeight: { sans: 'var(--weight-semibold)', display: 700 }[token.path[1]],
+                fontWeight: SPECIMEN_WEIGHTS[token.path[1]],
               }}
             >
               Aa 0123456789
             </span>
             <span className="doc-card-title">{token.$value[0]}</span>
-            <span className="doc-card-text">{FAMILIES[token.path[1]]}</span>
+            <span className="doc-card-text">{FAMILY_DESCRIPTIONS[token.path[1]]}</span>
             <Codes names={[token.path.join('/'), `var(${name})`]} />
           </div>
         )
@@ -85,7 +90,7 @@ function Families() {
 }
 
 function SizeScale() {
-  const tokens = group(typography, 'font-size')
+  const tokens = tokensInGroup(typography, 'font-size')
   const largest = tokens.at(-1)
   return (
     <Table
@@ -97,7 +102,7 @@ function SizeScale() {
       ]}
     >
       {tokens.map((token) => {
-        const name = cssName(token.path)
+        const name = cssVariableName(token.path)
         // The largest size is for metrics, so it shows a number, as on the Figma page.
         const isMetric = token === largest
         return (
@@ -122,7 +127,7 @@ function SizeScale() {
 
 function TextStyles() {
   const tokens = flatten(textStyles)
-  const ordered = Object.keys(SPECIMENS).map((key) => tokens.find((token) => token.path[1] === key))
+  const orderedTokens = Object.keys(SPECIMENS).map((key) => tokens.find((token) => token.path[1] === key))
   return (
     <Table
       columns={[
@@ -132,13 +137,13 @@ function TextStyles() {
         ['Code', 'minmax(190px, 1fr)'],
       ]}
     >
-      {ordered.map((token) => {
+      {orderedTokens.map((token) => {
         const key = token.path[1]
         const className = `type-${key}`
         return (
           <TableRow key={key}>
             <span className={`specimen ${className}`}>{SPECIMENS[key]}</span>
-            <Name name={styleName(key)} description={token.$description?.replace(/ Code:.*$/, '')} />
+            <Name name={figmaStyleName(key)} description={token.$description?.replace(/ Code:.*$/, '')} />
             <Spec value={token.$value} textCase={token.$extensions?.['net.swiftsolve.rove-tokens']?.textCase} />
             <Code copy={className}>.{className}</Code>
           </TableRow>

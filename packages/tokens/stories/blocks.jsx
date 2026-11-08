@@ -55,17 +55,15 @@ export function Group({ title, intro, warning, children }) {
 
 // `intro` is a line or a list of lines; `warning`, a rule to follow under it.
 export function Section({ title, intro, warning, children }) {
+  const introLines = [intro].flat().filter(Boolean)
   return (
     <section className="section">
       <h2 className="section-title">{title}</h2>
-      {[intro]
-        .flat()
-        .filter(Boolean)
-        .map((line) => (
-          <p key={line} className="section-intro">
-            {line}
-          </p>
-        ))}
+      {introLines.map((line) => (
+        <p key={line} className="section-intro">
+          {line}
+        </p>
+      ))}
       {warning && <Warning>{warning}</Warning>}
       {children && <div className="section-body">{children}</div>}
     </section>
@@ -133,38 +131,41 @@ async function copyText(text) {
 const COPIED_MIN_MS = 900
 const TIP_FADE_MS = 200
 
-export function Code({ children, copy: copyAs }) {
+export function Code({ children, copy }) {
   // idle, then copied, then leaving (the tooltip fades with "Copied" still in it).
-  const [state, setState] = useState('idle')
+  const [copyState, setCopyState] = useState('idle')
   const copiedAt = useRef(0)
-  const timer = useRef(0)
+  const resetTimer = useRef(0)
   const text = [children].flat().join('')
-  const copy = async () => {
-    await copyText(copyAs ?? text)
-    clearTimeout(timer.current)
+  const textToCopy = copy ?? text
+  const onClick = async () => {
+    await copyText(textToCopy)
+    clearTimeout(resetTimer.current)
     copiedAt.current = Date.now()
-    setState('copied')
+    setCopyState('copied')
   }
-  const leave = () => {
-    if (state !== 'copied') return
-    const wait = Math.max(0, COPIED_MIN_MS - (Date.now() - copiedAt.current))
-    timer.current = setTimeout(() => {
-      setState('leaving')
-      timer.current = setTimeout(() => setState('idle'), TIP_FADE_MS)
-    }, wait)
+  const onLeave = () => {
+    if (copyState !== 'copied') return
+    const shownMs = Date.now() - copiedAt.current
+    const remainingMs = Math.max(0, COPIED_MIN_MS - shownMs)
+    resetTimer.current = setTimeout(() => {
+      setCopyState('leaving')
+      resetTimer.current = setTimeout(() => setCopyState('idle'), TIP_FADE_MS)
+    }, remainingMs)
   }
-  const isCopied = state !== 'idle'
-  const className = ['code', isCopied && 'is-copied', state === 'leaving' && 'is-leaving'].filter(Boolean).join(' ')
+  const isCopied = copyState !== 'idle'
+  const isLeaving = copyState === 'leaving'
+  const className = ['code', isCopied && 'is-copied', isLeaving && 'is-leaving'].filter(Boolean).join(' ')
   return (
     // The tooltip says what a click does, then that it did it: both labels sit in
     // one place and crossfade, so the text never swaps mid-frame.
     <button
       type="button"
       className={className}
-      aria-label={`Copy ${copyAs ?? text}`}
-      onClick={copy}
-      onPointerLeave={leave}
-      onBlur={leave}
+      aria-label={`Copy ${textToCopy}`}
+      onClick={onClick}
+      onPointerLeave={onLeave}
+      onBlur={onLeave}
     >
       <span className="code-tip" aria-hidden="true">
         <span className="code-tip-label code-tip-copy">
