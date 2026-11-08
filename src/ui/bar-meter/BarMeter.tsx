@@ -4,16 +4,13 @@ import { useDevicePixelRatio } from '../hooks/useDevicePixelRatio'
 import { cn } from '../utils/cn'
 import type { VariantOf } from '../utils/variants'
 
-// Each size's bar width and the four heights, shortest first, in CSS px. At
-// 125% or 150% display scaling these fall between screen pixels, and HTML
+// The bar width and the four heights, shortest first, in CSS px: the tallest
+// rounds a 12px line's cap height up, so the meter sits in a data row's text.
+// At 125% or 150% display scaling these fall between screen pixels, and HTML
 // boxes snap each bar to 3 or 4, so the meter looked jagged: BarMeter rounds
 // them to screen pixels and draws an SVG. The ends round at half the width.
-const SIZES = {
-  /** A data row: the tallest rounds the 12px value text's cap height up. */
-  sm: { width: 2, heights: [3, 5, 7, 9] },
-  /** A list row's rating. */
-  lg: { width: 3, heights: [6, 8, 10, 12] },
-} as const satisfies Record<string, { width: number; heights: readonly [number, number, number, number] }>
+const BAR_WIDTH = 2
+const BAR_HEIGHTS = [3, 5, 7, 9] as const
 // The gap between bars, --spacing-2.
 const GAP = 2
 
@@ -41,8 +38,6 @@ function barFill(isLit: boolean, isDimmed: boolean): BarFill {
 type BarMeterProps = {
   /** Lit bars, 0 to 4. */
   value: number
-  /** `sm` for a data row or meta line, `lg` a list row. */
-  size?: keyof typeof SIZES
   /** The bars' colour: any CSS colour, usually a status token (`var(--status-positive)`). */
   color?: string
   /** Grey bars that read as inactive: a stale rating waiting on a new test. */
@@ -55,14 +50,14 @@ type BarMeterProps = {
  * Four rising bars, some lit: signal strength or a rating at a glance. Visual
  * only; whatever it sits in says the value in words or with role="meter".
  */
-export function BarMeter({ value, size = 'lg', color = 'currentColor', isDimmed = false, className }: BarMeterProps) {
+export function BarMeter({ value, color = 'currentColor', isDimmed = false, className }: BarMeterProps) {
   const ratio = useDevicePixelRatio()
   // Drawn in whole screen pixels, then scaled back, so every bar is the same
   // number of pixels wide and none lands between two.
   const toScreen = (px: number): number => Math.max(1, Math.round(px * ratio))
-  const width = toScreen(SIZES[size].width)
+  const width = toScreen(BAR_WIDTH)
   const gap = toScreen(GAP)
-  const heights = SIZES[size].heights.map(toScreen)
+  const heights = BAR_HEIGHTS.map(toScreen)
   const tallest = Math.max(...heights)
   const span = heights.length * width + (heights.length - 1) * gap
   return (

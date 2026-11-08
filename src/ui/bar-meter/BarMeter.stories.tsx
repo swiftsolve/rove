@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Fragment } from 'react'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BarMeter } from './BarMeter'
-
-const SIZES = ['sm', 'lg'] as const
 
 // A rating's colour by how many bars it lights.
 const COLORS = [
@@ -18,10 +15,9 @@ const COLORS = [
 const meta = {
   title: 'Data display/BarMeter',
   component: BarMeter,
-  args: { value: 3, size: 'lg', color: 'var(--status-good)' },
+  args: { value: 3, color: 'var(--status-good)' },
   argTypes: {
     value: { control: { type: 'range', min: 0, max: 4, step: 1 } },
-    size: { control: 'inline-radio', options: SIZES },
     color: { control: 'select', options: COLORS },
   },
   parameters: {
@@ -53,11 +49,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** A list row's rating. */
+/** A rating in a data row. */
 export const Rating: Story = {}
 
 /** Signal strength in a data row. */
-export const Signal: Story = { args: { size: 'sm', value: 4, color: 'var(--status-positive)' } }
+export const Signal: Story = { args: { value: 4, color: 'var(--status-positive)' } }
 
 /** Nothing lit: no rating yet. */
 export const Empty: Story = { args: { value: 0, color: 'var(--text-tertiary)' } }
@@ -65,20 +61,14 @@ export const Empty: Story = { args: { value: 0, color: 'var(--text-tertiary)' } 
 /** A stale rating, waiting on a new test. */
 export const Dimmed: Story = { args: { isDimmed: true } }
 
-/** Every size at every value, then dimmed. */
+/** Every value, then dimmed. */
 export const AllStates: Story = {
   render: () => (
-    // A grid, so each value's column lines up across sizes.
-    <div className="grid grid-cols-[repeat(7,max-content)] items-end gap-x-16 gap-y-12">
-      {SIZES.map((size) => (
-        <Fragment key={size}>
-          <span className="type-caption w-[24px] text-tertiary">{size}</span>
-          {COLORS.map((color, value) => (
-            <BarMeter key={color} value={value} size={size} color={color} />
-          ))}
-          <BarMeter value={3} size={size} isDimmed />
-        </Fragment>
+    <div className="flex items-end gap-16">
+      {COLORS.map((color, value) => (
+        <BarMeter key={color} value={value} color={color} />
       ))}
+      <BarMeter value={3} isDimmed />
     </div>
   ),
 }

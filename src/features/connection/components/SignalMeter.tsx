@@ -29,7 +29,7 @@ export function SignalMeter({ strength, className }: SignalMeterProps) {
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <BarMeter value={signalBarCount(strength)} size="sm" />
+      <BarMeter value={signalBarCount(strength)} />
     </span>
   )
 }

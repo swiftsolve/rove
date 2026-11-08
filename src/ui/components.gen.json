@@ -1645,14 +1645,6 @@
           "default": "false",
           "description": "Grey bars that read as inactive: a stale rating waiting on a new test."
         },
-        "size": {
-          "values": [
-            "sm",
-            "lg"
-          ],
-          "default": "lg",
-          "description": "`sm` for a data row or meta line, `lg` a list row."
-        },
         "value": {
           "type": "number",
           "isRequired": true,
