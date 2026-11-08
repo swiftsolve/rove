@@ -46,6 +46,13 @@ Figma, `rove-tokens`, this code, and the docs that describe it.
   `../rove-tokens` and a release, to here as `@swiftsolve/rove-tokens`.
 - **A component** starts here, in `src/ui`, and its Figma component follows.
 
+### Write plain code
+
+Write the version a newcomer reads in one pass: named steps over dense
+expressions, the codebase's existing pattern over a new one. Something clever
+earns its place only when the plain version is wrong or too slow, and its
+comment says which.
+
 ### Commit only your paths
 
 Other sessions work in this checkout and commit to `master` alongside you.

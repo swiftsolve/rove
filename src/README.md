@@ -247,6 +247,8 @@ These judgment rules slip through most often:
 - a prop passed only to pass it down, focus code where `navigate` already
   moves it, or an exit animation unmounted early instead of `usePresence`;
 - a comment that restates the code instead of saying why;
+- clever code whose comment doesn't say why the plain version wasn't enough
+  (AGENTS.md: Write plain code);
 - a hint over two short sentences, or one that explains how it works;
 - the light theme, and any screen: Chromatic snapshots only stories, in dark,
   so read `npm run screenshots` in both themes;
