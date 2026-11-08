@@ -14,7 +14,7 @@ describe('Link', () => {
 
   it('opens an address in a new window, ending in an arrow, and says so', () => {
     const { container } = render(<Link href="https://example.com">Example</Link>)
-    const link = screen.getByRole('link', { name: 'Example (opens in a new window)' })
+    const link = screen.getByRole('link', { name: /^Example ?, opens in a new window$/ })
     expect(link).toHaveAttribute('href', 'https://example.com')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link).toHaveAttribute('rel', 'noreferrer')

@@ -9,7 +9,7 @@ import {
 } from '@/features/capabilities/utils/capability-level-colors'
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import type { CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
-import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue } from '@/ui'
+import { AlertIcon, Card, CheckIcon, CloseIcon, IconTile, NoValue, SpokenText } from '@/ui'
 
 // Three tiers: an intro row with the level, a metrics grid on an inset panel, then the verdict.
 const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
@@ -79,8 +79,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
                 {check.have ?? <NoValue label="Not measured" />}
               </dd>
               <dd className="type-caption leading-[1.2] whitespace-nowrap text-tertiary">
-                <span className="sr-only">Needs </span>
-                {check.need}
+                <SpokenText spoken={`Needs ${check.spokenNeed}`}>{check.need}</SpokenText>
               </dd>
             </div>
           ))}

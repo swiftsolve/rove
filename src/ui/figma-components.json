@@ -123,6 +123,7 @@
       "node": "542:10510",
       "figmaOnly": { "Back": "Whether onBack is set." }
     },
-    "ScreenReaderStatus": null
+    "ScreenReaderStatus": null,
+    "SpokenText": null
   }
 }

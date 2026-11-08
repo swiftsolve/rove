@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import type { JSX } from 'react'
 
+import { SpeakableText } from '@/app/components/SpeakableText'
 import { deviceMetaParts, deviceName, gatewayProduct, lastSeenAge } from '@/features/devices/utils/device-display'
 import { useNow } from '@/hooks/useNow'
 import type { LanDevice, LanDeviceKind } from '@/types'
@@ -132,7 +133,15 @@ function DeviceMetaLine({
   if (metaParts.length === 0 && !lastSeenLabel) return null
   return (
     <div className={DEVICE_META}>
-      {metaParts.length > 0 && <InlineMeta items={metaParts} className={DEVICE_KIND} shouldTruncate />}
+      {metaParts.length > 0 && (
+        <InlineMeta
+          items={metaParts.map((part) => (
+            <SpeakableText key={part} text={part} />
+          ))}
+          className={DEVICE_KIND}
+          shouldTruncate
+        />
+      )}
       {/* ml-auto keeps the age flush right even when the type label is absent. */}
       {lastSeenLabel && <span className="ml-auto shrink-0">{lastSeenLabel}</span>}
     </div>

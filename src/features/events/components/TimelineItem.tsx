@@ -1,6 +1,7 @@
 import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
+import { SpeakableText } from '@/app/components/SpeakableText'
 import {
   EVENT_TITLES,
   eventSubject,
@@ -126,7 +127,14 @@ export function TimelineItem({
       {subject && (
         <div className={SUBJECT}>
           <InlineMeta
-            items={[...subjectParts(subject), kindLabel && <span className="text-tertiary">{kindLabel}</span>]}
+            items={[
+              ...subjectParts(subject),
+              kindLabel && (
+                <span className="text-tertiary">
+                  <SpeakableText text={kindLabel} />
+                </span>
+              ),
+            ]}
           />
         </div>
       )}

@@ -49,6 +49,7 @@ export { PageHeader } from './page-header/PageHeader'
 
 // Accessibility
 export { ScreenReaderStatus } from './screen-reader/ScreenReaderStatus'
+export { SpokenText } from './screen-reader/SpokenText'
 
 export * from './icons/Icons'
 export { BrandIcon } from './icons/BrandIcon'

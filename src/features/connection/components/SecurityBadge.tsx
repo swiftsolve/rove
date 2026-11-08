@@ -3,6 +3,7 @@ import { cva, cx } from 'class-variance-authority'
 import { isWeakSecurity, normalizeSecurity, shortSecurityLabel } from '@/features/connection/utils/wifi-security'
 import { DotSeparator, LockIcon, Tooltip, UnlockIcon } from '@/ui'
 import { isSecuredWifi } from '@/utils/format'
+import { spokenText } from '@/utils/spoken'
 
 type SecurityLevel = 'secured' | 'weak' | 'open'
 
@@ -44,8 +45,7 @@ export function SecurityBadge({ security, isShort = false, className }: Security
     weak: `Weak security (${fullLabel}). It's easy to break, so switch the router to WPA2 or WPA3.`,
     open: "Open network. Traffic isn't encrypted.",
   }[level]
-  // Spoken without brackets, which screen readers read out as "left paren".
-  const spokenLabel = fullLabel.replace(/[()]/g, '')
+  const spokenLabel = spokenText(fullLabel)
   const spokenDescription = {
     secured: `Secured, ${spokenLabel}`,
     weak: `Weak security, ${spokenLabel}. It's easy to break, so switch the router to WPA2 or WPA3.`,

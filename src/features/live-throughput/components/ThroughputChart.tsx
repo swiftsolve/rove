@@ -11,7 +11,7 @@ import {
   plotY,
   slotWidth,
 } from '@/features/live-throughput/utils/throughput-chart'
-import { CHART_WINDOW_LABEL } from '@/features/live-throughput/utils/throughput-history'
+import { CHART_WINDOW_LABEL, CHART_WINDOW_SAMPLES } from '@/features/live-throughput/utils/throughput-history'
 
 const CHART_HEIGHT = 80
 // The right margin is the y-axis labels' 28px column, wide enough for the
@@ -21,6 +21,10 @@ const CHART_MARGIN = { top: 4, right: 40, bottom: 4, left: 2 }
 const PLOT_HEIGHT = CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom
 
 const AXIS_LABEL_TEXT = 'type-caption text-tertiary num'
+
+// What the chart shows, not its numbers: the card reads the current speeds
+// just before it, so repeating them here would say them twice.
+const CHART_DESCRIPTION = `Download and upload over the last ${CHART_WINDOW_SAMPLES} seconds`
 
 // The 4px inset matches the chart's vertical margin.
 const Y_AXIS_LABELS = cx(
@@ -74,7 +78,6 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
     downDotRef.current?.setAttribute('cy', String(plotY(headMbps(download, progress), PLOT_HEIGHT, scaleMax)))
     upDotRef.current?.setAttribute('cy', String(plotY(headMbps(upload, progress), PLOT_HEIGHT, scaleMax)))
   })
-  const label = useMemo(() => describeChart(headMbps(download, 1), headMbps(upload, 1)), [download, upload])
 
   // The trace fades in only once the feed has been empty while the chart was
   // up: on launch, and after the window was hidden, which clears the history.
@@ -84,7 +87,7 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
 
   return (
     <div className="relative [contain:layout]">
-      <div ref={setChartElement} className="relative h-[80px]" role="img" aria-label={label}>
+      <div ref={setChartElement} className="relative h-[80px]" role="img" aria-label={CHART_DESCRIPTION}>
         {/* Hidden from assistive tech: the wrapper's label says what it shows,
             and its moving parts would only churn the accessibility tree. */}
         <svg width="100%" height={CHART_HEIGHT} className="block overflow-visible" aria-hidden>
@@ -163,8 +166,4 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
       </div>
     </div>
   )
-}
-
-function describeChart(downMbps: number, upMbps: number): string {
-  return `Throughput over time. Currently ${downMbps.toFixed(1)} megabits per second down, ${upMbps.toFixed(1)} up`
 }

@@ -2644,6 +2644,46 @@
           ]
         }
       }
+    },
+    "SpokenText": {
+      "group": "Accessibility",
+      "source": "src/ui/screen-reader/SpokenText.tsx",
+      "description": "Text that reads differently than it looks: the screen shows `children`,\nand a screen reader hears `spoken`, so it never reads out a symbol such as\n\"≥\", a bracket or a slash.",
+      "figma": null,
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "isRequired": true,
+          "description": "What the screen shows."
+        },
+        "spoken": {
+          "type": "string",
+          "isRequired": true,
+          "description": "What a screen reader says instead, in plain words: \"at least 25 Mbps\" for \"≥ 25 Mbps\"."
+        }
+      },
+      "stories": [
+        "accessibility-spokentext--default"
+      ],
+      "guidance": {
+        "whenToUse": [
+          "A value with a symbol a screen reader would read out: “≥ 25 Mbps”.",
+          "A label with brackets or a slash: “TV / Media”."
+        ],
+        "whenNotToUse": [
+          "Text only screen readers hear: a `sr-only` span.",
+          "A status read out as it changes: use `ScreenReaderStatus`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The shown text is hidden from screen readers.",
+            "The spoken text is hidden on screen."
+          ],
+          "toHandle": [
+            "Spoken text that says the same as the screen, in words."
+          ]
+        }
+      }
     }
   },
   "icons": [

@@ -73,7 +73,7 @@ export function Link(props: LinkProps) {
       <a className={cn(LINK, className)} target="_blank" rel="noreferrer" {...anchorProps}>
         {Icon && <Icon size={ICON_SIZE} className={ICON} />}
         <span className={LABEL}>{children}</span>
-        <span className="sr-only"> (opens in a new window)</span>
+        <span className="sr-only">, opens in a new window</span>
         <ArrowUpRightIcon size={ICON_SIZE} className={cx(ICON, '-mx-[3px]')} />
       </a>
     )

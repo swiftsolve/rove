@@ -4,7 +4,10 @@ import { formatLatencyMs, formatSpeedMbps } from '@/utils/format'
 
 export type RequirementCheck = {
   label: string
+  /** The limit as shown: "≥ 25 Mbps". */
   need: string
+  /** The limit as a screen reader says it, with no symbol: "at least 25 Mbps". */
+  spokenNeed: string
   /** The measured figure, or null when it isn't a real one (a failed ping). */
   have: string | null
   isMet: boolean
@@ -79,6 +82,7 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
     {
       label: 'Download',
       need: `≥ ${formatSpeedMbps(requirements.minDownloadMbps) ?? ''}`,
+      spokenNeed: `at least ${formatSpeedMbps(requirements.minDownloadMbps) ?? ''}`,
       have: formatSpeedMbps(speed.downloadMbps),
       isMet: speed.downloadMbps >= requirements.minDownloadMbps,
       kind: 'speed',
@@ -86,6 +90,7 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
     {
       label: 'Upload',
       need: `≥ ${formatSpeedMbps(requirements.minUploadMbps) ?? ''}`,
+      spokenNeed: `at least ${formatSpeedMbps(requirements.minUploadMbps) ?? ''}`,
       have: formatSpeedMbps(speed.uploadMbps),
       isMet: speed.uploadMbps >= requirements.minUploadMbps,
       kind: 'speed',
@@ -98,6 +103,7 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
     checks.push({
       label: 'Latency',
       need: `≤ ${requirements.maxLatencyMs} ms`,
+      spokenNeed: `${requirements.maxLatencyMs} ms or less`,
       have: hasPing ? formatLatencyMs(speed.latencyMs) : null,
       isMet: hasPing && speed.latencyMs <= requirements.maxLatencyMs,
       kind: 'delay',
@@ -107,6 +113,7 @@ export function explainCapability(id: CapabilityId, level: CapabilityLevel, spee
     checks.push({
       label: 'Jitter',
       need: `≤ ${requirements.maxJitterMs} ms`,
+      spokenNeed: `${requirements.maxJitterMs} ms or less`,
       have: hasPing ? formatLatencyMs(speed.jitterMs) : null,
       isMet: hasPing && speed.jitterMs <= requirements.maxJitterMs,
       kind: 'delay',

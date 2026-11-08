@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { SpeakableText } from '@/app/components/SpeakableText'
 import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
 import { SignalMeter } from '@/features/connection/components/SignalMeter'
 import { formatLinkSpeed } from '@/features/connection/utils/connection-display'
@@ -44,14 +45,15 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
         {/* Block flex: inline-flex adds strut height that misaligns the bars. With
             no text, the bars sit on the baseline and at 9px reach cap height. */}
         <div className="flex items-baseline justify-end gap-6">
-          {info.signalStrength != null && <SignalMeter strength={info.signalStrength} />}
+          {/* The words beside it say the rating. */}
+          {info.signalStrength != null && <SignalMeter strength={info.signalStrength} shouldAnnounce={false} />}
           {formatSignalDetail(info)}
         </div>
       </DataRow>
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Band" value={formatBand(info.frequency)} />
-      <DataRow label="Channel" value={formatChannel(info.channel, info.frequency)} />
-      <DataRow label="Standard" value={formatWifiStandard(info.wifiStandard)} />
+      <DataRow label="Channel">{speakable(formatChannel(info.channel, info.frequency))}</DataRow>
+      <DataRow label="Standard">{speakable(formatWifiStandard(info.wifiStandard))}</DataRow>
       {info.security != null ? (
         <DataRow label="Security" align="center">
           <SecurityBadge security={info.security} />
@@ -95,8 +97,13 @@ function formatSignalDetail(info: WifiNetworkInfo): ReactNode {
   const { signalStrength, signalDbm } = info
   if (signalStrength != null && Number.isFinite(signalStrength)) {
     const percent = signalDbm != null ? `${signalStrength}% (${signalDbm} dBm)` : `${signalStrength}%`
-    return <InlineMeta items={[signalWord(signalStrength), percent]} />
+    return <InlineMeta items={[signalWord(signalStrength), <SpeakableText key="percent" text={percent} />]} />
   }
   if (signalDbm != null && Number.isFinite(signalDbm)) return `${signalDbm} dBm`
   return <NoValue />
+}
+
+/** A value a screen reader says without its brackets, or null to leave the row out. */
+function speakable(text: string | null): ReactNode {
+  return text == null ? null : <SpeakableText text={text} />
 }
