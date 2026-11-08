@@ -125,18 +125,16 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
 function stripMetaItems(info: NetworkInfo): ReactNode[] {
   const linkSpeed = formatLinkSpeed(info)
   const speedItem = linkSpeed && <span className={styles.linkSpeed}>{linkSpeed}</span>
-  const items = isWifiNetwork(info)
-    ? [
-        info.signalStrength != null && (
-          <span className="inline-flex items-center gap-4">
-            <SignalMeter strength={info.signalStrength} />
-            {info.signalStrength}%
-          </span>
-        ),
-        speedItem,
-        formatBand(info.frequency),
-        info.security != null && <SecurityBadge security={info.security} isShort className={styles.securityBadge} />,
-      ]
-    : [speedItem]
-  return items.filter(Boolean)
+  if (!isWifiNetwork(info)) return [speedItem].filter(Boolean)
+
+  const signalItem = info.signalStrength != null && (
+    <span className="inline-flex items-center gap-4">
+      <SignalMeter strength={info.signalStrength} />
+      {info.signalStrength}%
+    </span>
+  )
+  const securityItem = info.security != null && (
+    <SecurityBadge security={info.security} isShort className={styles.securityBadge} />
+  )
+  return [signalItem, speedItem, formatBand(info.frequency), securityItem].filter(Boolean)
 }

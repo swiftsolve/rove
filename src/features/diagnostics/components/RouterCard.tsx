@@ -34,8 +34,9 @@ export function RouterCard({ diagnostics }: { diagnostics: NetworkDiagnostics | 
   const { info } = useNetwork()
   const ping = diagnostics?.gatewayPing
   const linkSpeedMbps = info ? getLinkCapacityMbps(info) : null
+  const reportedModel = diagnostics?.gatewayModel || null
   // Many routers report their model as their name too; show it once.
-  const model = sameText(diagnostics?.gatewayModel, diagnostics?.gatewayName) ? null : diagnostics?.gatewayModel || null
+  const model = sameText(reportedModel, diagnostics?.gatewayName) ? null : reportedModel
   const hasDeviceRows = Boolean(diagnostics?.gatewayName || model || diagnostics?.gatewayVendor)
 
   return (

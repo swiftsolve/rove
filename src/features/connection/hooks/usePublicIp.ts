@@ -26,7 +26,8 @@ export function usePublicIp(isEnabled: boolean): PublicIpState {
   // so show this network's previous one rather than drop the row. Never another
   // network's: that would be wrong data, not stale data.
   const [last, setLast] = useState<{ networkKey: string | null; ip: string } | null>(null)
-  if (data != null && (data !== last?.ip || networkKey !== last.networkKey)) setLast({ networkKey, ip: data })
+  const isNewReading = data != null && (data !== last?.ip || networkKey !== last.networkKey)
+  if (isNewReading) setLast({ networkKey, ip: data })
   const lastIp = last?.networkKey === networkKey ? last.ip : null
 
   return { publicIp: data ?? lastIp, isLoading: isBusy }

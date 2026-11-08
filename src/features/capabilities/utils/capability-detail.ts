@@ -43,12 +43,11 @@ function capitalizedListPhrase(words: string[]): string {
 
 /** What falls short, each kind in its own words: "download too slow and latency too high". */
 function shortfallPhrase(failing: RequirementCheck[], words: { speed: string; delay: string }): string {
-  const phrases = (['speed', 'delay'] as const)
-    .map((kind) => {
-      const labels = failing.filter((check) => check.kind === kind).map((check) => check.label.toLowerCase())
-      return labels.length > 0 ? `${listPhrase(labels)} ${words[kind]}` : null
-    })
-    .filter((phrase) => phrase != null)
+  const phrases: string[] = []
+  for (const kind of ['speed', 'delay'] as const) {
+    const labels = failing.filter((check) => check.kind === kind).map((check) => check.label.toLowerCase())
+    if (labels.length > 0) phrases.push(`${listPhrase(labels)} ${words[kind]}`)
+  }
   return capitalizedListPhrase(phrases)
 }
 

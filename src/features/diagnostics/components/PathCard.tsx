@@ -148,18 +148,18 @@ function PathLink({
   // Each keyed element is its wrapper's only child, so it remounts on a change
   // and replays its animation, and no two keys ever share a parent. Not on the
   // first render, so opening the page stays still.
-  const changes = useChangeCount(tone)
-  const results = useChangeCount(captionKey)
-  const isEntering = results > 0
+  const toneChanges = useChangeCount(tone)
+  const captionChanges = useChangeCount(captionKey)
+  const isEntering = captionChanges > 0
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-6">
       <div className={CAPTION_ROW}>
-        <span key={results} className={captionVariants({ isEntering })}>
+        <span key={captionChanges} className={captionVariants({ isEntering })}>
           {above}
         </span>
       </div>
       <div className="flex w-full">
-        <svg key={changes} className={lineVariants({ tone, isSweeping: changes > 0 })}>
+        <svg key={toneChanges} className={lineVariants({ tone, isSweeping: toneChanges > 0 })}>
           {/* Square 3px dashes for Wi‑Fi (1px dots smear to grey at 1x), a
             solid line for a cable, and 2px dashes, one period of the flow,
             while it flows. */}
@@ -171,18 +171,24 @@ function PathLink({
             stroke="currentColor"
             strokeWidth={1}
             strokeLinecap={isDotted && !isFlowing ? 'butt' : 'round'}
-            strokeDasharray={isFlowing ? '2 4' : isDotted ? '3 3' : undefined}
+            strokeDasharray={lineDashes(isDotted, isFlowing)}
             className={isFlowing ? 'animate-line-flow' : undefined}
           />
         </svg>
       </div>
       <div className={CAPTION_ROW}>
-        <span key={results} className={captionVariants({ isEntering, isTrailing: isEntering })}>
+        <span key={captionChanges} className={captionVariants({ isEntering, isTrailing: isEntering })}>
           {below}
         </span>
       </div>
     </div>
   )
+}
+
+function lineDashes(isDotted: boolean, isFlowing: boolean): string | undefined {
+  if (isFlowing) return '2 4'
+  if (isDotted) return '3 3'
+  return undefined
 }
 
 function WifiSignal({ info }: { info: Extract<NetworkInfo, { connectionType: 'wifi' }> }) {
@@ -243,16 +249,21 @@ function SpeedTestLink() {
   )
 }
 
+function localLinkSummary(info: NetworkInfo | null): string {
+  if (!info?.isConnected) return 'Not connected to a router.'
+  const medium = isWifiNetwork(info) ? 'Wi‑Fi' : 'Wired'
+  const linkSpeed = formatLinkSpeed(info)
+  if (!linkSpeed) return `${medium} to the router.`
+  return `${medium} to the router at ${linkSpeed}.`
+}
+
 /** What the diagram shows, for screen readers, which skip the drawing. */
 function pathSummary(
   info: NetworkInfo | null,
   internet: InternetLinkState,
   lastTest: SpeedHistoryEntry | null,
 ): string {
-  const linkSpeed = info ? formatLinkSpeed(info) : null
-  const local = !info?.isConnected
-    ? 'Not connected to a router.'
-    : `${isWifiNetwork(info) ? 'Wi‑Fi' : 'Wired'} to the router${linkSpeed ? ` at ${linkSpeed}` : ''}.`
+  const local = localLinkSummary(info)
   if (internet === 'offline') return `${local} No internet.`
   if (internet === 'notTested' || !lastTest) return `${local} Internet speed not tested yet.`
   const down = splitSpeedMbps(lastTest.downloadMbps)

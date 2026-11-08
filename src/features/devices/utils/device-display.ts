@@ -70,19 +70,19 @@ export function lastSeenAge(device: LanDevice, now: number): string | null {
  * earlier part (an Apple handheld whose vendor and OS are both "Apple").
  */
 export function deviceMetaParts(device: LanDevice, nameParts: string[]): string[] {
+  const kindLabel = device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : null
+  const candidates = [kindLabel, device.vendor, device.os, device.model]
+
   const seen = new Set<string>([nameParts.join(' ').toLowerCase()])
-  return [
-    device.kind !== 'unknown' ? LAN_DEVICE_KIND_LABELS[device.kind] : undefined,
-    device.vendor ?? undefined,
-    device.os ?? undefined,
-    device.model ?? undefined,
-  ].filter((part): part is string => {
-    if (!part) return false
+  const parts: string[] = []
+  for (const part of candidates) {
+    if (!part) continue
     const key = part.toLowerCase()
-    if (seen.has(key)) return false
+    if (seen.has(key)) continue
     seen.add(key)
-    return true
-  })
+    parts.push(part)
+  }
+  return parts
 }
 
 function isGenericGatewayName(part: string): boolean {

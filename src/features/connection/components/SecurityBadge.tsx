@@ -23,6 +23,12 @@ const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
 
 const VERDICTS: Record<SecurityLevel, string> = { secured: 'Secured', weak: 'Weak', open: 'Not secured' }
 
+function securityLevel(security: string, fullLabel: string): SecurityLevel {
+  if (isSecuredWifi(security) !== true) return 'open'
+  if (isWeakSecurity(fullLabel)) return 'weak'
+  return 'secured'
+}
+
 type SecurityBadgeProps = {
   /** The OS's security string, e.g. "WPA3-Personal (H2E)", or "Open". */
   security: string
@@ -37,8 +43,7 @@ type SecurityBadgeProps = {
  */
 export function SecurityBadge({ security, isShort = false, className }: SecurityBadgeProps) {
   const fullLabel = normalizeSecurity(security)
-  const level: SecurityLevel =
-    isSecuredWifi(security) !== true ? 'open' : isWeakSecurity(fullLabel) ? 'weak' : 'secured'
+  const level = securityLevel(security, fullLabel)
   const protocolLabel = isShort ? shortSecurityLabel(fullLabel) : fullLabel
   const description = {
     secured: `Secured (${fullLabel})`,
