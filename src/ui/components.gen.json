@@ -2484,7 +2484,7 @@
     "NavRail": {
       "group": "App frame",
       "source": "src/ui/nav-rail/NavRail.tsx",
-      "description": "The narrow icon-only rail down the window's left side. It stays above the content column, like the title bar.",
+      "description": "The narrow icon-only rail down the window's left side. It stays above the\ncontent column, like the title bar. It's one Tab stop, on the current page's\nitem: the arrow keys move between its items.",
       "figma": {
         "name": "Nav rail",
         "node": "41:892",
@@ -2510,7 +2510,8 @@
         }
       },
       "stories": [
-        "app-frame-navrail-navrail--default"
+        "app-frame-navrail-navrail--default",
+        "app-frame-navrail-navrail--arrow-keys"
       ],
       "guidance": {
         "whenToUse": [
@@ -2525,7 +2526,8 @@
           "builtIn": [
             "A `<nav>` landmark named by `label`, its items in lists.",
             "Each item is a native button named by its `label`, also its tooltip.",
-            "The current page’s item has `aria-current=\"page\"`."
+            "The current page’s item has `aria-current=\"page\"`.",
+            "One Tab stop, on the current page’s item. Up and Down move between items, Home and End to the ends."
           ],
           "toHandle": [
             "A `label` naming the rail: “Main navigation”.",
@@ -2734,6 +2736,7 @@
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. It snaps under reduced motion\n(the global rule stops only CSS animations, not this one), and to or from a\nvalue that isn't finite, which no ease could reach.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
-    "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount."
+    "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount.",
+    "useRovingFocus": "Makes a group of items one Tab stop (a roving tabindex): the arrow keys move\nbetween them, and Home and End jump to the ends. Leaving the group puts the\nstop back on the `current` item. It sets the items' `tabIndex`, so they\nmustn't set their own.\n\nNot Base UI's Toolbar, its only public roving focus: it makes the group a\n`toolbar`, and its items throw outside one, but NavItem also stands alone."
   }
 }

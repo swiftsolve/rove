@@ -24,6 +24,56 @@ describe('NavRail', () => {
   })
 })
 
+describe('NavRail keyboard', () => {
+  function renderRail() {
+    render(
+      <>
+        <NavRail
+          label="Main navigation"
+          main={[
+            <NavItem key="home" label="Home" icon={HomeIcon} onClick={vi.fn()} />,
+            <NavItem key="speed" label="Speed" icon={SpeedIcon} isActive onClick={vi.fn()} />,
+          ]}
+          footer={<NavItem label="Settings" icon={SettingsIcon} onClick={vi.fn()} />}
+        />
+        <button type="button">Page</button>
+      </>,
+    )
+  }
+
+  it('is one Tab stop, on the current page’s item', async () => {
+    renderRail()
+    await userEvent.tab()
+    expect(screen.getByRole('button', { name: 'Speed' })).toHaveFocus()
+    await userEvent.tab()
+    expect(screen.getByRole('button', { name: 'Page' })).toHaveFocus()
+  })
+
+  it('moves between items with the arrows, Home and End, wrapping at the ends', async () => {
+    renderRail()
+    await userEvent.tab()
+    await userEvent.keyboard('{ArrowDown}')
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus()
+    await userEvent.keyboard('{ArrowDown}')
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveFocus()
+    await userEvent.keyboard('{ArrowUp}')
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus()
+    await userEvent.keyboard('{Home}')
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveFocus()
+    await userEvent.keyboard('{End}')
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus()
+  })
+
+  it('returns to the current page’s item after focus leaves', async () => {
+    renderRail()
+    await userEvent.tab()
+    await userEvent.keyboard('{End}')
+    await userEvent.tab()
+    await userEvent.tab({ shift: true })
+    expect(screen.getByRole('button', { name: 'Speed' })).toHaveFocus()
+  })
+})
+
 describe('NavItem', () => {
   it('is named by its label, and runs onClick on a click and on Enter', async () => {
     const onClick = vi.fn()

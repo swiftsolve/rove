@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { ConnectionIcon } from '../icons/ConnectionIcon'
@@ -95,6 +95,7 @@ const meta = {
           'A `<nav>` landmark named by `label`, its items in lists.',
           'Each item is a native button named by its `label`, also its tooltip.',
           'The current page’s item has `aria-current="page"`.',
+          'One Tab stop, on the current page’s item. Up and Down move between items, Home and End to the ends.',
         ],
         toHandle: [
           'A `label` naming the rail: “Main navigation”.',
@@ -120,4 +121,27 @@ type Story = StoryObj<typeof meta>
 /** Home is the current page. Click an item to move the active state. */
 export const Default: Story = {
   render: (args) => <ClickableRail label={args.label} />,
+}
+
+/** One Tab stop, on the current page: the arrow keys move between items, and Tab leaves the rail. */
+export const ArrowKeys: Story = {
+  tags: ['!autodocs'],
+  render: (args) => (
+    <>
+      <ClickableRail label={args.label} />
+      <button type="button">After the rail</button>
+    </>
+  ),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.tab()
+    await expect(canvas.getByRole('button', { name: 'Home' })).toHaveFocus()
+    await userEvent.keyboard('{ArrowDown}')
+    await expect(canvas.getByRole('button', { name: 'Speed' })).toHaveFocus()
+    await userEvent.keyboard('{End}')
+    await expect(canvas.getByRole('button', { name: 'Settings' })).toHaveFocus()
+    await userEvent.keyboard('{ArrowDown}')
+    await expect(canvas.getByRole('button', { name: 'Home' })).toHaveFocus()
+    await userEvent.tab()
+    await expect(canvas.getByRole('button', { name: 'After the rail' })).toHaveFocus()
+  },
 }

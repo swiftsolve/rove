@@ -1,9 +1,9 @@
-import { type JSX, useState } from 'react'
+import { type JSX, useRef, useState } from 'react'
 import type { RectangleProps } from 'recharts'
 import { Bar, BarChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import type { DailyUsage } from '@/types'
-import { DirectionIcon } from '@/ui'
+import { DirectionIcon, useRovingFocus } from '@/ui'
 import { formatBytes } from '@/utils/format'
 
 type UsageDatum = {
@@ -115,8 +115,11 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
     up: day.txBytes,
   }))
 
-  // The day a keyboard user has tabbed to; its tooltip shows as if hovered.
+  // The day a keyboard user has focused; its tooltip shows as if hovered.
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+  // One Tab stop, on today: the arrow keys move between days.
+  const daysRef = useRef<HTMLDivElement>(null)
+  useRovingFocus(daysRef, { items: '[role="img"]', orientation: 'horizontal', current: '[data-today]' })
 
   return (
     <div className="relative" role="group" aria-label="Data used per day, last 7 days">
@@ -127,8 +130,8 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
           // chart afresh to let the tooltip follow the focused day.
           key={focusedIndex ?? 'pointer'}
           data={data}
-          // The day stops below are the keyboard layer, a tab stop per day;
-          // Recharts' own would add one more stop that arrows between them.
+          // The day stops below are the keyboard layer; Recharts' own would
+          // add a second stop that arrows between the same days.
           accessibilityLayer={false}
           margin={{ top: 8, right: CHART_SIDE_MARGIN, bottom: 0, left: CHART_SIDE_MARGIN }}
           barCategoryGap="26%"
@@ -164,9 +167,10 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
           />
         </BarChart>
       </ResponsiveContainer>
-      {/* An invisible tab stop per day over the plot; mouse events pass through.
+      {/* An invisible focus stop per day over the plot; mouse events pass through.
           No focus ring: the tooltip and bar marker show the focused day. */}
       <div
+        ref={daysRef}
         className="pointer-events-none absolute inset-y-0 flex"
         style={{ left: CHART_SIDE_MARGIN, right: CHART_SIDE_MARGIN }}
       >
@@ -175,8 +179,7 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
           <div
             key={point.key}
             role="img"
-            // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex -- keyboard users reach each day to hear its totals
-            tabIndex={0}
+            data-today={index === data.length - 1 || undefined}
             aria-label={`${point.label}: ${formatBytes(point.down)} down, ${formatBytes(point.up)} up`}
             className="flex-1 focus-visible:outline-none"
             onFocus={() => setFocusedIndex(index)}

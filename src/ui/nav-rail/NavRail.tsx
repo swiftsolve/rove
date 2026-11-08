@@ -1,6 +1,7 @@
 import { cva, cx } from 'class-variance-authority'
 import { Children, type ComponentProps, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
 
+import { useRovingFocus } from '../hooks/useRovingFocus'
 import type { IconComponent } from '../icons/Icons'
 import { Tooltip } from '../tooltip/Tooltip'
 import { cn } from '../utils/cn'
@@ -133,10 +134,15 @@ type NavRailProps = {
   footer: ReactNode
 }
 
-/** The narrow icon-only rail down the window's left side. It stays above the content column, like the title bar. */
+/**
+ * The narrow icon-only rail down the window's left side. It stays above the
+ * content column, like the title bar. It's one Tab stop, on the current page's
+ * item: the arrow keys move between its items.
+ */
 export function NavRail({ label, main, footer }: NavRailProps) {
   const railRef = useRef<HTMLElement>(null)
   const bar = useActiveBar(railRef)
+  useRovingFocus(railRef, { items: 'button', orientation: 'vertical', current: '[aria-current="page"]' })
   return (
     // Horizontal padding is symmetric so the active pill and the accent bar read
     // as evenly inset; the top padding matches the content area's so the first

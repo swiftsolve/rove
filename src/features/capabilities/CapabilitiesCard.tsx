@@ -1,5 +1,5 @@
 import { cx } from 'class-variance-authority'
-import type { JSX } from 'react'
+import { type JSX, useRef } from 'react'
 
 import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -25,6 +25,7 @@ import {
   RefreshIcon,
   ScreenReaderStatus,
   Tooltip,
+  useRovingFocus,
   ZapIcon,
 } from '@/ui'
 
@@ -53,6 +54,9 @@ const FOOTER = cx(
 export function CapabilitiesCard() {
   const capabilities = useSpeedTest((test) => test.capabilities)
   const hasResults = capabilities.length > 0
+  // The rated tiles are one Tab stop: the arrow keys move between them.
+  const rowRef = useRef<HTMLUListElement>(null)
+  useRovingFocus(rowRef, { items: 'button', orientation: 'horizontal' })
 
   return (
     <Card>
@@ -60,7 +64,7 @@ export function CapabilitiesCard() {
       <CardBody>
         {/* Before the first test the tiles are faded placeholders with no rating
             to read, so screen readers skip them. */}
-        <ul role="list" className={CAPABILITY_ROW} aria-hidden={!hasResults || undefined}>
+        <ul ref={rowRef} role="list" className={CAPABILITY_ROW} aria-hidden={!hasResults || undefined}>
           {hasResults
             ? capabilities.map((capability) => <RatedCapability key={capability.id} capability={capability} />)
             : CAPABILITY_DEFINITIONS.map((capability) => (
