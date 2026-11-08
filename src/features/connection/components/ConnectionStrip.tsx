@@ -90,7 +90,14 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
 
   return (
     <div className={stripVariants({ canExpand })}>
-      <IconTile size="lg" color={color} className={cx(ABOVE_TOGGLE, 'self-center')} icon={<Icon size={16} />} />
+      {/* Down 1px: the title's line has more room above its capitals than the
+          meta line has below its baseline, so the box centre sits high of the ink. */}
+      <IconTile
+        size="lg"
+        color={color}
+        className={cx(ABOVE_TOGGLE, 'translate-y-px self-center')}
+        icon={<Icon size={16} />}
+      />
       <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-2 py-2')}>
         <h2 id={titleId} className="type-title truncate text-primary">
           {display.title}

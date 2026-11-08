@@ -5,12 +5,12 @@ import { cn } from '../utils/cn'
 import type { VariantOf } from '../utils/variants'
 
 // The bar width and the four heights, shortest first, in CSS px: the tallest
-// rounds a 12px line's cap height up, so the meter sits in a data row's text.
+// is a 12px line's cap height, so the meter stands as tall as the digits beside it.
 // At 125% or 150% display scaling these fall between screen pixels, and HTML
 // boxes snap each bar to 3 or 4, so the meter looked jagged: BarMeter rounds
 // them to screen pixels and draws an SVG. The ends round at half the width.
 const BAR_WIDTH = 2
-const BAR_HEIGHTS = [3, 5, 7, 9] as const
+const BAR_HEIGHTS = [2, 4, 6, 8] as const
 // The gap between bars, --spacing-2.
 const BAR_GAP = 2
 
