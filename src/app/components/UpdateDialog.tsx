@@ -32,7 +32,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
       description={
         <p className="flex items-center gap-6 tabular-nums">
           <span className="text-tertiary">{update.currentVersion}</span>
-          <ArrowRightIcon className="text-tertiary" />
+          <ArrowRightIcon size={13} className="text-tertiary" />
           <span className="sr-only">{' to '}</span>
           <span className="font-semibold text-accent-text">{update.version}</span>
         </p>
