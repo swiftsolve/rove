@@ -139,10 +139,12 @@ export function CardHeader({ title, icon, actions, className, ...props }: CardHe
             {icon}
           </span>
         )}
-        {/* Down 1.5px: Urbanist's capitals sit high in their line, so a centred
-            title read above the icon and the actions. This puts its capitals
-            on the header's centre line with them. */}
-        <h2 id={titleId} className="type-heading translate-y-[1.5px] text-primary">
+        {/* Down 0.75px: Urbanist's letters sit high in their line, so a centred
+            title read above the icon. A title is mostly lowercase, so this
+            centres the icon between its capitals and its x-height, where the
+            eye puts the word's middle; 1.5px, the capitals alone, left the
+            icon reading high. */}
+        <h2 id={titleId} className="type-heading translate-y-[0.75px] text-primary">
           {title}
         </h2>
       </div>

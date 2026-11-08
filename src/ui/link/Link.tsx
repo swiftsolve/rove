@@ -19,9 +19,10 @@ const LINK = cx(
 // The icons take the link's own (animating) colour, a touch dimmer at rest
 // through opacity, so there's one colour animation rather than two that drift.
 // Flex centring sets them on the line box, which keeps descender room the label
-// doesn't use, so 1px up centres them on the text as Figma draws it.
+// doesn't use, so a quarter pixel up centres them on the label's capitals and
+// x-height; a full 1px left them reading high.
 const ICON = cx(
-  'translate-y-[-1px] opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
+  'translate-y-[-0.25px] opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
   'group-focus-visible/link:opacity-100 group-usable/link:group-hover/link:opacity-100',
 )
 

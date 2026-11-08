@@ -14,10 +14,13 @@ const securityBadgeVariants = cva('flex min-w-0 items-center gap-6 in-[dl]:justi
   },
 })
 
-// Centred on the line box the taller lock reads low, so it's lifted 1px.
-const securityIconVariants = cva('shrink-0 transform-[translateY(-1px)]', {
+// Centred on the line box, the lock already sits at the middle of a mostly
+// lowercase label ("Secured"). The short label is all capitals ("WPA3"),
+// whose middle is higher, so there the lock is lifted 0.5px.
+const securityIconVariants = cva('shrink-0', {
   variants: {
     level: { secured: 'text-status-positive', weak: 'text-status-warning', open: null },
+    isShort: { true: 'transform-[translateY(-0.5px)]', false: null },
   },
 })
 
@@ -62,7 +65,7 @@ export function SecurityBadge({ security, isShort = false, className }: Security
   return (
     <Tooltip content={description} shouldDescribe={false}>
       <span className={cx(securityBadgeVariants({ level }), className)}>
-        <Icon size={12} className={securityIconVariants({ level })} />
+        <Icon size={12} className={securityIconVariants({ level, isShort })} />
         {/* The details row says the verdict, then the protocol; the strip, short
             on room, keeps just the protocol. */}
         {!isShort && (
