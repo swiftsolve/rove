@@ -6,8 +6,8 @@ export default { title: 'Typography' }
 // The Figma page's order: display first.
 // Why each face, in a line; docs/rationale.md has the full case.
 const FAMILIES = {
-  display: 'Headings, in Bold. Geometric, so titles and the name stand apart.',
-  sans: 'Text and numbers. Same-width digits, as tall as the capitals.',
+  display: 'Headings, in Bold. Round and geometric, so titles stand apart.',
+  sans: 'Text and numbers. Quiet, with same-width digits at cap height.',
 }
 
 // The Figma page's specimen for each style, in its order.
@@ -158,7 +158,7 @@ export const Typography = {
       >
         <Section
           title="Families"
-          intro="Urbanist (font-family/display) for headings, Hanken Grotesk (font-family/sans) for text and numbers."
+          intro="Round, geometric headings over quiet grotesque text, on one cap height: contrast without clashing."
         >
           <Families />
         </Section>
