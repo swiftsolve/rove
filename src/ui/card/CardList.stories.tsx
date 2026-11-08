@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { CardList } from './Card'
+import { CardList } from './CardList'
 
 const meta = {
   title: 'Containers/Card/CardList',

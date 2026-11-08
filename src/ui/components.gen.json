@@ -2116,7 +2116,7 @@
     },
     "CardBody": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/Card.tsx",
+      "sourceFile": "src/ui/card/CardBody.tsx",
       "description": "The padded body. A little top padding gives the content more room below the title than above it.",
       "figmaComponent": {
         "figmaName": "Card",
@@ -2147,7 +2147,7 @@
     },
     "CardFooter": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/Card.tsx",
+      "sourceFile": "src/ui/card/CardFooter.tsx",
       "description": "A sunken band below the body, flush to the card's edges: a footnote or status.",
       "figmaComponent": {
         "figmaName": "Card",
@@ -2167,7 +2167,7 @@
     },
     "CardHeader": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/Card.tsx",
+      "sourceFile": "src/ui/card/CardHeader.tsx",
       "description": "The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something.",
       "figmaComponent": {
         "figmaName": "Card header",
@@ -2197,7 +2197,7 @@
     },
     "CardList": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/Card.tsx",
+      "sourceFile": "src/ui/card/CardList.tsx",
       "description": "A list that is one card, with a hairline between its rows.",
       "figmaComponent": {
         "figmaName": "Card list",

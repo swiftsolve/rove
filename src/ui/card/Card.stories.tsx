@@ -7,7 +7,11 @@ import { IconButton } from '../button/IconButton'
 import { DataList, DataListStack, DataRow } from '../data-list/DataList'
 import { ArrowDownIcon, RefreshIcon, RouterIcon, TodayIcon, WifiIcon } from '../icons/Icons'
 import { Toggle } from '../toggle/Toggle'
-import { Card, CardBody, CardFooter, CardHeader, CardList } from './Card'
+import { Card } from './Card'
+import { CardBody } from './CardBody'
+import { CardFooter } from './CardFooter'
+import { CardHeader } from './CardHeader'
+import { CardList } from './CardList'
 
 const meta = {
   title: 'Containers/Card/Card',

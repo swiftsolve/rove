@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { DataList, DataRow } from '../data-list/DataList'
-import { Card, CardBody, CardFooter, CardHeader } from './Card'
+import { Card } from './Card'
+import { CardBody } from './CardBody'
+import { CardFooter } from './CardFooter'
+import { CardHeader } from './CardHeader'
 
 const meta = {
   title: 'Containers/Card/CardFooter',

@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '../button/Button'
-import { Card, CardHeader, focusCardLink } from './Card'
+import { Card, focusCardLink } from './Card'
+import { CardHeader } from './CardHeader'
 
 describe('Card', () => {
   it('names an openable card’s link by its header’s title', async () => {

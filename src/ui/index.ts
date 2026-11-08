@@ -38,7 +38,11 @@ export { IconTile, IconTileButton, type IconTileColor } from './icon-tile/IconTi
 export { TimelineNode, type TimelineNodeColor } from './timeline/TimelineNode'
 
 // Containers
-export { Card, CardBody, CardFooter, CardHeader, CardList, focusCardLink } from './card/Card'
+export { Card, focusCardLink } from './card/Card'
+export { CardBody } from './card/CardBody'
+export { CardFooter } from './card/CardFooter'
+export { CardHeader } from './card/CardHeader'
+export { CardList } from './card/CardList'
 export { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './collapsible/Collapsible'
 export { DotSeparator, InlineMeta } from './separator/DotSeparator'
 

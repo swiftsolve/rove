@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BarMeter } from '../bar-meter/BarMeter'
-import { Card, CardBody, CardHeader } from '../card/Card'
+import { Card } from '../card/Card'
+import { CardBody } from '../card/CardBody'
+import { CardHeader } from '../card/CardHeader'
 import { DataList, DataListStack, DataRow } from './DataList'
 
 const ROWS = (
