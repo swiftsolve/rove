@@ -1762,7 +1762,7 @@
         "children": {
           "type": "ReactNode",
           "isRequired": true,
-          "description": "The row's content: an icon tile, a title and its description. Anything\nright-aligned (a meter) goes last, after a text column that takes `flex-1`."
+          "description": "The row's content: an icon tile, a title and its description. Anything\nright-aligned (a rating) goes last, after a text column that takes `flex-1`."
         },
         "isDisabled": {
           "type": "boolean",
@@ -1800,7 +1800,7 @@
           ],
           "toHandle": [
             "A list around the rows: `<ul role=\"list\">`, an `<li>` each.",
-            "Words for a meter: an `sr-only` rating (“Excellent”) beside it.",
+            "A rating in words, not colour alone: “Excellent”, in its level’s colour.",
             "Spans, not divs, inside: a button holds only inline content."
           ]
         }

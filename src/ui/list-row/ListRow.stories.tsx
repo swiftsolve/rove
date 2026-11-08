@@ -2,40 +2,26 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
-import { BarMeter } from '../bar-meter/BarMeter'
 import { Card, CardBody, CardHeader } from '../card/Card'
 import { IconTile } from '../icon-tile/IconTile'
 import { CloudGamingIcon } from '../icons/CloudGamingIcon'
 import { HdStreamIcon } from '../icons/HdStreamIcon'
 import { GamepadIcon, VideoCallIcon } from '../icons/Icons'
+import { UltraHdStreamIcon } from '../icons/UltraHdStreamIcon'
 import { ListRow } from './ListRow'
 
 function RowText({ title, description }: { title: string; description: string }) {
   return (
-    <span className="flex min-w-0 flex-1 flex-col">
+    <span className="flex min-w-0 flex-1 flex-col gap-2">
       <span className="type-body truncate text-primary">{title}</span>
-      <span className="type-body truncate text-tertiary">{description}</span>
+      <span className="type-caption truncate text-tertiary">{description}</span>
     </span>
   )
 }
 
-function Rating({
-  value,
-  color,
-  label,
-  isDimmed,
-}: {
-  value: number
-  color: string
-  label: string
-  isDimmed?: boolean
-}) {
-  return (
-    <>
-      <BarMeter value={value} color={color} isDimmed={isDimmed} />
-      <span className="sr-only">{label}</span>
-    </>
-  )
+/** The rating as a word in its level's colour, as the Capabilities list shows it; grey while a test runs. */
+function Rating({ label, textColor, isMuted = false }: { label: string; textColor: string; isMuted?: boolean }) {
+  return <span className={`type-caption shrink-0 ${isMuted ? 'text-tertiary' : textColor}`}>{label}</span>
 }
 
 const meta = {
@@ -47,7 +33,7 @@ const meta = {
       <>
         <IconTile color="var(--status-positive)" icon={<VideoCallIcon size={17} />} />
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
-        <Rating value={4} color="var(--status-positive)" label="Excellent" />
+        <Rating label="Excellent" textColor="text-positive" />
       </>
     ),
   },
@@ -83,7 +69,7 @@ const meta = {
         ],
         toHandle: [
           'A list around the rows: `<ul role="list">`, an `<li>` each.',
-          'Words for a meter: an `sr-only` rating (“Excellent”) beside it.',
+          'A rating in words, not colour alone: “Excellent”, in its level’s colour.',
           'Spans, not divs, inside: a button holds only inline content.',
         ],
       },
@@ -102,7 +88,7 @@ export const TextOnly: Story = {
   args: { children: <RowText title="About Rove" description="Version, platform, and source." /> },
 }
 
-/** Inert while a test replaces its rating: the whole row faded, a muted tile and dimmed bars, no hover. */
+/** Inert while a test replaces its rating: the whole row faded, a muted tile and a grey rating, no hover. */
 export const Disabled: Story = {
   args: {
     isDisabled: true,
@@ -110,7 +96,7 @@ export const Disabled: Story = {
       <>
         <IconTile color="neutral" icon={<VideoCallIcon size={17} />} />
         <RowText title="Video calls" description="Zoom, Teams and FaceTime" />
-        <Rating value={4} color="var(--status-positive)" label="Excellent" isDimmed />
+        <Rating label="Excellent" textColor="text-positive" isMuted />
       </>
     ),
   },
@@ -150,32 +136,32 @@ const CAPABILITIES = [
     title: 'Video calls',
     description: 'Zoom, Teams and FaceTime',
     Icon: VideoCallIcon,
-    value: 4,
     color: 'var(--status-positive)',
+    textColor: 'text-positive',
     label: 'Excellent',
   },
   {
     title: '4K streaming',
     description: 'Netflix and YouTube at 2160p',
-    Icon: HdStreamIcon,
-    value: 3,
+    Icon: UltraHdStreamIcon,
     color: 'var(--status-good)',
+    textColor: 'text-good',
     label: 'Good',
   },
   {
     title: 'Online gaming',
     description: 'Low, steady latency',
     Icon: GamepadIcon,
-    value: 2,
     color: 'var(--status-warning)',
+    textColor: 'text-warning',
     label: 'Fair',
   },
   {
     title: 'Cloud gaming',
     description: 'GeForce Now and Xbox Cloud',
     Icon: CloudGamingIcon,
-    value: 1,
     color: 'var(--status-poor)',
+    textColor: 'text-poor',
     label: 'Poor',
   },
 ] as const
@@ -187,12 +173,12 @@ export const AllStates: Story = {
       <CardHeader title="Capabilities" />
       <CardBody>
         <ul role="list" className="flex flex-col">
-          {CAPABILITIES.map(({ title, description, Icon, value, color, label }) => (
+          {CAPABILITIES.map(({ title, description, Icon, color, textColor, label }) => (
             <li key={title}>
               <ListRow onClick={fn()}>
                 <IconTile color={color} icon={<Icon size={17} />} />
                 <RowText title={title} description={description} />
-                <Rating value={value} color={color} label={label} />
+                <Rating label={label} textColor={textColor} />
               </ListRow>
             </li>
           ))}
@@ -200,7 +186,7 @@ export const AllStates: Story = {
             <ListRow onClick={fn()} isDisabled>
               <IconTile color="neutral" icon={<HdStreamIcon size={17} />} />
               <RowText title="HD streaming" description="Testing…" />
-              <Rating value={3} color="var(--status-good)" label="Good" isDimmed />
+              <Rating label="Good" textColor="text-good" isMuted />
             </ListRow>
           </li>
         </ul>

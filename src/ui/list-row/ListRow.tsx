@@ -34,7 +34,7 @@ type ListRowProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'dis
   isDisabled?: boolean
   /**
    * The row's content: an icon tile, a title and its description. Anything
-   * right-aligned (a meter) goes last, after a text column that takes `flex-1`.
+   * right-aligned (a rating) goes last, after a text column that takes `flex-1`.
    */
   children: ReactNode
 }
