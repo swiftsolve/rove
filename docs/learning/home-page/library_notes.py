@@ -1,12 +1,12 @@
 CARD = [
     (1, "The recipe maker for the card's look, and React pieces: prop types and useId."),
-    (4, "The invisible full-card link, the class joiner, and the context Card shares with its header."),
+    (4, "The invisible full-card link, the class joiner, and the provider that shares what the card knows with its header."),
     (8, "Card's props: which HTML element to be, what clicking the card does, the link's spoken name, layout classes, and the content."),
     (32, "The card's look: a rounded surface that clips its content. An openable card also lifts on hover and dips 1px when pressed."),
     (50, "Starts Card. `as: Element = 'section'` means it renders a <section> unless told otherwise."),
     (51, "A unique id for the title, so the card can be named by it."),
     (52, "The card is openable when it's given something to do on a click."),
-    (54, "Shares the title id and openable flag with whatever is inside (the CardHeader)."),
+    (54, "CardProvider shares the title id and openable flag with whatever is inside (the CardHeader)."),
     (55, "The card element: its classes, its name for screen readers (its title), and a marker other code can find."),
     (64, "An openable card puts an invisible link over its whole area, so a click anywhere opens it. It comes first so it's first in Tab order."),
     (67, "Whatever was put inside the card."),
@@ -15,16 +15,16 @@ CARD = [
 CARD_CONTEXT = [
     (1, "createContext makes a context: a value shared with everything inside a provider."),
     (4, "What a Card shares with its header: the id for the title, and whether the card opens something."),
-    (11, "The context itself, with a default for a CardHeader used outside any Card: not openable. Card provides the real value."),
+    (11, "The context itself, with a default for a CardHeader used outside any Card: not openable. CardProvider gives it the real value; useCardContext reads it."),
 ]
 CARD_HEADER = [
-    (1, "Class joining, and React pieces: prop types, and `use` to read the card's context."),
-    (4, "The caret icon, the class joiner, and the context the Card provides."),
+    (1, "Class joining, and React's prop types."),
+    (4, "The caret icon, the class joiner, and useCardContext, which reads what the Card around it knows."),
     (9, "The header row's layout: a fixed height, title on the left, actions on the right."),
     (13, "The caret on an openable card: grey, brighter when the card is hovered or its link focused."),
     (18, "CardHeader's props: the title, an optional icon before it, and optional actions after it."),
     (28, "Starts CardHeader."),
-    (29, "Reads the title id and openable flag from the Card around it."),
+    (29, "Reads the title id and openable flag from the Card around it, through useCardContext()."),
     (32, "The icon and title, side by side. The icon is hidden from screen readers; the title names the card."),
     (43, "The title, nudged down 0.75px so it lines up visually with its icon."),
     (47, "On the right: the actions (like the Live badge or a button), raised above the card's link, then a caret if the card opens something."),
@@ -47,22 +47,35 @@ COLLAPSIBLE = [
     (24, "The focus frame: when the trigger has keyboard focus, draw the ring around the whole collapsible, not just the trigger."),
     (32, "Starts Collapsible."),
     (42, "Base UI's root, given the open state and the toggle callback, rendered as a <div> (or an <li> in a list)."),
-    (58, "The button that opens and closes it. Base UI adds aria-expanded, so screen readers know whether it's open."),
-    (62, "The panel's look: its height animates between 0 and its content's height."),
-    (80, "The panel that opens and closes. While closed it's taken out of the page and hidden from screen readers."),
+]
+COLLAPSIBLE_TRIGGER = [
+    (1, "Base UI's collapsible, and the button's prop types."),
+    (8, "The button that opens and closes it. Base UI adds aria-expanded, so screen readers know whether it's open. It marks itself `data-collapsible-trigger` so the Collapsible can draw the focus frame."),
+]
+COLLAPSIBLE_PANEL = [
+    (1, "Base UI's collapsible, class joining, prop types, and the class joiner that lets a caller's classes win."),
+    (7, "The panel's look: its height animates between 0 and its content's height."),
+    (25, "The panel that opens and closes. While closed it's taken out of the page and hidden from screen readers."),
 ]
 
 DATA_LIST = [
+    (1, "The recipe maker, React's types, the class joiner and the variant type helper."),
     (10, "The list's row spacing, set as a CSS variable its rows read: 8px normally, 4px for `compact`."),
-    (22, "A row's layout: label left, value right. The first and last rows sit flush, so the padding only adds space between rows."),
-    (29, "Label text: medium weight, tertiary grey. Value text: body, primary colour, tabular digits, right-aligned."),
-    (32, "DataList's props: its density, layout classes, and the rows."),
-    (45, "DataList is a <dl>, HTML's list of terms and descriptions, so a screen reader reads each label with its value."),
-    (49, "DataRow's props: alignment, the label, the value as text, or children for a value that isn't plain text (a badge, signal bars)."),
-    (61, "Starts DataRow."),
-    (63, "No value and no children: draw nothing. `== null`, so a real 0 still shows."),
-    (65, "The row: the label in a <dt>, the value in a <dd>."),
-    (78, "DataListStack stacks DataLists with a hairline between them and 12px either side of it, as in the network card's details."),
+    (20, "DataList's props: its density, layout classes, and the rows."),
+    (33, "DataList is a <dl>, HTML's list of terms and descriptions, so a screen reader reads each label with its value."),
+]
+DATA_ROW = [
+    (1, "The recipe maker, React's types, and the variant type helper."),
+    (8, "A row's layout: label left, value right. The first and last rows sit flush, so the padding only adds space between rows."),
+    (15, "Label text: medium weight, tertiary grey. Value text: body, primary colour, tabular digits, right-aligned."),
+    (18, "DataRow's props: alignment, the label, the value as text, or children for a value that isn't plain text (a badge, signal bars)."),
+    (30, "Starts DataRow."),
+    (32, "No value and no children: draw nothing. `== null`, so a real 0 still shows."),
+    (34, "The row: the label in a <dt>, the value in a <dd>."),
+]
+DATA_LIST_STACK = [
+    (1, "React's types and the class joiner."),
+    (11, "DataListStack stacks DataLists with a hairline between them and 12px either side of it, as in the network card's details."),
 ]
 
 ICON_TILE = [

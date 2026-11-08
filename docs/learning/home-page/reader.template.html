@@ -1491,9 +1491,9 @@
     {
       name: 'use',
       what: 'React 19’s way to read a context (or a promise). Like the older useContext.',
-      why: 'useNetwork() and useNavigation() are each one line: use(TheirContext). A CardHeader reads what its Card knows the same way.',
+      why: 'useNetwork(), useNavigation() and the library’s useCardContext() are each one line: use(TheirContext). Components call the hook, never use() on the context directly.',
       example: `export function useNetwork() {\n  return use(NetworkContext)\n}`,
-      files: ['useNetwork.ts', 'useNavigation.ts', 'CardHeader.tsx'],
+      files: ['useNetwork.ts', 'useNavigation.ts', 'useCardContext.ts'],
     },
     {
       name: 'useEffectEvent',
