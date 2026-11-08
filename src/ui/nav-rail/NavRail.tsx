@@ -68,16 +68,20 @@ export function NavItem({ label, icon: Icon, isActive = false, onClick, classNam
 const GROUP = 'flex flex-col items-center gap-12'
 
 /**
- * One group's items. Each `<li>` is a flex box, so it hugs its 38px button
+ * One group's items. Each wrapper is a flex box, so it hugs its 38px button
  * rather than growing a line box around it.
+ *
+ * Divs, not a list: WebKitGTK 2.52 aborts the page when a screen reader asks
+ * for text attributes at the end of the current page's `<li>`, blanking the
+ * Linux app on Tab. The landmark and the buttons' names carry the meaning.
  */
 function NavGroup({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <ul role="list" className={cx(GROUP, className)}>
+    <div className={cx(GROUP, className)}>
       {Children.map(children, (item) => (
-        <li className="flex">{item}</li>
+        <div className="flex">{item}</div>
       ))}
-    </ul>
+    </div>
   )
 }
 
