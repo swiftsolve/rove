@@ -19,6 +19,8 @@ Working on Rove's code.
   behind the UI's rules, in plain words: TanStack Query, styling from a Figma
   token to a class, state and context, how a library component is built, where
   code goes, accessibility, and what the checks catch.
+- [The Home page, line by line](learning/home-page/README.md): every line of
+  the Home page's code in plain words, card by card, with a glossary.
 - [ARIA in Rove](aria.md): every ARIA attribute and role the UI uses, where,
   and why, with examples.
 
