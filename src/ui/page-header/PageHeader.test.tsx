@@ -18,6 +18,25 @@ describe('PageHeader', () => {
     expect(onBack).toHaveBeenCalledOnce()
   })
 
+  it('fades the line in afresh when it becomes something else, not when a count inside it ticks', () => {
+    const line = (): HTMLElement | null | undefined =>
+      screen.queryByRole('heading')?.nextElementSibling?.firstElementChild as HTMLElement | null
+    const { rerender } = render(<PageHeader title="Speed" icon={null} description={null} />)
+    const empty = line()
+
+    rerender(<PageHeader title="Speed" icon={null} description="Measure your speeds" />)
+    const text = line()
+    expect(text).not.toBe(empty)
+    expect(text).toHaveClass('animate-fade-in')
+
+    rerender(<PageHeader title="Speed" icon={null} description={<span>2 up</span>} />)
+    const element = line()
+    expect(element).not.toBe(text)
+
+    rerender(<PageHeader title="Speed" icon={null} description={<span>3 up</span>} />)
+    expect(line()).toBe(element)
+  })
+
   it('shows the status in the description’s place, and announces it through a region that was already there', () => {
     const { rerender } = render(<PageHeader title="Devices" icon={null} description="6 devices" />)
     const region = screen.getByRole('status')

@@ -42,9 +42,16 @@ function HeaderStatus() {
 /** When the last result landed, linking to the history; an intro before any. */
 function HeaderDescription() {
   const completedAt = useSpeedTest((test) => test.completedAt)
-  if (completedAt == null) return <>Measure your download and upload speeds</>
+  // Keyed, so the line fades in afresh when a first result replaces the prompt.
+  if (completedAt == null) {
+    return (
+      <span key="prompt" className="animate-fade-in">
+        Measure your download and upload speeds
+      </span>
+    )
+  }
   return (
-    <span className="inline-flex items-center gap-6">
+    <span key="result" className="inline-flex animate-fade-in items-center gap-6">
       <span>
         <UpdatedAgo timestamp={completedAt} />
       </span>

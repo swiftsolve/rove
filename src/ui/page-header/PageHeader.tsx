@@ -1,5 +1,5 @@
 import { cx } from 'class-variance-authority'
-import type { ReactNode } from 'react'
+import { isValidElement, type ReactNode } from 'react'
 
 import { IconButton } from '../button/IconButton'
 import { ArrowLeftIcon, InfoIcon } from '../icons/Icons'
@@ -29,9 +29,10 @@ type PageHeaderProps = {
   /** The page's name. */
   title: ReactNode
   /**
-   * The line under the title. It fades in when it first shows, and again each
-   * time `status` clears. `null` keeps the line's height while there's nothing
-   * to show; leave it out to have no line.
+   * The line under the title. It fades in when it first shows, when it
+   * becomes something else (new text, another element, or content after
+   * `null`), and each time `status` clears. `null` keeps the line's height
+   * while there's nothing to show; leave it out to have no line.
    */
   description?: ReactNode
   /** Shown in the description's place while something loads or runs ("Checking…"). */
@@ -55,6 +56,20 @@ type PageHeaderProps = {
         icon?: never
       }
   )
+
+/**
+ * What the description is, for its key: its text, or its element's type and
+ * key. A count ticking inside the same element keeps its key and doesn't
+ * flicker; a new line in its place gets a new one and fades in.
+ */
+function descriptionKey(description: ReactNode): string {
+  if (typeof description === 'string' || typeof description === 'number') return `text:${description}`
+  if (isValidElement(description)) {
+    const type = typeof description.type === 'string' ? description.type : (description.type as { name?: string }).name
+    return `element:${type ?? 'component'}:${description.key ?? ''}`
+  }
+  return description == null ? 'empty' : 'other'
+}
 
 /**
  * The top of every page but Home: an icon chip (or a back button), the title
@@ -83,14 +98,15 @@ export function PageHeader({ title, description, status, actions, info, icon, on
         <h1 className="type-title text-primary">{title}</h1>
         {hasLine && (
           <div className={LINE}>
-            {/* Keyed, so the description mounts afresh (and fades in) when the status clears. */}
+            {/* Keyed, so the description mounts afresh (and fades in) when the
+                status clears or the description becomes something else. */}
             {status !== undefined ? (
               // Shown, not announced: the status region below says it.
               <span key="status" aria-hidden>
                 {status}
               </span>
             ) : (
-              <div key="description" className="animate-fade-in">
+              <div key={descriptionKey(description)} className="animate-fade-in">
                 {description}
               </div>
             )}

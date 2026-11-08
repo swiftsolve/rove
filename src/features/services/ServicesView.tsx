@@ -124,11 +124,12 @@ export function ServicesView() {
         // them rather than inside either.
         description={
           <span className="inline-flex flex-wrap items-center gap-x-6 gap-y-4">
+            {/* Fades in when the first checks land, ahead of the link. */}
             {tally && (
-              <>
+              <span className="inline-flex animate-fade-in items-center gap-x-6">
                 {tally}
                 <DotSeparator />
-              </>
+              </span>
             )}
             <Link icon={EventsIcon} onClick={openTimeline}>
               View timeline
