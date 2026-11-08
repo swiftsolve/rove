@@ -15,9 +15,6 @@ const DEV_SERVER_START_TIMEOUT_MS = 30_000
 /** A server a script drives, and how to stop it (a no-op for one it didn't start). */
 export type RunningServer = { url: string; stop: () => void }
 
-/** Where the app is: a tab, and any subpage open over it (`speedSub: { view: 'history' }`), as history.state keeps it. */
-export type AppLocation = { tab: string; [subpage: string]: unknown }
-
 /** The part of src-tauri/tauri.conf.json the scripts read: the app window's size. */
 type WindowSize = { width: number; height: number }
 type TauriConfig = { app: { windows: WindowSize[] } }
@@ -31,10 +28,10 @@ export async function readWindowSize(): Promise<WindowSize> {
   return { width: appWindow.width, height: appWindow.height }
 }
 
-/** The value after `--<name>` on the command line, or `fallback`. */
-export function flag<Fallback extends string | null>(name: string, fallback: Fallback): string | Fallback {
+/** The value after `--<name>` on the command line, or null when it isn't there. */
+export function flag(name: string): string | null {
   const at = process.argv.indexOf(`--${name}`)
-  return at === -1 ? fallback : (process.argv[at + 1] ?? fallback)
+  return at === -1 ? null : (process.argv[at + 1] ?? null)
 }
 
 /**

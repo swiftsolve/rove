@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 
+/** The WAN IP last read, and the network it was read on. */
+type PublicIpReading = { networkKey: string | null; ip: string }
+
 type PublicIpState = {
   publicIp: string | null
   isLoading: boolean
@@ -25,7 +28,7 @@ export function usePublicIp(isEnabled: boolean): PublicIpState {
   // A refetch or an empty lookup leaves `fetchedIp` null; the WAN IP rarely changes,
   // so show this network's previous one rather than drop the row. Never another
   // network's: that would be wrong data, not stale data.
-  const [lastReading, setLastReading] = useState<{ networkKey: string | null; ip: string } | null>(null)
+  const [lastReading, setLastReading] = useState<PublicIpReading | null>(null)
   const isNewReading = fetchedIp != null && (fetchedIp !== lastReading?.ip || networkKey !== lastReading.networkKey)
   if (isNewReading) setLastReading({ networkKey, ip: fetchedIp })
   const lastIp = lastReading?.networkKey === networkKey ? lastReading.ip : null

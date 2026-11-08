@@ -79,10 +79,16 @@ type FigmaNode = {
   children?: FigmaNode[]
   componentPropertyDefinitions?: Record<string, { type: string; variantOptions?: string[] }>
 }
-/** A REST API answer for nodes by id: each one, or null when the file has no such node. */
-type FigmaNodesAnswer = { nodes: Record<string, { document: FigmaNode } | null> }
+/** One node the REST API was asked for: null when the file has no node with that id. */
+type NodeAnswer = { document: FigmaNode } | null
+/** The REST API's answer for nodes by id (`/files/:key/nodes`). */
+type FigmaNodesAnswer = { nodes: Record<string, NodeAnswer> }
+/** The REST API's answer for a whole file (`/files/:key`), to the depth asked for. */
+type FigmaFileAnswer = { document: FigmaNode }
+/** Figma nodes by id: undefined where the file has no such node. */
+type FigmaNodesById = Record<string, FigmaNode | undefined>
 /** The mapped nodes by id, and each docs section's text by its name (none from a file that has only nodes). */
-type FigmaData = { nodes: Record<string, FigmaNode | undefined>; docs?: Record<string, string[]> }
+type FigmaData = { nodes: FigmaNodesById; docs?: Record<string, string[]> }
 /** A guide's lines per section. */
 type GuideLines = { whenToUse: string[]; whenNotToUse: string[] }
 
@@ -148,7 +154,8 @@ async function readFigma(fileKey: string, nodeIds: string[], sectionNames: Set<s
       console.error('--from takes the path of a JSON file')
       process.exit(1)
     }
-    const figmaData = JSON.parse(await readFile(resolve(fromPath), 'utf8')) as FigmaData | FigmaData['nodes']
+    // A file from `use_figma` holds `{ nodes, docs }`, or the nodes alone.
+    const figmaData = JSON.parse(await readFile(resolve(fromPath), 'utf8')) as FigmaData | FigmaNodesById
     return 'nodes' in figmaData ? (figmaData as FigmaData) : { nodes: figmaData }
   }
 
@@ -163,7 +170,7 @@ async function readFigma(fileKey: string, nodeIds: string[], sectionNames: Set<s
   )
 
   // A docs section is a frame on a page's top frame, named for its component.
-  const { document } = await fetchFigmaJson<{ document: FigmaNode }>(token, `/files/${fileKey}?depth=3`)
+  const { document } = await fetchFigmaJson<FigmaFileAnswer>(token, `/files/${fileKey}?depth=3`)
   const sectionIds = (document.children ?? [])
     .flatMap((page) => page.children ?? [])
     .flatMap((frame) => frame.children ?? [])
@@ -239,9 +246,10 @@ if (!fileKey) {
 
 // Several components can share one Figma node (Card, CardBody, CardFooter), so
 // each node is asked for once and its variants are matched against all of them.
-const mappedEntries = Object.entries(mapping).filter(
-  (pair): pair is [string, FigmaComponent] => 'figmaNodeId' in pair[1],
-)
+const mappedEntries: [component: string, entry: FigmaComponent][] = []
+for (const [component, entry] of Object.entries(mapping)) {
+  if ('figmaNodeId' in entry) mappedEntries.push([component, entry])
+}
 const mappedComponents = new Map(mappedEntries)
 const componentsByNode = new Map<string, string[]>()
 for (const [component, entry] of mappedEntries)
@@ -361,9 +369,9 @@ for (const [nodeId, components] of componentsByNode) {
 // StretchedLink is found as "Stretched link".
 const figmaNameOf = (component: string) => mappedComponents.get(component)?.figmaName ?? component
 for (const [component, { figmaName }] of docs ? guidedEntries : []) {
-  const guide = componentList[component]?.guidance ?? {}
-  const whenToUseLines = guide.whenToUse ?? []
-  const whenNotToUseLines = guide.whenNotToUse ?? []
+  const guide = componentList[component]?.guidance
+  if (!guide) continue
+  const { whenToUse: whenToUseLines, whenNotToUse: whenNotToUseLines } = guide
   const texts = docs?.[figmaName]
   const figmaGuideLines = texts && figmaGuide(texts)
   if (!figmaGuideLines) {

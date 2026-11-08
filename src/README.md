@@ -148,10 +148,17 @@ These hold in `src/` and `scripts/` alike.
     surprise fails with a message instead of an `undefined`.
 - A type reads in one pass, like the code around it. A shape gets a name
   instead of being composed from utility types (`Partial<Record<keyof T,
-  unknown>>`), and a generic earns its place only when callers pass different
-  types through it. An unknown object's fields are read as
-  `Record<string, unknown>` and checked one by one (`isSample`,
-  `isReturnPoint`).
+  unknown>>`) or written inside another type's angle brackets (in
+  `Record<string, { document: Node } | null>`, the inner shape is a
+  `NodeAnswer` first); a field's own object (`{ app: { windows } }`) is fine. A
+  generic earns its place only when callers pass different types through it.
+  An unknown object's fields are read as `Record<string, unknown>` and
+  checked one by one (`isSample`, `isReturnPoint`).
+- A type comes from where its thing is defined: a library the project already
+  depends on (`ComponentProps<typeof Menu>`, Playwright's `Page`, Storybook's
+  `StoryIndex`), or this repo (`AppLocation`, `ReturnPoint`), which `scripts/`
+  reach through `@/` as `src/` does. A shape is written by hand only when
+  nothing defines it, and then holds only the fields the code reads.
 - A data file's shape is one named type that every reader imports, like
   `scripts/lib/library-json-types.ts`, not a shape written again inline.
 - A value of more than two parts is an object, read by name. A table of rows

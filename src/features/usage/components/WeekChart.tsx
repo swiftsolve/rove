@@ -17,7 +17,8 @@ const CHART_HEIGHT = 124
 // The plot's side inset, shared by the chart margin and the day stops over it.
 const CHART_SIDE_MARGIN = 4
 const BAR_MAX_WIDTH = 9
-const BAR_RADIUS: [number, number, number, number] = [2, 2, 1, 1]
+// Recharts takes the corners as a tuple.
+const BAR_RADIUS: [topLeft: number, topRight: number, bottomRight: number, bottomLeft: number] = [2, 2, 1, 1]
 
 const WEEKDAY_FORMAT = new Intl.DateTimeFormat(undefined, { weekday: 'short' })
 

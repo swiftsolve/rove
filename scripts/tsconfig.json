@@ -1,14 +1,18 @@
 {
   // The tooling scripts run as .ts straight under Node (>= 24), which strips
   // the types without checking them: this config is what checks them. Only
-  // syntax Node can erase is allowed, and imports name the .ts file.
+  // syntax Node can erase is allowed, and a script's own imports name the .ts
+  // file. Bundler resolution lets a type come from src/ through its `@/`
+  // paths (`import type { AppLocation } from '@/app/utils/location'`): only
+  // types, which Node erases before it resolves anything.
   "compilerOptions": {
     "target": "ES2024",
     // DOM too: a script driving a page ships callbacks that run inside it.
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "types": ["node"],
+    "paths": { "@/*": ["../src/*"] },
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,

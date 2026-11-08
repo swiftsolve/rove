@@ -3,7 +3,7 @@ import { act, render, renderHook, screen, waitFor } from '@testing-library/react
 import { type ReactNode, StrictMode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { type BackendQuery, useBackendQuery } from './useBackendQuery'
+import { type BackendQuery, type BackendQueryOptions, useBackendQuery } from './useBackendQuery'
 
 let client: QueryClient
 
@@ -21,7 +21,7 @@ function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
-type Options = Partial<Parameters<typeof useBackendQuery<string>>[0]>
+type Options = Partial<BackendQueryOptions<string>>
 
 function useReading(options: Options = {}): BackendQuery<string> {
   return useBackendQuery({

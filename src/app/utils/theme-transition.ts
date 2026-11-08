@@ -3,11 +3,6 @@ import { flushSync } from 'react-dom'
 import { playThemeSwitchSound } from '@/app/utils/theme-sounds'
 import { IS_WEBKIT_GTK } from '@/utils/platform'
 
-type ViewTransition = {
-  ready: Promise<void>
-  finished: Promise<void>
-}
-
 /**
  * A swap that's still animating, so a fresh press can fold into it (reverse
  * the clip) instead of starting a second, jumpy transition.
@@ -226,7 +221,8 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
   playThemeSwitchSound(themeName(isNextLight))
 
   // Older WebKit has no view transitions, whatever the DOM types say.
-  const viewTransitionDocument: { startViewTransition?: (callback: () => void) => ViewTransition } = document
+  // Optional: WebKitGTK's webview and older engines have no view transitions.
+  const viewTransitionDocument: { startViewTransition?: Document['startViewTransition'] } = document
   const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (shouldReduceMotion) {
     persist()

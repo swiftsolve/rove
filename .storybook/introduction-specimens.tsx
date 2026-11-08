@@ -293,6 +293,9 @@ const HEADER = 'flex items-start justify-between gap-8 p-16'
  * over the scrim: generating its QR code, then easing open to show it, as the
  * real dialog's sizer does.
  */
+/** Where the tooltip sits in the scene, in px from its top left. */
+type TipPosition = { left: number; top: number }
+
 function OverlaysScene(): JSX.Element {
   // A beat at rest, the tooltip, the dialog generating, the QR code for two, then closed.
   const step = useStep(6, BEAT)
@@ -300,7 +303,7 @@ function OverlaysScene(): JSX.Element {
   const isDialogOpen = step >= 2 && step <= 4
   const isQrReady = step >= 3
   const sceneRef = useRef<HTMLDivElement>(null)
-  const [tipAt, setTipAt] = useState<{ left: number; top: number } | null>(null)
+  const [tipAt, setTipAt] = useState<TipPosition | null>(null)
   // Mounted from the first open, as DialogRoot mounts it, so it never plays its close on load.
   const [hasOpened, setHasOpened] = useState(false)
   if (isDialogOpen && !hasOpened) setHasOpened(true)

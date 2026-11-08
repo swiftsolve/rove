@@ -845,9 +845,9 @@
       },
       "props": {
         "children": {
-          "type": "ReactElement<{ 'aria-label'?: string | undefined; 'aria-describedby'?: string | undefined; }, string | JSXElementConstructor<any>>",
+          "type": "ReactElement<TriggerProps, string | JSXElementConstructor<any>>",
           "isRequired": true,
-          "description": "The trigger: one element that takes a ref and props. Keyboard and screen\nreader users reach the tip only on a focusable one (a button). Over plain\ntext, set `shouldDescribe={false}` and put the hint in sr-only text too."
+          "description": "The trigger: one element that takes a ref and props, and whose\n`aria-label` and `aria-describedby` the tip reads and sets. Keyboard and\nscreen reader users reach the tip only on a focusable one (a button). Over\nplain text, set `shouldDescribe={false}` and put the hint in sr-only text too."
         },
         "content": {
           "type": "ReactNode",

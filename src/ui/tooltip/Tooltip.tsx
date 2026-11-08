@@ -18,15 +18,19 @@ const BUBBLE = cx(
 /** Kept from the window's edges. */
 const VIEWPORT_PAD = 8
 
+/** The trigger's props the tooltip reads or sets. */
+type TriggerProps = { 'aria-label'?: string; 'aria-describedby'?: string }
+
 type TooltipProps = {
   /** Shown on hover and keyboard focus. */
   content: ReactNode
   /**
-   * The trigger: one element that takes a ref and props. Keyboard and screen
-   * reader users reach the tip only on a focusable one (a button). Over plain
-   * text, set `shouldDescribe={false}` and put the hint in sr-only text too.
+   * The trigger: one element that takes a ref and props, and whose
+   * `aria-label` and `aria-describedby` the tip reads and sets. Keyboard and
+   * screen reader users reach the tip only on a focusable one (a button). Over
+   * plain text, set `shouldDescribe={false}` and put the hint in sr-only text too.
    */
-  children: ReactElement<{ 'aria-label'?: string; 'aria-describedby'?: string }>
+  children: ReactElement<TriggerProps>
   /**
    * The trigger's side the bubble opens on, centred on the trigger: `bottom`
    * or `top` stack it, `left` or `right` set it beside it (the nav rail). It

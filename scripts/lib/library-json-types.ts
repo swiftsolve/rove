@@ -4,6 +4,9 @@
  * src/ui/components.gen.json (written by gen/components.ts). gen/components.ts
  * holds both files to their schemas, so a script reading them can trust these.
  */
+import type { Guidance } from '../../.storybook/guidance.ts'
+
+export type { Guidance }
 
 /** A Figma variant property code has no prop for, and the props that choose it. */
 export type FigmaVariantPropertyNotInCode = { fromProps: string[]; note: string }
@@ -33,13 +36,6 @@ export type PropEntry = {
   default?: string
   isRequired?: boolean
   description: string
-}
-
-/** A component's usage guide, from its stories' `guidance` parameter. */
-export type Guidance = {
-  whenToUse?: string[]
-  whenNotToUse?: string[]
-  accessibility?: { builtIn?: string[]; toHandle?: string[] }
 }
 
 /** One component in components.gen.json. */

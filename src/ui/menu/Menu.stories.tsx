@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useState } from 'react'
+import { type ComponentProps, useState } from 'react'
 import { expect, fn, screen, waitFor, within } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
@@ -120,7 +120,7 @@ export const ChoosingAnItem: Story = {
   },
 }
 
-function OpenMenu({ onOpenChange, ...args }: Parameters<typeof Menu>[0]) {
+function OpenMenu({ onOpenChange, ...args }: ComponentProps<typeof Menu>) {
   const [isOpen, setIsOpen] = useState(true)
   return (
     <Menu

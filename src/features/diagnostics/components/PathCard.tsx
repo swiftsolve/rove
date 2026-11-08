@@ -12,7 +12,7 @@ import { type InternetLinkState, internetLinkState, lastTestOnNetwork } from '@/
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { useChangeCount } from '@/hooks/useChangeCount'
-import type { NetworkDiagnostics, NetworkInfo, SpeedHistoryEntry } from '@/types'
+import type { NetworkDiagnostics, NetworkInfo, SpeedHistoryEntry, WifiNetworkInfo } from '@/types'
 import { isWifiNetwork } from '@/types'
 import {
   Card,
@@ -201,7 +201,7 @@ function lineDashes(isDotted: boolean, isFlowing: boolean): string | undefined {
   return undefined
 }
 
-function WifiSignal({ info }: { info: Extract<NetworkInfo, { connectionType: 'wifi' }> }) {
+function WifiSignal({ info }: { info: WifiNetworkInfo }) {
   const strength =
     info.signalStrength != null ? (
       <span className="inline-flex items-center gap-4">

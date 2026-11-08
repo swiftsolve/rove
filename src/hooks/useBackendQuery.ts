@@ -1,7 +1,7 @@
 import { hashKey, type QueryKey, skipToken, useQuery } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 
-type BackendQueryOptions<T> = {
+export type BackendQueryOptions<T> = {
   /** Names the data in the shared cache. Every caller with the same key shares one entry. */
   queryKey: QueryKey
   /** Reads the data. Undefined when there is no backend bridge: then nothing fetches. */

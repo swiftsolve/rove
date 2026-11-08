@@ -21,7 +21,9 @@ import { fileURLToPath } from 'node:url'
 import type axe from 'axe-core'
 import { chromium } from 'playwright-core'
 
-import { type AppLocation, flag, readWindowSize, type RunningServer, startDevServer } from './lib/dev-server.ts'
+import type { AppLocation } from '@/app/utils/location'
+
+import { flag, readWindowSize, type RunningServer, startDevServer } from './lib/dev-server.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { width, height } = await readWindowSize()
@@ -77,7 +79,7 @@ function clickButton(label: string): boolean {
 /** Runs in the page: every tab id, read from the app's own list through the dev server. */
 async function appTabs(): Promise<readonly string[]> {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc can't resolve a path only the dev server serves; `as string` stops it trying
-  const { APP_TABS } = (await import('/src/app/utils/tabs.ts' as string)) as { APP_TABS: readonly string[] }
+  const { APP_TABS } = (await import('/src/app/utils/tabs.ts' as string)) as typeof import('@/app/utils/tabs')
   return APP_TABS
 }
 
@@ -110,9 +112,9 @@ const SCENARIOS: [name: string, location: AppLocation, buttonLabel?: string][] =
   ['about', { tab: 'about' }],
 ]
 
-const existingUrl = flag('url', null)
+const existingUrl = flag('url')
 // How many places to list per rule; `--limit all` lists every one.
-const limitFlag = flag('limit', '12')
+const limitFlag = flag('limit') ?? '12'
 const placeLimit = limitFlag === 'all' ? Infinity : Number(limitFlag)
 const server: RunningServer = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
 const browser = await chromium.launch(

@@ -31,15 +31,11 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { chromium, type Locator, type Page } from 'playwright-core'
+import type { IndexEntry, StoryIndex } from 'storybook/internal/types'
 
-import {
-  type AppLocation,
-  flag,
-  freePort,
-  readWindowSize,
-  type RunningServer,
-  startDevServer,
-} from './lib/dev-server.ts'
+import type { AppLocation } from '@/app/utils/location'
+
+import { flag, freePort, readWindowSize, type RunningServer, startDevServer } from './lib/dev-server.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -70,44 +66,55 @@ const SCREENS: [name: string, location: AppLocation][] = [
  * tooltips, a focus ring. Each is
  * [name, location, what to do once it has settled].
  */
-const SCENES: [name: string, location: AppLocation, act: (page: Page) => Promise<void>][] = [
-  ['16-home-details', { tab: 'home' }, (page) => page.locator('button[aria-expanded]').first().click()],
-  ['17-home-share-wifi', { tab: 'home' }, (page) => button(page, 'Share Wi‑Fi').click()],
-  [
-    '18-speed-history-menu',
-    { tab: 'speed', speedSub: { view: 'history' } },
-    (page) => button(page, 'History options').first().click(),
-  ],
-  ['19-services-add-dialog', { tab: 'services' }, (page) => button(page, 'Add service').click()],
-  [
-    '20-services-row-menu',
-    { tab: 'services' },
-    async (page) => {
+/** A state a still screen never shows, and how to reach it once the screen has settled. */
+type Scene = { name: string; location: AppLocation; act: (page: Page) => Promise<void> }
+
+const SCENES: Scene[] = [
+  {
+    name: '16-home-details',
+    location: { tab: 'home' },
+    act: (page) => page.locator('button[aria-expanded]').first().click(),
+  },
+  { name: '17-home-share-wifi', location: { tab: 'home' }, act: (page) => button(page, 'Share Wi‑Fi').click() },
+  {
+    name: '18-speed-history-menu',
+    location: { tab: 'speed', speedSub: { view: 'history' } },
+    act: (page) => button(page, 'History options').first().click(),
+  },
+  { name: '19-services-add-dialog', location: { tab: 'services' }, act: (page) => button(page, 'Add service').click() },
+  {
+    name: '20-services-row-menu',
+    location: { tab: 'services' },
+    act: async (page) => {
       // The kebab only shows on row hover or focus: open it from the keyboard.
       await button(page, /^Options for/)
         .first()
         .focus()
       await page.keyboard.press('Enter')
     },
-  ],
-  [
-    '21-services-timeline-menu',
-    { tab: 'services', servicesSub: { view: 'timeline' } },
-    (page) => button(page, 'Timeline options').click(),
-  ],
-  ['22-help-tooltip', { tab: 'services' }, (page) => button(page, 'About service checks').hover()],
-  ['23-rail-tooltip', { tab: 'home' }, (page) => button(page, 'Speed').hover()],
-  ['24-focus-ring', { tab: 'services' }, (page) => button(page, 'Add service').focus()],
+  },
+  {
+    name: '21-services-timeline-menu',
+    location: { tab: 'services', servicesSub: { view: 'timeline' } },
+    act: (page) => button(page, 'Timeline options').click(),
+  },
+  {
+    name: '22-help-tooltip',
+    location: { tab: 'services' },
+    act: (page) => button(page, 'About service checks').hover(),
+  },
+  { name: '23-rail-tooltip', location: { tab: 'home' }, act: (page) => button(page, 'Speed').hover() },
+  { name: '24-focus-ring', location: { tab: 'services' }, act: (page) => button(page, 'Add service').focus() },
 ]
 
 function button(page: Page, name: string | RegExp): Locator {
   return page.getByRole('button', { name, exact: typeof name === 'string' })
 }
 
-const out = resolve(ROOT, flag('out', 'docs/screenshots'))
-const theme = flag('theme', 'dark')
-const existingUrl = flag('url', null)
-const existingStorybookUrl = flag('storybook-url', null)
+const out = resolve(ROOT, flag('out') ?? 'docs/screenshots')
+const theme = flag('theme') ?? 'dark'
+const existingUrl = flag('url')
+const existingStorybookUrl = flag('storybook-url')
 // A fake clock, seeded randomness, paused CSS animations and reduced motion, so
 // two runs of the same code give the same pixels: live charts, relative times
 // and pulses all hold still, and what moves on timers or animation frames (the
@@ -150,16 +157,14 @@ async function startStorybook(): Promise<RunningServer> {
 
 /** The part of Storybook's preview this script reads: how far the story's render has got. */
 type StorybookPreview = { currentRender?: { phase: string } }
-/** A Storybook index entry: a story, or a component's Docs page. */
-type StoryEntry = { id: string; title: string; name: string; type: 'story' | 'docs' }
 
 /**
  * The UI library's stories to shoot: each component's All States, or every
  * story of a component that has none. Single states would repeat what the
  * overview shows.
  */
-async function libraryStories(storybookUrl: string): Promise<StoryEntry[]> {
-  const index = (await (await fetch(`${storybookUrl}/index.json`)).json()) as { entries: Record<string, StoryEntry> }
+async function libraryStories(storybookUrl: string): Promise<IndexEntry[]> {
+  const index = (await (await fetch(`${storybookUrl}/index.json`)).json()) as StoryIndex
   const stories = Object.values(index.entries).filter((entry) => entry.type === 'story')
   const withOverview = new Set(stories.filter((story) => story.name === 'All States').map((story) => story.title))
   return stories.filter((story) => !withOverview.has(story.title) || story.name === 'All States')
@@ -227,7 +232,7 @@ try {
   }
 
   if (isStable) {
-    for (const [name, location, act] of SCENES) {
+    for (const { name, location, act } of SCENES) {
       await navigateTo(page, location)
       await settle(2500)
       await act(page)
