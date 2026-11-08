@@ -1439,7 +1439,7 @@
         "name": "No value",
         "node": "708:667",
         "figmaOnly": {
-          "Size": "Code sizes it in em to its line; Figma draws two lines: Display, a hero figure's, and Compact, a row's."
+          "Size": "Display for a hero figure, Compact for a row. Code needs no prop: it sizes in em to its line."
         }
       },
       "props": {
