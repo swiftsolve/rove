@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UI library components",
+  "description": "components.gen.json: the UI library's public API in one file, written by scripts/gen/components.mjs from src/ui. Import everything from @/ui.",
+  "type": "object",
+  "required": ["figmaFile", "components", "icons", "helpers"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "$comment": {
+      "type": "string"
+    },
+    "figmaFile": {
+      "description": "The Rove Design System file's URL.",
+      "type": "string"
+    },
+    "components": {
+      "description": "Every component, by its export name.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/component"
+      }
+    },
+    "icons": {
+      "description": "Every icon component's export name, A to Z.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "Icon$"
+      }
+    },
+    "helpers": {
+      "description": "Every other export (hooks, functions, constants), by name, with its doc comment.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "definitions": {
+    "component": {
+      "type": "object",
+      "required": ["group", "sourceFile", "description", "figma", "props", "storyIds"],
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "description": "Its group in the library, from the comment above it in src/ui/index.ts.",
+          "type": "string"
+        },
+        "sourceFile": {
+          "description": "The file that defines it, from the repo root.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Its doc comment: what it's for.",
+          "type": "string",
+          "minLength": 1
+        },
+        "figma": {
+          "description": "Its entry in figma-components.json (see schemas/figma-components.schema.json), or null when Figma has none.",
+          "type": ["object", "null"]
+        },
+        "props": {
+          "description": "Its own props, A to Z.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/prop"
+          }
+        },
+        "passesExtraPropsToElement": {
+          "description": "True when props it doesn't list (aria-*, a Tooltip's handlers) pass straight to the element it renders.",
+          "const": true
+        },
+        "storyIds": {
+          "description": "Its stories' ids: open one at http://localhost:6006/?path=/story/<id> (npm run storybook).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "guidance": {
+          "$ref": "#/definitions/guidance"
+        }
+      }
+    },
+    "prop": {
+      "type": "object",
+      "required": ["description"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "Its TypeScript type, when it isn't a set of values.",
+          "type": "string"
+        },
+        "values": {
+          "description": "The values it takes, when it's a union of literals.",
+          "type": "array",
+          "items": {
+            "type": ["string", "number"]
+          }
+        },
+        "default": {
+          "description": "Its value when left out.",
+          "type": "string"
+        },
+        "isRequired": {
+          "description": "True when it must be passed.",
+          "const": true
+        },
+        "description": {
+          "description": "Its doc comment.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "guidance": {
+      "description": "When to use it, when not, and accessibility, from its stories' guidance parameter, as its Docs page shows them.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "whenToUse": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "whenNotToUse": {
+          "description": "Cases it doesn't suit, each naming what to use instead.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "builtIn": {
+              "description": "What it already does for assistive tech.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "toHandle": {
+              "description": "What the code using it must still do.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

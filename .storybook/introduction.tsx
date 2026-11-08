@@ -12,10 +12,10 @@ const REPO = 'https://github.com/swiftsolve/rove'
 // The Rove Tokens Storybook, whose tokens these components are built from.
 const TOKENS = 'https://rove.swiftsolve.net/storybook/tokens/'
 
-type Component = { group: string; stories: string[]; figma: unknown }
+type Component = { group: string; storyIds: string[]; figma: unknown }
 const components = Object.values(componentList.components as Record<string, Component>)
 // Every figure on the page is counted from the component list, so none can go stale.
-const storyCount = components.reduce((sum, { stories }) => sum + stories.length, 0)
+const storyCount = components.reduce((sum, { storyIds }) => sum + storyIds.length, 0)
 const inFigma = components.filter((component) => component.figma !== null).length
 
 /** A Docs page, from inside the preview iframe: `./?path=` is the manager. */
@@ -358,13 +358,13 @@ function Pipeline(): JSX.Element {
 /** The groups in the library's order, each with its size and the Docs page of its first component. */
 const groups = [...new Set(components.map(({ group }) => group))].map((group) => {
   const members = components.filter((component) => component.group === group)
-  const firstStory = members.find(({ stories }) => stories.length > 0)?.stories[0]
+  const firstStory = members.find(({ storyIds }) => storyIds.length > 0)?.storyIds[0]
   return { group, count: members.length, docsId: firstStory?.replace(/--.*$/, '--docs') }
 })
 
 // Line icons in the link's accent, so they read as one row.
 const LINKS: { icon: IconName; label: string; href: string }[] = [
-  { icon: 'figmaLine', label: 'Figma file', href: figma.file },
+  { icon: 'figmaLine', label: 'Figma file', href: figma.figmaFile },
   { icon: 'rove', label: 'Rove Tokens', href: TOKENS },
   { icon: 'fileText', label: 'Frontend guide', href: `${REPO}/blob/master/src/README.md` },
   { icon: 'github', label: 'GitHub', href: REPO },

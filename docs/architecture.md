@@ -233,6 +233,9 @@ rove/
 │                               runs), gen/ (the *.gen.* files `npm run gen`
 │                               writes), hooks/ (git and Claude Code), eslint/,
 │                               screenshots and the a11y audit
+├── schemas/                    a JSON Schema for each project JSON file
+│                               (figma-components, components, cn-theme): what
+│                               each key means; the generators validate against them
 └── docs/                       the deeper dives (index in docs/README.md),
                                 diagrams and screenshots
 ```

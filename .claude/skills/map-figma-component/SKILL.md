@@ -7,9 +7,11 @@ description: Write or fix a library component's entry in src/ui/figma-components
 
 `src/ui/figma-components.json` maps each library component to its Figma component. It's
 edited directly, and `npm run gen` copies each entry into
-`components.gen.json`. Two checks hold it true:
+`components.gen.json`. `schemas/figma-components.schema.json` says what
+each key means. Two checks hold it true:
 
-- `gen/components.mjs --check` fails while a component has no entry.
+- `gen/components.mjs --check` fails while a component has no entry, or an
+  entry breaks the schema.
 - `checks/figma-library.mjs` fails when a node is gone or renamed, or when its
   variants and the component's props disagree, unless the entry gives the
   reason.
@@ -18,7 +20,7 @@ edited directly, and `npm run gen` copies each entry into
 
 The Figma MCP server (the claude.ai Figma connector) and Figma's `figma-use`
 skill, loaded before the first `use_figma` call. Call `create_session` with the
-file key first (the part after `/design/` in figma-components.json's `file`), and pass
+file key first (the part after `/design/` in figma-components.json's `figmaFile`), and pass
 its session id to every call after. Without the server, stop and say the entry
 is left: never guess a node id.
 
@@ -40,7 +42,8 @@ is left: never guess a node id.
    Its Figma name is the code name in sentence case (`IconButton` is
    `Icon button`).
 
-2. **Write the entry**, keyed by the code name: `{ "name": "…", "node": "…" }`,
+2. **Write the entry**, keyed by the code name:
+   `{ "figmaName": "…", "figmaNodeId": "…" }`,
    with the node id as `use_figma` returns it (`42:189`; a link's `node-id`
    has `-` for `:`). A component with no Figma counterpart is `null`. Two
    components can share one node, as `DataList` and `DataRow` share
@@ -54,12 +57,12 @@ is left: never guess a node id.
 4. **Settle each difference it reports.** Fix the side that's wrong, in code
    or in Figma. Only a difference meant to stay goes in the entry, keyed by
    the side that has it:
-   - `codeOnly`: a code prop Figma has no variant for, with why
+   - `propsNotInFigma`: a code prop Figma has no variant for, with why
      (`tooltipSide`: "Figma draws the tooltip on its own.").
-   - `figmaOnly`: a Figma variant code has no prop for, with how code
+   - `figmaVariantsWithoutProp`: a Figma variant code has no prop for, with how code
      chooses it, starting "In code" (`Has label`: "In code, on when the
      label prop is set.").
-   - `valuesDiffer`: a code prop whose values differ from Figma's on purpose,
+   - `propValuesDifferFromFigma`: a code prop whose values differ from Figma's on purpose,
      with why.
 
    An exception that no longer applies fails the check too, so drop it. The

@@ -5,13 +5,13 @@ import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 
 import figma from '../src/ui/figma-components.json'
 
-type FigmaNode = { name: string; node: string }
+type FigmaNode = { figmaName: string; figmaNodeId: string }
 
 // A story's title ends in its component's name ('Containers/Card/CardHeader'),
 // which is figma-components.json's key, so every story finds its Figma component with
 // nothing set on the story itself.
 const COMPONENTS: Record<string, FigmaNode | null> = figma.components
-const FILE = new URL(figma.file)
+const FILE = new URL(figma.figmaFile)
 
 const COLUMN: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%' }
 const EMBED: React.CSSProperties = { flex: 1, width: '100%', border: 0 }
@@ -32,16 +32,16 @@ export function FigmaPanel({ isActive }: { isActive: boolean }): JSX.Element {
           {/* Only while the tab is open, so other tabs don't load Figma. */}
           {isActive && (
             <iframe
-              key={component.node}
-              title={`${component.name} in Figma`}
-              src={figmaUrl('https://embed.figma.com', component.node, { 'embed-host': 'rove-storybook' })}
+              key={component.figmaNodeId}
+              title={`${component.figmaName} in Figma`}
+              src={figmaUrl('https://embed.figma.com', component.figmaNodeId, { 'embed-host': 'rove-storybook' })}
               style={EMBED}
               allowFullScreen
             />
           )}
           <div style={{ padding: '8px 12px' }}>
-            <Link href={figmaUrl(FILE.origin, component.node)} target="_blank" rel="noreferrer" withArrow>
-              Open {component.name} in Figma
+            <Link href={figmaUrl(FILE.origin, component.figmaNodeId)} target="_blank" rel="noreferrer" withArrow>
+              Open {component.figmaName} in Figma
             </Link>
           </div>
         </div>

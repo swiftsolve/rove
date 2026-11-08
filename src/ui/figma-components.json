@@ -1,249 +1,249 @@
 {
-  "description": "Edited directly, not generated: the map-figma-component skill writes an entry. npm run gen copies it into components.gen.json, and checks/figma-library.mjs holds it to Figma. Each entry is the Figma component's name and the node id of the component or component set (its link's node-id, - as :), or null when Figma has none. Deliberate differences: codeOnly is keyed by a code prop Figma has no variant for, with why. figmaOnly is keyed by a Figma variant code has no prop for, with how code chooses it, starting 'In code'. valuesDiffer is keyed by a code prop whose values differ from Figma's on purpose, with why.",
-  "file": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
+  "$schema": "../../schemas/figma-components.schema.json",
+  "figmaFile": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": {
-      "name": "Button",
-      "node": "42:189"
+      "figmaName": "Button",
+      "figmaNodeId": "42:189"
     },
     "IconButton": {
-      "name": "Icon button",
-      "node": "13:629",
-      "codeOnly": {
+      "figmaName": "Icon button",
+      "figmaNodeId": "13:629",
+      "propsNotInFigma": {
         "tooltipSide": "Where its tooltip opens: Figma draws the tooltip on its own."
       }
     },
     "Link": {
-      "name": "Link",
-      "node": "505:845",
-      "figmaOnly": {
+      "figmaName": "Link",
+      "figmaNodeId": "505:845",
+      "figmaVariantsWithoutProp": {
         "Type": "In code, href makes an External link (a web address) and onClick a View link (a screen in the app)."
       }
     },
     "StretchedLink": null,
     "Menu": {
-      "name": "Menu",
-      "node": "498:719"
+      "figmaName": "Menu",
+      "figmaNodeId": "498:719"
     },
     "MenuContent": {
-      "name": "Menu",
-      "node": "498:719"
+      "figmaName": "Menu",
+      "figmaNodeId": "498:719"
     },
     "MenuItem": {
-      "name": "Menu item",
-      "node": "498:718"
+      "figmaName": "Menu item",
+      "figmaNodeId": "498:718"
     },
     "MenuTrigger": {
-      "name": "Menu trigger",
-      "node": "498:675"
+      "figmaName": "Menu trigger",
+      "figmaNodeId": "498:675"
     },
     "TextField": {
-      "name": "Text field",
-      "node": "500:810",
-      "figmaOnly": {
+      "figmaName": "Text field",
+      "figmaNodeId": "500:810",
+      "figmaVariantsWithoutProp": {
         "Action": "In code, on when the action prop holds a TextFieldAction."
       }
     },
     "TextFieldAction": {
-      "name": "Text field",
-      "node": "500:810"
+      "figmaName": "Text field",
+      "figmaNodeId": "500:810"
     },
     "Toggle": {
-      "name": "Toggle",
-      "node": "42:198"
+      "figmaName": "Toggle",
+      "figmaNodeId": "42:198"
     },
     "SegmentedControl": {
-      "name": "Segmented control",
-      "node": "499:758"
+      "figmaName": "Segmented control",
+      "figmaNodeId": "499:758"
     },
     "Dialog": {
-      "name": "Dialog",
-      "node": "372:235"
+      "figmaName": "Dialog",
+      "figmaNodeId": "372:235"
     },
     "DialogRoot": null,
     "Tooltip": {
-      "name": "Tooltip",
-      "node": "43:7",
-      "codeOnly": {
+      "figmaName": "Tooltip",
+      "figmaNodeId": "43:7",
+      "propsNotInFigma": {
         "side": "Where it opens beside its trigger."
       }
     },
     "Badge": {
-      "name": "Badge",
-      "node": "497:650"
+      "figmaName": "Badge",
+      "figmaNodeId": "497:650"
     },
     "LiveBadge": {
-      "name": "Live badge",
-      "node": "4:41"
+      "figmaName": "Live badge",
+      "figmaNodeId": "4:41"
     },
     "StatusDot": {
-      "name": "Status dot",
-      "node": "494:735",
-      "codeOnly": {
+      "figmaName": "Status dot",
+      "figmaNodeId": "494:735",
+      "propsNotInFigma": {
         "pulse": "An animation: Figma draws the dot at rest."
       },
-      "valuesDiffer": {
+      "propValuesDifferFromFigma": {
         "tone": "current takes its words' colour, which Figma draws as each status."
       }
     },
     "Spinner": {
-      "name": "Spinner",
-      "node": "43:40"
+      "figmaName": "Spinner",
+      "figmaNodeId": "43:40"
     },
     "ButtonSpinner": {
-      "name": "Button spinner",
-      "node": "104:5176"
+      "figmaName": "Button spinner",
+      "figmaNodeId": "104:5176"
     },
     "LoadingState": {
-      "name": "Loading state",
-      "node": "500:357"
+      "figmaName": "Loading state",
+      "figmaNodeId": "500:357"
     },
     "Banner": {
-      "name": "Banner",
-      "node": "374:1346"
+      "figmaName": "Banner",
+      "figmaNodeId": "374:1346"
     },
     "EmptyState": {
-      "name": "Empty state",
-      "node": "356:175"
+      "figmaName": "Empty state",
+      "figmaNodeId": "356:175"
     },
     "EmptyStateDescription": {
-      "name": "Empty state",
-      "node": "356:175"
+      "figmaName": "Empty state",
+      "figmaNodeId": "356:175"
     },
     "DataList": {
-      "name": "Data row",
-      "node": "15:642",
-      "codeOnly": {
+      "figmaName": "Data row",
+      "figmaNodeId": "15:642",
+      "propsNotInFigma": {
         "density": "Figma has the row, not the list: a list's spacing is its frame's gap."
       }
     },
     "DataListStack": null,
     "DataRow": {
-      "name": "Data row",
-      "node": "15:642",
-      "codeOnly": {
+      "figmaName": "Data row",
+      "figmaNodeId": "15:642",
+      "propsNotInFigma": {
         "align": "Not in Figma yet: a value with no text baseline sits on the row's middle."
       }
     },
     "Readout": {
-      "name": "Readout",
-      "node": "4:106",
-      "figmaOnly": {
+      "figmaName": "Readout",
+      "figmaNodeId": "4:106",
+      "figmaVariantsWithoutProp": {
         "Has label": "In code, on when the label prop is set."
       }
     },
     "MetricValue": {
-      "name": "Metric value",
-      "node": "38:360"
+      "figmaName": "Metric value",
+      "figmaNodeId": "38:360"
     },
     "BarMeter": {
-      "name": "Bar meter",
-      "node": "495:1044",
-      "figmaOnly": {
+      "figmaName": "Bar meter",
+      "figmaNodeId": "495:1044",
+      "figmaVariantsWithoutProp": {
         "Value": "In code, the value prop, a number from 0 to 4."
       }
     },
     "SplitBar": {
-      "name": "Split bar",
-      "node": "556:619",
-      "figmaOnly": {
+      "figmaName": "Split bar",
+      "figmaNodeId": "556:619",
+      "figmaVariantsWithoutProp": {
         "Mix": "In code, the down and up props: Mixed has both, Down only has up at 0, Empty has both at 0."
       }
     },
     "ListRow": {
-      "name": "List row",
-      "node": "496:745"
+      "figmaName": "List row",
+      "figmaNodeId": "496:745"
     },
     "IconTile": {
-      "name": "Icon tile",
-      "node": "495:585",
-      "figmaOnly": {
+      "figmaName": "Icon tile",
+      "figmaNodeId": "495:585",
+      "figmaVariantsWithoutProp": {
         "Neutral": "In code, color=\"neutral\"; any other colour is a tint."
       }
     },
     "IconTileButton": {
-      "name": "Icon tile",
-      "node": "495:585"
+      "figmaName": "Icon tile",
+      "figmaNodeId": "495:585"
     },
     "TimelineNode": {
-      "name": "Timeline node",
-      "node": "580:539",
-      "figmaOnly": {
+      "figmaName": "Timeline node",
+      "figmaNodeId": "580:539",
+      "figmaVariantsWithoutProp": {
         "Neutral": "In code, color=\"neutral\": the hollow ring.",
         "Last": "In code, no prop: CSS draws a list's last node without its line down."
       }
     },
     "Card": {
-      "name": "Card",
-      "node": "565:7535",
-      "codeOnly": {
+      "figmaName": "Card",
+      "figmaNodeId": "565:7535",
+      "propsNotInFigma": {
         "as": "The HTML element: it looks the same."
       },
-      "figmaOnly": {
+      "figmaVariantsWithoutProp": {
         "Openable": "In code, on when the onOpen prop is set."
       }
     },
     "CardBody": {
-      "name": "Card",
-      "node": "565:7535"
+      "figmaName": "Card",
+      "figmaNodeId": "565:7535"
     },
     "CardFooter": {
-      "name": "Card",
-      "node": "565:7535"
+      "figmaName": "Card",
+      "figmaNodeId": "565:7535"
     },
     "CardHeader": {
-      "name": "Card header",
-      "node": "4:65"
+      "figmaName": "Card header",
+      "figmaNodeId": "4:65"
     },
     "CardList": {
-      "name": "Card list",
-      "node": "555:132"
+      "figmaName": "Card list",
+      "figmaNodeId": "555:132"
     },
     "Collapsible": null,
     "CollapsiblePanel": null,
     "CollapsibleTrigger": null,
     "NoValue": {
-      "name": "No value",
-      "node": "708:667",
-      "figmaOnly": {
+      "figmaName": "No value",
+      "figmaNodeId": "708:667",
+      "figmaVariantsWithoutProp": {
         "Size": "In code, no prop: it sizes in em to its line. Display is a hero figure's size, Compact a row's."
       }
     },
     "DotSeparator": {
-      "name": "Dot separator",
-      "node": "452:9524"
+      "figmaName": "Dot separator",
+      "figmaNodeId": "452:9524"
     },
     "InlineMeta": {
-      "name": "Dot separator",
-      "node": "452:9524"
+      "figmaName": "Dot separator",
+      "figmaNodeId": "452:9524"
     },
     "TitleBar": {
-      "name": "Title bar",
-      "node": "41:63"
+      "figmaName": "Title bar",
+      "figmaNodeId": "41:63"
     },
     "TitleBarStatus": {
-      "name": "Title bar status",
-      "node": "4:40"
+      "figmaName": "Title bar status",
+      "figmaNodeId": "4:40"
     },
     "WindowButton": {
-      "name": "Window button",
-      "node": "35:1664"
+      "figmaName": "Window button",
+      "figmaNodeId": "35:1664"
     },
     "NavItem": {
-      "name": "Nav item",
-      "node": "4:12"
+      "figmaName": "Nav item",
+      "figmaNodeId": "4:12"
     },
     "NavRail": {
-      "name": "Nav rail",
-      "node": "41:892",
-      "figmaOnly": {
+      "figmaName": "Nav rail",
+      "figmaNodeId": "41:892",
+      "figmaVariantsWithoutProp": {
         "Page": "In code, the page whose NavItem has isActive."
       }
     },
     "PageHeader": {
-      "name": "Page header",
-      "node": "542:10510",
-      "figmaOnly": {
+      "figmaName": "Page header",
+      "figmaNodeId": "542:10510",
+      "figmaVariantsWithoutProp": {
         "Back": "In code, on when the onBack prop is set."
       }
     },

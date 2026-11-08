@@ -63,6 +63,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "@vitest/browser-playwright": "^4.1.12",
     "@vitest/coverage-v8": "^4.1.12",
+    "ajv": "^8.20.0",
     "axe-core": "^4.10.2",
     "chromatic": "^18.13.6",
     "eslint": "^10.7.0",
