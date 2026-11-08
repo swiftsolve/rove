@@ -73,8 +73,8 @@ export function SegmentedControl<Value extends string>({
   style,
   ...props
 }: SegmentedControlProps<Value>) {
-  const index = options.findIndex((option) => option.value === value)
-  const thumbPosition = { '--count': options.length, '--index': index } as CSSProperties
+  const chosenIndex = options.findIndex((option) => option.value === value)
+  const thumbPosition = { '--count': options.length, '--index': chosenIndex } as CSSProperties
   return (
     <RadioGroup
       className={cn(TRACK, className)}
@@ -85,7 +85,7 @@ export function SegmentedControl<Value extends string>({
       // The element's own props go on the rendered div: Base UI merges them.
       render={<div {...props} />}
     >
-      {index >= 0 && <span className={THUMB} aria-hidden data-keeps-transition />}
+      {chosenIndex >= 0 && <span className={THUMB} aria-hidden data-keeps-transition />}
       {options.map((option) => (
         <Radio.Root
           key={option.value}

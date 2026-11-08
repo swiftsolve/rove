@@ -73,10 +73,10 @@ const CLOSE = 'shrink-0 self-start -mt-4 -mr-4'
  * it, not its first button: that's the close button, whose tooltip would open
  * over the title and take the first Escape. Tab goes on to the close button.
  */
-function initialFocus(popup: HTMLElement | null): HTMLElement | true {
-  const active = document.activeElement
+function initialFocusTarget(popup: HTMLElement | null): HTMLElement | true {
+  const focusedElement = document.activeElement
   if (popup == null) return true
-  return active instanceof HTMLElement && popup.contains(active) ? active : popup
+  return focusedElement instanceof HTMLElement && popup.contains(focusedElement) ? focusedElement : popup
 }
 
 type DialogProps = {
@@ -149,7 +149,7 @@ export function Dialog({
           <BaseDialog.Popup
             ref={setPopup}
             className={PANEL}
-            initialFocus={() => initialFocus(popup)}
+            initialFocus={() => initialFocusTarget(popup)}
             finalFocus={() => (opener?.isConnected ? opener : true)}
           >
             <div className={SIZER} style={{ height: contentHeight ?? undefined }}>

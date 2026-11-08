@@ -101,25 +101,25 @@ function useActiveBar(railRef: RefObject<HTMLElement | null>): BarPlacement {
   useLayoutEffect(() => {
     const rail = railRef.current
     if (!rail) return
-    const place = (isSliding: boolean): void => {
+    const placeBar = (isSliding: boolean): void => {
       const item = rail.querySelector('[aria-current="page"]')
       if (!item) {
         setBar((prev) => ({ ...prev, isVisible: false }))
         return
       }
-      const box = item.getBoundingClientRect()
-      const top = box.top - rail.getBoundingClientRect().top + (box.height - BAR_HEIGHT) / 2
+      const itemBox = item.getBoundingClientRect()
+      const top = itemBox.top - rail.getBoundingClientRect().top + (itemBox.height - BAR_HEIGHT) / 2
       setBar((prev) => ({ top, isVisible: true, isSliding: isSliding && prev.isVisible }))
     }
-    place(false)
+    placeBar(false)
     // Items mark the current page themselves, so watch for it moving.
-    const pageChanges = new MutationObserver(() => place(true))
-    pageChanges.observe(rail, { subtree: true, attributeFilter: ['aria-current'] })
-    const resizes = new ResizeObserver(() => place(false))
-    resizes.observe(rail)
+    const currentPageObserver = new MutationObserver(() => placeBar(true))
+    currentPageObserver.observe(rail, { subtree: true, attributeFilter: ['aria-current'] })
+    const railResizeObserver = new ResizeObserver(() => placeBar(false))
+    railResizeObserver.observe(rail)
     return () => {
-      pageChanges.disconnect()
-      resizes.disconnect()
+      currentPageObserver.disconnect()
+      railResizeObserver.disconnect()
     }
   }, [railRef])
   return bar

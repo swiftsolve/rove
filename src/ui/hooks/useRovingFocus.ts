@@ -59,9 +59,9 @@ export function useRovingFocus(
       const nextIndex = targetIndex(event.key, index, groupItems.length, orientation)
       if (nextIndex === null) return
       event.preventDefault()
-      const target = groupItems[nextIndex]
-      setTabStop(target)
-      target?.focus()
+      const nextItem = groupItems[nextIndex]
+      setTabStop(nextItem)
+      nextItem?.focus()
     }
     // A click focuses an item too, so the stop follows focus however it got there.
     const onFocusIn = (event: FocusEvent): void => {
@@ -77,15 +77,15 @@ export function useRovingFocus(
     group.addEventListener('focusin', onFocusIn)
     group.addEventListener('focusout', onFocusOut)
     // Items that mount later, or a new current item, while focus is elsewhere.
-    const changes = new MutationObserver(() => {
+    const itemChangeObserver = new MutationObserver(() => {
       if (!group.contains(document.activeElement)) resetTabStop()
     })
-    changes.observe(group, { subtree: true, childList: true, attributeFilter: ['aria-current'] })
+    itemChangeObserver.observe(group, { subtree: true, childList: true, attributeFilter: ['aria-current'] })
     return () => {
       group.removeEventListener('keydown', onKeyDown)
       group.removeEventListener('focusin', onFocusIn)
       group.removeEventListener('focusout', onFocusOut)
-      changes.disconnect()
+      itemChangeObserver.disconnect()
     }
   }, [groupRef, itemSelector, orientation, currentSelector])
 }

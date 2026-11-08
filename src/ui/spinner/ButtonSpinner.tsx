@@ -12,9 +12,9 @@ export function ButtonSpinner({
   /** Any CSS colour. */
   color?: string
 }) {
-  const stroke = 2
+  const strokeWidth = 2
   const centre = size / 2
-  const radius = Math.max(0, centre - stroke / 2)
+  const radius = Math.max(0, centre - strokeWidth / 2)
   return (
     <svg
       className="shrink-0 origin-center animate-ring-rotate overflow-visible"
@@ -23,7 +23,7 @@ export function ButtonSpinner({
       viewBox={`0 0 ${size} ${size}`}
       fill="none"
       stroke={color}
-      strokeWidth={stroke}
+      strokeWidth={strokeWidth}
       aria-hidden
     >
       <circle cx={centre} cy={centre} r={radius} pathLength={100} opacity={0.2} />

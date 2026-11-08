@@ -19,9 +19,9 @@ export function useContentHeight(content: HTMLElement | null): number | null {
     const measure = (entry?: ResizeObserverEntry): void =>
       setHeight(entry?.borderBoxSize[0]?.blockSize ?? content.offsetHeight)
     measure()
-    const resizes = new ResizeObserver(([entry]) => measure(entry))
-    resizes.observe(content)
-    return () => resizes.disconnect()
+    const resizeObserver = new ResizeObserver(([entry]) => measure(entry))
+    resizeObserver.observe(content)
+    return () => resizeObserver.disconnect()
   }, [content])
 
   return height

@@ -39,6 +39,6 @@ export function MetricValue({
    */
   className?: string
 }) {
-  const animated = useCountUp(value)
-  return <span className={cn(metricVariants({ status }), className)}>{format(animated) ?? <NoValue />}</span>
+  const easedValue = useCountUp(value)
+  return <span className={cn(metricVariants({ status }), className)}>{format(easedValue) ?? <NoValue />}</span>
 }

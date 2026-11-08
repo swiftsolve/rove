@@ -12,7 +12,7 @@ import type { VariantOf } from '../utils/variants'
 const BAR_WIDTH = 2
 const BAR_HEIGHTS = [3, 5, 7, 9] as const
 // The gap between bars, --spacing-2.
-const GAP = 2
+const BAR_GAP = 2
 
 const barVariants = cva(null, {
   variants: {
@@ -55,11 +55,11 @@ export function BarMeter({ value, color = 'currentColor', isDimmed = false, clas
   // Drawn in whole screen pixels, then scaled back, so every bar is the same
   // number of pixels wide and none lands between two.
   const toScreen = (px: number): number => Math.max(1, Math.round(px * pixelRatio))
-  const width = toScreen(BAR_WIDTH)
-  const gap = toScreen(GAP)
+  const barWidth = toScreen(BAR_WIDTH)
+  const barGap = toScreen(BAR_GAP)
   const heights = BAR_HEIGHTS.map(toScreen)
   const tallest = Math.max(...heights)
-  const meterWidth = heights.length * width + (heights.length - 1) * gap
+  const meterWidth = heights.length * barWidth + (heights.length - 1) * barGap
   return (
     <svg
       className={cn('inline-block shrink-0', className)}
@@ -74,11 +74,11 @@ export function BarMeter({ value, color = 'currentColor', isDimmed = false, clas
           // A fixed set of four that never reorders.
           key={i}
           className={barVariants({ fill: barFill(i < value, isDimmed) })}
-          x={i * (width + gap)}
+          x={i * (barWidth + barGap)}
           y={tallest - height}
-          width={width}
+          width={barWidth}
           height={height}
-          rx={width / 2}
+          rx={barWidth / 2}
         />
       ))}
     </svg>
