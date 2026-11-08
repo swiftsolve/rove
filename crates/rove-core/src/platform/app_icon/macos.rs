@@ -1,6 +1,6 @@
 //! macOS app icons: `NSRunningApplication` by pid, else Launch Services by name,
 //! drawn into a 64px PNG with its glyph filling the tile.
-use super::trim::{content_bounds, CONTENT_FILL};
+use super::trim::content_bounds;
 use base64::Engine as _;
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
@@ -75,9 +75,9 @@ fn render_png_data_uri(icon: &NSImage) -> Option<String> {
     Some(format!("data:image/png;base64,{b64}"))
 }
 
-/// Where to draw the icon so the glyph `rep` shows fills [`CONTENT_FILL`] of
-/// the tile, centred: the whole tile scaled by the glyph's padding and
-/// shifted onto its centre, the overhang clipped. `None` when nothing is
+/// Where to draw the icon so the glyph `rep` shows fills the tile edge to
+/// edge, centred: the whole tile scaled by the glyph's padding and shifted
+/// onto its centre, the overhang clipped. `None` when nothing is
 /// visible.
 fn glyph_fill_rect(rep: &NSBitmapImageRep) -> Option<NSRect> {
     let side = ICON_PX as usize;
@@ -92,7 +92,7 @@ fn glyph_fill_rect(rep: &NSBitmapImageRep) -> Option<NSRect> {
     let rgba: Vec<u8> = bytes.chunks(stride).flat_map(|row| &row[..side * 4]).copied().collect();
     let bounds = content_bounds(&rgba, side, side)?;
 
-    let scale = side as f64 * CONTENT_FILL / bounds.side() as f64;
+    let scale = side as f64 / bounds.side() as f64;
     // Bitmap rows run top down; the drawing context's y runs bottom up.
     let (center_x, center_from_top) = bounds.center();
     let center_y = side as f64 - center_from_top;

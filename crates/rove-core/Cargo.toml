@@ -69,11 +69,14 @@ png = "0.18"
 base64 = "0.21"
 
 # Real per-app icons: the icon a process's .desktop entry names, read from the
-# icon theme, PNGs scaled down to 64px, and passed to the frontend as a data:
+# icon theme, cropped to its glyph and scaled down to 64px, and passed to the frontend as a data:
 # URI. See platform/app_icon.rs.
 [target.'cfg(target_os = "linux")'.dependencies]
 png = "0.18"
 base64 = "0.21"
+# Rasterises an SVG icon so its padding can be trimmed like a PNG's. No text,
+# fonts or embedded raster images: an app icon needs only shapes.
+resvg = { version = "0.48.1", default-features = false }
 
 # macOS Wi-Fi SSID is gated behind Location Services (macOS 14+); read it
 # in-process via CoreWLAN after requesting CoreLocation authorization.

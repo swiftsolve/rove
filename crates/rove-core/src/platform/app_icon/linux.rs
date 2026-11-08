@@ -12,6 +12,10 @@ use std::time::{Duration, Instant};
 /// this only drops the odd giant SVG with an embedded bitmap.
 const MAX_ICON_BYTES: u64 = 1024 * 1024;
 
+/// Edge an SVG icon is rendered at before its trim and downscale: twice
+/// [`ICON_PX`], so a glyph padded to half its canvas still fills it crisply.
+const SVG_RASTER_PX: u32 = 2 * ICON_PX;
+
 /// Edge length a PNG icon is scaled down to, matching the macOS and Windows
 /// paths: a few KB per icon over IPC, still crisp in a ~24px box on high DPI.
 const ICON_PX: u32 = 64;
@@ -397,20 +401,17 @@ pub(super) fn find_icon(icon: &str, icon_dirs: &[PathBuf]) -> Option<PathBuf> {
     })
 }
 
-/// The icon file as a `data:` URI. A PNG is cropped to its glyph (see
-/// [`trim_to_content_square`]), then scaled down to [`ICON_PX`] when it's
-/// bigger (snap icons are often 512px and a few hundred KB); an SVG goes as
-/// it is. Other formats (XPM) and oversized files are skipped.
+/// The icon file as a PNG `data:` URI: an SVG rasterised, then cropped to
+/// its glyph (see [`trim_to_content_square`]) and scaled down to [`ICON_PX`]
+/// when it's bigger (snap icons are often 512px and a few hundred KB). Other
+/// formats (XPM) and oversized files are skipped.
 fn icon_data_uri(path: &Path) -> Option<String> {
     let extension = path.extension().and_then(|e| e.to_str())?;
     if !matches!(extension, "png" | "svg") || fs::metadata(path).ok()?.len() > MAX_ICON_BYTES {
         return None;
     }
     let bytes = fs::read(path).ok()?;
-    if extension == "svg" {
-        return Some(data_uri("image/svg+xml", &bytes));
-    }
-    let (rgba, w, h) = decode_png(&bytes)?;
+    let (rgba, w, h) = if extension == "svg" { rasterize_svg(&bytes)? } else { decode_png(&bytes)? };
     let (rgba, w, h) = match trim_to_content_square(&rgba, w as usize, h as usize) {
         Some((cropped, side)) => (cropped, side as u32, side as u32),
         None => (rgba, w, h),
@@ -421,6 +422,26 @@ fn icon_data_uri(path: &Path) -> Option<String> {
 
 fn data_uri(mime: &str, bytes: &[u8]) -> String {
     format!("data:{mime};base64,{}", base64::engine::general_purpose::STANDARD.encode(bytes))
+}
+
+/// Render an SVG to straight-alpha RGBA, its longer side [`SVG_RASTER_PX`].
+fn rasterize_svg(bytes: &[u8]) -> Option<(Vec<u8>, u32, u32)> {
+    use resvg::{tiny_skia, usvg};
+    let tree = usvg::Tree::from_data(bytes, &usvg::Options::default()).ok()?;
+    let size = tree.size();
+    let scale = SVG_RASTER_PX as f32 / size.width().max(size.height());
+    let (w, h) = ((size.width() * scale).round().max(1.0) as u32, (size.height() * scale).round().max(1.0) as u32);
+    let mut pixmap = tiny_skia::Pixmap::new(w, h)?;
+    resvg::render(&tree, tiny_skia::Transform::from_scale(scale, scale), &mut pixmap.as_mut());
+    let rgba = pixmap
+        .pixels()
+        .iter()
+        .flat_map(|px| {
+            let c = px.demultiply();
+            [c.red(), c.green(), c.blue(), c.alpha()]
+        })
+        .collect();
+    Some((rgba, w, h))
 }
 
 /// Decode a PNG of any colour type to 8-bit straight-alpha RGBA.
@@ -648,6 +669,25 @@ mod tests {
         // A half-covered pixel keeps its colour at half alpha, not a darker red.
         let (out, _, _) = downscale(&[255, 0, 0, 255, 0, 0, 0, 0], 2, 1, 1);
         assert_eq!(out, vec![255, 0, 0, 127]);
+    }
+
+    #[test]
+    fn rasterises_an_svg_icon_and_trims_its_padding() {
+        use base64::Engine as _;
+        let dir = temp_dir("svg-icon");
+        let path = dir.join("padded.svg");
+        // A square glyph covering the middle half of its canvas.
+        let svg = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" fill="#f00"/></svg>"##;
+        fs::write(&path, svg).unwrap();
+
+        let uri = icon_data_uri(&path).unwrap();
+        let png = base64::engine::general_purpose::STANDARD.decode(uri.strip_prefix("data:image/png;base64,").unwrap());
+        let (rgba, w, h) = decode_png(&png.unwrap()).unwrap();
+        assert_eq!((w, h), (ICON_PX, ICON_PX));
+        // Trimmed, the glyph reaches every edge.
+        assert_eq!(&rgba[..4], &[255, 0, 0, 255]);
+        assert_eq!(&rgba[rgba.len() - 4..], &[255, 0, 0, 255]);
+        fs::remove_dir_all(dir).unwrap();
     }
 
     #[test]

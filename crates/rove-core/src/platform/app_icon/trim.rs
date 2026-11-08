@@ -3,11 +3,8 @@
 //! ~80% of its canvas, Chrome's and node's reach the edge), and the UI's
 //! `object-fit: contain` scales the whole canvas into the tile, so a padded
 //! glyph looks small next to an edge-to-edge one. Cropping each to its glyph
-//! plus one uniform margin removes that difference.
-
-/// Share of the tile the glyph's longer side fills; the rest is an even
-/// margin so it doesn't sit flush against the tile edge.
-pub(super) const CONTENT_FILL: f64 = 0.90;
+//! removes that difference, and matches the favicons and monograms beside
+//! them, which fill their tile too.
 
 /// Alpha at or below this is ignored, so a faint anti-aliasing fringe or halo
 /// doesn't defeat the trim by pinning the bounds to the full canvas.
@@ -56,20 +53,19 @@ pub(super) fn content_bounds(rgba: &[u8], w: usize, h: usize) -> Option<Bounds> 
     bounds
 }
 
-/// Crop `rgba` (`w`×`h`, straight alpha) to a centred square around its
-/// visible pixels, which fill [`CONTENT_FILL`] of it. Square and centred, so
+/// Crop `rgba` (`w`×`h`, straight alpha) to the square around its visible
+/// pixels, their longer side edge to edge. Square and centred, so
 /// the aspect ratio is kept. `None` when nothing is visible: a fully
 /// transparent image to encode as is. macOS redraws instead (see
 /// `macos::glyph_fill_rect`).
 #[cfg(any(target_os = "windows", target_os = "linux", test))]
 pub(super) fn trim_to_content_square(rgba: &[u8], w: usize, h: usize) -> Option<(Vec<u8>, usize)> {
     let bounds = content_bounds(rgba, w, h)?;
-    let content_side = bounds.side();
-    let side = (((content_side as f64) / CONTENT_FILL).round() as usize).max(content_side);
+    let side = bounds.side();
 
-    // Top-left of the square, centred on the content box. Signed so the margin
-    // can overhang the source edge (when the glyph reaches it); overhang is
-    // filled with transparent pixels, keeping the glyph centred.
+    // Top-left of the square, centred on the content box. Signed so the
+    // shorter side's padding can overhang the source edge (when the glyph
+    // reaches it); overhang is filled with transparent pixels.
     let (center_x, center_y) = bounds.center();
     let start_x = (center_x - side as f64 / 2.0).round() as i64;
     let start_y = (center_y - side as f64 / 2.0).round() as i64;
@@ -120,22 +116,26 @@ mod tests {
         assert_eq!(bounds.center(), (4.5, 2.5));
     }
 
-    /// A small glyph in a large transparent canvas is cropped to a tight,
-    /// centred square.
+    /// A small glyph in a large transparent canvas is cropped to just the
+    /// glyph.
     #[test]
     fn crops_away_transparent_padding() {
         // 20px block centred in a 100px canvas.
         let buf = canvas(100, 100, 40, 40, 60, 60);
         let (out, side) = trim_to_content_square(&buf, 100, 100).unwrap();
-        // Content is 20px; the square is that plus the ~11% margin (÷0.9 → 22),
-        // nowhere near the original 100.
-        assert!((22..=24).contains(&side), "side {side} isn't tight around 20px content");
-        assert_eq!(out.len(), side.pow(2) * 4);
-        // Centre lands on the glyph (opaque); a corner is the added margin
-        // (transparent).
-        let mid = ((side / 2) * side + side / 2) * 4;
-        assert_eq!(out[mid + 3], 255, "glyph should sit at the centre");
-        assert_eq!(out[3], 0, "corner should be transparent margin");
+        assert_eq!(side, 20);
+        assert!(out.as_chunks::<4>().0.iter().all(|px| px[3] == 255), "the glyph should fill the square");
+    }
+
+    /// A wide glyph is centred, padded top and bottom.
+    #[test]
+    fn centres_a_wide_glyph_in_its_square() {
+        let buf = canvas(40, 40, 5, 15, 35, 25);
+        let (out, side) = trim_to_content_square(&buf, 40, 40).unwrap();
+        assert_eq!(side, 30);
+        let alpha_at = |x: usize, y: usize| out[(y * side + x) * 4 + 3];
+        assert_eq!((alpha_at(15, 0), alpha_at(15, 15), alpha_at(15, 29)), (0, 255, 0));
+        assert_eq!((alpha_at(0, 10), alpha_at(29, 19)), (255, 255));
     }
 
     /// Two icons padded differently come out filling their square alike.

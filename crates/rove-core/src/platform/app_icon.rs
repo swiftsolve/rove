@@ -15,12 +15,11 @@
 //!   * **Linux**: the pid's (or a same-named live process's) `.desktop` entry:
 //!     its Flatpak app id or snap cgroup when sandboxed, else its executable or
 //!     name against each entry's `Exec`, `StartupWMClass` and id. The entry's
-//!     `Icon=` comes from the `hicolor` theme or `pixmaps` (or is a path), PNGs
-//!     scaled down to 64px, SVGs passed through.
+//!     `Icon=` comes from the `hicolor` theme or `pixmaps` (or is a path), an
+//!     SVG rasterised, then scaled down to 64px.
 //!
-//! Each OS's icon is then cropped to its glyph plus one even margin
-//! ([`trim`]), so icons padded differently by their designers fill the UI's
-//! tile alike. A Linux SVG goes untrimmed.
+//! Each OS's icon is then cropped to its glyph ([`trim`]), so icons padded
+//! differently by their designers fill the UI's tile alike.
 //!
 //! Anything else (CLIs, system daemons, unknown names) gets `None` and the UI
 //! shows a favicon or monogram. Other platforms always return `None`.
