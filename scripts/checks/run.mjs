@@ -15,8 +15,8 @@ import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const THIS_FILE = fileURLToPath(import.meta.url)
-const HERE = dirname(THIS_FILE)
-const GEN = join(HERE, '..', 'gen')
+const CHECKS_DIR = dirname(THIS_FILE)
+const GEN_DIR = join(CHECKS_DIR, '..', 'gen')
 
 /** Every script in `dir` but this one, in name order. */
 function scriptsIn(dir) {
@@ -27,7 +27,7 @@ function scriptsIn(dir) {
 }
 
 // Each entry is a script and its arguments.
-const CHECKS = [...scriptsIn(HERE).map((path) => [path]), ...scriptsIn(GEN).map((path) => [path, '--check'])]
+const CHECKS = [...scriptsIn(CHECKS_DIR).map((path) => [path]), ...scriptsIn(GEN_DIR).map((path) => [path, '--check'])]
 
 const failed = []
 for (const [script, ...args] of CHECKS) {

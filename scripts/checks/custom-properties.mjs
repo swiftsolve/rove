@@ -47,24 +47,24 @@ const files = (await listFiles(SRC)).filter((file) => /\.(?:css|tsx?)$/.test(fil
 const sources = await Promise.all(files.map(async (file) => [file, await readFile(file, 'utf8')]))
 
 const defined = new Set()
-const define = (text, pattern) => {
+const addDefinedNames = (text, pattern) => {
   for (const [, name] of text.matchAll(pattern)) defined.add(name)
 }
-for (const file of TOKEN_FILES) define(await readFile(file, 'utf8'), DECLARED)
+for (const file of TOKEN_FILES) addDefinedNames(await readFile(file, 'utf8'), DECLARED)
 for (const [, text] of sources) {
-  define(text, DECLARED)
-  define(text, SET_IN_STYLE)
-  define(text, SET_IN_CLASS)
+  addDefinedNames(text, DECLARED)
+  addDefinedNames(text, SET_IN_STYLE)
+  addDefinedNames(text, SET_IN_CLASS)
 }
 
 const problems = []
-const runtimeUsed = new Set()
+const runtimeNamesRead = new Set()
 for (const [file, text] of sources) {
   for (const match of text.matchAll(READ)) {
     const name = match[1] ?? match[2]
     if (defined.has(name) || name.startsWith('--tw-')) continue
     if (name in SET_AT_RUNTIME) {
-      runtimeUsed.add(name)
+      runtimeNamesRead.add(name)
       continue
     }
     const line = text.slice(0, match.index).split('\n').length
@@ -72,7 +72,7 @@ for (const [file, text] of sources) {
   }
 }
 for (const name of Object.keys(SET_AT_RUNTIME)) {
-  if (!runtimeUsed.has(name))
+  if (!runtimeNamesRead.has(name))
     problems.push(`scripts/checks/custom-properties.mjs: SET_AT_RUNTIME lists ${name}, which nothing reads`)
 }
 

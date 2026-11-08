@@ -32,12 +32,12 @@ function groupComments(comments) {
   const groups = []
   for (const comment of comments) {
     if (isDirective(comment)) continue
-    const last = groups.at(-1)?.at(-1)
+    const previousComment = groups.at(-1)?.at(-1)
     const isContinuation =
       comment.type === 'Line' &&
-      last?.type === 'Line' &&
-      comment.loc.start.line === last.loc.end.line + 1 &&
-      comment.loc.start.column === last.loc.start.column
+      previousComment?.type === 'Line' &&
+      comment.loc.start.line === previousComment.loc.end.line + 1 &&
+      comment.loc.start.column === previousComment.loc.start.column
     if (isContinuation) groups.at(-1).push(comment)
     else groups.push([comment])
   }
@@ -49,7 +49,7 @@ function textLineCount(group) {
   return blockLines(group[0]).filter((line) => line.trim() !== '').length
 }
 
-const maxLines = {
+const maxLinesRule = {
   meta: {
     type: 'suggestion',
     docs: {
@@ -77,5 +77,5 @@ const maxLines = {
 
 export default {
   meta: { name: 'rove-comments' },
-  rules: { 'max-lines': maxLines },
+  rules: { 'max-lines': maxLinesRule },
 }

@@ -60,44 +60,44 @@ function stripComments(code, isCss) {
     : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_, before, comment) => before + blank(comment))
 }
 
-const theme = await readFile(THEME, 'utf8')
-const SIZES = [...theme.matchAll(/--text-([\w-]+)\s*:\s*var\(--font-size-/g)].map(([, step]) => step)
-if (SIZES.length === 0) {
+const themeCss = await readFile(THEME, 'utf8')
+const SIZE_STEPS = [...themeCss.matchAll(/--text-([\w-]+)\s*:\s*var\(--font-size-/g)].map(([, step]) => step)
+if (SIZE_STEPS.length === 0) {
   console.error(`scripts/checks/text-styles.mjs: found no --text-* sizes in ${relative(ROOT, THEME)}`)
   process.exit(1)
 }
 
 // `text-sm`, with any variants (`md:`, `group-hover:`), but not a colour
 // (`text-secondary`) or a custom property (`var(--text-sm)`).
-const SIZE_UTILITY = new RegExp(`(?<![\\w-])!?text-(?:${SIZES.join('|')})(?![\\w-])`, 'g')
+const SIZE_UTILITY = new RegExp(`(?<![\\w-])!?text-(?:${SIZE_STEPS.join('|')})(?![\\w-])`, 'g')
 // `text-[13px]`, `text-[1.1rem]`, `text-(length:--x)`: a size, not an arbitrary colour.
 const ARBITRARY_SIZE = /(?<![\w-])!?text-(?:\[(?:length:)?[\d.]+(?:px|r?em|%)?\]|\(length:[^)]*\))/g
 const FONT_SIZE_PROP = /\bfontSize\b/g
 const CSS_FONT_SIZE = /(?<![\w-])font-size\s*:\s*([^;}\n]+)/g
-const STYLE_SIZE = /^var\(--type-[\w-]+-size\)$/
+const STYLE_SIZE_VARIABLE = /^var\(--type-[\w-]+-size\)$/
 
 const files = (await listFiles(SRC)).filter((file) => /\.(?:css|tsx?)$/.test(file) && !/\.test\.tsx?$/.test(file))
 const problems = []
-const allowedUsed = new Set()
+const usedAllowedEntries = new Set()
 
 for (const file of files) {
-  const path = relative(ROOT, file)
+  const relativePath = relative(ROOT, file)
   const isCss = file.endsWith('.css')
   const code = stripComments(await readFile(file, 'utf8'), isCss)
 
   const report = (index, value, message) => {
-    const entry = ALLOWED.find((allowed) => allowed.file === path && allowed.value === value)
+    const entry = ALLOWED.find((allowed) => allowed.file === relativePath && allowed.value === value)
     if (entry) {
-      allowedUsed.add(entry)
+      usedAllowedEntries.add(entry)
       return
     }
     const line = code.slice(0, index).split('\n').length
-    problems.push(`${path}:${line}: ${message}`)
+    problems.push(`${relativePath}:${line}: ${message}`)
   }
 
   for (const match of code.matchAll(CSS_FONT_SIZE)) {
     const value = match[1].trim()
-    if (STYLE_SIZE.test(value)) continue
+    if (STYLE_SIZE_VARIABLE.test(value)) continue
     report(
       match.index,
       match[0],
@@ -117,7 +117,7 @@ for (const file of files) {
 }
 
 for (const entry of ALLOWED) {
-  if (!allowedUsed.has(entry))
+  if (!usedAllowedEntries.has(entry))
     problems.push(
       `scripts/checks/text-styles.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`,
     )

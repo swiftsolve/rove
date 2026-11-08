@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const ts = createRequire(import.meta.url)('typescript')
-const SCANNED = ['src/app', 'src/features']
+const SCANNED_DIRS = ['src/app', 'src/features']
 const UTILITIES_CSS = 'src/styles/utilities.css'
 
 /** Components whose className is their whole look, by design. */
@@ -35,8 +35,8 @@ function isExempt(name) {
   return name === 'CollapsibleTrigger'
 }
 
-const ALIGN = /^text-(left|right|center|start|end|justify)$/
-const RULES = [
+const TEXT_ALIGN = /^text-(left|right|center|start|end|justify)$/
+const RESTYLE_RULES = [
   ['padding', /^p[xytrblse]?-/],
   ['its own layout', /^(flex|inline-flex|grid|inline-grid|contents|table)$/],
   ['its own layout', /^flex-(row|col|wrap|nowrap)/],
@@ -84,8 +84,8 @@ function restyleReason(token) {
   if (!utility) return null
   const property = utility.match(/^\[([a-z-]+):/)
   if (property) return ARBITRARY_PROPERTIES.test(property[1]) ? property[1] : null
-  if (ALIGN.test(utility)) return null
-  for (const [reason, pattern] of RULES) if (pattern.test(utility)) return reason
+  if (TEXT_ALIGN.test(utility)) return null
+  for (const [reason, pattern] of RESTYLE_RULES) if (pattern.test(utility)) return reason
   const name = utilityNames.find((utilityName) => isCustomUtility(utility, utilityName))
   return name ? `the ${name} utility` : null
 }
@@ -100,11 +100,11 @@ async function tsxFiles(dir) {
   return files
 }
 
-const sources = new Map()
-function source(file) {
-  if (!sources.has(file)) {
+const parsedSources = new Map()
+function parsedSource(file) {
+  if (!parsedSources.has(file)) {
     const text = readFileSync(join(ROOT, file), 'utf8')
-    sources.set(
+    parsedSources.set(
       file,
       ts.createSourceFile(
         file,
@@ -115,7 +115,7 @@ function source(file) {
       ),
     )
   }
-  return sources.get(file)
+  return parsedSources.get(file)
 }
 
 /** The file a relative or `@/` import points at, if it's in the repo. */
@@ -130,13 +130,13 @@ function resolveImport(from, specifier) {
 }
 
 /** The initializer of a top-level `const name`, in this file or the one it's imported from. */
-function definition(file, name) {
-  const sf = source(file)
-  for (const statement of sf.statements) {
+function constantInitializer(file, name) {
+  const sourceFile = parsedSource(file)
+  for (const statement of sourceFile.statements) {
     if (ts.isVariableStatement(statement)) {
-      for (const decl of statement.declarationList.declarations) {
-        if (ts.isIdentifier(decl.name) && decl.name.text === name && decl.initializer)
-          return { file, node: decl.initializer }
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.name.text === name && declaration.initializer)
+          return { file, node: declaration.initializer }
       }
     }
     if (
@@ -146,7 +146,7 @@ function definition(file, name) {
     ) {
       const element = statement.importClause.namedBindings.elements.find((e) => e.name.text === name)
       const target = element && resolveImport(file, statement.moduleSpecifier.text)
-      if (target) return definition(target, (element.propertyName ?? element.name).text)
+      if (target) return constantInitializer(target, (element.propertyName ?? element.name).text)
     }
   }
   return null
@@ -166,7 +166,7 @@ function classStrings(file, node, seen = new Set()) {
     const key = `${file}:${node.text}`
     if (seen.has(key)) return []
     seen.add(key)
-    const found = definition(file, node.text)
+    const found = constantInitializer(file, node.text)
     return found ? classStrings(found.file, found.node, seen) : []
   }
   if (ts.isCallExpression(node))
@@ -190,12 +190,12 @@ function classStrings(file, node, seen = new Set()) {
 }
 
 const problems = []
-let checked = 0
+let placementCount = 0
 
-for (const file of (await Promise.all(SCANNED.map(tsxFiles))).flat()) {
-  const sf = source(file)
+for (const file of (await Promise.all(SCANNED_DIRS.map(tsxFiles))).flat()) {
+  const sourceFile = parsedSource(file)
   const uiNames = new Set()
-  for (const statement of sf.statements) {
+  for (const statement of sourceFile.statements) {
     const bindings =
       ts.isImportDeclaration(statement) &&
       statement.moduleSpecifier.text === '@/ui' &&
@@ -206,14 +206,14 @@ for (const file of (await Promise.all(SCANNED.map(tsxFiles))).flat()) {
 
   const visit = (node) => {
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
-      const tag = node.tagName.getText(sf)
+      const tag = node.tagName.getText(sourceFile)
       const attribute =
         uiNames.has(tag) && !isExempt(tag)
-          ? node.attributes.properties.find((a) => ts.isJsxAttribute(a) && a.name.getText(sf) === 'className')
+          ? node.attributes.properties.find((a) => ts.isJsxAttribute(a) && a.name.getText(sourceFile) === 'className')
           : null
       if (attribute) {
-        checked++
-        const line = sf.getLineAndCharacterOfPosition(attribute.getStart(sf)).line + 1
+        placementCount++
+        const line = sourceFile.getLineAndCharacterOfPosition(attribute.getStart(sourceFile)).line + 1
         const tokens = new Set(
           classStrings(file, attribute.initializer)
             .flatMap((s) => s.split(/\s+/))
@@ -228,7 +228,7 @@ for (const file of (await Promise.all(SCANNED.map(tsxFiles))).flat()) {
     }
     ts.forEachChild(node, visit)
   }
-  visit(sf)
+  visit(sourceFile)
 }
 
 if (problems.length > 0) {
@@ -240,4 +240,4 @@ if (problems.length > 0) {
   )
   process.exit(1)
 }
-console.log(`ui className OK (${checked} placements)`)
+console.log(`ui className OK (${placementCount} placements)`)

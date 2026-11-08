@@ -107,7 +107,7 @@ async function readTokens() {
 }
 
 /** A scale's tokens by value: `{ '12px': '--spacing-12' }`. */
-function scale(tokens, prefix) {
+function tokensByValue(tokens, prefix) {
   const byValue = new Map()
   for (const [name, value] of tokens) if (name.startsWith(prefix)) byValue.set(value, name)
   return byValue
@@ -123,18 +123,18 @@ function stripComments(code, isCss) {
 }
 
 const tokens = await readTokens()
-const SPACING = scale(tokens, '--spacing-')
-const RADIUS = scale(tokens, '--radius-')
-const WEIGHT = scale(tokens, '--weight-')
-const DURATION = scale(tokens, '--duration-')
+const SPACING_SCALE = tokensByValue(tokens, '--spacing-')
+const RADIUS_SCALE = tokensByValue(tokens, '--radius-')
+const WEIGHT_SCALE = tokensByValue(tokens, '--weight-')
+const DURATION_SCALE = tokensByValue(tokens, '--duration-')
 
 const tokenSuffix = (name, prefix) => name.slice(prefix.length)
 
 /** The token scale a CSS property's values come from, or null for one no scale covers. */
 function scaleForProperty(property) {
-  if (SPACING_PROPERTY.test(property)) return SPACING
-  if (RADIUS_PROPERTY.test(property)) return RADIUS
-  if (property === 'font-weight') return WEIGHT
+  if (SPACING_PROPERTY.test(property)) return SPACING_SCALE
+  if (RADIUS_PROPERTY.test(property)) return RADIUS_SCALE
+  if (property === 'font-weight') return WEIGHT_SCALE
   return null
 }
 
@@ -166,7 +166,7 @@ const HEX = /(?<![A-Za-z0-9&#/$-])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{
 const COLOUR_FUNCTION = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/g
 const NAMED_COLOUR = /(?<![A-Za-z0-9-])(?:white|black)(?![A-Za-z0-9-])/g
 const EASING_KEYWORD = /(?<![A-Za-z0-9-])(?:ease|ease-in|ease-out|ease-in-out)(?![A-Za-z0-9-])/g
-const LENGTH = /^-?\d*\.?\d+px$/
+const PX_LENGTH = /^-?\d*\.?\d+px$/
 // An arbitrary value (`p-[12px]`, `-mt-[3px]`): the utility and the value in its brackets.
 const ARBITRARY_VALUE = /(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g
 const TIME = /(?<![A-Za-z0-9.-])(\d*\.?\d+)(ms|s)(?![A-Za-z0-9-])/g
@@ -176,7 +176,7 @@ const toMs = (amount, unit) => (unit === 's' ? Number(amount) * 1000 : Number(am
 /** The duration token equal to `amount` `unit`, in ms or s either side (`0.14s` is `140ms`), if any. */
 function durationToken(amount, unit) {
   const ms = toMs(amount, unit)
-  for (const [value, name] of DURATION) {
+  for (const [value, name] of DURATION_SCALE) {
     const tokenTime = value.match(/^(\d*\.?\d+)(ms|s)$/)
     if (tokenTime && toMs(tokenTime[1], tokenTime[2]) === ms) return name
   }
@@ -185,21 +185,21 @@ function durationToken(amount, unit) {
 
 const files = (await listFiles(SRC)).filter((f) => /\.(?:tsx?|css)$/.test(f) && !/\.test\.tsx?$/.test(f))
 const problems = []
-const allowedUsed = new Set()
+const usedAllowedEntries = new Set()
 
 for (const file of files) {
-  const path = relative(ROOT, file)
+  const relativePath = relative(ROOT, file)
   const isCss = file.endsWith('.css')
   const code = stripComments(await readFile(file, 'utf8'), isCss)
   const lineAt = (index) => code.slice(0, index).split('\n').length
 
   const report = (index, value, message) => {
-    const allowed = ALLOWED.find((entry) => entry.file === path && entry.value === value)
+    const allowed = ALLOWED.find((entry) => entry.file === relativePath && entry.value === value)
     if (allowed) {
-      allowedUsed.add(allowed)
+      usedAllowedEntries.add(allowed)
       return
     }
-    problems.push(`${path}:${lineAt(index)}: ${message}`)
+    problems.push(`${relativePath}:${lineAt(index)}: ${message}`)
   }
 
   for (const match of code.matchAll(HEX))
@@ -227,17 +227,17 @@ for (const file of files) {
 
   if (isCss) {
     // An @font-face's descriptors describe the font file, not a style.
-    const styles = code.replace(/@font-face\s*\{[^}]*\}/g, (block) => block.replace(/[^\n]/g, ' '))
-    for (const match of styles.matchAll(/(?<![\w-])([a-z-]+)\s*:\s*([^;{}]+)(?=[;}])/g)) {
+    const cssWithoutFontFaces = code.replace(/@font-face\s*\{[^}]*\}/g, (block) => block.replace(/[^\n]/g, ' '))
+    for (const match of cssWithoutFontFaces.matchAll(/(?<![\w-])([a-z-]+)\s*:\s*([^;{}]+)(?=[;}])/g)) {
       const [, property, value] = match
       checkValue(match.index, value, (raw) => `${property}: ${raw}`)
-      const fromScale = scaleForProperty(property)
-      const parts = value.trim().split(/\s+/)
-      for (const part of parts) {
-        const token = fromScale?.get(part)
+      const propertyScale = scaleForProperty(property)
+      const valueParts = value.trim().split(/\s+/)
+      for (const part of valueParts) {
+        const token = propertyScale?.get(part)
         if (token) report(match.index, part, `${property}: ${part} is ${token}; use var(${token})`)
       }
-      const isTokenEqual = parts.some((part) => fromScale?.has(part))
+      const isTokenEqual = valueParts.some((part) => propertyScale?.has(part))
       if (RADIUS_PROPERTY.test(property) && !isTokenEqual && !isBuiltFromTokens(value)) {
         const declaration = `${property}: ${value.trim()}`
         report(
@@ -260,20 +260,24 @@ for (const file of files) {
 
   // Tailwind utilities, with any variants (`hover:`, `not-last:`) and a leading `-`.
   for (const match of code.matchAll(ARBITRARY_VALUE)) {
-    const [whole, utility, value] = match
+    const [arbitraryClass, utility, value] = match
     const isTiming = utility === 'duration' || utility === 'delay'
-    checkValue(match.index, value, () => whole, isTiming ? (token) => `${utility}-(${token})` : undefined)
-    const length = value.replace(/^-/, '')
-    if (!LENGTH.test(length)) continue
-    if (SPACING_UTILITY.test(utility) && SPACING.has(length)) {
-      const step = tokenSuffix(SPACING.get(length), '--spacing-')
-      const sign = whole.startsWith('-') || value.startsWith('-') ? '-' : ''
-      report(match.index, whole, `${whole} is ${SPACING.get(length)}; use ${sign}${utility}-${step}`)
-    } else if (RADIUS_UTILITY.test(utility) && RADIUS.has(length)) {
+    checkValue(match.index, value, () => arbitraryClass, isTiming ? (token) => `${utility}-(${token})` : undefined)
+    const unsignedLength = value.replace(/^-/, '')
+    if (!PX_LENGTH.test(unsignedLength)) continue
+    if (SPACING_UTILITY.test(utility) && SPACING_SCALE.has(unsignedLength)) {
+      const step = tokenSuffix(SPACING_SCALE.get(unsignedLength), '--spacing-')
+      const sign = arbitraryClass.startsWith('-') || value.startsWith('-') ? '-' : ''
       report(
         match.index,
-        whole,
-        `${whole} is ${RADIUS.get(length)}; use ${utility}-${tokenSuffix(RADIUS.get(length), '--radius-')}`,
+        arbitraryClass,
+        `${arbitraryClass} is ${SPACING_SCALE.get(unsignedLength)}; use ${sign}${utility}-${step}`,
+      )
+    } else if (RADIUS_UTILITY.test(utility) && RADIUS_SCALE.has(unsignedLength)) {
+      report(
+        match.index,
+        arbitraryClass,
+        `${arbitraryClass} is ${RADIUS_SCALE.get(unsignedLength)}; use ${utility}-${tokenSuffix(RADIUS_SCALE.get(unsignedLength), '--radius-')}`,
       )
     }
   }
@@ -281,12 +285,20 @@ for (const file of files) {
   // Every gap, padding and margin is a spacing step and every corner a radius
   // (DESIGN.md, Layout and Shapes), so one off the scale needs a reason in ALLOWED.
   for (const match of code.matchAll(ARBITRARY_VALUE)) {
-    const [whole, utility, value] = match
-    if (SPACE_UTILITY.test(utility) && !isBuiltFromTokens(value) && !SPACING.has(value.replace(/^-/, ''))) {
-      report(match.index, whole, `${whole} is off the spacing scale; use a --spacing-* step, or say why in ALLOWED`)
+    const [arbitraryClass, utility, value] = match
+    if (SPACE_UTILITY.test(utility) && !isBuiltFromTokens(value) && !SPACING_SCALE.has(value.replace(/^-/, ''))) {
+      report(
+        match.index,
+        arbitraryClass,
+        `${arbitraryClass} is off the spacing scale; use a --spacing-* step, or say why in ALLOWED`,
+      )
     }
-    if (RADIUS_UTILITY.test(utility) && !isBuiltFromTokens(value) && !RADIUS.has(value)) {
-      report(match.index, whole, `${whole} is off the radius scale; use a --radius-* token, or say why in ALLOWED`)
+    if (RADIUS_UTILITY.test(utility) && !isBuiltFromTokens(value) && !RADIUS_SCALE.has(value)) {
+      report(
+        match.index,
+        arbitraryClass,
+        `${arbitraryClass} is off the radius scale; use a --radius-* token, or say why in ALLOWED`,
+      )
     }
   }
 
@@ -298,7 +310,7 @@ for (const file of files) {
 }
 
 for (const entry of ALLOWED) {
-  if (!allowedUsed.has(entry))
+  if (!usedAllowedEntries.has(entry))
     problems.push(
       `scripts/checks/raw-values.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`,
     )

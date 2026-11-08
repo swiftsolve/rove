@@ -11,26 +11,26 @@ import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
-const SCRIPT = /\.(ts|tsx|js|mjs)$/
+const LINTED_FILE = /\.(ts|tsx|js|mjs)$/
 
-const input = JSON.parse(readFileSync(0, 'utf8'))
-const file = input.tool_input?.file_path
-const path = file ? relative(ROOT, resolve(file)) : ''
+const hookInput = JSON.parse(readFileSync(0, 'utf8'))
+const editedFile = hookInput.tool_input?.file_path
+const relativePath = editedFile ? relative(ROOT, resolve(editedFile)) : ''
 // Outside this checkout (another worktree, the scratchpad) isn't ours to lint.
-if (!path || path.startsWith('..')) process.exit(0)
+if (!relativePath || relativePath.startsWith('..')) process.exit(0)
 
-const run = (command, args) => spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
+const runNpx = (command, args) => spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
 
-if (path.endsWith('.rs')) {
+if (relativePath.endsWith('.rs')) {
   // rustfmt finds rustfmt.toml from the file's directory up.
-  spawnSync('rustfmt', ['--edition', '2021', path], { cwd: ROOT })
+  spawnSync('rustfmt', ['--edition', '2021', relativePath], { cwd: ROOT })
   process.exit(0)
 }
-run('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', path])
-if (!SCRIPT.test(path)) process.exit(0)
+runNpx('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', relativePath])
+if (!LINTED_FILE.test(relativePath)) process.exit(0)
 
-const lint = run('eslint', ['--no-warn-ignored', path])
+const lint = runNpx('eslint', ['--no-warn-ignored', relativePath])
 if (lint.status !== 0) {
-  console.error(`ESLint found problems in ${path}:\n${lint.stdout}${lint.stderr}`)
+  console.error(`ESLint found problems in ${relativePath}:\n${lint.stdout}${lint.stderr}`)
   process.exit(2)
 }

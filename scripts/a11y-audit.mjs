@@ -142,18 +142,21 @@ try {
         await page.waitForTimeout(800)
       }
       await page.addScriptTag({ content: AXE_SOURCE })
-      const result = await page.evaluate(
+      const axeResults = await page.evaluate(
         async ({ tags, exclude }) => {
-          const run = await window.axe.run({ include: [['html']], exclude }, { runOnly: { type: 'tag', values: tags } })
+          const results = await window.axe.run(
+            { include: [['html']], exclude },
+            { runOnly: { type: 'tag', values: tags } },
+          )
           // Page functions return plain data, so mark each node here, where the DOM is.
-          for (const node of run.violations.flatMap((violation) => violation.nodes)) {
+          for (const node of results.violations.flatMap((violation) => violation.nodes)) {
             node.isInFadedPreview = Boolean(document.querySelector(node.target[0])?.closest('[data-faded-preview]'))
           }
-          return run
+          return results
         },
         { tags: RULE_TAGS, exclude: EXCLUDED },
       )
-      for (const violation of result.violations) {
+      for (const violation of axeResults.violations) {
         const { id, impact, help, helpUrl } = violation
         const entry = violations.get(id) ?? { impact, help, helpUrl, places: new Set() }
         for (const node of violation.nodes) {
@@ -177,8 +180,10 @@ try {
 }
 
 const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor']
-const sorted = [...violations].sort(([, a], [, b]) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact))
-for (const [id, rule] of sorted) {
+const violationsByImpact = [...violations].sort(
+  ([, a], [, b]) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact),
+)
+for (const [id, rule] of violationsByImpact) {
   console.log(`\n[${rule.impact}] ${id}: ${rule.help} (${rule.places.size} places)\n  ${rule.helpUrl}`)
   for (const place of [...rule.places].slice(0, placeLimit)) console.log(`  - ${place}`)
   if (rule.places.size > placeLimit) console.log(`  … and ${rule.places.size - placeLimit} more`)
