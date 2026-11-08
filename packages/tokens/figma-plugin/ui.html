@@ -149,16 +149,16 @@
     color: var(--text-tertiary);
     user-select: none;
   }
-  .k {
+  .json-key {
     color: var(--syntax-key);
   }
-  .s {
+  .json-string {
     color: var(--syntax-string);
   }
-  .n {
+  .json-number {
     color: var(--syntax-number);
   }
-  .l {
+  .json-literal {
     color: var(--syntax-literal);
   }
 
@@ -339,81 +339,83 @@
 
 <script>
   const $ = (id) => document.getElementById(id)
+  // The exported files' text by name, and the open tab: a file's name, or 'check'.
   let files = null
-  let current = 'variables.json'
+  let currentTab = 'variables.json'
 
-  const escape = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
-  const TOKEN = /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g
+  const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
+  // A JSON string (and the colon that makes it a key), true/false/null, or a number.
+  const JSON_TOKEN = /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g
+  /** A line of JSON as HTML, each token in a span coloured by its kind. */
   const highlight = (line) =>
-    escape(line).replace(TOKEN, (match, string, colon, literal) =>
-      string
-        ? colon
-          ? `<span class="k">${string}</span>${colon}`
-          : `<span class="s">${string}</span>`
-        : literal
-          ? `<span class="l">${match}</span>`
-          : `<span class="n">${match}</span>`,
-    )
+    escapeHtml(line).replace(JSON_TOKEN, (match, string, colon, literal) => {
+      if (string && colon) return `<span class="json-key">${string}</span>${colon}`
+      if (string) return `<span class="json-string">${string}</span>`
+      if (literal) return `<span class="json-literal">${match}</span>`
+      return `<span class="json-number">${match}</span>`
+    })
 
   // Check: the repo's tokens to compare with, where they came from, and the last result.
   let repo = null
-  let source = ''
+  let repoSource = ''
   let result = null
-  let busy = false
+  let isChecking = false
   let checkError = ''
 
-  const state = (html, spinner) =>
-    `<div class="state">${spinner ? '<div class="spinner"></div>' : ''}<div>${html}</div></div>`
+  const stateHtml = (html, hasSpinner) =>
+    `<div class="state">${hasSpinner ? '<div class="spinner"></div>' : ''}<div>${html}</div></div>`
 
   // The file is where tokens are designed, so a difference is fixed by exporting
   // it into the repo, or, when the repo was edited by hand, by changing Figma.
-  function showCheck() {
-    if (checkError) return `<div class="state error">${escape(checkError)}</div>`
-    if (busy) return state('Comparing with the repo…', true)
-    if (!result) return state('Choose the three files in src/figma/ from a checkout to compare this file with.')
-    if (!result.diff.length) return state(`In step with ${escape(source)}.`)
-    const items = result.diff.map((d) => {
+  /** The Check tab's view as HTML. */
+  function checkHtml() {
+    if (checkError) return `<div class="state error">${escapeHtml(checkError)}</div>`
+    if (isChecking) return stateHtml('Comparing with the repo…', true)
+    if (!result) return stateHtml('Choose the three files in src/figma/ from a checkout to compare this file with.')
+    if (!result.diff.length) return stateHtml(`In step with ${escapeHtml(repoSource)}.`)
+    const items = result.diff.map((difference) => {
       const values =
-        d.change === 'differs'
-          ? `<div class="values"><span>Figma</span><span>${escape(String(d.figma))}</span><span>Repo</span><span>${escape(String(d.repo))}</span></div>`
-          : `<div class="values"><span></span><span>${d.change === 'missing' ? 'Only in the repo' : 'Only in Figma'}</span></div>`
-      return `<li><div class="what"><span class="kind">${d.kind}</span><span class="name">${escape(d.name)}</span><span class="field">${escape(d.field || '')}</span></div>${values}</li>`
+        difference.change === 'differs'
+          ? `<div class="values"><span>Figma</span><span>${escapeHtml(String(difference.figma))}</span><span>Repo</span><span>${escapeHtml(String(difference.repo))}</span></div>`
+          : `<div class="values"><span></span><span>${difference.change === 'missing' ? 'Only in the repo' : 'Only in Figma'}</span></div>`
+      return `<li><div class="what"><span class="kind">${difference.kind}</span><span class="name">${escapeHtml(difference.name)}</span><span class="field">${escapeHtml(difference.field || '')}</span></div>${values}</li>`
     })
     return `<ul class="diff">${items.join('')}</ul>`
   }
 
-  function show() {
+  /** Draw the current tab, its footer and the tab bar's selection. */
+  function showCurrentTab() {
     for (const tab of document.querySelectorAll('[role=tab]'))
-      tab.setAttribute('aria-selected', tab.dataset.file === current)
-    const checking = current === 'check'
-    $('export-footer').hidden = checking
-    $('check-footer').hidden = !checking
-    if (checking) {
-      $('view').innerHTML = showCheck()
+      tab.setAttribute('aria-selected', tab.dataset.file === currentTab)
+    const isCheckTab = currentTab === 'check'
+    $('export-footer').hidden = isCheckTab
+    $('check-footer').hidden = !isCheckTab
+    if (isCheckTab) {
+      $('view').innerHTML = checkHtml()
       $('count-check').textContent = result ? result.diff.length : ''
       return
     }
     if (!files) return
-    $('view').innerHTML = `<pre>${files[current]
+    $('view').innerHTML = `<pre>${files[currentTab]
       .split('\n')
-      .map((l) => `<span class="line">${highlight(l)}</span>`)
+      .map((line) => `<span class="line">${highlight(line)}</span>`)
       .join('')}</pre>`
   }
 
   /** Ask code.js to check the file against `repo`. */
-  function check() {
-    busy = true
+  function requestCheck() {
+    isChecking = true
     checkError = ''
     parent.postMessage({ pluginMessage: { type: 'check', repo } }, '*')
-    show()
+    showCurrentTab()
   }
 
   /** Take the repo's tokens, say where they came from, and check. */
-  function load(tokens, from) {
+  function checkAgainst(tokens, from) {
     repo = tokens
-    source = from
+    repoSource = from
     $('source').textContent = from
-    check()
+    requestCheck()
   }
 
   // Files from a checkout: the three in src/figma/.
@@ -425,10 +427,10 @@
     const missing = ['variables.json', 'text-styles.json', 'effect-styles.json'].filter((n) => !chosen[n])
     if (missing.length) {
       checkError = `Choose all three files in src/figma/; missing ${missing.join(', ')}.`
-      show()
+      showCurrentTab()
       return
     }
-    load(
+    checkAgainst(
       {
         variables: chosen['variables.json'],
         textStyles: chosen['text-styles.json'],
@@ -443,22 +445,24 @@
     const message = event.data?.pluginMessage
     if (!message) return
     if (message.type === 'error') {
-      if (busy || current === 'check') {
-        busy = false
+      // An error while checking, or on the Check tab, is the check's; otherwise the export's.
+      if (isChecking || currentTab === 'check') {
+        isChecking = false
         checkError = message.error
-        show()
+        showCurrentTab()
         return
       }
       $('meta').textContent = 'Export failed'
-      $('view').innerHTML = `<div class="state error">${escape(message.error)}</div>`
+      $('view').innerHTML = `<div class="state error">${escapeHtml(message.error)}</div>`
       return
     }
     if (message.type === 'check') {
-      busy = false
+      isChecking = false
       result = message
-      show()
+      showCurrentTab()
       return
     }
+    // Otherwise it's the export, sent once when the plugin opens.
     files = message.files
     const variables = JSON.parse(files['variables.json'])
     const styles = JSON.parse(files['text-styles.json'])
@@ -470,16 +474,16 @@
     $('count-text-styles.json').textContent = styles.styles.length
     $('count-effect-styles.json').textContent = shadows.styles.length
     $('export').disabled = false
-    show()
+    showCurrentTab()
   }
 
   for (const tab of document.querySelectorAll('[role=tab]'))
     tab.onclick = () => {
-      current = tab.dataset.file
-      show()
+      currentTab = tab.dataset.file
+      showCurrentTab()
     }
 
-  const download = (name) => {
+  const downloadFile = (name) => {
     const link = document.createElement('a')
     link.href = URL.createObjectURL(new Blob([files[name] + '\n'], { type: 'application/json' }))
     link.download = name
@@ -489,7 +493,7 @@
   // A short gap between them, or the browser may drop the later downloads.
   $('export').onclick = () => {
     ;['variables.json', 'text-styles.json', 'effect-styles.json'].forEach((name, i) =>
-      setTimeout(() => download(name), i * 300),
+      setTimeout(() => downloadFile(name), i * 300),
     )
   }
 </script>

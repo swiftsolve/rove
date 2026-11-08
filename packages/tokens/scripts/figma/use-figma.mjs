@@ -19,7 +19,8 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 // use_figma refuses code longer than this.
-const LIMIT = 50_000
+const USE_FIGMA_CODE_LIMIT = 50_000
+/** Each file in src/figma/ and the code.js function that exports it. */
 const FILES = {
   'variables.json': 'exportVariables',
   'text-styles.json': 'exportTextStyles',
@@ -27,59 +28,64 @@ const FILES = {
 }
 
 // No options, only words, so npm passes them through without `--`.
-const [action, input] = process.argv.slice(2)
-const usage = (message) => {
+// The second word is the result file to save, or the git ref to check against.
+const [action, actionArgument] = process.argv.slice(2)
+const exitWithUsage = (message) => {
   console.error(message ?? 'Usage: npm run figma:export | figma:save <result.json> | figma:check [git ref]')
   process.exit(1)
 }
-if (!['check', 'export', 'save'].includes(action)) usage()
+if (!['check', 'export', 'save'].includes(action)) exitWithUsage()
 
 if (action === 'save') {
-  if (!input) usage('Usage: npm run figma:save <result.json>')
-  await save(input)
+  if (!actionArgument) exitWithUsage('Usage: npm run figma:save <result.json>')
+  await saveExport(actionArgument)
   process.exit(0)
 }
 
 // The plugin's code without its UI (or, to export, without Check), comment
 // lines and indentation, to fit use_figma.
-const engine = (await readFile(resolve(ROOT, 'figma-plugin/code.js'), 'utf8'))
+const pluginCode = (await readFile(resolve(ROOT, 'figma-plugin/code.js'), 'utf8'))
   .split(action === 'export' ? '// ── Check' : '// ── The plugin')[0]
   .split('\n')
   .map((line) => line.trim())
   .filter((line) => line && !/^(\/\/|\/\*\*|\*)/.test(line))
   .join('\n')
 
-let body
+let scriptBody
 if (action === 'export') {
-  body = `return { ${Object.entries(FILES)
+  scriptBody = `return { ${Object.entries(FILES)
     .map(([name, exporter]) => `'${name}': await ${exporter}()`)
     .join(', ')} }`
 } else {
   /** A repo file from the working tree, or from a git ref. */
-  const source = async (path) =>
+  const readRepoJson = async (path) =>
     JSON.parse(
-      input
-        ? execFileSync('git', ['show', `${input}:${path}`], { cwd: ROOT, encoding: 'utf8' })
+      actionArgument
+        ? execFileSync('git', ['show', `${actionArgument}:${path}`], { cwd: ROOT, encoding: 'utf8' })
         : await readFile(resolve(ROOT, path), 'utf8'),
     )
   const repo = {
-    variables: await source('src/figma/variables.json'),
-    textStyles: await source('src/figma/text-styles.json'),
-    effectStyles: await source('src/figma/effect-styles.json'),
+    variables: await readRepoJson('src/figma/variables.json'),
+    textStyles: await readRepoJson('src/figma/text-styles.json'),
+    effectStyles: await readRepoJson('src/figma/effect-styles.json'),
   }
   // Each variable goes as a tuple, not an object, to save its keys' length;
   // the script turns them back.
-  const KEYS = ['name', 'collection', 'type', 'code', 'description', 'scopes', 'values']
-  repo.variables = { ...repo.variables, variables: repo.variables.variables.map((v) => KEYS.map((k) => v[k])) }
-  body = [
+  const VARIABLE_KEYS = ['name', 'collection', 'type', 'code', 'description', 'scopes', 'values']
+  repo.variables = {
+    ...repo.variables,
+    variables: repo.variables.variables.map((v) => VARIABLE_KEYS.map((key) => v[key])),
+  }
+  scriptBody = [
     `const REPO = ${JSON.stringify(repo)}`,
-    `REPO.variables.variables = REPO.variables.variables.map((t) => Object.fromEntries(${JSON.stringify(KEYS)}.map((k, i) => [k, t[i]])))`,
+    `REPO.variables.variables = REPO.variables.variables.map((t) => Object.fromEntries(${JSON.stringify(VARIABLE_KEYS)}.map((k, i) => [k, t[i]])))`,
     'return await checkTokens(REPO)',
   ].join('\n')
 }
-const script = `${engine}\n${body}\n`
+const script = `${pluginCode}\n${scriptBody}\n`
 
-if (script.length > LIMIT) usage(`The script is ${script.length} characters; use_figma takes ${LIMIT}. Use the plugin.`)
+if (script.length > USE_FIGMA_CODE_LIMIT)
+  exitWithUsage(`The script is ${script.length} characters; use_figma takes ${USE_FIGMA_CODE_LIMIT}. Use the plugin.`)
 process.stdout.write(script)
 
 /**
@@ -87,12 +93,12 @@ process.stdout.write(script)
  * does. The result is the JSON use_figma returned, as saved, or wrapped in the
  * MCP's [{ type: 'text', text }] content list.
  */
-async function save(path) {
+async function saveExport(path) {
   let result = JSON.parse(await readFile(path, 'utf8'))
   if (Array.isArray(result)) result = result.find((part) => part.type === 'text')?.text ?? result
   if (typeof result === 'string') result = JSON.parse(result)
   for (const name of Object.keys(FILES)) {
-    if (!result[name]) usage(`${path} has no ${name}: is it an export's result?`)
+    if (!result[name]) exitWithUsage(`${path} has no ${name}: is it an export's result?`)
     const target = resolve(ROOT, 'src/figma', name)
     // Through use_figma, figma.root.name is "Document", so keep the name the plugin exported.
     const { file } = JSON.parse(await readFile(target, 'utf8'))

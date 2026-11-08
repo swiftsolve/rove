@@ -39,43 +39,48 @@ const SCALES = [
 ]
 
 export async function writeTailwindTheme({ path, header, variables, textStyles, slugOf, shadows, code }) {
-  const cssVar = (v) => `--${v.name.replace(/\//g, '-')}`
-  const withCode = variables.filter((v) => v.code)
+  const cssVariableName = (v) => `--${v.name.replace(/\//g, '-')}`
+  const cssVariables = variables.filter((v) => v.code)
   const lines = []
-  const seen = new Map()
-  const add = (name, value) => {
-    if (seen.has(name)) throw new Error(`tailwind-theme.css: ${name} is both ${seen.get(name)} and ${value}`)
-    seen.set(name, value)
+  const valueByThemeName = new Map()
+  const addThemeVariable = (name, value) => {
+    if (valueByThemeName.has(name))
+      throw new Error(`tailwind-theme.css: ${name} is both ${valueByThemeName.get(name)} and ${value}`)
+    valueByThemeName.set(name, value)
     lines.push(`  ${name}: ${value};`)
   }
-  const section = (comment) => lines.push('', `  /* ${comment} */`)
+  const startSection = (comment) => lines.push('', `  /* ${comment} */`)
 
-  for (const [comment, group, map] of SCALES) {
-    section(comment)
+  for (const [comment, group, themeName] of SCALES) {
+    startSection(comment)
     if (group === 'spacing') {
-      add('--spacing-0', '0px')
-      add('--spacing-px', '1px')
+      addThemeVariable('--spacing-0', '0px')
+      addThemeVariable('--spacing-px', '1px')
     }
-    for (const v of withCode.filter((v) => v.name.startsWith(`${group}/`)))
-      add(map(v.name.slice(group.length + 1)), `var(${cssVar(v)})`)
+    for (const v of cssVariables.filter((v) => v.name.startsWith(`${group}/`)))
+      addThemeVariable(themeName(v.name.slice(group.length + 1)), `var(${cssVariableName(v)})`)
   }
 
-  section(
+  startSection(
     "Line height and letter spacing by text style (leading-body-default, tracking-heading-large), for text that matches a style but takes its own size or colour. A style's .type-* class sets all of it at once.",
   )
-  for (const s of textStyles) add(`--leading-${slugOf(s.name)}`, `var(--type-${slugOf(s.name)}-line-height)`)
-  for (const s of textStyles) add(`--tracking-${slugOf(s.name)}`, `var(--type-${slugOf(s.name)}-letter-spacing)`)
+  for (const s of textStyles)
+    addThemeVariable(`--leading-${slugOf(s.name)}`, `var(--type-${slugOf(s.name)}-line-height)`)
+  for (const s of textStyles)
+    addThemeVariable(`--tracking-${slugOf(s.name)}`, `var(--type-${slugOf(s.name)}-letter-spacing)`)
 
   // Colours in Figma's groups: bg, text, border, accent, status, series, overlay, focus.
-  const colours = withCode.filter((v) => v.type === 'COLOR')
+  const colours = cssVariables.filter((v) => v.type === 'COLOR')
   for (const group of [...new Set(colours.map((v) => v.name.split('/')[0]))]) {
-    section(`Colours: ${group}/*`)
-    for (const v of colours.filter((v) => v.name.startsWith(`${group}/`))) add(colourName(v.name), `var(${cssVar(v)})`)
+    startSection(`Colours: ${group}/*`)
+    for (const v of colours.filter((v) => v.name.startsWith(`${group}/`)))
+      addThemeVariable(colourName(v.name), `var(${cssVariableName(v)})`)
   }
 
-  section('Shadows (shadow-*) and easing curves (ease-*)')
-  for (const name of shadows) add(name, `var(${name})`)
-  for (const name of Object.keys(code.tokens).filter((n) => n.startsWith('--ease-'))) add(name, `var(${name})`)
+  startSection('Shadows (shadow-*) and easing curves (ease-*)')
+  for (const name of shadows) addThemeVariable(name, `var(${name})`)
+  for (const name of Object.keys(code.tokens).filter((n) => n.startsWith('--ease-')))
+    addThemeVariable(name, `var(${name})`)
 
   const css = `${header}
 
@@ -86,5 +91,5 @@ ${lines.join('\n')}
 }
 `
   await writeFile(path, css)
-  return { count: seen.size }
+  return { count: valueByThemeName.size }
 }

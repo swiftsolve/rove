@@ -58,18 +58,21 @@ const fileOf = (token) =>
 const round = (n) => +n.toFixed(4)
 
 /** A DTCG dimension, or a value already written as CSS, as CSS. */
-const dimension = (d) => (typeof d === 'string' ? d : `${d.value}${d.unit}`)
-/** Zero without a unit, as a shadow is written in CSS. */
-const length = (d) => (parseFloat(dimension(d)) === 0 ? '0' : dimension(d))
+const formatDimension = (d) => (typeof d === 'string' ? d : `${d.value}${d.unit}`)
+/** A dimension with zero written bare, as a shadow is written in CSS. */
+const formatShadowLength = (d) => (parseFloat(formatDimension(d)) === 0 ? '0' : formatDimension(d))
 
 /** A DTCG colour, or a value already written as CSS, as CSS. */
-const color = (c) => (typeof c === 'string' ? c : cssColor(c.components, c.alpha))
+const formatColor = (c) => (typeof c === 'string' ? c : cssColor(c.components, c.alpha))
 
 /** A token's type: its own, or (for a bare alias) the type of what it points at. */
 function typeOf(token, byPath) {
-  for (let t = token, hops = 0; t && hops < 8; hops++) {
-    if (t.$type) return t.$type
-    t = byPath.get(String(t.original.$value).slice(1, -1))
+  let current = token
+  // Eight hops is far more than any real chain of aliases.
+  for (let hops = 0; current && hops < 8; hops++) {
+    if (current.$type) return current.$type
+    // A bare alias's value is `{path}`; without the braces it's the path it points at.
+    current = byPath.get(String(current.original.$value).slice(1, -1))
   }
   return undefined
 }
@@ -80,10 +83,10 @@ function cssValue(token, type) {
   if (typeof value === 'string') return value
   switch (type) {
     case 'color':
-      return color(value)
+      return formatColor(value)
     case 'dimension':
     case 'duration':
-      return dimension(value)
+      return formatDimension(value)
     // Opacity, as a percentage for color-mix().
     case 'number':
       return `${round(value * 100)}%`
@@ -105,63 +108,68 @@ function cssValue(token, type) {
 function declarations(token, byPath) {
   const name = `--${token.name}`
   // A reference to a token in the CSS stays a var(); anything else is the resolved value.
-  const refOr = (original, resolved) => {
-    const target = typeof original === 'string' && /^\{([^}]+)\}$/.test(original) && byPath.get(original.slice(1, -1))
+  const referenceOr = (original, resolved) => {
+    const isReference = typeof original === 'string' && /^\{([^}]+)\}$/.test(original)
+    const target = isReference && byPath.get(original.slice(1, -1))
     return target && isCss(target) ? `var(--${target.name})` : resolved
   }
   const original = token.original.$value
   const value = token.$value
   if (token.$type === 'typography') {
-    const size = parseFloat(dimension(value.fontSize))
-    const spacing = parseFloat(dimension(value.letterSpacing))
+    const size = parseFloat(formatDimension(value.fontSize))
+    const spacing = parseFloat(formatDimension(value.letterSpacing))
     return [
-      [`${name}-size`, refOr(original.fontSize, dimension(value.fontSize))],
-      [`${name}-weight`, refOr(original.fontWeight, String(value.fontWeight))],
-      [`${name}-line-height`, refOr(original.lineHeight, String(value.lineHeight))],
+      [`${name}-size`, referenceOr(original.fontSize, formatDimension(value.fontSize))],
+      [`${name}-weight`, referenceOr(original.fontWeight, String(value.fontWeight))],
+      [`${name}-line-height`, referenceOr(original.lineHeight, String(value.lineHeight))],
       // DTCG holds letter spacing in px; CSS keeps it relative to the size, as Figma does.
-      [`${name}-letter-spacing`, refOr(original.letterSpacing, spacing === 0 ? '0' : `${round(spacing / size)}em`)],
+      [
+        `${name}-letter-spacing`,
+        referenceOr(original.letterSpacing, spacing === 0 ? '0' : `${round(spacing / size)}em`),
+      ],
     ]
   }
   if (token.$type === 'shadow') {
     const layers = [value].flat()
     const originals = [original].flat()
-    const css = layers.map((l, i) => {
-      const spread = length(l.spread ?? '0')
+    const layersCss = layers.map((layer, i) => {
+      const spread = formatShadowLength(layer.spread ?? '0')
       return [
-        length(l.offsetX),
-        length(l.offsetY),
-        length(l.blur),
+        formatShadowLength(layer.offsetX),
+        formatShadowLength(layer.offsetY),
+        formatShadowLength(layer.blur),
         ...(spread === '0' ? [] : [spread]),
-        refOr(originals[i].color, color(l.color)),
+        referenceOr(originals[i].color, formatColor(layer.color)),
       ].join(' ')
     })
-    return [[name, css.join(', ')]]
+    return [[name, layersCss.join(', ')]]
   }
   if (token.$type === 'border') {
     return [
       [
         name,
-        `${refOr(original.width, dimension(value.width))} ${value.style} ${refOr(original.color, color(value.color))}`,
+        `${referenceOr(original.width, formatDimension(value.width))} ${value.style} ${referenceOr(original.color, formatColor(value.color))}`,
       ],
     ]
   }
-  return [[name, refOr(original, cssValue(token, typeOf(token, byPath))), token.$description]]
+  return [[name, referenceOr(original, cssValue(token, typeOf(token, byPath))), token.$description]]
 }
 
 /**
- * The `rove/css` format: one block of declarations. With `options.dark` (the
- * Dark block's values by name) it keeps only what differs, for the Light block.
+ * The `rove/css` format: one block of declarations. For the Dark block it
+ * records each value in `options.darkValues`; for the Light block
+ * (`options.isLight`) it keeps only what differs from them.
  */
 function format({ dictionary, options }) {
   const byPath = new Map(dictionary.allTokens.map((t) => [t.path.join('.'), t]))
   const lines = []
   let section = null
   const declare = ([name, value, comment]) => {
-    if (options.dark) {
-      if (options.dark.get(name) !== value) lines.push(`  ${name}: ${value};`)
+    if (options.isLight) {
+      if (options.darkValues.get(name) !== value) lines.push(`  ${name}: ${value};`)
       return
     }
-    options.record.set(name, value)
+    options.darkValues.set(name, value)
     lines.push(`  ${name}: ${value};${comment ? ` /* ${comment} */` : ''}`)
   }
   // The CSS-only expressions close the code section: written once, as the
@@ -173,11 +181,11 @@ function format({ dictionary, options }) {
   }
   // Style Dictionary merges groups across files (focus.ring is Color, focus.offset
   // Layout), so put each file's tokens back together, in file order.
-  const order = (token) => FILES.findIndex(([f]) => f === fileOf(token))
-  const tokens = dictionary.allTokens.filter(isCss).sort((a, b) => order(a) - order(b))
+  const fileOrder = (token) => FILES.findIndex(([f]) => f === fileOf(token))
+  const tokens = dictionary.allTokens.filter(isCss).sort((a, b) => fileOrder(a) - fileOrder(b))
   for (const token of tokens) {
     const file = fileOf(token)
-    if (!options.dark && file !== section) {
+    if (!options.isLight && file !== section) {
       if (section === 'code') declareCssOnly()
       section = file
       lines.push(`\n  /* ${FILES.find(([f]) => f === file)[1]} */`)
@@ -185,15 +193,16 @@ function format({ dictionary, options }) {
     declarations(token, byPath).forEach(declare)
   }
   declareCssOnly()
-  return options.dark
+  return options.isLight
     ? `${options.selector} {\n${lines.join('\n')}\n}\n`
     : `${options.selector} {${lines.join('\n')}\n}\n`
 }
 
-async function block({ dir, mode, options }) {
+/** One theme's rule of tokens.css, through Style Dictionary. */
+async function buildThemeRule({ dir, mode, options }) {
   // Style Dictionary reads `source` as globs, which need forward slashes (on Windows too).
   const base = dir.replaceAll('\\', '/')
-  const sd = new StyleDictionary({
+  const styleDictionary = new StyleDictionary({
     usesDtcg: true,
     log: { verbosity: 'silent', warnings: 'error' },
     source: FILES.map(([f]) => `${base}/${f === 'color' ? `color.${mode}` : f}.tokens.json`),
@@ -205,9 +214,9 @@ async function block({ dir, mode, options }) {
       css: { transforms: ['rove/name'], files: [{ destination: 'tokens.css', format: 'rove/css', options }] },
     },
   })
-  const tokens = (await sd.getPlatformTokens('css')).allTokens
+  const tokens = (await styleDictionary.getPlatformTokens('css')).allTokens
   if (tokens.length === 0) throw new Error(`tokens.css: Style Dictionary found no tokens in ${base} (${mode})`)
-  const [{ output }] = await sd.formatPlatform('css')
+  const [{ output }] = await styleDictionary.formatPlatform('css')
   return output
 }
 
@@ -216,12 +225,16 @@ async function block({ dir, mode, options }) {
  * tokens DTCG can't type (CSS expressions), written the same in both themes.
  */
 export async function buildCss({ dir, header, cssOnly }) {
-  const record = new Map()
-  const dark = await block({ dir, mode: 'dark', options: { selector: ':root', record, cssOnly } })
-  const light = await block({ dir, mode: 'light', options: { selector: ':root.theme-light', dark: record, cssOnly } })
+  const darkValues = new Map()
+  const dark = await buildThemeRule({ dir, mode: 'dark', options: { selector: ':root', darkValues, cssOnly } })
+  const light = await buildThemeRule({
+    dir,
+    mode: 'light',
+    options: { selector: ':root.theme-light', isLight: true, darkValues, cssOnly },
+  })
   return {
     css: `${header}\n${dark}\n${light}`,
-    count: record.size,
-    overrides: light.split('\n').filter((l) => l.startsWith('  --')).length,
+    count: darkValues.size,
+    overrides: light.split('\n').filter((line) => line.startsWith('  --')).length,
   }
 }

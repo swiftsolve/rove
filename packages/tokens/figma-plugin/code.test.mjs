@@ -15,22 +15,22 @@ import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const json = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))
+const readRepoJson = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))
 const repo = {
-  variables: await json('src/figma/variables.json'),
-  textStyles: await json('src/figma/text-styles.json'),
-  effectStyles: await json('src/figma/effect-styles.json'),
+  variables: await readRepoJson('src/figma/variables.json'),
+  textStyles: await readRepoJson('src/figma/text-styles.json'),
+  effectStyles: await readRepoJson('src/figma/effect-styles.json'),
 }
 const code = await readFile(resolve(ROOT, 'figma-plugin/code.js'), 'utf8')
 
 /** A stand-in for the Plugin API, holding the repo's tokens as a Figma file would. */
 function fakeFigma() {
-  let next = 0
-  const id = () => `id:${next++}`
+  let nextId = 0
+  const newId = () => `id:${nextId++}`
   const collections = repo.variables.collections.map((c) => ({
-    id: id(),
+    id: newId(),
     name: c.name,
-    modes: c.modes.map((name) => ({ modeId: id(), name })),
+    modes: c.modes.map((name) => ({ modeId: newId(), name })),
     variableIds: [],
     get defaultModeId() {
       return this.modes[0].modeId
@@ -39,7 +39,7 @@ function fakeFigma() {
   const byName = {}
   const variables = repo.variables.variables.map((v) => {
     const variable = {
-      id: id(),
+      id: newId(),
       name: v.name,
       resolvedType: v.type,
       description: v.description,
@@ -77,7 +77,9 @@ function fakeFigma() {
     lineHeight: s.lineHeight,
     letterSpacing: s.letterSpacing,
     textCase: s.textCase ?? 'ORIGINAL',
-    boundVariables: Object.fromEntries(Object.entries(s.boundVariables).map(([f, n]) => [f, alias(byName[n])])),
+    boundVariables: Object.fromEntries(
+      Object.entries(s.boundVariables).map(([field, variableName]) => [field, alias(byName[variableName])]),
+    ),
     setBoundVariable(field, variable) {
       if (variable) this.boundVariables[field] = alias(variable)
       else delete this.boundVariables[field]
@@ -104,7 +106,7 @@ function fakeFigma() {
     variables: {
       getLocalVariableCollectionsAsync: async () => collections,
       getLocalVariablesAsync: async () => variables,
-      getVariableByIdAsync: async (i) => variables.find((v) => v.id === i),
+      getVariableByIdAsync: async (variableId) => variables.find((v) => v.id === variableId),
       createVariableAlias: alias,
       setBoundVariableForEffect: (effect, field, v) => ({ ...effect, boundVariables: { [field]: alias(v) } }),
     },
@@ -117,40 +119,41 @@ function fakeFigma() {
   }
 }
 
-const load = () => {
+/** Run code.js against a fresh stand-in file; `figma` is that file, to plant differences in. */
+const loadPlugin = () => {
   const figma = {}
-  const engine = new Function(
+  const plugin = new Function(
     'figma',
     `${code}\nreturn { checkTokens, exportVariables, exportTextStyles, exportEffectStyles }`,
   )(figma)
   Object.assign(figma, fakeFigma())
-  return { figma, engine }
+  return { figma, plugin }
 }
 
 // Compared as written JSON, so key order counts: the export is the file.
 const asFile = (value) => JSON.stringify(value, null, 2)
 
 test('Export gives back the repo files, value for value', async () => {
-  const { engine } = load()
-  assert.equal(asFile(await engine.exportVariables()), asFile(repo.variables), 'src/figma/variables.json')
-  assert.equal(asFile(await engine.exportTextStyles()), asFile(repo.textStyles), 'src/figma/text-styles.json')
-  assert.equal(asFile(await engine.exportEffectStyles()), asFile(repo.effectStyles), 'src/figma/effect-styles.json')
+  const { plugin } = loadPlugin()
+  assert.equal(asFile(await plugin.exportVariables()), asFile(repo.variables), 'src/figma/variables.json')
+  assert.equal(asFile(await plugin.exportTextStyles()), asFile(repo.textStyles), 'src/figma/text-styles.json')
+  assert.equal(asFile(await plugin.exportEffectStyles()), asFile(repo.effectStyles), 'src/figma/effect-styles.json')
 })
 
 test('Check finds nothing between the repo and a file made from it', async () => {
-  const { engine } = load()
-  const { inSync, diff } = await engine.checkTokens(repo)
+  const { plugin } = loadPlugin()
+  const { inSync, diff } = await plugin.checkTokens(repo)
   assert.ok(inSync, asFile(diff))
 })
 
 test('Check finds one planted difference of each kind', async () => {
-  const { figma, engine } = load()
+  const { figma, plugin } = loadPlugin()
   const variable = repo.variables.variables.find((v) => v.collection === 'Color' && v.description)
   figma.byName[variable.name].description = 'changed in Figma'
   figma.textStyles[0].fontSize += 1
   figma.effectStyles[0].effects[0] = { ...figma.effectStyles[0].effects[0], radius: 99 }
   figma.effectStyles[1].description = 'changed in Figma'
-  const { diff } = await engine.checkTokens(repo)
+  const { diff } = await plugin.checkTokens(repo)
   assert.deepEqual(
     diff.map((d) => `${d.kind} ${d.name} ${d.field}`).sort(),
     [

@@ -14,7 +14,7 @@
 
 const round = (n, places) => +n.toFixed(places)
 // The key is the ID in the file's link (figma.com/design/<key>); Figma can withhold it.
-const file = () => ({ name: figma.root.name, ...(figma.fileKey && { key: figma.fileKey }) })
+const fileInfo = () => ({ name: figma.root.name, ...(figma.fileKey && { key: figma.fileKey }) })
 
 // ── Export ─────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ async function exportVariables() {
   const queues = Object.fromEntries(collections.map((c) => [c.id, c.variableIds.map((id) => byId[id])]))
   const ordered = variables.map((v) => queues[v.variableCollectionId].shift())
   return {
-    file: file(),
+    file: fileInfo(),
     collections: collections.map((c) => ({ name: c.name, modes: c.modes.map((m) => m.name) })),
     variables: ordered.map((v) => {
       const collection = collections.find((c) => c.id === v.variableCollectionId)
@@ -84,7 +84,7 @@ const exportLetterSpacing = (ls) => ({ unit: ls.unit, value: round(ls.value, 4) 
 async function exportTextStyles() {
   const styles = await figma.getLocalTextStylesAsync()
   return {
-    file: file(),
+    file: fileInfo(),
     styles: await Promise.all(
       styles.map(async (s) => ({
         name: s.name,
@@ -133,18 +133,18 @@ async function exportEffectStyles() {
   const byId = Object.fromEntries(variables.map((v) => [v.id, v]))
   const styles = (await figma.getLocalEffectStylesAsync()).filter((s) => s.name.startsWith('Shadow/'))
   return {
-    file: file(),
+    file: fileInfo(),
     styles: styles.map((s) => ({ name: s.name, description: s.description || '', layers: shadowLayers(s, byId) })),
   }
 }
 
 // ── Check ──────────────────────────────────────────────────────────────────
 
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const isSame = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 const sortedKeys = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b)))
 
 /** A value as one line of text, for the list of differences. */
-function show(value) {
+function formatValue(value) {
   if (value === undefined) return 'none'
   if (value && value.alias) return `→ ${value.alias}`
   if (value && typeof value === 'object' && 'r' in value) {
@@ -161,7 +161,7 @@ function show(value) {
 }
 
 /** The live file: its collections, variables, text styles and effect styles. */
-async function readFile() {
+async function readLiveFile() {
   return {
     collections: await figma.variables.getLocalVariableCollectionsAsync(),
     variables: await figma.variables.getLocalVariablesAsync(),
@@ -171,17 +171,20 @@ async function readFile() {
 }
 
 /** The fields where a text style differs from the repo's, as [field, [figma, repo]]. */
-async function textStyleChanges(l, r) {
+async function textStyleChanges(liveStyle, repoStyle) {
   const fields = {
-    description: [l.description || '', r.description],
-    font: [`${l.fontName.family} ${l.fontName.style}`, `${r.fontFamily} ${r.fontStyle}`],
-    size: [l.fontSize, r.fontSize],
-    'line height': [exportLineHeight(l.lineHeight), r.lineHeight],
-    'letter spacing': [exportLetterSpacing(l.letterSpacing), r.letterSpacing],
-    case: [l.textCase || 'ORIGINAL', r.textCase || 'ORIGINAL'],
-    variables: [sortedKeys(await boundNames(l)), sortedKeys(r.boundVariables ?? {})],
+    description: [liveStyle.description || '', repoStyle.description],
+    font: [
+      `${liveStyle.fontName.family} ${liveStyle.fontName.style}`,
+      `${repoStyle.fontFamily} ${repoStyle.fontStyle}`,
+    ],
+    size: [liveStyle.fontSize, repoStyle.fontSize],
+    'line height': [exportLineHeight(liveStyle.lineHeight), repoStyle.lineHeight],
+    'letter spacing': [exportLetterSpacing(liveStyle.letterSpacing), repoStyle.letterSpacing],
+    case: [liveStyle.textCase || 'ORIGINAL', repoStyle.textCase || 'ORIGINAL'],
+    variables: [sortedKeys(await boundNames(liveStyle)), sortedKeys(repoStyle.boundVariables ?? {})],
   }
-  return Object.entries(fields).filter(([, [a, b]]) => !same(a, b))
+  return Object.entries(fields).filter(([, [a, b]]) => !isSame(a, b))
 }
 
 /**
@@ -191,27 +194,28 @@ async function textStyleChanges(l, r) {
  * Order (of variables, styles and collections) isn't compared.
  */
 async function diffTokens(repo) {
-  const live = await readFile()
-  const out = []
-  const add = (entry) => out.push(entry)
+  const live = await readLiveFile()
+  const differences = []
+  const add = (entry) => differences.push(entry)
   const byId = Object.fromEntries(live.variables.map((v) => [v.id, v]))
 
   // Collections and their modes.
   const liveCollections = Object.fromEntries(live.collections.map((c) => [c.name, c]))
   const repoCollections = new Set(repo.variables.collections.map((c) => c.name))
   for (const c of repo.variables.collections) {
-    const l = liveCollections[c.name]
-    if (!l) {
+    const liveCollection = liveCollections[c.name]
+    if (!liveCollection) {
       add({ kind: 'collection', name: c.name, change: 'missing' })
       continue
     }
-    const liveModes = l.modes.map((m) => m.name)
+    const liveModes = liveCollection.modes.map((m) => m.name)
     for (const m of c.modes.filter((m) => !liveModes.includes(m)))
       add({ kind: 'collection', name: c.name, change: 'missing', field: `mode ${m}` })
     for (const m of liveModes.filter((m) => !c.modes.includes(m)))
       add({ kind: 'collection', name: c.name, change: 'extra', field: `mode ${m}` })
-    const shared = (modes, other) => modes.filter((m) => other.includes(m))
-    if (!same(shared(liveModes, c.modes), shared(c.modes, liveModes)))
+    // The modes both have, each in its own order.
+    const sharedModes = (modes, otherModes) => modes.filter((m) => otherModes.includes(m))
+    if (!isSame(sharedModes(liveModes, c.modes), sharedModes(c.modes, liveModes)))
       // The first mode is the default, so the order matters.
       add({
         kind: 'collection',
@@ -228,103 +232,117 @@ async function diffTokens(repo) {
   // Variables.
   const liveVars = Object.fromEntries(live.variables.map((v) => [v.name, v]))
   const repoVars = new Set(repo.variables.variables.map((v) => v.name))
-  for (const r of repo.variables.variables) {
-    const l = liveVars[r.name]
-    if (!l) {
-      add({ kind: 'variable', name: r.name, change: 'missing' })
+  for (const repoVariable of repo.variables.variables) {
+    const liveVariable = liveVars[repoVariable.name]
+    if (!liveVariable) {
+      add({ kind: 'variable', name: repoVariable.name, change: 'missing' })
       continue
     }
-    const collection = live.collections.find((c) => c.id === l.variableCollectionId)
-    const blocked = (field, figmaValue, repoValue) =>
+    const collection = live.collections.find((c) => c.id === liveVariable.variableCollectionId)
+    // A different collection or type makes the other fields meaningless to compare.
+    const addBlockingDifference = (field, figmaValue, repoValue) =>
       add({
         kind: 'variable',
-        name: r.name,
+        name: repoVariable.name,
         change: 'differs',
         field,
         figma: figmaValue,
         repo: repoValue,
       })
-    if (collection.name !== r.collection) {
-      blocked('collection', collection.name, r.collection)
+    if (collection.name !== repoVariable.collection) {
+      addBlockingDifference('collection', collection.name, repoVariable.collection)
       continue
     }
-    if (l.resolvedType !== r.type) {
-      blocked('type', l.resolvedType, r.type)
+    if (liveVariable.resolvedType !== repoVariable.type) {
+      addBlockingDifference('type', liveVariable.resolvedType, repoVariable.type)
       continue
     }
-    const differs = (field, figmaValue, repoValue) =>
-      !same(figmaValue, repoValue) &&
-      add({ kind: 'variable', name: r.name, change: 'differs', field, figma: show(figmaValue), repo: show(repoValue) })
-    differs('code', l.codeSyntax.WEB || null, r.code)
-    differs('description', l.description || '', r.description)
+    const addIfDiffers = (field, figmaValue, repoValue) =>
+      !isSame(figmaValue, repoValue) &&
+      add({
+        kind: 'variable',
+        name: repoVariable.name,
+        change: 'differs',
+        field,
+        figma: formatValue(figmaValue),
+        repo: formatValue(repoValue),
+      })
+    addIfDiffers('code', liveVariable.codeSyntax.WEB || null, repoVariable.code)
+    addIfDiffers('description', liveVariable.description || '', repoVariable.description)
     // An export from before scopes were exported has none to compare.
-    if (r.scopes) differs('scopes', [...l.scopes].sort(), [...r.scopes].sort())
+    if (repoVariable.scopes) addIfDiffers('scopes', [...liveVariable.scopes].sort(), [...repoVariable.scopes].sort())
     for (const mode of collection.modes) {
-      if (!(mode.name in r.values)) continue
-      differs(`value in ${mode.name}`, exportValue(l.valuesByMode[mode.modeId], byId), r.values[mode.name])
+      if (!(mode.name in repoVariable.values)) continue
+      addIfDiffers(
+        `value in ${mode.name}`,
+        exportValue(liveVariable.valuesByMode[mode.modeId], byId),
+        repoVariable.values[mode.name],
+      )
     }
   }
-  for (const l of live.variables.filter((v) => !repoVars.has(v.name)))
-    add({ kind: 'variable', name: l.name, change: 'extra' })
+  for (const liveVariable of live.variables.filter((v) => !repoVars.has(v.name)))
+    add({ kind: 'variable', name: liveVariable.name, change: 'extra' })
 
   // Text styles.
   const liveStyles = Object.fromEntries(live.textStyles.map((s) => [s.name, s]))
   const repoStyles = new Set(repo.textStyles.styles.map((s) => s.name))
-  for (const r of repo.textStyles.styles) {
-    const l = liveStyles[r.name]
-    if (!l) {
-      add({ kind: 'text style', name: r.name, change: 'missing' })
+  for (const repoStyle of repo.textStyles.styles) {
+    const liveStyle = liveStyles[repoStyle.name]
+    if (!liveStyle) {
+      add({ kind: 'text style', name: repoStyle.name, change: 'missing' })
       continue
     }
-    for (const [field, [figmaValue, repoValue]] of await textStyleChanges(l, r))
+    for (const [field, [figmaValue, repoValue]] of await textStyleChanges(liveStyle, repoStyle))
       add({
         kind: 'text style',
-        name: r.name,
+        name: repoStyle.name,
         change: 'differs',
         field,
-        figma: show(figmaValue),
-        repo: show(repoValue),
+        figma: formatValue(figmaValue),
+        repo: formatValue(repoValue),
       })
   }
-  for (const l of live.textStyles.filter((s) => !repoStyles.has(s.name)))
-    add({ kind: 'text style', name: l.name, change: 'extra' })
+  for (const liveStyle of live.textStyles.filter((s) => !repoStyles.has(s.name)))
+    add({ kind: 'text style', name: liveStyle.name, change: 'extra' })
 
   // Shadows: the Shadow/* effect styles against effect-styles.json.
   const shadows = repo.effectStyles.styles
   const liveEffects = Object.fromEntries(live.effectStyles.map((s) => [s.name, s]))
-  const colour = (c) => (typeof c === 'string' ? `{${c}}` : show(c))
-  const text = (layers) => layers.map((s) => `${s.x} ${s.y} ${s.blur} ${s.spread} ${colour(s.color)}`).join(', ')
-  for (const r of shadows) {
-    const l = liveEffects[r.name]
-    if (!l) {
-      add({ kind: 'effect style', name: r.name, change: 'missing' })
+  const shadowColourText = (c) => (typeof c === 'string' ? `{${c}}` : formatValue(c))
+  const shadowText = (layers) =>
+    layers.map((s) => `${s.x} ${s.y} ${s.blur} ${s.spread} ${shadowColourText(s.color)}`).join(', ')
+  for (const repoShadow of shadows) {
+    const liveShadow = liveEffects[repoShadow.name]
+    if (!liveShadow) {
+      add({ kind: 'effect style', name: repoShadow.name, change: 'missing' })
       continue
     }
-    const layers = shadowLayers(l, byId)
-    if (!same(layers, r.layers) || l.effects.length !== layers.length)
+    const layers = shadowLayers(liveShadow, byId)
+    // shadowLayers keeps only drop shadows, so a count that differs means another effect was added.
+    if (!isSame(layers, repoShadow.layers) || liveShadow.effects.length !== layers.length)
       add({
         kind: 'effect style',
-        name: r.name,
+        name: repoShadow.name,
         change: 'differs',
         field: 'shadow',
-        figma: text(layers),
-        repo: text(r.layers),
+        figma: shadowText(layers),
+        repo: shadowText(repoShadow.layers),
       })
-    if ((l.description || '') !== r.description)
+    if ((liveShadow.description || '') !== repoShadow.description)
       add({
         kind: 'effect style',
-        name: r.name,
+        name: repoShadow.name,
         change: 'differs',
         field: 'description',
-        figma: show(l.description || ''),
-        repo: show(r.description),
+        figma: formatValue(liveShadow.description || ''),
+        repo: formatValue(repoShadow.description),
       })
   }
   const shadowNames = new Set(shadows.map((s) => s.name))
-  for (const l of live.effectStyles.filter((s) => s.name.startsWith('Shadow/') && !shadowNames.has(s.name)))
-    add({ kind: 'effect style', name: l.name, change: 'extra' })
+  for (const liveShadow of live.effectStyles.filter((s) => s.name.startsWith('Shadow/') && !shadowNames.has(s.name)))
+    add({ kind: 'effect style', name: liveShadow.name, change: 'extra' })
 
-  return out
+  return differences
 }
 
 /** Refuse to touch a file that isn't the one the repo was exported from. */
@@ -338,7 +356,7 @@ function assertSameFile(repo) {
 async function checkTokens(repo) {
   assertSameFile(repo)
   const diff = await diffTokens(repo)
-  return { file: file(), inSync: diff.length === 0, count: diff.length, diff }
+  return { file: fileInfo(), inSync: diff.length === 0, count: diff.length, diff }
 }
 
 // ── The plugin ─────────────────────────────────────────────────────────────
@@ -346,12 +364,12 @@ async function checkTokens(repo) {
 // Through use_figma there's no UI: scripts/figma/use-figma.mjs calls the export or checkTokens itself.
 if (typeof __html__ === 'string') {
   figma.showUI(__html__, { width: 480, height: 560, themeColors: true })
-  const send = (message) => figma.ui.postMessage(message)
-  const fail = (error) => send({ type: 'error', error: String((error && error.message) || error) })
+  const sendToUi = (message) => figma.ui.postMessage(message)
+  const sendError = (error) => sendToUi({ type: 'error', error: String((error && error.message) || error) })
 
   Promise.all([exportVariables(), exportTextStyles(), exportEffectStyles()])
     .then(([variables, textStyles, effectStyles]) =>
-      send({
+      sendToUi({
         type: 'export',
         files: {
           'variables.json': JSON.stringify(variables, null, 2),
@@ -360,12 +378,12 @@ if (typeof __html__ === 'string') {
         },
       }),
     )
-    .catch(fail)
+    .catch(sendError)
 
   figma.ui.onmessage = (message) => {
     if (message.type !== 'check') return
     checkTokens(message.repo)
-      .then((result) => send({ type: 'check', ...result }))
-      .catch(fail)
+      .then((result) => sendToUi({ type: 'check', ...result }))
+      .catch(sendError)
   }
 }

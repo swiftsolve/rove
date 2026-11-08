@@ -22,18 +22,19 @@ import { fileURLToPath } from 'node:url'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const css = await readFile(resolve(ROOT, 'dist/tokens.css'), 'utf8')
 
+// The minimum contrast ratios.
 const WORDS = 4.5
 const GRAPHICS = 3
 
-const block = (selector) => {
+const ruleBody = (selector) => {
   const start = css.indexOf(`${selector} {`)
   if (start < 0) throw new Error(`dist/tokens.css has no ${selector} block: run npm run build`)
   return css.slice(start, css.indexOf('\n}', start))
 }
 const declarations = (text) =>
   Object.fromEntries([...text.matchAll(/^\s*--([\w-]+):\s*([^;]+);/gm)].map(([, name, value]) => [name, value.trim()]))
-const dark = declarations(block(':root'))
-const THEMES = { Dark: dark, Light: { ...dark, ...declarations(block(':root.theme-light')) } }
+const dark = declarations(ruleBody(':root'))
+const THEMES = { Dark: dark, Light: { ...dark, ...declarations(ruleBody(':root.theme-light')) } }
 
 /** A token's colour as [r, g, b, a], r g b 0–255, following var() references. */
 function colour(theme, name) {
@@ -42,20 +43,24 @@ function colour(theme, name) {
   const hex = /^#([0-9a-f]{6})$/i.exec(value ?? '')
   if (hex) return [0, 2, 4].map((i) => parseInt(hex[1].slice(i, i + 2), 16)).concat(1)
   const rgba = /^rgba?\(([^)]+)\)$/.exec(value ?? '')
+  // rgb() has no alpha, so add 1 and keep the first four: rgba() keeps its own.
   if (rgba) return rgba[1].split(',').map(Number).concat(1).slice(0, 4)
   throw new Error(`--${name} isn't a colour this check reads: ${value}`)
 }
+/** A see-through colour laid over an opaque one, as the opaque colour it shows. */
 const over = ([r, g, b, a], below) => [r, g, b].map((c, i) => c * a + below[i] * (1 - a)).concat(1)
 const withAlpha = ([r, g, b], a) => [r, g, b, a]
+/** WCAG's relative luminance. */
 const luminance = (rgb) =>
   rgb
     .slice(0, 3)
     .map((c) => c / 255)
     .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
     .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0)
-const ratio = (a, b) => {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
-  return (hi + 0.05) / (lo + 0.05)
+/** WCAG's contrast ratio, lighter over darker. */
+const contrastRatio = (a, b) => {
+  const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+  return (lighter + 0.05) / (darker + 0.05)
 }
 
 // What text and graphics sit on: the five opaque backgrounds, and a hovered row
@@ -70,13 +75,14 @@ const BACKGROUNDS = {
   'overlay-hover on bg-base': (t) => over(colour(t, 'overlay-hover'), colour(t, 'bg-base')),
 }
 const HOVER = { 'bg-hover': (t) => colour(t, 'bg-hover') }
+// Each background is a function of the theme, giving its opaque colour.
 const tintOf = (name, below) => (t) =>
   over(withAlpha(colour(t, name), parseFloat(t['opacity-tint-md']) / 100), colour(t, below))
 const onTint = (name) => ({
   [`${name} tint on bg-base`]: tintOf(name, 'bg-base'),
   [`${name} tint on bg-surface`]: tintOf(name, 'bg-surface'),
 })
-const on = (name) => ({ [name]: (t) => colour(t, name) })
+const solid = (name) => ({ [name]: (t) => colour(t, name) })
 
 const STATUSES = ['positive', 'good', 'warning', 'poor', 'negative']
 const PAIRS = [
@@ -100,10 +106,10 @@ const PAIRS = [
   [
     'text-on-solid',
     {
-      ...on('accent-solid'),
-      ...on('accent-solid-hover'),
-      ...on('status-negative-solid'),
-      ...on('status-negative-solid-hover'),
+      ...solid('accent-solid'),
+      ...solid('accent-solid-hover'),
+      ...solid('status-negative-solid'),
+      ...solid('status-negative-solid-hover'),
     },
     WORDS,
   ],
@@ -120,15 +126,18 @@ const PAIRS = [
 const failures = []
 let checked = 0
 for (const [themeName, theme] of Object.entries(THEMES)) {
-  for (const [fg, backgrounds, target] of PAIRS) {
+  for (const [fg, backgrounds, minimum] of PAIRS) {
     for (const [bgName, background] of Object.entries(backgrounds)) {
       checked++
       const bg = background(theme)
-      const value = ratio(over(colour(theme, fg), bg), bg)
-      if (value < target)
-        failures.push(
-          `${themeName}: --${fg} on ${bgName.replace(/^|(?<= on )/g, '--')} is ${value.toFixed(2)}:1, under ${target}:1`,
-        )
+      const ratio = contrastRatio(over(colour(theme, fg), bg), bg)
+      // `overlay-hover on bg-base` reads `--overlay-hover on --bg-base`.
+      const bgTokens = bgName
+        .split(' on ')
+        .map((part) => `--${part}`)
+        .join(' on ')
+      if (ratio < minimum)
+        failures.push(`${themeName}: --${fg} on ${bgTokens} is ${ratio.toFixed(2)}:1, under ${minimum}:1`)
     }
   }
 }

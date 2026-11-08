@@ -21,21 +21,21 @@ import { OWN_GROUPS } from '../tokens/design-front-matter.mjs'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const LINTER = resolve(ROOT, 'node_modules/@google/design.md/dist/index.js')
 
-const run = spawnSync(process.execPath, [LINTER, 'lint', process.argv[2] ?? 'DESIGN.md'], {
+const linter = spawnSync(process.execPath, [LINTER, 'lint', process.argv[2] ?? 'DESIGN.md'], {
   cwd: ROOT,
   encoding: 'utf8',
 })
 let report
 try {
-  report = JSON.parse(run.stdout)
+  report = JSON.parse(linter.stdout)
 } catch {
-  console.error(`The DESIGN.md linter didn't report:\n${run.stdout}${run.stderr}`)
+  console.error(`The DESIGN.md linter didn't report:\n${linter.stdout}${linter.stderr}`)
   process.exit(1)
 }
 
-const ours = new Set(OWN_GROUPS)
-const allowed = (f) => f.rule === 'token-like-ignored' && ours.has(f.path)
-const problems = report.findings.filter((f) => (f.severity === 'error' || f.severity === 'warning') && !allowed(f))
+const ownGroups = new Set(OWN_GROUPS)
+const isAllowed = (f) => f.rule === 'token-like-ignored' && ownGroups.has(f.path)
+const problems = report.findings.filter((f) => (f.severity === 'error' || f.severity === 'warning') && !isAllowed(f))
 if (problems.length > 0) {
   for (const f of problems)
     console.error(`DESIGN.md ${f.severity}${f.path ? ` at ${f.path}` : ''}: ${f.message} (${f.rule})`)

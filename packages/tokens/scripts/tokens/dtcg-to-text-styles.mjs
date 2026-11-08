@@ -14,7 +14,8 @@ import { resolve } from 'node:path'
 
 import { EXTENSION } from './shared.mjs'
 
-const CASES = { UPPER: 'uppercase', LOWER: 'lowercase', TITLE: 'capitalize' }
+/** Figma's text case as CSS text-transform. */
+const TEXT_TRANSFORMS = { UPPER: 'uppercase', LOWER: 'lowercase', TITLE: 'capitalize' }
 
 export async function buildTextStylesCss({ dir, header }) {
   const tokens = JSON.parse(await readFile(resolve(dir, 'text-styles.tokens.json'), 'utf8')).type
@@ -22,7 +23,7 @@ export async function buildTextStylesCss({ dir, header }) {
     const prefix = `--type-${slug}`
     // {font-family.sans} is --font-family-sans.
     const family = `--${token.$value.fontFamily.slice(1, -1).replace(/\./g, '-')}`
-    const textCase = CASES[token.$extensions?.[EXTENSION]?.textCase]
+    const textCase = TEXT_TRANSFORMS[token.$extensions?.[EXTENSION]?.textCase]
     const use = token.$description?.replace(/ Code:.*$/, '')
     return [
       ...(use ? [`  /* ${use} */`] : []),
