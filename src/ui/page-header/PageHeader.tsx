@@ -1,5 +1,5 @@
 import { cx } from 'class-variance-authority'
-import { isValidElement, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import { IconButton } from '../button/IconButton'
 import { ArrowLeftIcon, InfoIcon } from '../icons/Icons'
@@ -29,8 +29,8 @@ type PageHeaderProps = {
   /** The page's name. */
   title: ReactNode
   /**
-   * The line under the title. It fades in when it first shows, when it
-   * becomes something else (new text, another element, or content after
+   * The line under the title. It fades in when it first shows, when its text
+   * changes or it swaps between text and an element (or arrives after
    * `null`), and each time `status` clears. `null` keeps the line's height
    * while there's nothing to show; leave it out to have no line.
    */
@@ -58,17 +58,14 @@ type PageHeaderProps = {
   )
 
 /**
- * What the description is, for its key: its text, or its element's type and
- * key. A count ticking inside the same element keeps its key and doesn't
- * flicker; a new line in its place gets a new one and fades in.
+ * The description's key: its text, or just "element". New text or an element
+ * in place of text remounts it, so it fades in; a count ticking inside the
+ * same element keeps the key and doesn't flicker.
  */
 function descriptionKey(description: ReactNode): string {
+  if (description == null) return 'empty'
   if (typeof description === 'string' || typeof description === 'number') return `text:${description}`
-  if (isValidElement(description)) {
-    const type = typeof description.type === 'string' ? description.type : (description.type as { name?: string }).name
-    return `element:${type ?? 'component'}:${description.key ?? ''}`
-  }
-  return description == null ? 'empty' : 'other'
+  return 'element'
 }
 
 /**

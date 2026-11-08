@@ -18,7 +18,7 @@ describe('PageHeader', () => {
     expect(onBack).toHaveBeenCalledOnce()
   })
 
-  it('fades the line in afresh when it becomes something else, not when a count inside it ticks', () => {
+  it('fades the line in afresh when its text changes or it becomes an element, not when a count inside it ticks', () => {
     const line = (): HTMLElement | null | undefined =>
       screen.queryByRole('heading')?.nextElementSibling?.firstElementChild as HTMLElement | null
     const { rerender } = render(<PageHeader title="Speed" icon={null} description={null} />)

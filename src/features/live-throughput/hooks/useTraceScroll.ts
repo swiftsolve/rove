@@ -1,8 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
-// The backend sends a sample a second. Each scroll is paced a little longer,
-// so it settles about a tenth of a slot short and the next sample, a touch
-// early or late, carries it on at the same speed instead of stopping it.
+// A sample lands each second; each scroll runs a little longer, so a sample
+// that's slightly late carries the scroll on instead of finding it stopped.
 const SCROLL_MS = 1100
 /** How far the scroll may fall behind (slots) before it skips ahead, as after a burst of samples. */
 const MAX_LAG_SLOTS = 1
@@ -10,12 +9,10 @@ const MAX_LAG_SLOTS = 1
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
 /**
- * How far the chart's trace has scrolled, in slots, since its newest sample
- * landed: from 0, with the sample two before the newest on the right edge,
- * toward 1, with the one just before it there. A sample that lands before the
- * last scroll finished starts the next below 0, down to -1. The trace glides
- * instead of stepping. Each new `samples` array is a new sample. Under
- * reduced motion it stays at 1, so the trace steps.
+ * How far the chart's trace has scrolled since its newest sample landed, in
+ * slots: 0 to 1, or down to -1 when a sample lands before the last scroll
+ * finished. Each new `samples` array is a new sample. Under reduced motion it
+ * stays at 1, so the trace steps instead of gliding.
  */
 export function useTraceScroll(samples: readonly number[]): number {
   const [progress, setProgress] = useState(1)
@@ -25,29 +22,27 @@ export function useTraceScroll(samples: readonly number[]): number {
   useLayoutEffect(() => {
     const isNewSample = samples !== lastSamplesRef.current
     lastSamplesRef.current = samples
-    const show = (value: number): void => {
+    const updateProgress = (value: number): void => {
       progressRef.current = value
       setProgress(value)
     }
     if (samples.length === 0 || matchMedia(REDUCED_MOTION).matches) {
-      show(1)
+      updateProgress(1)
       return
     }
-    // A new sample moves every point a slot left in the layout, so the scroll
-    // steps back a slot to hold them where they were, before the browser
-    // paints. One that comes early keeps what's left of the last scroll,
-    // which then runs a touch faster. StrictMode's second run isn't a new
-    // sample, so it carries on as it was.
+    // A new sample shifts every point a slot left, so the scroll starts a slot
+    // back to hold them still, then glides on. StrictMode's re-run isn't a new
+    // sample, so it carries on where it was.
     const from = isNewSample ? Math.max(progressRef.current - 1, -MAX_LAG_SLOTS) : progressRef.current
-    show(from)
+    updateProgress(from)
     if (from >= 1) return
 
     const start = performance.now()
     let frameId = 0
     const step = (now: number): void => {
-      const elapsed = Math.min(1, Math.max(0, (now - start) / SCROLL_MS))
-      show(from + (1 - from) * elapsed)
-      if (elapsed < 1) frameId = requestAnimationFrame(step)
+      const fractionDone = Math.min(1, Math.max(0, (now - start) / SCROLL_MS))
+      updateProgress(from + (1 - from) * fractionDone)
+      if (fractionDone < 1) frameId = requestAnimationFrame(step)
     }
     frameId = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frameId)

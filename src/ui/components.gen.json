@@ -2553,7 +2553,7 @@
         },
         "description": {
           "type": "ReactNode",
-          "description": "The line under the title. It fades in when it first shows, when it\nbecomes something else (new text, another element, or content after\n`null`), and each time `status` clears. `null` keeps the line's height\nwhile there's nothing to show; leave it out to have no line."
+          "description": "The line under the title. It fades in when it first shows, when its text\nchanges or it swaps between text and an element (or arrives after\n`null`), and each time `status` clears. `null` keeps the line's height\nwhile there's nothing to show; leave it out to have no line."
         },
         "icon": {
           "type": "ReactNode",

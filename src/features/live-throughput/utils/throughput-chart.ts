@@ -55,24 +55,36 @@ function followShare(cutoffHz: number): number {
   return 1 / (1 + 1 / (2 * Math.PI * cutoffHz))
 }
 
+/** The adaptive average: each rate followed slowly while steady, quickly once it really moves. */
+function followRates(rates: readonly number[]): number[] {
+  let level = rates[0] ?? 0
+  let trend = 0
+  return rates.map((rate) => {
+    trend += followShare(CHANGE_CUTOFF_HZ) * (rate - level - trend)
+    const relativeChange = Math.abs(trend) / Math.max(level, rate, RATE_FLOOR_MBPS)
+    const pastJitter = Math.max(0, relativeChange - JITTER_THRESHOLD)
+    level += followShare(STEADY_CUTOFF_HZ + RESPONSE * pastJitter) * (rate - level)
+    return level
+  })
+}
+
+/** Each value averaged with the four before it, by the bell's weights; the first repeats back. */
+function bellAverage(values: readonly number[]): number[] {
+  return values.map((_, index) => {
+    let sum = 0
+    BELL_WEIGHTS.forEach((weight, back) => {
+      sum += weight * (values[Math.max(0, index - back)] ?? 0)
+    })
+    return sum / BELL_TOTAL
+  })
+}
+
 /**
  * Smooths rates (Mbps, oldest first): the adaptive average, then the bell.
  * Only past samples count, so a point never changes once it's drawn.
  */
 export function smoothHeights(rates: readonly number[]): number[] {
-  let level = rates[0] ?? 0
-  let trend = 0
-  const followed = rates.map((rate) => {
-    trend += followShare(CHANGE_CUTOFF_HZ) * (rate - level - trend)
-    const change = Math.abs(trend) / Math.max(level, rate, RATE_FLOOR_MBPS)
-    level += followShare(STEADY_CUTOFF_HZ + RESPONSE * Math.max(0, change - JITTER_THRESHOLD)) * (rate - level)
-    return level
-  })
-  return followed.map(
-    (_, index) =>
-      BELL_WEIGHTS.reduce((sum, weight, back) => sum + weight * (followed[Math.max(0, index - back)] ?? 0), 0) /
-      BELL_TOTAL,
-  )
+  return bellAverage(followRates(rates))
 }
 
 /**
@@ -97,7 +109,16 @@ export function inViewHeights(samples: readonly number[]): number[] {
   return curveHeights(samples).slice(-(CHART_WINDOW_SAMPLES + 4))
 }
 
-/** A segment's Bézier start, controls and end, from the four heights around it. */
+/** How many sample points `curveHeights` holds: all but the two repeated ends. */
+function pointCountOf(heights: readonly number[]): number {
+  return heights.length - 2
+}
+
+/**
+ * A segment's Bézier start, controls and end, from the four heights around
+ * it: the standard conversion of a uniform cubic B-spline segment, since the
+ * B-spline keeps the curve smooth and SVG draws Béziers.
+ */
 function segmentHeights(heights: readonly number[], index: number): [number, number, number, number] {
   const [p0, p1, p2, p3] = [
     heights[index] ?? 0,
@@ -116,7 +137,7 @@ function bezierAt(controls: readonly [number, number, number, number], u: number
 
 /** The line's height (Mbps) at the plot's right edge, from `curveHeights`. */
 function headOf(heights: readonly number[], progress: number): number {
-  const pointCount = heights.length - 2
+  const pointCount = pointCountOf(heights)
   if (pointCount < 2) return 0
   // The edge sits two slots behind the newest point, `progress` of the way to the next.
   const edge = pointCount - 3 + progress
@@ -154,7 +175,7 @@ export function buildTrace(
   progress: number,
 ): Trace | null {
   const heights = curveHeights(samples)
-  const pointCount = heights.length - 2
+  const pointCount = pointCountOf(heights)
   if (pointCount < 2) return null
 
   const slot = slotWidth(size.width)
@@ -162,15 +183,18 @@ export function buildTrace(
   const lastX = firstX + (pointCount - 1) * slot
   const toY = (mbps: number): number => (scaleMax > 0 ? size.height * (1 - mbps / scaleMax) : size.height)
 
+  const point = (x: number, y: number): string => `${round(x)},${round(y)}`
   const curves: string[] = []
   for (let index = 0; index < pointCount - 1; index += 1) {
     const x = firstX + index * slot
-    const [, c1, c2, end] = segmentHeights(heights, index).map(toY)
-    curves.push(
-      `C${round(x + slot / 3)},${round(c1 ?? 0)} ${round(x + (2 * slot) / 3)},${round(c2 ?? 0)} ${round(x + slot)},${round(end ?? 0)}`,
-    )
+    const [, control1, control2, end] = segmentHeights(heights, index).map(toY)
+    // Controls a third and two thirds along, so the curve's x runs evenly.
+    const firstControl = point(x + slot / 3, control1 ?? 0)
+    const secondControl = point(x + (2 * slot) / 3, control2 ?? 0)
+    curves.push(`C${firstControl} ${secondControl} ${point(x + slot, end ?? 0)}`)
   }
-  const line = `M${round(firstX)},${round(toY(segmentHeights(heights, 0)[0]))}${curves.join('')}`
+  const start = point(firstX, toY(segmentHeights(heights, 0)[0]))
+  const line = `M${start}${curves.join('')}`
   const area = `${line}L${round(lastX)},${size.height}L${round(firstX)},${size.height}Z`
 
   return { line, area, headY: toY(headOf(heights, progress)) }
