@@ -19,7 +19,7 @@ export type ReturnPoint = {
 /** Whether a value read back from history is a whole return point: an entry can outlive the build that wrote it. */
 export function isReturnPoint(value: unknown): value is ReturnPoint {
   if (value == null || typeof value !== 'object') return false
-  const fields: Partial<Record<keyof ReturnPoint, unknown>> = value
+  const fields = value as Record<string, unknown>
   return (
     typeof fields.signature === 'string' &&
     typeof fields.index === 'number' &&

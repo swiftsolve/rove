@@ -146,6 +146,12 @@ These hold in `src/` and `scripts/` alike.
     stays a list (`WindowSize[]`, not `[WindowSize]`), a field that may be
     missing stays optional, and the code checks what it assumes, so a
     surprise fails with a message instead of an `undefined`.
+- A type reads in one pass, like the code around it. A shape gets a name
+  instead of being composed from utility types (`Partial<Record<keyof T,
+  unknown>>`), and a generic earns its place only when callers pass different
+  types through it. An unknown object's fields are read as
+  `Record<string, unknown>` and checked one by one (`isSample`,
+  `isReturnPoint`).
 - A data file's shape is one named type that every reader imports, like
   `scripts/lib/library-json-types.ts`, not a shape written again inline.
 - A value of more than two parts is an object, read by name. A table of rows
