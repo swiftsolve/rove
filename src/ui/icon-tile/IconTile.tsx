@@ -83,7 +83,11 @@ export function IconTileButton({
       style={{ ...look.style, ...style }}
       className={cn(
         look.className,
-        'transition-[background,transform] duration-(--duration-fast) ease-out data-disabled:cursor-default',
+        // The lift springs; the tint eases fast, so it doesn't trail the motion.
+        // Kept on its own layer, so the icon isn't redrawn onto the pixel grid
+        // as the scale settles, which made it twitch on the way down.
+        '[transition:background_var(--duration-fast)_var(--ease-out),transform_var(--duration-spring)_var(--ease-spring)]',
+        'will-change-transform data-disabled:cursor-default',
         'usable:hover:transform-[translateY(-2px)_scale(1.06)] usable:hover:bg-current/(--opacity-tint-lg)',
         'usable:focus-visible:transform-[translateY(-2px)_scale(1.06)] usable:focus-visible:bg-current/(--opacity-tint-lg)',
         className,
