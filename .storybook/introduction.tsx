@@ -2,6 +2,7 @@ import './introduction.css'
 
 import type { CSSProperties, JSX, ReactNode } from 'react'
 
+import type { ComponentListJson } from '../scripts/lib/library-json-types.ts'
 import { DotSeparator } from '../src/ui'
 import componentList from '../src/ui/components.gen.json'
 import figma from '../src/ui/figma-components.json'
@@ -12,12 +13,14 @@ const REPO = 'https://github.com/swiftsolve/rove'
 // The Rove Tokens Storybook, whose tokens these components are built from.
 const TOKENS = 'https://rove.swiftsolve.net/storybook/tokens/'
 
-type Component = { libraryGroup: string; storyIds: string[]; figmaComponent: { figmaNodeId?: string } | null }
-const components = Object.values(componentList.components as Record<string, Component>)
+const COMPONENTS_BY_NAME: ComponentListJson['components'] = componentList.components
+const components = Object.values(COMPONENTS_BY_NAME)
 // Every figure on the page is counted from the component list, so none can go stale.
 const storyCount = components.reduce((sum, { storyIds }) => sum + storyIds.length, 0)
 // The rest only add behaviour or layout, so Figma has no component for them.
-const behaviourOnlyCount = components.filter((component) => !component.figmaComponent?.figmaNodeId).length
+const behaviourOnlyCount = components.filter(
+  (component) => !(component.figmaComponent && 'figmaNodeId' in component.figmaComponent),
+).length
 
 /** A Docs page, from inside the preview iframe: `./?path=` is the manager. */
 const docsHref = (id: string): string => `./?path=/docs/${id}`

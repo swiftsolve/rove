@@ -26,21 +26,25 @@
  *    exactly what the tab bar does.
  */
 import { spawn } from 'node:child_process'
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { chromium, type Locator, type Page } from 'playwright-core'
 
-import { type AppLocation, flag, freePort, type RunningServer, startDevServer } from './lib/dev-server.ts'
+import {
+  type AppLocation,
+  flag,
+  freePort,
+  readWindowSize,
+  type RunningServer,
+  startDevServer,
+} from './lib/dev-server.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-// Kept in sync with src-tauri/tauri.conf.json: the shots are only useful if
-// they're the size the window actually is.
-type TauriConfig = { app: { windows: [{ width: number; height: number }] } }
-const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
-const { width, height } = app.windows[0]
+// The shots are only useful at the size the window actually is.
+const { width, height } = await readWindowSize()
 
 /** Every screen worth a shot: each tab, plus the subpages layered over one. */
 const SCREENS: [name: string, location: AppLocation][] = [

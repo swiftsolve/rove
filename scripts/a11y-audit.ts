@@ -21,12 +21,10 @@ import { fileURLToPath } from 'node:url'
 import type axe from 'axe-core'
 import { chromium } from 'playwright-core'
 
-import { type AppLocation, flag, type RunningServer, startDevServer } from './lib/dev-server.ts'
+import { type AppLocation, flag, readWindowSize, type RunningServer, startDevServer } from './lib/dev-server.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-type TauriConfig = { app: { windows: [{ width: number; height: number }] } }
-const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
-const { width, height } = app.windows[0]
+const { width, height } = await readWindowSize()
 const AXE_SOURCE = await readFile(resolve(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8')
 
 // WCAG 2.1 A and AA, plus axe's best practices (landmarks, heading order, …).
@@ -154,6 +152,7 @@ try {
       await page.addScriptTag({ content: AXE_SOURCE })
       const axeViolations = await page.evaluate(
         async ({ tags, exclude }) => {
+          // The page's window has axe only once its script is added, which no Window type knows.
           const results = await (window as unknown as { axe: typeof axe }).axe.run(
             { include: [['html']], exclude },
             { runOnly: { type: 'tag', values: tags } },

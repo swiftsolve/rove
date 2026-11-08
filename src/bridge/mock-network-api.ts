@@ -732,10 +732,10 @@ function seedNetworkEvents(): NetworkEvent[] {
 }
 
 // A believable session: a browser dominating, a music stream, a couple of
-// background sync and update daemons. [name, downMB, upMB], busiest first as
-// the real sampler returns them. Every name needs an entry in getHostUsage:
+// background sync and update daemons, busiest first as the real sampler
+// returns them. Every name needs an entry in getHostUsage:
 // each Apps row links into that app's host group.
-const MOCK_APP_ROWS: [string, number, number][] = [
+const MOCK_APP_ROWS: [name: string, downMb: number, upMb: number][] = [
   ['firefox', 842, 63],
   ['Spotify', 214, 8],
   ['com.apple.WebKit.Networking', 118, 11],
@@ -1062,8 +1062,8 @@ function createMockNetworkApi(): NetworkAPI {
     getDataUsage: async () => {
       await delay(200)
       // A believable week: lighter midweek, heavier at the weekend, today still
-      // filling in. Index 0 is six days ago, index 6 today. [downGB, upGB].
-      const byDay: [number, number][] = [
+      // filling in. Index 0 is six days ago, index 6 today.
+      const byDay: [downGb: number, upGb: number][] = [
         [5.1, 0.7],
         [3.4, 0.5],
         [6.2, 0.9],
@@ -1102,10 +1102,11 @@ function createMockNetworkApi(): NetworkAPI {
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
       // Every app in MOCK_APP_ROWS gets hosts, in order, so an Apps row's link
-      // never lands on a missing group. [host, ip, countryCode, downMB, upMB]; a null country code
-      // (LAN peer) shows no flag, a null host the bare IP. Per-app sums stay
+      // never lands on a missing group. A null country code (LAN peer) shows no
+      // flag, a null host the bare IP. Per-app sums stay
       // within getAppUsage's totals: hosts count only TCP traffic.
-      const apps: [string, [string | null, string, string | null, number, number][]][] = [
+      type HostRow = [host: string | null, ip: string, countryCode: string | null, downMb: number, upMb: number]
+      const apps: [appName: string, hosts: HostRow[]][] = [
         [
           'firefox',
           [
@@ -1187,8 +1188,8 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(200)
       // A believable protocol mix for the session above: the web dominates,
       // then a QUIC/HTTP3 slice, DNS, push keepalives, an ssh session's upload,
-      // and a long tail of unrecognised ports. [id, label, downMB, upMB].
-      const rows: [string, string, number, number][] = [
+      // and a long tail of unrecognised ports.
+      const rows: [id: string, label: string, downMb: number, upMb: number][] = [
         ['https', 'HTTPS', 1180, 132],
         ['fileshare', 'File sharing', 96, 14],
         ['media', 'Streaming media', 88, 3],
@@ -1400,12 +1401,8 @@ export function installMockNetworkApiIfNeeded(): boolean {
   if (typeof window === 'undefined') return false
   if (window.networkAPI) return false
 
-  const mutableWindow = window as unknown as {
-    networkAPI: NetworkAPI
-    windowControls: WindowControls
-  }
-  mutableWindow.networkAPI = createMockNetworkApi()
-  mutableWindow.windowControls = createMockWindowControls()
+  window.networkAPI = createMockNetworkApi()
+  window.windowControls = createMockWindowControls()
   seedLatencyHistory(mockSeededLatencyHistory())
 
   console.info('[rove] Tauri bridge not found, using in-browser mock network data (dev only).')

@@ -9,6 +9,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "paths": {
       "@/*": ["./src/*"]
     },

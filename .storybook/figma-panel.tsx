@@ -3,15 +3,13 @@ import React, { type JSX } from 'react'
 import { AddonPanel, EmptyTabContent, Link } from 'storybook/internal/components'
 import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 
+import type { FigmaComponentsJson } from '../scripts/lib/library-json-types.ts'
 import figma from '../src/ui/figma-components.json'
-
-type FigmaNode = { figmaName: string; figmaNodeId: string }
-type NoFigmaNode = { whyNoFigmaComponent: string }
 
 // A story's title ends in its component's name ('Containers/Card/CardHeader'),
 // which is figma-components.json's key, so every story finds its Figma component with
 // nothing set on the story itself.
-const COMPONENTS: Record<string, FigmaNode | NoFigmaNode> = figma.components
+const COMPONENTS: FigmaComponentsJson['components'] = figma.components
 const FILE = new URL(figma.figmaFileUrl)
 
 const COLUMN: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%' }

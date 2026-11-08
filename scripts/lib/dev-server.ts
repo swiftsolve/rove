@@ -1,9 +1,10 @@
 /**
  * Helpers the scripts that drive the app in a browser share
- * (screenshots.ts, a11y-audit.ts): reading a `--flag`, and starting the Vite
- * dev server on a free port.
+ * (screenshots.ts, a11y-audit.ts): reading a `--flag` and the window's size, and
+ * starting the Vite dev server on a free port.
  */
 import { spawn } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
 import { type AddressInfo, createServer } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,6 +17,16 @@ export type RunningServer = { url: string; stop: () => void }
 
 /** Where the app is: a tab, and any subpage open over it (`speedSub: { view: 'history' }`), as history.state keeps it. */
 export type AppLocation = { tab: string; [subpage: string]: unknown }
+
+/** The part of src-tauri/tauri.conf.json the scripts read: the app window's size. */
+type TauriConfig = { app: { windows: [{ width: number; height: number }] } }
+
+/** The app window's size, from the Tauri config, so a page opens the size the window is. */
+export async function readWindowSize(): Promise<{ width: number; height: number }> {
+  const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
+  const { width, height } = app.windows[0]
+  return { width, height }
+}
 
 /** The value after `--<name>` on the command line, or `fallback`. */
 export function flag<Fallback extends string | null>(name: string, fallback: Fallback): string | Fallback {

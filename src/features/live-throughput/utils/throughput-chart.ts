@@ -117,25 +117,33 @@ function pointCountOf(heights: readonly number[]): number {
   return heights.length - 2
 }
 
+/** A curve segment's heights: where it starts, its two Bézier controls, where it ends. */
+type BezierSegment = { start: number; control1: number; control2: number; end: number }
+
 /**
  * A segment's Bézier start, controls and end, from the four heights around
  * it: the standard conversion of a uniform cubic B-spline segment, since the
  * B-spline keeps the curve smooth and SVG draws Béziers.
  */
-function segmentHeights(heights: readonly number[], index: number): [number, number, number, number] {
+function segmentHeights(heights: readonly number[], index: number): BezierSegment {
   const [p0, p1, p2, p3] = [
     heights[index] ?? 0,
     heights[index + 1] ?? 0,
     heights[index + 2] ?? 0,
     heights[index + 3] ?? 0,
   ]
-  return [(p0 + 4 * p1 + p2) / 6, (2 * p1 + p2) / 3, (p1 + 2 * p2) / 3, (p1 + 4 * p2 + p3) / 6]
+  return {
+    start: (p0 + 4 * p1 + p2) / 6,
+    control1: (2 * p1 + p2) / 3,
+    control2: (p1 + 2 * p2) / 3,
+    end: (p1 + 4 * p2 + p3) / 6,
+  }
 }
 
-/** The cubic Bézier through `controls` (start, two controls, end) at `u` (0 to 1). */
-function bezierAt(controls: readonly [number, number, number, number], u: number): number {
+/** The cubic Bézier `segment`'s height at `u` (0 to 1). */
+function bezierAt({ start, control1, control2, end }: BezierSegment, u: number): number {
   const v = 1 - u
-  return v * v * v * controls[0] + 3 * v * v * u * controls[1] + 3 * v * u * u * controls[2] + u * u * u * controls[3]
+  return v * v * v * start + 3 * v * v * u * control1 + 3 * v * u * u * control2 + u * u * u * end
 }
 
 /**
@@ -182,13 +190,13 @@ export function buildTrace(samples: readonly number[], size: PlotSize, scaleMax:
   const curves: string[] = []
   for (let index = 0; index < pointCount - 1; index += 1) {
     const x = firstX + index * slot
-    const [, control1, control2, end] = segmentHeights(heights, index).map(toY)
+    const { control1, control2, end } = segmentHeights(heights, index)
     // Controls a third and two thirds along, so the curve's x runs evenly.
-    const firstControl = formatPoint(x + slot / 3, control1 ?? 0)
-    const secondControl = formatPoint(x + (2 * slot) / 3, control2 ?? 0)
-    curves.push(`C${firstControl} ${secondControl} ${formatPoint(x + slot, end ?? 0)}`)
+    const firstControl = formatPoint(x + slot / 3, toY(control1))
+    const secondControl = formatPoint(x + (2 * slot) / 3, toY(control2))
+    curves.push(`C${firstControl} ${secondControl} ${formatPoint(x + slot, toY(end))}`)
   }
-  const start = formatPoint(firstX, toY(segmentHeights(heights, 0)[0]))
+  const start = formatPoint(firstX, toY(segmentHeights(heights, 0).start))
   const line = `M${start}${curves.join('')}`
   const area = `${line}L${roundToHundredths(lastX)},${size.height}L${roundToHundredths(firstX)},${size.height}Z`
 

@@ -133,6 +133,24 @@ what every key means, and the generators fail on a file that breaks it.
   included. One test can use over 1 GB on fast links." How it works belongs
   in the README.
 
+### TypeScript
+
+These hold in `src/` and `scripts/` alike.
+
+- A cast (`as`) says what the compiler can't prove, so it stays where a value
+  comes in from outside: parsed JSON, `history.state`, an event's target, a
+  page's `window`. A test fixture built partial on purpose, and a style object
+  that sets a custom property (React's `CSSProperties` has no `--name`), may
+  cast too. A double cast (`as unknown as`) says why beside it.
+- A data file's shape is one named type that every reader imports, like
+  `scripts/lib/library-json-types.ts`, not a shape written again inline.
+- A value of more than two parts is an object, read by name. A table of rows
+  (fixtures, scenarios) may stay tuples when its type labels each element:
+  `[name: string, downMb: number, upMb: number][]`.
+- Only syntax that type stripping can erase: no `enum`, `namespace` or
+  constructor parameter properties, so `scripts/` runs as is under Node.
+  [✓ CHECKED by `tsconfig.json`, `scripts/tsconfig.json`]
+
 ### Styles: Tailwind utilities from the design tokens
 
 DESIGN.md says which token to use for what, and its rules (a token, never a
