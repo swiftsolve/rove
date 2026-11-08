@@ -27,6 +27,8 @@ The reasons behind the token values. The values themselves live in Figma (and in
 
 ## Accent and solids
 
+- **One blue, chosen against the other colours' jobs.** The accent marks the brand and what you act on: the mark, the active tab, solid buttons, links and the focus ring. Blue was the hue no other job claimed. Green, amber, orange and red say how good something is, so a teal or an orange accent would read as a verdict; upload is violet, so a violet accent would blur into it. Download is a lighter step of the same blue, so the main reading carries the brand. Blue also reads calm and technical, as a network tool should. A grey accent was calmer still, but left nothing that says "press here".
+- **A violet-leaning blue at OKLCH hue 265.** In Dark `accent/default` (`#5b8cff`) sits at lightness 66, bright on the near-black backdrop; Light and the solids step down to lightness 55 (`#3a69d5`) for contrast, as below.
 - **`accent/solid` sits a step darker than the accent.** The bright accent reads well as text but gives a white label only 3.2:1; the solid clears 4.5:1.
 - **Solid hovers deepen rather than brighten:** any lighter solid would drop the white label below 4.5:1.
 - **The negative reds** (negative, solid, solid hover) each step darker and duller, so they read as three reds rather than two. Both themes share the solid and hover, where white labels sit at 5.6:1 and 7.4:1.
