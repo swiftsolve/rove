@@ -13,7 +13,7 @@ export function useHostUsage(): UsageQuery<HostUsageSummary> {
   return useUsageQuery({
     queryKey: 'hostUsage',
     read: (api) => api.getHostUsage(),
-    empty: EMPTY_USAGE,
+    emptyUsage: EMPTY_USAGE,
     errorMessage: 'Couldn’t load hosts',
     isEmpty: (usage) => usage.apps.length === 0,
     onUpdate: onHostUsage,

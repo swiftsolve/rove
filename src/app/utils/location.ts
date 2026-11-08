@@ -51,7 +51,7 @@ export function parentLocation(location: AppLocation): AppLocation {
 }
 
 /** The focused app of an Apps subpage, or null. Only `hosts` carries one. */
-function appsSubApp(sub: AppsSub | null | undefined): string | null {
+function focusedAppOf(sub: AppsSub | null | undefined): string | null {
   return sub?.view === 'hosts' ? (sub.app ?? null) : null
 }
 
@@ -62,7 +62,7 @@ export function locationKey(location: AppLocation): string {
     location.speedSub?.view ?? '',
     location.servicesSub?.view ?? '',
     location.appsSub?.view ?? '',
-    appsSubApp(location.appsSub) ?? '',
+    focusedAppOf(location.appsSub) ?? '',
   ].join(':')
 }
 
@@ -77,6 +77,6 @@ export function isSameLocation(a: AppLocation, b: AppLocation): boolean {
   if (a.tab !== b.tab) return false
   if ((a.servicesSub?.view ?? null) !== (b.servicesSub?.view ?? null)) return false
   if ((a.appsSub?.view ?? null) !== (b.appsSub?.view ?? null)) return false
-  if (appsSubApp(a.appsSub) !== appsSubApp(b.appsSub)) return false
+  if (focusedAppOf(a.appsSub) !== focusedAppOf(b.appsSub)) return false
   return isSameSpeedSub(a.speedSub, b.speedSub)
 }

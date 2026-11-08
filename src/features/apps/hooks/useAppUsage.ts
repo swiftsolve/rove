@@ -10,7 +10,7 @@ export function useAppUsage(): UsageQuery<AppUsageSummary> {
   return useUsageQuery({
     queryKey: 'appUsage',
     read: (api) => api.getAppUsage(),
-    empty: EMPTY_USAGE,
+    emptyUsage: EMPTY_USAGE,
     errorMessage: 'Couldn’t load app usage',
     isEmpty: (usage) => usage.apps.length === 0,
     onUpdate: onAppUsage,

@@ -3,9 +3,9 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import {
   doesSystemPreferLight,
   isResolvedLight,
-  LEGACY_SETTING,
-  LIGHT_QUERY,
-  MODE_SETTING,
+  LEGACY_LIGHT_MODE_SETTING,
+  PREFERS_LIGHT_QUERY,
+  THEME_MODE_SETTING,
   type ThemeMode,
   themeModeFrom,
 } from '@/app/utils/theme-mode'
@@ -24,14 +24,14 @@ export type Theme = {
 }
 
 export function useThemeState(): Theme {
-  const [storedMode, setStoredMode] = useSetting(MODE_SETTING, '')
-  const [legacyMode] = useSetting(LEGACY_SETTING, '')
+  const [storedMode, setStoredMode] = useSetting(THEME_MODE_SETTING, '')
+  const [legacyMode] = useSetting(LEGACY_LIGHT_MODE_SETTING, '')
   const mode = themeModeFrom(storedMode, legacyMode)
   const [isSystemLight, setIsSystemLight] = useState<boolean>(doesSystemPreferLight)
 
   // So a 'system' choice follows the desktop live.
   useEffect(() => {
-    const lightQuery = window.matchMedia(LIGHT_QUERY)
+    const lightQuery = window.matchMedia(PREFERS_LIGHT_QUERY)
     const onChange = (): void => setIsSystemLight(lightQuery.matches)
     lightQuery.addEventListener('change', onChange)
     return () => lightQuery.removeEventListener('change', onChange)

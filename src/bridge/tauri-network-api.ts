@@ -55,7 +55,7 @@ function subscribeEvent<T>(event: string, callback: (payload: T) => void): Unsub
 
 // A Rust command's `Err(String)` rejects as a bare string. Wrap it once here, so
 // every caller gets an Error whose message is the backend's reason.
-async function call<T>(command: string, args?: Record<string, unknown>): Promise<T> {
+async function invokeCommand<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   try {
     return await invoke<T>(command, args)
   } catch (cause) {
@@ -64,38 +64,38 @@ async function call<T>(command: string, args?: Record<string, unknown>): Promise
 }
 
 const tauriNetworkApi: NetworkAPI = {
-  getNetworkInfo: () => call<NetworkInfo>('get_network_info'),
-  getWifiShare: () => call<WifiShare>('get_wifi_share'),
-  getPublicIp: () => call<string | null>('get_public_ip'),
-  getInterfaces: () => call<NetworkInterfaceSummary[]>('get_interfaces'),
-  getDevices: () => call<LanDeviceScan>('get_devices').then(narrowDeviceScan),
-  getNetworkEvents: () => call<NetworkEvent[]>('get_network_events').then(knownEvents),
-  runDiagnostics: () => call<NetworkDiagnostics>('run_diagnostics'),
-  runDiagnosticsLive: () => call<LiveDiagnostics>('run_diagnostics_live'),
-  runServices: () => call<ServicesReport>('run_services'),
-  getInternetStatus: () => call<InternetStatus | null>('get_internet_status'),
-  testService: (host: string) => call<number | null>('test_service', { host }),
-  listServices: () => call<ServiceDefinition[]>('list_services'),
-  addService: (name: string, host: string) => call<ServiceDefinition[]>('add_service', { name, host }),
+  getNetworkInfo: () => invokeCommand<NetworkInfo>('get_network_info'),
+  getWifiShare: () => invokeCommand<WifiShare>('get_wifi_share'),
+  getPublicIp: () => invokeCommand<string | null>('get_public_ip'),
+  getInterfaces: () => invokeCommand<NetworkInterfaceSummary[]>('get_interfaces'),
+  getDevices: () => invokeCommand<LanDeviceScan>('get_devices').then(narrowDeviceScan),
+  getNetworkEvents: () => invokeCommand<NetworkEvent[]>('get_network_events').then(knownEvents),
+  runDiagnostics: () => invokeCommand<NetworkDiagnostics>('run_diagnostics'),
+  runDiagnosticsLive: () => invokeCommand<LiveDiagnostics>('run_diagnostics_live'),
+  runServices: () => invokeCommand<ServicesReport>('run_services'),
+  getInternetStatus: () => invokeCommand<InternetStatus | null>('get_internet_status'),
+  testService: (host: string) => invokeCommand<number | null>('test_service', { host }),
+  listServices: () => invokeCommand<ServiceDefinition[]>('list_services'),
+  addService: (name: string, host: string) => invokeCommand<ServiceDefinition[]>('add_service', { name, host }),
   updateService: (oldHost: string, name: string, host: string) =>
-    call<ServiceDefinition[]>('update_service', { oldHost, name, host }),
-  deleteService: (host: string) => call<ServiceDefinition[]>('delete_service', { host }),
-  getServiceHistory: () => call<ServiceEvent[]>('get_service_history'),
-  clearServiceHistory: () => call<void>('clear_service_history'),
+    invokeCommand<ServiceDefinition[]>('update_service', { oldHost, name, host }),
+  deleteService: (host: string) => invokeCommand<ServiceDefinition[]>('delete_service', { host }),
+  getServiceHistory: () => invokeCommand<ServiceEvent[]>('get_service_history'),
+  clearServiceHistory: () => invokeCommand<void>('clear_service_history'),
   onServicesTimeline: (callback: () => void) => subscribeEvent('services-timeline', callback),
   onAppUsage: (callback: () => void) => subscribeEvent('app-usage', callback),
   onHostUsage: (callback: () => void) => subscribeEvent('host-usage', callback),
-  runSpeedTest: (runToken: string) => call<SpeedTestResult>('run_speed_test', { runToken }),
-  cancelSpeedTest: (runToken: string) => call<void>('cancel_speed_test', { runToken }),
-  getDataUsage: () => call<DataUsageSummary>('get_data_usage'),
-  getAppUsage: () => call<AppUsageSummary>('get_app_usage'),
-  getHostUsage: () => call<HostUsageSummary>('get_host_usage'),
-  getTrafficUsage: () => call<TrafficUsageSummary>('get_traffic_usage'),
-  getUsageSupportDetail: () => call<string | null>('usage_support_detail'),
-  relaunchAsAdmin: () => call<void>('relaunch_as_admin'),
-  getSpeedHistory: () => call<SpeedHistoryEntry[]>('get_speed_history'),
-  saveSpeedResult: (entry: SpeedHistoryEntry) => call<void>('save_speed_result', { entry }),
-  clearSpeedHistory: () => call<void>('clear_speed_history'),
+  runSpeedTest: (runToken: string) => invokeCommand<SpeedTestResult>('run_speed_test', { runToken }),
+  cancelSpeedTest: (runToken: string) => invokeCommand<void>('cancel_speed_test', { runToken }),
+  getDataUsage: () => invokeCommand<DataUsageSummary>('get_data_usage'),
+  getAppUsage: () => invokeCommand<AppUsageSummary>('get_app_usage'),
+  getHostUsage: () => invokeCommand<HostUsageSummary>('get_host_usage'),
+  getTrafficUsage: () => invokeCommand<TrafficUsageSummary>('get_traffic_usage'),
+  getUsageSupportDetail: () => invokeCommand<string | null>('usage_support_detail'),
+  relaunchAsAdmin: () => invokeCommand<void>('relaunch_as_admin'),
+  getSpeedHistory: () => invokeCommand<SpeedHistoryEntry[]>('get_speed_history'),
+  saveSpeedResult: (entry: SpeedHistoryEntry) => invokeCommand<void>('save_speed_result', { entry }),
+  clearSpeedHistory: () => invokeCommand<void>('clear_speed_history'),
 
   onSpeedTestProgress: (callback: (progress: SpeedTestProgress) => void) =>
     subscribeEvent('speed-test-progress', callback),
@@ -104,8 +104,8 @@ const tauriNetworkApi: NetworkAPI = {
 
   onInternetStatus: (callback: (status: InternetStatus) => void) => subscribeEvent('internet-status', callback),
 
-  subscribeLiveThroughput: () => call<void>('subscribe_live_throughput'),
-  unsubscribeLiveThroughput: () => call<void>('unsubscribe_live_throughput'),
+  subscribeLiveThroughput: () => invokeCommand<void>('subscribe_live_throughput'),
+  unsubscribeLiveThroughput: () => invokeCommand<void>('unsubscribe_live_throughput'),
   onLiveThroughput: (callback: (throughput: LiveThroughput) => void) => subscribeEvent('live-throughput', callback),
 }
 

@@ -22,7 +22,7 @@ const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center',
 // second note in the same style.
 const LOADING_LINE = 'type-body text-secondary'
 
-type NetworkErrorInfo = {
+type NetworkErrorDescription = {
   kind: NetworkError['kind']
   title: string
   description: string
@@ -30,7 +30,7 @@ type NetworkErrorInfo = {
 
 // A timeout isn't "no network": the OS query may just be slow, so it gets a
 // calmer framing of its own.
-function describeNetworkError({ kind, message }: NetworkError): NetworkErrorInfo {
+function describeNetworkError({ kind, message }: NetworkError): NetworkErrorDescription {
   if (kind === 'timeout') {
     return {
       kind: 'timeout',
@@ -44,7 +44,7 @@ function describeNetworkError({ kind, message }: NetworkError): NetworkErrorInfo
   return { kind: 'offline', title: 'Can’t reach your network', description: message }
 }
 
-function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorInfo['kind']; size: number }) {
+function NetworkErrorIcon({ kind, size }: { kind: NetworkErrorDescription['kind']; size: number }) {
   return kind === 'offline' ? <OfflineIcon size={size} /> : <AlertIcon size={size} />
 }
 
@@ -53,22 +53,22 @@ export function NetworkLoadingScreen() {
   const network = useNetwork()
   // While a read is in flight, any earlier error is stale: show the spinner.
   const error = network.isLoading ? null : network.error
-  const info = error ? describeNetworkError(error) : null
+  const errorDescription = error ? describeNetworkError(error) : null
 
   // A slow OS query is still detecting, not a failure: the hook re-polls on its
   // own, so there's no retry button.
-  if (!info || info.kind === 'timeout') {
+  if (!errorDescription || errorDescription.kind === 'timeout') {
     return (
       // A status region, so the slow-detection note is announced when it appears.
       <div className={loadingVariants()} role="status">
         <Spinner />
         <p className={LOADING_LINE}>Looking for your network…</p>
-        {info && <p className={LOADING_LINE}>This is taking longer than usual.</p>}
+        {errorDescription && <p className={LOADING_LINE}>This is taking longer than usual.</p>}
       </div>
     )
   }
 
-  const { kind, title, description } = info
+  const { kind, title, description } = errorDescription
   return (
     <div className={loadingVariants({ isError: true })} role="alert">
       <ErrorNotice

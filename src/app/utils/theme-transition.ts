@@ -141,14 +141,14 @@ function fadeThemeClass(isLight: boolean): void {
   const names = themeTokenNames()
   const readValue = (style: CSSStyleDeclaration, name: string): string => style.getPropertyValue(name).trim()
   const style = getComputedStyle(root)
-  const before = names.map((name) => ({ name, value: readValue(style, name) }))
+  const outgoingTokens = names.map((name) => ({ name, outgoing: readValue(style, name) }))
   root.classList.add('theme-switching')
   root.classList.toggle('theme-light', isLight)
   // `style` is live, so it now reads the incoming theme.
-  const tokens = before
-    .map(({ name, value }) => {
+  const tokens = outgoingTokens
+    .map(({ name, outgoing }) => {
       const incoming = readValue(style, name)
-      return isLight ? { name, dark: value, light: incoming } : { name, dark: incoming, light: value }
+      return isLight ? { name, dark: outgoing, light: incoming } : { name, dark: incoming, light: outgoing }
     })
     // Colours only: shadows and the like just switch.
     .filter(({ dark, light }) => dark !== light && CSS.supports('color', dark) && CSS.supports('color', light))
@@ -226,13 +226,13 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
   playThemeSwitchSound(themeName(isNextLight))
 
   // Older WebKit has no view transitions, whatever the DOM types say.
-  const doc: { startViewTransition?: (callback: () => void) => ViewTransition } = document
+  const viewTransitionDocument: { startViewTransition?: (callback: () => void) => ViewTransition } = document
   const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (shouldReduceMotion) {
     persist()
     return
   }
-  if (!doc.startViewTransition || IS_WEBKIT_GTK) {
+  if (!viewTransitionDocument.startViewTransition || IS_WEBKIT_GTK) {
     // Flip the class before React re-renders, so the effect that mirrors the
     // theme onto the document finds it already set and doesn't redo it.
     fadeThemeClass(isNextLight)
@@ -243,7 +243,7 @@ export function swapResolvedTheme(isNextLight: boolean, persist: () => void): vo
   // Tells styles/base.css which snapshot to stack on top. Fixed for the
   // transition's life, so a mid-flight reversal reuses it.
   root.classList.toggle('theme-to-dark', !isNextLight)
-  const transition = doc.startViewTransition(() => {
+  const transition = viewTransitionDocument.startViewTransition(() => {
     // flushSync so the new snapshot holds the re-rendered UI (the toggle's own
     // icon included), painted in the incoming theme's colours.
     flushSync(persist)

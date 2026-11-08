@@ -144,7 +144,7 @@ export function formatBytes(bytes: number): string {
 }
 
 // Built once: a formatter is costly to make, and the history list formats many.
-const DATE_TIME = new Intl.DateTimeFormat(undefined, {
+const DATE_TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
   month: 'short',
   day: 'numeric',
   hour: 'numeric',
@@ -153,7 +153,7 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 
 /** Absolute timestamp in the user's locale, e.g. "Jul 4, 8:30 PM", as on the speed history cards. */
 export function formatDateTime(timestamp: number): string {
-  return DATE_TIME.format(new Date(timestamp))
+  return DATE_TIME_FORMATTER.format(new Date(timestamp))
 }
 
 /** Compact human duration, e.g. "45 s", "12 min", "3 h 20 min", "2 d 4 h". */
@@ -165,12 +165,12 @@ export function formatDuration(ms: number): string | null {
   if (minutes < 60) return `${minutes} min`
   const hours = Math.floor(minutes / 60)
   if (hours < 24) {
-    const remMinutes = minutes % 60
-    return remMinutes > 0 ? `${hours} h ${remMinutes} min` : `${hours} h`
+    const leftoverMinutes = minutes % 60
+    return leftoverMinutes > 0 ? `${hours} h ${leftoverMinutes} min` : `${hours} h`
   }
   const days = Math.floor(hours / 24)
-  const remHours = hours % 24
-  return remHours > 0 ? `${days} d ${remHours} h` : `${days} d`
+  const leftoverHours = hours % 24
+  return leftoverHours > 0 ? `${days} d ${leftoverHours} h` : `${days} d`
 }
 
 /**
@@ -181,7 +181,7 @@ export function formatDuration(ms: number): string | null {
 export const TIME_AGO_RESOLUTION_MS = 10_000
 
 /** Past this age `formatTimeAgo` switches from relative to an absolute date. */
-const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
+const TIME_AGO_MAX_RELATIVE_MS = 24 * 60 * 60 * 1000
 
 /**
  * Relative timestamp for recent times; absolute date after 24 h. `now` comes
@@ -191,7 +191,7 @@ const TIME_AGO_RELATIVE_MS = 24 * 60 * 60 * 1000
 export function formatTimeAgo(timestamp: number, now: number): string | null {
   const elapsed = now - timestamp
   if (!Number.isFinite(elapsed)) return null
-  if (elapsed >= TIME_AGO_RELATIVE_MS) return formatDateTime(timestamp)
+  if (elapsed >= TIME_AGO_MAX_RELATIVE_MS) return formatDateTime(timestamp)
 
   const seconds = Math.round(elapsed / 1000)
   if (seconds < 45) return 'just now'

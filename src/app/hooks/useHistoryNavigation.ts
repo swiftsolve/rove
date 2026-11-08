@@ -117,19 +117,19 @@ export function useHistoryNavigation(): Navigation {
   // history steps itself; Tauri's webviews don't, so the desktop app does.
   useEffect(() => {
     if (!isTauri()) return
-    const step = (to: HistoryStep): void => (to === 'back' ? back() : window.history.forward())
+    const takeHistoryStep = (step: HistoryStep): void => (step === 'back' ? back() : window.history.forward())
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.defaultPrevented || event.repeat) return
-      const to = historyStepForKey(event, { isMac: IS_MAC, isEditing: isTextField(event.target) })
-      if (!to) return
+      const historyStep = historyStepForKey(event, { isMac: IS_MAC, isEditing: isTextField(event.target) })
+      if (!historyStep) return
       event.preventDefault()
-      step(to)
+      takeHistoryStep(historyStep)
     }
     const onMouseUp = (event: MouseEvent): void => {
-      const to = historyStepForButton(event.button)
-      if (!to) return
+      const historyStep = historyStepForButton(event.button)
+      if (!historyStep) return
       event.preventDefault()
-      step(to)
+      takeHistoryStep(historyStep)
     }
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('mouseup', onMouseUp)

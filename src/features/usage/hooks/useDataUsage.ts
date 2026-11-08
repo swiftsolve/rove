@@ -12,7 +12,7 @@ export function useDataUsage(): UsageQuery<DataUsageSummary> {
   return useUsageQuery({
     queryKey: 'dataUsage',
     read: (api) => api.getDataUsage(),
-    empty: EMPTY_USAGE,
+    emptyUsage: EMPTY_USAGE,
     errorMessage: 'Couldn’t load data usage',
     isEmpty: (usage) => usage.days.length === 0,
     pollIntervalMs: POLL_INTERVAL_MS,

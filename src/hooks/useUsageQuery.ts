@@ -15,7 +15,7 @@ type UsageQueryOptions<T> = {
   /** Reads the breakdown from the backend. */
   read: (api: NetworkAPI) => Promise<T>
   /** What the view shows before the first answer, or with no backend. */
-  empty: T
+  emptyUsage: T
   /** The error text for a failure that isn't an `Error`. */
   errorMessage: string
   /** Whether a breakdown has no rows yet. */
@@ -50,7 +50,7 @@ export type UsageQuery<T> = {
 export function useUsageQuery<T>({
   queryKey,
   read,
-  empty,
+  emptyUsage,
   errorMessage,
   isEmpty,
   onUpdate,
@@ -75,9 +75,9 @@ export function useUsageQuery<T>({
   }, [api, onUpdate])
 
   if (!fetchUsage) {
-    return { usage: empty, isLoading: false, isFirstLoad: false, error: 'Can’t reach the app', reload }
+    return { usage: emptyUsage, isLoading: false, isFirstLoad: false, error: 'Can’t reach the app', reload }
   }
 
-  const usage = data ?? empty
+  const usage = data ?? emptyUsage
   return { usage, isLoading: isBusy, isFirstLoad: isBusy && isEmpty(usage), error, reload }
 }

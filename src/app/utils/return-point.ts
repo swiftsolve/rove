@@ -1,4 +1,4 @@
-import { FOCUSABLE } from '@/utils/highlight'
+import { FOCUSABLE_SELECTOR } from '@/utils/highlight'
 
 /**
  * Where the user was on a screen when they opened another from it: the control
@@ -45,11 +45,11 @@ export function captureReturnPoint(): ReturnPoint | null {
   const main = document.querySelector('main')
   const scroller = document.querySelector<HTMLElement>('[data-scroll-root]')
   if (!main || !scroller) return null
-  const opener = clickedElement?.closest(FOCUSABLE) ?? document.activeElement
+  const opener = clickedElement?.closest(FOCUSABLE_SELECTOR) ?? document.activeElement
   if (!(opener instanceof HTMLElement) || opener === main || !main.contains(opener)) return null
   return {
     signature: signatureOf(opener),
-    index: Array.from(main.querySelectorAll(FOCUSABLE)).indexOf(opener),
+    index: Array.from(main.querySelectorAll(FOCUSABLE_SELECTOR)).indexOf(opener),
     tagName: opener.tagName,
     isFocusVisible: opener.matches(':focus-visible'),
     scrollTop: scroller.scrollTop,
@@ -61,7 +61,7 @@ export function captureReturnPoint(): ReturnPoint | null {
  * its old place if several match, else the one in its old place.
  */
 function findOpener(main: HTMLElement, point: ReturnPoint): HTMLElement | null {
-  const controls = Array.from(main.querySelectorAll<HTMLElement>(FOCUSABLE))
+  const controls = Array.from(main.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
   let match: HTMLElement | null = null
   let matchDistance = Infinity
   for (const [index, control] of controls.entries()) {
@@ -71,8 +71,8 @@ function findOpener(main: HTMLElement, point: ReturnPoint): HTMLElement | null {
       matchDistance = distance
     }
   }
-  const inPlace = controls[point.index]
-  return match ?? (inPlace?.tagName === point.tagName ? inPlace : null)
+  const controlInOldPlace = controls[point.index]
+  return match ?? (controlInOldPlace?.tagName === point.tagName ? controlInOldPlace : null)
 }
 
 /**
@@ -86,10 +86,10 @@ export function restoreReturnPoint(main: HTMLElement, scroller: HTMLElement, poi
   // The page may have grown or shrunk meanwhile: bring the control into view.
   // The scroller is moved directly, not with focus()'s own scroll, which would
   // also scroll a host page around the embedded demo (see scrollToTopAndFlash).
-  const box = opener.getBoundingClientRect()
-  const view = scroller.getBoundingClientRect()
-  if (box.top < view.top) scroller.scrollTop -= view.top - box.top
-  else if (box.bottom > view.bottom) scroller.scrollTop += box.bottom - view.bottom
+  const openerBox = opener.getBoundingClientRect()
+  const scrollerBox = scroller.getBoundingClientRect()
+  if (openerBox.top < scrollerBox.top) scroller.scrollTop -= scrollerBox.top - openerBox.top
+  else if (openerBox.bottom > scrollerBox.bottom) scroller.scrollTop += openerBox.bottom - scrollerBox.bottom
   // `focusVisible` isn't in TypeScript's DOM types yet; where a browser
   // ignores it, its own heuristic picks whether the ring shows.
   // eslint-disable-next-line @typescript-eslint/naming-convention -- the DOM names the option.

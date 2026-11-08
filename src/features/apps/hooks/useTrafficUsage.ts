@@ -13,7 +13,7 @@ export function useTrafficUsage(): UsageQuery<TrafficUsageSummary> {
   return useUsageQuery({
     queryKey: 'trafficUsage',
     read: (api) => api.getTrafficUsage(),
-    empty: EMPTY_USAGE,
+    emptyUsage: EMPTY_USAGE,
     errorMessage: 'Couldn’t load traffic types',
     isEmpty: (usage) => usage.types.length === 0,
     onUpdate: onHostUsage,

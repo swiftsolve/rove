@@ -43,16 +43,16 @@ async function decode(url: string): Promise<AudioBuffer | null> {
 
 const samples = isAudioAvailable ? { light: decode(switchOnUrl), dark: decode(switchOffUrl) } : null
 
-let context: AudioContext | null = null
+let sharedAudioContext: AudioContext | null = null
 let idleTimer: ReturnType<typeof setTimeout> | undefined
 
 // Created on the first press, inside its gesture, so autoplay policy lets it run.
-function getContext(): AudioContext {
-  context ??= new AudioContext()
-  if (context.state !== 'running') void context.resume().catch(() => {})
+function wakeAudioContext(): AudioContext {
+  sharedAudioContext ??= new AudioContext()
+  if (sharedAudioContext.state !== 'running') void sharedAudioContext.resume().catch(() => {})
   clearTimeout(idleTimer)
-  idleTimer = setTimeout(() => void context?.suspend().catch(() => {}), IDLE_SUSPEND_MS)
-  return context
+  idleTimer = setTimeout(() => void sharedAudioContext?.suspend().catch(() => {}), IDLE_SUSPEND_MS)
+  return sharedAudioContext
 }
 
 function playBuffer(audioContext: AudioContext, buffer: AudioBuffer): void {
@@ -71,7 +71,7 @@ export function playThemeSwitchSound(target: 'light' | 'dark'): void {
   if (!samples) return
   if (!getSetting(SOUND_SETTING, true)) return
   try {
-    const audioContext = getContext()
+    const audioContext = wakeAudioContext()
     // Decoded moments after launch, so this runs as a microtask, before the
     // swap renders; a press during decoding plays once it's done.
     void samples[target].then((buffer) => {

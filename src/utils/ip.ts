@@ -50,14 +50,14 @@ function isPrivateIpv4([a = -1, b = -1]: number[]): boolean {
  * local" cue.
  */
 export function isPrivateIp(ip: string): boolean {
-  const v4 = parseIpv4(ip) ?? parseMappedIpv4(ip)
-  if (v4) return isPrivateIpv4(v4)
+  const ipv4Octets = parseIpv4(ip) ?? parseMappedIpv4(ip)
+  if (ipv4Octets) return isPrivateIpv4(ipv4Octets)
   if (ip.includes(':')) {
     if (ip === '::1' || ip === '::') return true // loopback / unspecified
     // First 16-bit hextet; a leading "::" means that group is zero.
-    const head = ip.startsWith('::') ? 0 : parseInt(ip.split(':')[0] || '', 16)
-    if (Number.isNaN(head)) return false
-    return (head & 0xffc0) === 0xfe80 /* fe80::/10 */ || (head & 0xfe00) === 0xfc00 /* fc00::/7 */
+    const firstHextet = ip.startsWith('::') ? 0 : parseInt(ip.split(':')[0] || '', 16)
+    if (Number.isNaN(firstHextet)) return false
+    return (firstHextet & 0xffc0) === 0xfe80 /* fe80::/10 */ || (firstHextet & 0xfe00) === 0xfc00 /* fc00::/7 */
   }
   return false
 }

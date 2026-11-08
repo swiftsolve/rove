@@ -15,16 +15,16 @@ import {
 const DEVICE_KINDS = new Set<string>(LAN_DEVICE_KINDS)
 const EVENT_TYPES = new Set<string>(NETWORK_EVENT_TYPES)
 
-function isKnownKind(kind: string): kind is LanDeviceKind {
+function isKnownDeviceKind(kind: string): kind is LanDeviceKind {
   return DEVICE_KINDS.has(kind)
 }
 
 /** The scan with any device kind the UI doesn't know read as `unknown`. */
 export function narrowDeviceScan(scan: LanDeviceScan): LanDeviceScan {
-  if (scan.devices.every((device) => isKnownKind(device.kind))) return scan
+  if (scan.devices.every((device) => isKnownDeviceKind(device.kind))) return scan
   return {
     ...scan,
-    devices: scan.devices.map((device) => (isKnownKind(device.kind) ? device : { ...device, kind: 'unknown' })),
+    devices: scan.devices.map((device) => (isKnownDeviceKind(device.kind) ? device : { ...device, kind: 'unknown' })),
   }
 }
 
@@ -33,5 +33,5 @@ export function knownEvents(events: NetworkEvent[]): NetworkEvent[] {
   const isKnownType = (type: string): type is NetworkEventType => EVENT_TYPES.has(type)
   return events
     .filter((event) => isKnownType(event.type))
-    .map((event) => (event.kind == null || isKnownKind(event.kind) ? event : { ...event, kind: 'unknown' }))
+    .map((event) => (event.kind == null || isKnownDeviceKind(event.kind) ? event : { ...event, kind: 'unknown' }))
 }

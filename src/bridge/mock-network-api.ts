@@ -172,15 +172,15 @@ const QR_ROW_BITS = 44
  * a dot per dark module. It scans, so the demo's dialog is the real thing.
  */
 export function mockQrSvg(): string {
-  const size = MOCK_QR_ROWS.length
+  const modulesPerSide = MOCK_QR_ROWS.length
   // The blank margin a scanner needs around the code.
   const quietZone = 4
-  const side = size + quietZone * 2
+  const viewBoxSide = modulesPerSide + quietZone * 2
   // The three 7x7 corner finders, and version 6's one 5x5 alignment pattern.
   const eyes = [
     { x: 0, y: 0, size: 7 },
-    { x: size - 7, y: 0, size: 7 },
-    { x: 0, y: size - 7, size: 7 },
+    { x: modulesPerSide - 7, y: 0, size: 7 },
+    { x: 0, y: modulesPerSide - 7, size: 7 },
     { x: 32, y: 32, size: 5 },
   ]
   const isInEye = (x: number, y: number): boolean =>
@@ -188,12 +188,13 @@ export function mockQrSvg(): string {
   // The dialog's round tile over the centre (WifiQrCode's 36px circle on its
   // 240px image), as the backend clears it: a dot it would cut is left out.
   const dotRadius = 0.42
-  const clearRadius = ((36 / 240) * side) / 2 + dotRadius
-  const isUnderMark = (cx: number, cy: number): boolean => Math.hypot(cx - side / 2, cy - side / 2) < clearRadius
+  const clearRadius = ((36 / 240) * viewBoxSide) / 2 + dotRadius
+  const isUnderMark = (cx: number, cy: number): boolean =>
+    Math.hypot(cx - viewBoxSide / 2, cy - viewBoxSide / 2) < clearRadius
   let shapes = eyes.map((eye) => eyeSvg(eye.x + quietZone, eye.y + quietZone, eye.size)).join('')
   MOCK_QR_ROWS.forEach((row, y) => {
     const bits = BigInt(`0x${row}`)
-    for (let x = 0; x < size; x++) {
+    for (let x = 0; x < modulesPerSide; x++) {
       // Module x is bit x counted from the most significant of the row's 44.
       const shift = BigInt(QR_ROW_BITS - 1 - x)
       const isDark = ((bits >> shift) & 1n) === 1n
@@ -205,19 +206,19 @@ export function mockQrSvg(): string {
     }
   })
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}">` +
-    `<rect width="${side}" height="${side}" fill="#ffffff"/>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxSide} ${viewBoxSide}">` +
+    `<rect width="${viewBoxSide}" height="${viewBoxSide}" fill="#ffffff"/>` +
     `<g fill="#000000">${shapes}</g></svg>`
   )
 }
 
 // A rounded finder or alignment pattern, as the backend's `eye_svg` draws it.
 function eyeSvg(x: number, y: number, size: number): string {
-  const centre = size - 4
+  const pupilSide = size - 4
   const ring = roundedSquare(x, y, size, size * 0.3) + roundedSquare(x + 1, y + 1, size - 2, (size - 2) * 0.2)
   return (
     `<path fill-rule="evenodd" d="${ring}"/>` +
-    `<rect x="${x + 2}" y="${y + 2}" width="${centre}" height="${centre}" rx="${centre * 0.3}"/>`
+    `<rect x="${x + 2}" y="${y + 2}" width="${pupilSide}" height="${pupilSide}" rx="${pupilSide * 0.3}"/>`
   )
 }
 
@@ -759,8 +760,8 @@ const mockServices: ServiceDefinition[] = [
 
 /** Like the store: a host already listed takes the new label in place, any other is appended. */
 function upsertMockService(name: string, host: string): void {
-  const existing = mockServices.findIndex((s) => s.host === host)
-  if (existing >= 0) mockServices[existing] = { name, host }
+  const existingIndex = mockServices.findIndex((s) => s.host === host)
+  if (existingIndex >= 0) mockServices[existingIndex] = { name, host }
   else mockServices.push({ name, host })
 }
 
@@ -814,10 +815,10 @@ const mockLatencyWalk = new Map<string, number>()
  */
 function stepLatency(host: string): number {
   const { base, spread } = latencyProfile(host)
-  const prev = mockLatencyWalk.get(host) ?? base
-  const pull = (base - prev) * 0.3
+  const previous = mockLatencyWalk.get(host) ?? base
+  const pull = (base - previous) * 0.3
   const step = (Math.random() - 0.5) * spread
-  const next = Math.max(1, prev + pull + step)
+  const next = Math.max(1, previous + pull + step)
   mockLatencyWalk.set(host, next)
   return next
 }
@@ -1072,10 +1073,10 @@ function createMockNetworkApi(): NetworkAPI {
         [4.9, 0.6],
       ]
       const days = byDay.map(([down, up], i) => {
-        const when = new Date(Date.now() - (6 - i) * DAY_MS)
-        const key = `${when.getFullYear()}-${String(when.getMonth() + 1).padStart(2, '0')}-${String(when.getDate()).padStart(2, '0')}`
+        const day = new Date(Date.now() - (6 - i) * DAY_MS)
+        const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
         return {
-          date: key,
+          date: dateKey,
           rxBytes: Math.round(down * GB),
           txBytes: Math.round(up * GB),
         }
@@ -1157,7 +1158,7 @@ function createMockNetworkApi(): NetworkAPI {
       ]
       return {
         apps: apps.map(([name, hosts]) => {
-          const mapped = hosts.map(([host, ip, countryCode, down, up]) => ({
+          const appHosts = hosts.map(([host, ip, countryCode, down, up]) => ({
             ip: ip ?? host ?? '',
             host,
             countryCode,
@@ -1167,9 +1168,9 @@ function createMockNetworkApi(): NetworkAPI {
           return {
             name,
             icon: null,
-            rxBytes: mapped.reduce((s, h) => s + h.rxBytes, 0),
-            txBytes: mapped.reduce((s, h) => s + h.txBytes, 0),
-            hosts: mapped,
+            rxBytes: appHosts.reduce((sum, host) => sum + host.rxBytes, 0),
+            txBytes: appHosts.reduce((sum, host) => sum + host.txBytes, 0),
+            hosts: appHosts,
           }
         }),
         support: 'supported',
@@ -1258,21 +1259,21 @@ function createMockNetworkApi(): NetworkAPI {
     },
     updateService: async (oldHost: string, name: string, host: string) => {
       await delay(160)
-      const at = mockServices.findIndex((s) => s.host === oldHost)
+      const serviceIndex = mockServices.findIndex((s) => s.host === oldHost)
       const isHostTaken = host !== oldHost && mockServices.some((s) => s.host === host)
-      if (at >= 0 && !isHostTaken) {
-        mockServices[at] = { name, host }
+      if (serviceIndex >= 0 && !isHostTaken) {
+        mockServices[serviceIndex] = { name, host }
       } else {
         // Like the store: fold into the row that already has the host, or append.
-        if (at >= 0) mockServices.splice(at, 1)
+        if (serviceIndex >= 0) mockServices.splice(serviceIndex, 1)
         upsertMockService(name, host)
       }
       return mockServices.map((s) => ({ ...s }))
     },
     deleteService: async (host: string) => {
       await delay(160)
-      const at = mockServices.findIndex((s) => s.host === host)
-      if (at >= 0) mockServices.splice(at, 1)
+      const serviceIndex = mockServices.findIndex((s) => s.host === host)
+      if (serviceIndex >= 0) mockServices.splice(serviceIndex, 1)
       return mockServices.map((s) => ({ ...s }))
     },
     getServiceHistory: async () => {
@@ -1298,14 +1299,14 @@ function createMockNetworkApi(): NetworkAPI {
       // which the UI uses to reveal the Download and Upload cells.
       const TICK_MS = 200
       const phases = [
-        { name: 'latency', message: 'Measuring latency…', durMs: 1400, from: 0, to: 14 },
-        { name: 'download', message: 'Testing download…', durMs: 4600, from: 15, to: 54 },
-        { name: 'upload', message: 'Testing upload…', durMs: 3600, from: 55, to: 84 },
-        { name: 'finish', message: 'Finishing up…', durMs: 800, from: 85, to: 99 },
+        { name: 'latency', message: 'Measuring latency…', durationMs: 1400, from: 0, to: 14 },
+        { name: 'download', message: 'Testing download…', durationMs: 4600, from: 15, to: 54 },
+        { name: 'upload', message: 'Testing upload…', durationMs: 3600, from: 55, to: 84 },
+        { name: 'finish', message: 'Finishing up…', durationMs: 800, from: 85, to: 99 },
       ] as const
 
       for (const phase of phases) {
-        const ticks = Math.max(1, Math.round(phase.durMs / TICK_MS))
+        const ticks = Math.max(1, Math.round(phase.durationMs / TICK_MS))
         for (let i = 1; i <= ticks; i += 1) {
           await delay(TICK_MS)
           if (isCancelled) {
