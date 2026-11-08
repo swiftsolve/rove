@@ -72,7 +72,7 @@
     "SplitBar": {
       "name": "Split bar",
       "node": "556:619",
-      "figmaOnly": { "Mix": "Sample down and up values." }
+      "figmaOnly": { "Mix": "Sample down and up values: Mixed, Down only (up is 0) or Empty (both 0)." }
     },
     "ListRow": { "name": "List row", "node": "496:745" },
     "IconTile": {
@@ -105,7 +105,9 @@
     "NoValue": {
       "name": "No value",
       "node": "708:667",
-      "figmaOnly": { "Size": "It sizes to its line in em: Figma draws a hero line's and a row's." }
+      "figmaOnly": {
+        "Size": "Code sizes it in em to its line; Figma draws two lines: Display, a hero figure's, and Compact, a row's."
+      }
     },
     "DotSeparator": { "name": "Dot separator", "node": "452:9524" },
     "InlineMeta": { "name": "Dot separator", "node": "452:9524" },
