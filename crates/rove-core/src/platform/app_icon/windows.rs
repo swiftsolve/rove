@@ -1,5 +1,6 @@
 //! Windows app icons: the process's executable, then the Shell's icon for it via
 //! `IShellItemImageFactory`, read back with GDI.
+use super::trim::trim_to_content_square;
 use base64::Engine as _;
 use std::ffi::{OsStr, OsString};
 use std::mem::size_of;
@@ -36,8 +37,8 @@ pub fn app_icon_data_uri(name: &str, pid: Option<u32>) -> Option<String> {
     // Trim the transparent margin each `.exe` bakes in, so icons with very
     // different padding (Edge and Notion pad heavily, node and svchost are
     // edge to edge) fill their tile alike. Untrimmed if nothing is visible.
-    match trim_to_content_square(&rgba, w, h) {
-        Some((cropped, side)) => encode_png_data_uri(&cropped, side, side),
+    match trim_to_content_square(&rgba, w as usize, h as usize) {
+        Some((cropped, side)) => encode_png_data_uri(&cropped, side as i32, side as i32),
         None => encode_png_data_uri(&rgba, w, h),
     }
 }
@@ -171,73 +172,6 @@ fn unpremultiply(channel: u8, alpha: u8) -> u8 {
     ((channel as u32 * 255) / alpha as u32).min(255) as u8
 }
 
-/// Crop `rgba` (`w`×`h`, straight alpha) to a centred square around its
-/// visible pixels plus a small uniform margin. An `.exe` icon's canvas has
-/// whatever padding its designer chose, and the UI's `object-fit: contain`
-/// scales the whole canvas into the tile, so a padded glyph looks small next
-/// to an edge-to-edge one. Cropping to the glyph removes that difference.
-///
-/// Square and centred, so the aspect ratio is kept. `None` when nothing is
-/// visible: a fully transparent bitmap to encode as is.
-fn trim_to_content_square(rgba: &[u8], w: i32, h: i32) -> Option<(Vec<u8>, i32)> {
-    // Ignore near-transparent anti-aliasing fringe so a faint halo doesn't
-    // defeat the trim by pinning the bounds to the full canvas.
-    const ALPHA_THRESHOLD: u8 = 12;
-
-    let (w, h) = (w as usize, h as usize);
-    if w == 0 || h == 0 || rgba.len() < w * h * 4 {
-        return None;
-    }
-
-    let (mut min_x, mut min_y, mut max_x, mut max_y) = (w, h, 0usize, 0usize);
-    let mut any = false;
-    for y in 0..h {
-        for x in 0..w {
-            if rgba[(y * w + x) * 4 + 3] > ALPHA_THRESHOLD {
-                any = true;
-                min_x = min_x.min(x);
-                min_y = min_y.min(y);
-                max_x = max_x.max(x);
-                max_y = max_y.max(y);
-            }
-        }
-    }
-    if !any {
-        return None;
-    }
-
-    // Square side = the longer content dimension, grown ~11% (÷0.9) so the
-    // glyph doesn't sit flush against the tile edge. Never below the content.
-    let content_side = (max_x - min_x + 1).max(max_y - min_y + 1);
-    let side = (((content_side as f64) / 0.90).round() as usize).max(content_side);
-
-    // Top-left of the square, centred on the content box. Signed so the margin
-    // can overhang the source edge (when the glyph reaches it); overhang is
-    // filled with transparent pixels, keeping the glyph centred.
-    let center_x = (min_x + max_x + 1) as f64 / 2.0;
-    let center_y = (min_y + max_y + 1) as f64 / 2.0;
-    let start_x = (center_x - side as f64 / 2.0).round() as i64;
-    let start_y = (center_y - side as f64 / 2.0).round() as i64;
-
-    let mut out = vec![0u8; side * side * 4];
-    for oy in 0..side {
-        let sy = start_y + oy as i64;
-        if sy < 0 || sy as usize >= h {
-            continue;
-        }
-        for ox in 0..side {
-            let sx = start_x + ox as i64;
-            if sx < 0 || sx as usize >= w {
-                continue;
-            }
-            let src = ((sy as usize) * w + sx as usize) * 4;
-            let dst = (oy * side + ox) * 4;
-            out[dst..dst + 4].copy_from_slice(&rgba[src..src + 4]);
-        }
-    }
-    Some((out, side as i32))
-}
-
 /// Encode a straight-alpha RGBA buffer as a base64 PNG `data:` URI.
 fn encode_png_data_uri(rgba: &[u8], w: i32, h: i32) -> Option<String> {
     let mut png_bytes: Vec<u8> = Vec::new();
@@ -289,67 +223,6 @@ fn to_wide(s: &OsStr) -> Vec<u16> {
 fn wide_nul_to_string(buf: &[u16]) -> String {
     let end = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
     String::from_utf16_lossy(&buf[..end])
-}
-
-#[cfg(test)]
-mod trim_tests {
-    use super::trim_to_content_square;
-
-    /// A `w`×`h` RGBA buffer, transparent but for a solid white rectangle
-    /// `[x0,x1)`×`[y0,y1)`.
-    fn canvas(w: usize, h: usize, x0: usize, y0: usize, x1: usize, y1: usize) -> Vec<u8> {
-        let mut buf = vec![0u8; w * h * 4];
-        for y in y0..y1 {
-            for x in x0..x1 {
-                let i = (y * w + x) * 4;
-                buf[i..i + 4].copy_from_slice(&[255, 255, 255, 255]);
-            }
-        }
-        buf
-    }
-
-    /// A small glyph in a large transparent canvas is cropped to a tight,
-    /// centred square.
-    #[test]
-    fn crops_away_transparent_padding() {
-        // 20px block centred in a 100px canvas.
-        let buf = canvas(100, 100, 40, 40, 60, 60);
-        let (out, side) = trim_to_content_square(&buf, 100, 100).unwrap();
-        // Content is 20px; the square is that plus the ~11% margin (÷0.9 → 22),
-        // nowhere near the original 100.
-        assert!((22..=24).contains(&side), "side {side} isn't tight around 20px content");
-        assert_eq!(out.len(), (side as usize).pow(2) * 4);
-        // Centre lands on the glyph (opaque); a corner is the added margin
-        // (transparent).
-        let mid = ((side as usize / 2) * side as usize + side as usize / 2) * 4;
-        assert_eq!(out[mid + 3], 255, "glyph should sit at the centre");
-        assert_eq!(out[3], 0, "corner should be transparent margin");
-    }
-
-    /// A near-transparent haze below the alpha threshold doesn't pin the
-    /// bounds to the full canvas; only the solid core is bounded.
-    #[test]
-    fn ignores_faint_antialias_fringe() {
-        let mut buf = vec![0u8; 40 * 40 * 4];
-        for px in buf.as_chunks_mut::<4>().0 {
-            px[3] = 8; // below ALPHA_THRESHOLD
-        }
-        for y in 15..25 {
-            for x in 15..25 {
-                let i = (y * 40 + x) * 4;
-                buf[i..i + 4].copy_from_slice(&[255, 255, 255, 255]);
-            }
-        }
-        let (_, side) = trim_to_content_square(&buf, 40, 40).unwrap();
-        assert!(side < 20, "fringe defeated the trim (side {side})");
-    }
-
-    /// A fully transparent bitmap has nothing to bound, so the caller is told
-    /// to encode it untouched rather than crop to an empty square.
-    #[test]
-    fn fully_transparent_bitmap_is_not_cropped() {
-        assert!(trim_to_content_square(&vec![0u8; 8 * 8 * 4], 8, 8).is_none());
-    }
 }
 
 #[cfg(test)]

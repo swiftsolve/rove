@@ -1,5 +1,6 @@
 //! Linux app icons: the process's `.desktop` entry, then its `Icon=` from the
 //! icon theme or `pixmaps`.
+use super::trim::trim_to_content_square;
 use base64::Engine as _;
 use std::collections::HashSet;
 use std::fs;
@@ -396,9 +397,10 @@ pub(super) fn find_icon(icon: &str, icon_dirs: &[PathBuf]) -> Option<PathBuf> {
     })
 }
 
-/// The icon file as a `data:` URI. A PNG is scaled down to [`ICON_PX`] when
-/// it's bigger (snap icons are often 512px and a few hundred KB); an SVG
-/// goes as it is. Other formats (XPM) and oversized files are skipped.
+/// The icon file as a `data:` URI. A PNG is cropped to its glyph (see
+/// [`trim_to_content_square`]), then scaled down to [`ICON_PX`] when it's
+/// bigger (snap icons are often 512px and a few hundred KB); an SVG goes as
+/// it is. Other formats (XPM) and oversized files are skipped.
 fn icon_data_uri(path: &Path) -> Option<String> {
     let extension = path.extension().and_then(|e| e.to_str())?;
     if !matches!(extension, "png" | "svg") || fs::metadata(path).ok()?.len() > MAX_ICON_BYTES {
@@ -409,11 +411,12 @@ fn icon_data_uri(path: &Path) -> Option<String> {
         return Some(data_uri("image/svg+xml", &bytes));
     }
     let (rgba, w, h) = decode_png(&bytes)?;
-    if w <= ICON_PX && h <= ICON_PX {
-        return Some(data_uri("image/png", &bytes));
-    }
-    let (small, sw, sh) = downscale(&rgba, w, h, ICON_PX);
-    encode_png(&small, sw, sh).map(|png| data_uri("image/png", &png))
+    let (rgba, w, h) = match trim_to_content_square(&rgba, w as usize, h as usize) {
+        Some((cropped, side)) => (cropped, side as u32, side as u32),
+        None => (rgba, w, h),
+    };
+    let (rgba, w, h) = if w > ICON_PX || h > ICON_PX { downscale(&rgba, w, h, ICON_PX) } else { (rgba, w, h) };
+    encode_png(&rgba, w, h).map(|png| data_uri("image/png", &png))
 }
 
 fn data_uri(mime: &str, bytes: &[u8]) -> String {

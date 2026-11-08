@@ -18,8 +18,15 @@
 //!     `Icon=` comes from the `hicolor` theme or `pixmaps` (or is a path), PNGs
 //!     scaled down to 64px, SVGs passed through.
 //!
+//! Each OS's icon is then cropped to its glyph plus one even margin
+//! ([`trim`]), so icons padded differently by their designers fill the UI's
+//! tile alike. A Linux SVG goes untrimmed.
+//!
 //! Anything else (CLIs, system daemons, unknown names) gets `None` and the UI
 //! shows a favicon or monogram. Other platforms always return `None`.
+
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux", test))]
+mod trim;
 
 #[cfg(target_os = "macos")]
 mod macos;
