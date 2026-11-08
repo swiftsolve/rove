@@ -15,7 +15,8 @@ says what it guards. A rule without the tag is judgment:
 
 Each Figma component has a counterpart in the library: build from these before
 writing new markup. Which one to use, and its props, variants and usage guide,
-are in `src/ui/components.gen.json`: read it first, not the sources. Each
+are in `src/ui/components.gen.json`: read it first, not the sources. For how
+one is used, read its stories, beside its source (`Link.stories.tsx`). Each
 project JSON file has a schema in `schemas/`, `<name>.schema.json`, that says
 what every key means, and the generators fail on a file that breaks it.
 [✓ CHECKED by `gen/components.mjs`, `gen/cn-theme.mjs`]
