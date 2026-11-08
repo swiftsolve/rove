@@ -7,6 +7,7 @@ import {
   formatAxisLabel,
   headMbps,
   inViewHeights,
+  plotY,
   slotWidth,
   smoothHeights,
 } from './throughput-chart'
@@ -74,22 +75,15 @@ describe('smoothHeights', () => {
 })
 
 describe('buildTrace', () => {
-  const frame = (samples: number[], progress = 1) => buildTrace(samples, SIZE, 80, progress)
+  const frame = (samples: number[]) => buildTrace(samples, SIZE, 80)
 
   it('closes the area along the baseline', () => {
     const round = (value: number): number => Math.round(value * 100) / 100
     expect(frame([40])?.area.endsWith(`L${round(SIZE.width + 2 * SLOT)},72L${round(SIZE.width)},72Z`)).toBe(true)
   })
 
-  it('draws the same line as a sample lands as just before it did', () => {
-    const before = frame([20, 60], 1)
-    const after = frame([20, 60, 10], 0)
-    // The new layout sits a slot further left, so compare the head's height.
-    expect(after?.headY).toBeCloseTo(before?.headY ?? Number.NaN)
-  })
-
   it('never dips below the baseline or rises above the highest sample', () => {
-    const trace = frame([0, 80, 0, 0, 0, 80, 0, 0, 0], 0.5)
+    const trace = frame([0, 80, 0, 0, 0, 80, 0, 0, 0])
     const ys = (trace?.line.match(/-?[\d.]+,-?[\d.]+/g) ?? []).map((pair) => Number(pair.split(',')[1]))
     expect(Math.max(...ys)).toBeLessThanOrEqual(72)
     expect(Math.min(...ys)).toBeGreaterThanOrEqual(0)
@@ -101,23 +95,31 @@ describe('buildTrace', () => {
         curve.replace(/(-?[\d.]+),/g, (_, x: string) => `${(Number(x) + shiftX).toFixed(1)},`),
       )
     // The new layout sits a slot further left; the scroll's step back puts it where it was.
-    const before = curves(frame([20, 60, 30], 1), -SLOT)
-    const after = curves(frame([20, 60, 30, 90], 0), 0)
+    const before = curves(frame([20, 60, 30]), -SLOT)
+    const after = curves(frame([20, 60, 30, 90]), 0)
     // Only the curve into the newest sample, out past the edge, changes.
     expect(after.slice(0, before.length - 1)).toEqual(before.slice(0, -1))
   })
 
-  it('puts the dot where the readout says, on the line', () => {
-    const samples = [5, 40, 60, 20, 30]
-    expect(frame(samples, 0.4)?.headY).toBeCloseTo(72 * (1 - headMbps(samples, 0.4) / 80))
+  it('draws nothing before the first sample', () => {
+    expect(frame([])).toBeNull()
+  })
+})
+
+describe('headMbps', () => {
+  it('reads the same rate as a sample lands as just before it did', () => {
+    expect(headMbps([20, 60, 10], 0)).toBeCloseTo(headMbps([20, 60], 1))
   })
 
   it('reads a steady rate exactly once the averaging has caught up', () => {
     expect(headMbps(Array<number>(40).fill(42), 0.5)).toBeCloseTo(42)
   })
+})
 
-  it('draws nothing before the first sample', () => {
-    expect(frame([])).toBeNull()
+describe('plotY', () => {
+  it('puts zero on the baseline and the scale’s top at the top', () => {
+    expect(plotY(0, 72, 80)).toBe(72)
+    expect(plotY(80, 72, 80)).toBe(0)
   })
 })
 

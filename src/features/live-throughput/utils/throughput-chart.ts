@@ -7,14 +7,17 @@ export type PlotSize = {
   height: number
 }
 
-/** One series drawn at the chart's current scale and scroll. */
+/** One series drawn at the chart's current scale, laid out for a scroll of 0. */
 export type Trace = {
   /** The whole line, oldest sample first. */
   line: string
   /** The shaded area under the line, closed along the baseline. */
   area: string
-  /** The line's height where it crosses the plot's right edge, for the dot there. */
-  headY: number
+}
+
+/** A rate's height on the plot (px from its top) at `scaleMax`. */
+export function plotY(mbps: number, plotHeight: number, scaleMax: number): number {
+  return scaleMax > 0 ? plotHeight * (1 - mbps / scaleMax) : plotHeight
 }
 
 /** The gap between two samples (px): the window's samples span the plot's width. */
@@ -135,8 +138,13 @@ function bezierAt(controls: readonly [number, number, number, number], u: number
   return v * v * v * controls[0] + 3 * v * v * u * controls[1] + 3 * v * u * u * controls[2] + u * u * u * controls[3]
 }
 
-/** The line's height (Mbps) at the plot's right edge, from `curveHeights`. */
-function headOf(heights: readonly number[], progress: number): number {
+/**
+ * The rate (Mbps) where the line meets the plot's right edge, at a scroll
+ * `progress` (see `useTraceScroll`): what the "Now" dot shows, so the
+ * readouts show it too and agree with the chart.
+ */
+export function headMbps(samples: readonly number[], progress: number): number {
+  const heights = curveHeights(samples)
   const pointCount = pointCountOf(heights)
   if (pointCount < 2) return 0
   // The edge sits two slots behind the newest point, `progress` of the way to the next.
@@ -145,22 +153,13 @@ function headOf(heights: readonly number[], progress: number): number {
   return bezierAt(segmentHeights(heights, segment), Math.min(1, Math.max(0, edge - segment)))
 }
 
-/**
- * The rate (Mbps) where the line meets the plot's right edge, at a scroll
- * `progress` (see `useTraceScroll`): what the "Now" dot shows, so the
- * readouts show it too and agree with the chart.
- */
-export function headMbps(samples: readonly number[], progress: number): number {
-  return headOf(curveHeights(samples), progress)
-}
-
 function round(value: number): number {
   return Math.round(value * 100) / 100
 }
 
 /**
- * Draws one series' line and area at `scaleMax`, scrolled `progress` of a
- * slot (see `useTraceScroll`).
+ * Draws one series' line and area at `scaleMax`. The scroll moves them as a
+ * whole, so they're rebuilt only when a sample lands or the scale moves.
  *
  * The curve is a uniform cubic B-spline over the averaged samples: smooth
  * all the way through, so a burst is a soft hill with no flat top or
@@ -168,12 +167,7 @@ function round(value: number): number {
  * samples either side, all of which have landed by the time it's in view,
  * so once drawn it never changes.
  */
-export function buildTrace(
-  samples: readonly number[],
-  size: PlotSize,
-  scaleMax: number,
-  progress: number,
-): Trace | null {
+export function buildTrace(samples: readonly number[], size: PlotSize, scaleMax: number): Trace | null {
   const heights = curveHeights(samples)
   const pointCount = pointCountOf(heights)
   if (pointCount < 2) return null
@@ -181,7 +175,7 @@ export function buildTrace(
   const slot = slotWidth(size.width)
   const firstX = firstPointX(pointCount, size.width)
   const lastX = firstX + (pointCount - 1) * slot
-  const toY = (mbps: number): number => (scaleMax > 0 ? size.height * (1 - mbps / scaleMax) : size.height)
+  const toY = (mbps: number): number => plotY(mbps, size.height, scaleMax)
 
   const point = (x: number, y: number): string => `${round(x)},${round(y)}`
   const curves: string[] = []
@@ -197,7 +191,7 @@ export function buildTrace(
   const line = `M${start}${curves.join('')}`
   const area = `${line}L${round(lastX)},${size.height}L${round(firstX)},${size.height}Z`
 
-  return { line, area, headY: toY(headOf(heights, progress)) }
+  return { line, area }
 }
 
 /** A y-axis label: "0", "25M", "2.5M", "1.2G". */

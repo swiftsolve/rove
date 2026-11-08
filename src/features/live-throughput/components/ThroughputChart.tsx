@@ -1,10 +1,16 @@
 import { cx } from 'class-variance-authority'
-import { useId, useMemo, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 
 import { useElementWidth } from '@/features/live-throughput/hooks/useElementWidth'
 import { useSmoothScale } from '@/features/live-throughput/hooks/useSmoothScale'
 import { useTraceScroll } from '@/features/live-throughput/hooks/useTraceScroll'
-import { buildTrace, formatAxisLabel, headMbps, slotWidth } from '@/features/live-throughput/utils/throughput-chart'
+import {
+  buildTrace,
+  formatAxisLabel,
+  headMbps,
+  plotY,
+  slotWidth,
+} from '@/features/live-throughput/utils/throughput-chart'
 import { CHART_WINDOW_LABEL } from '@/features/live-throughput/utils/throughput-history'
 
 const CHART_HEIGHT = 80
@@ -48,13 +54,26 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
   const plotWidth = Math.max(0, (width ?? 0) - CHART_MARGIN.left - CHART_MARGIN.right)
   const scaleMax = useSmoothScale(maxMbps)
 
-  const progress = useTraceScroll(download)
-
-  // Rebuilt each frame of a scroll, as the dots move along the line.
-  const size = { width: plotWidth, height: PLOT_HEIGHT }
-  const downTrace = buildTrace(download, size, scaleMax, progress)
-  const upTrace = buildTrace(upload, size, scaleMax, progress)
+  // Built once per sample (or scale step); a frame of the scroll only moves
+  // them and the dots, so the page isn't rewriting long paths 60 times a second.
+  const downTrace = useMemo(
+    () => buildTrace(download, { width: plotWidth, height: PLOT_HEIGHT }, scaleMax),
+    [download, plotWidth, scaleMax],
+  )
+  const upTrace = useMemo(
+    () => buildTrace(upload, { width: plotWidth, height: PLOT_HEIGHT }, scaleMax),
+    [upload, plotWidth, scaleMax],
+  )
   const hasTrace = plotWidth > 0 && downTrace !== null && upTrace !== null
+
+  const scrollingRef = useRef<SVGGElement>(null)
+  const downDotRef = useRef<SVGCircleElement>(null)
+  const upDotRef = useRef<SVGCircleElement>(null)
+  useTraceScroll(download, (progress) => {
+    scrollingRef.current?.setAttribute('transform', `translate(${-progress * slotWidth(plotWidth)} 0)`)
+    downDotRef.current?.setAttribute('cy', String(plotY(headMbps(download, progress), PLOT_HEIGHT, scaleMax)))
+    upDotRef.current?.setAttribute('cy', String(plotY(headMbps(upload, progress), PLOT_HEIGHT, scaleMax)))
+  })
   const label = useMemo(() => describeChart(headMbps(download, 1), headMbps(upload, 1)), [download, upload])
 
   // The trace fades in only once the feed has been empty while the chart was
@@ -66,7 +85,9 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
   return (
     <div className="relative [contain:layout]">
       <div ref={setChartElement} className="relative h-[80px]" role="img" aria-label={label}>
-        <svg width="100%" height={CHART_HEIGHT} className="block overflow-visible">
+        {/* Hidden from assistive tech: the wrapper's label says what it shows,
+            and its moving parts would only churn the accessibility tree. */}
+        <svg width="100%" height={CHART_HEIGHT} className="block overflow-visible" aria-hidden>
           <defs>
             {/* Over the plot, not each area's own box, which moves with its
                 tallest point and would flash the fill as peaks come and go. */}
@@ -97,7 +118,8 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
             {hasTrace && (
               <g className={hasBeenEmpty ? 'animate-fade-in' : undefined}>
                 <g clipPath={`url(#${clipId})`}>
-                  <g transform={`translate(${-progress * slotWidth(plotWidth)} 0)`}>
+                  {/* The scroll moves this group and the dots (useTraceScroll). */}
+                  <g ref={scrollingRef}>
                     {/* Upload first, so download draws on top of it. */}
                     <path d={upTrace.area} fill={`url(#${upFillId})`} />
                     <path
@@ -118,8 +140,8 @@ export function ThroughputChart({ download, upload, maxMbps }: ThroughputChartPr
                     />
                   </g>
                 </g>
-                <circle cx={plotWidth} cy={upTrace.headY} r={2.25} fill="var(--series-up)" />
-                <circle cx={plotWidth} cy={downTrace.headY} r={2.5} fill="var(--series-down)" />
+                <circle ref={upDotRef} cx={plotWidth} r={2.25} fill="var(--series-up)" />
+                <circle ref={downDotRef} cx={plotWidth} r={2.5} fill="var(--series-down)" />
               </g>
             )}
           </g>
