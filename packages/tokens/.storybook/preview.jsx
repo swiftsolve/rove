@@ -19,8 +19,8 @@ const preview = {
       },
     },
   },
-  // Light, as the Figma file's doc pages are; the tables show both themes either way.
-  initialGlobals: { theme: 'light' },
+  // Dark, as the app is by default; the tables show both themes either way.
+  initialGlobals: { theme: 'dark' },
   decorators: [
     (Story, { globals }) => {
       // tokens.css puts Light on :root.theme-light.

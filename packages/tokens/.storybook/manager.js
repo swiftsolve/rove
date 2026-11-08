@@ -4,9 +4,8 @@ import { themes } from 'storybook/theming'
 import typography from '../dist/tokens/typography.tokens.json'
 import designPackage from '../package.json'
 
-// Keeps Storybook's own light or dark, following the system, as it does without a theme.
-const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-const theme = isDark ? themes.dark : themes.light
+// Storybook's own frame is dark, as the app is by default, whatever the system's setting.
+const theme = themes.dark
 
 // The sidebar runs in its own frame without tokens.css, so it takes the font
 // stacks from the token files; manager-head.html loads the two faces.
