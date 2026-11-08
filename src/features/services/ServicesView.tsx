@@ -118,7 +118,7 @@ export function ServicesView() {
     <div className="page">
       <PageHeader
         icon={<CloudIcon size={18} />}
-        title="Services"
+        title="Online services"
         // The up/down tally, then the timeline link. Wraps the link onto its own
         // line when the two can't share one, so a narrow window breaks between
         // them rather than inside either.

@@ -35,7 +35,7 @@ straight from your operating system.
   hosts it talks to, with countries looked up offline.
 - **Timeline.** What changed in the past week: networks joined, devices that
   appeared, and internet drops with how long they lasted.
-- **Services.** The sites and servers you care about, with their latency and
+- **Online services.** The sites and servers you care about, with their latency and
   an up/down history.
 - **Usage.** Data used per day, kept across restarts.
 - **Diagnostics.** Router latency, jitter and packet loss, and the DNS

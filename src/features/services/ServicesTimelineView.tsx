@@ -81,7 +81,7 @@ export function ServicesTimelineView() {
   return (
     <div className="page">
       <PageHeader
-        title="Services Timeline"
+        title="Online services timeline"
         description={description}
         onBack={back}
         actions={events.length > 0 ? <TimelineMenu onClear={handleClear} /> : undefined}

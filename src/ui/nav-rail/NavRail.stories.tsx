@@ -29,7 +29,7 @@ const MAIN_PAGES: Page[] = [
   { label: 'Speed', icon: SpeedIcon },
   { label: 'Connection', icon: ConnectionIcon },
   { label: 'Devices', icon: DevicesIcon },
-  { label: 'Services', icon: CloudIcon },
+  { label: 'Online services', icon: CloudIcon },
   { label: 'Apps', icon: AppsIcon },
   { label: 'Usage', icon: UsageIcon },
   { label: 'Timeline', icon: EventsIcon },

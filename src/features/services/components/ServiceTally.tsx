@@ -19,7 +19,7 @@ const halfVariants = cva('whitespace-nowrap', {
 })
 
 /**
- * The live up/down count for the Services and Services Timeline headers, as a
+ * The live up/down count for the Online services page and its timeline, as a
  * status live region so a service going down is announced. A plain function, not
  * a component, so it can return `null` when there's nothing to count and each
  * caller picks its own fallback.

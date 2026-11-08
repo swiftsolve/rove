@@ -40,7 +40,7 @@ describe('App', () => {
     ['Speed', 'Speed'],
     ['Devices', /devices$/],
     ['Apps', 'Apps'],
-    ['Services', 'Services'],
+    ['Online services', 'Online services'],
     ['Timeline', 'Timeline'],
     ['Interfaces', /interfaces$/],
     ['Connection', 'Connection'],
@@ -76,7 +76,7 @@ describe('App', () => {
 
   it('adds a service, then removes it from its menu', async () => {
     const user = await renderApp()
-    await user.click(screen.getByRole('button', { name: 'Services' }))
+    await user.click(screen.getByRole('button', { name: 'Online services' }))
     await user.click(await screen.findByRole('button', { name: 'Add service' }))
 
     const dialog = await screen.findByRole('dialog', { name: 'Add a service' })

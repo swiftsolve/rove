@@ -53,7 +53,7 @@ export const TABS: Record<AppTab, TabDefinition> = {
   diagnostics: { label: 'Connection', Icon: ConnectionIcon, Screen: DiagnosticsView, rail: 'main' },
   devices: { label: 'Devices', Icon: DevicesIcon, Screen: DevicesView, rail: 'main' },
   services: {
-    label: 'Services',
+    label: 'Online services',
     Icon: CloudIcon,
     Screen: ServicesView,
     subScreen: ({ servicesSub }) => (servicesSub?.view === 'timeline' ? ServicesTimelineView : null),
