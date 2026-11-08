@@ -23,12 +23,12 @@ const meta = {
         'A status the user can’t change: use `Badge` or `StatusDot`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A native `<button>` with `role="switch"`: a click or Space flips it.',
           'Screen readers hear its `label` and whether it’s on.',
           'Disabled stays focusable, ignores flips and sets `aria-disabled`.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A `label` that repeats the setting’s title.',
           '`aria-describedby` pointing at the row’s description.',
           'On a disabled switch, a `Tooltip` that says why.',

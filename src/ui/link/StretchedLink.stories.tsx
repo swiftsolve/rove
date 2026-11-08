@@ -22,12 +22,12 @@ const meta = {
         'A link in a line of text: use `Link`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A `<button>` with `role="link"`, as it opens a view.',
           'Covers its container, so a click anywhere opens it.',
           'Its focus ring follows the container’s corners.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A `label`, or `aria-labelledby` pointing at a heading.',
           'A positioned container (`relative`) for it to cover.',
           'Controls raised above it (`relative z-2`), as siblings, never nested.',

@@ -33,12 +33,12 @@ const meta = {
         'A row in a card that opens a page: use `ListRow`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A `section` card is a region named by its header’s title.',
           'With `onOpen`, one link covers the card, first in Tab order.',
           '`CardList` is a list named by its `label`.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A `CardHeader` on a `section` card, or your own `aria-labelledby`.',
           'A `linkLabel` when the title doesn’t say what the card shows.',
           'Body controls on an openable card raised above its link (`relative z-2`).',

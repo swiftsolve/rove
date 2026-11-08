@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/figma-components.schema.json",
-  "figmaFile": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
+  "figmaFileUrl": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": {
       "figmaName": "Button",
@@ -16,7 +16,7 @@
     "Link": {
       "figmaName": "Link",
       "figmaNodeId": "505:845",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Type": "In code, href makes an External link (a web address) and onClick a View link (a screen in the app)."
       }
     },
@@ -40,7 +40,7 @@
     "TextField": {
       "figmaName": "Text field",
       "figmaNodeId": "500:810",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Action": "In code, on when the action prop holds a TextFieldAction."
       }
     },
@@ -82,7 +82,7 @@
       "propsNotInFigma": {
         "pulse": "An animation: Figma draws the dot at rest."
       },
-      "propValuesDifferFromFigma": {
+      "propsWithDifferentValuesInFigma": {
         "tone": "current takes its words' colour, which Figma draws as each status."
       }
     },
@@ -128,7 +128,7 @@
     "Readout": {
       "figmaName": "Readout",
       "figmaNodeId": "4:106",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Has label": "In code, on when the label prop is set."
       }
     },
@@ -139,14 +139,14 @@
     "BarMeter": {
       "figmaName": "Bar meter",
       "figmaNodeId": "495:1044",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Value": "In code, the value prop, a number from 0 to 4."
       }
     },
     "SplitBar": {
       "figmaName": "Split bar",
       "figmaNodeId": "556:619",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Mix": "In code, the down and up props: Mixed has both, Down only has up at 0, Empty has both at 0."
       }
     },
@@ -157,7 +157,7 @@
     "IconTile": {
       "figmaName": "Icon tile",
       "figmaNodeId": "495:585",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Neutral": "In code, color=\"neutral\"; any other colour is a tint."
       }
     },
@@ -168,7 +168,7 @@
     "TimelineNode": {
       "figmaName": "Timeline node",
       "figmaNodeId": "580:539",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Neutral": "In code, color=\"neutral\": the hollow ring.",
         "Last": "In code, no prop: CSS draws a list's last node without its line down."
       }
@@ -179,7 +179,7 @@
       "propsNotInFigma": {
         "as": "The HTML element: it looks the same."
       },
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Openable": "In code, on when the onOpen prop is set."
       }
     },
@@ -205,7 +205,7 @@
     "NoValue": {
       "figmaName": "No value",
       "figmaNodeId": "708:667",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Size": "In code, no prop: it sizes in em to its line. Display is a hero figure's size, Compact a row's."
       }
     },
@@ -236,14 +236,14 @@
     "NavRail": {
       "figmaName": "Nav rail",
       "figmaNodeId": "41:892",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Page": "In code, the page whose NavItem has isActive."
       }
     },
     "PageHeader": {
       "figmaName": "Page header",
       "figmaNodeId": "542:10510",
-      "figmaVariantsWithoutProp": {
+      "figmaVariantPropertiesNotInCode": {
         "Back": "In code, on when the onBack prop is set."
       }
     },

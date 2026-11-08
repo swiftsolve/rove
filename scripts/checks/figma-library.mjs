@@ -21,9 +21,9 @@
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
  * figma-components.json entry: `propsNotInFigma` names a code prop Figma has
- * no variant for, with why (where a tooltip opens); `figmaVariantsWithoutProp`
+ * no variant for, with why (where a tooltip opens); `figmaVariantPropertiesNotInCode`
  * names a Figma variant code has no prop for, with how code chooses it (a Link
- * is External when it has `href`); `propValuesDifferFromFigma` names a prop
+ * is External when it has `href`); `propsWithDifferentValuesInFigma` names a prop
  * whose values differ on purpose, with why. figma-components.schema.json says
  * the same. An exception that no longer applies fails too, so the list stays
  * true.
@@ -173,10 +173,11 @@ function variantsOf(node) {
 
 /** A code prop's values to compare, or null when it takes anything (a string, a node). */
 function valuesOf(prop) {
-  if (prop.values) return prop.values
-  if (prop.type === 'boolean') return ['false', 'true']
+  if (prop.allowedValues) return prop.allowedValues
+  if (prop.typeScriptType === 'boolean') return ['false', 'true']
   // A single literal (`variant: 'error'`) reaches the component list as its type.
-  if (LITERAL_UNION.test(prop.type ?? '')) return prop.type.split(' | ').map((literal) => literal.slice(1, -1))
+  if (LITERAL_UNION.test(prop.typeScriptType ?? ''))
+    return prop.typeScriptType.split(' | ').map((literal) => literal.slice(1, -1))
   return null
 }
 
@@ -193,11 +194,11 @@ function keysFor(component, wholeComponent, propName) {
 
 const isSameSet = (a, b) => a.length === b.length && a.every((value) => b.includes(value))
 
-const { figmaFile, components: mapping } = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8'))
+const { figmaFileUrl, components: mapping } = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8'))
 const { components: componentList } = JSON.parse(await readFile(COMPONENT_LIST, 'utf8'))
-const fileKey = figmaFile.match(/figma\.com\/design\/([^/]+)/)?.[1]
+const fileKey = figmaFileUrl.match(/figma\.com\/design\/([^/]+)/)?.[1]
 if (!fileKey) {
-  console.error(`figma-components.json's figmaFile isn't a figma.com/design URL: ${figmaFile}`)
+  console.error(`figma-components.json's figmaFileUrl isn't a figma.com/design URL: ${figmaFileUrl}`)
   process.exit(1)
 }
 
@@ -239,14 +240,14 @@ for (const [nodeId, components] of componentsByNode) {
   // The shortest name is the whole (Card); the rest are its parts (CardBody).
   const wholeComponent = [...components].sort((a, b) => a.length - b.length)[0]
   const figmaVariants = variantsOf(figmaNode)
-  const figmaVariantsWithoutProp = Object.assign(
+  const figmaVariantPropertiesNotInCode = Object.assign(
     {},
-    ...components.map((component) => mapping[component].figmaVariantsWithoutProp),
+    ...components.map((component) => mapping[component].figmaVariantPropertiesNotInCode),
   )
   const matchedFigma = new Set()
 
   for (const component of components) {
-    const { propsNotInFigma = {}, propValuesDifferFromFigma = {} } = mapping[component]
+    const { propsNotInFigma = {}, propsWithDifferentValuesInFigma = {} } = mapping[component]
     const props = componentList[component]?.props ?? {}
 
     for (const [propName, prop] of Object.entries(props)) {
@@ -256,7 +257,7 @@ for (const [nodeId, components] of componentsByNode) {
       const figmaName = Object.keys(figmaVariants).find((name) => keys.has(comparisonKey(name)))
 
       if (!figmaName) {
-        if (prop.values && !(propName in propsNotInFigma)) {
+        if (prop.allowedValues && !(propName in propsNotInFigma)) {
           problems.push(
             `${component}.${propName} (${values.join(', ')}) has no variant property on Figma's "${figmaNode.name}": ` +
               `add one, or list it in figma-components.json's propsNotInFigma with why`,
@@ -272,44 +273,46 @@ for (const [nodeId, components] of componentsByNode) {
       }
 
       const codeValues = values.map(comparisonKey)
-      const hasDefault = prop.default !== undefined
+      const hasDefault = prop.defaultValue !== undefined
       // Figma's None stands for an optional prop left unset, which code has no value for.
       const isUnsetStandIn = (value) => value === UNSET_OPTION && !hasDefault && !codeValues.includes(UNSET_OPTION)
       const figmaValues = figmaVariants[figmaName].map(comparisonKey).filter((value) => !isUnsetStandIn(value))
       const isSame = isSameSet(codeValues, figmaValues)
-      if (!isSame && !(propName in propValuesDifferFromFigma)) {
+      if (!isSame && !(propName in propsWithDifferentValuesInFigma)) {
         problems.push(
           `${component}.${propName} is ${values.join(' | ')} in code, ` +
             `but ${figmaName} on Figma's "${figmaNode.name}" is ${figmaVariants[figmaName].join(' | ')}`,
         )
-      } else if (isSame && propName in propValuesDifferFromFigma) {
-        problems.push(`${component}.${propName} is in propValuesDifferFromFigma, but its values now match Figma's`)
+      } else if (isSame && propName in propsWithDifferentValuesInFigma) {
+        problems.push(
+          `${component}.${propName} is in propsWithDifferentValuesInFigma, but its values now match Figma's`,
+        )
       }
     }
 
     for (const propName of Object.keys(propsNotInFigma)) {
       if (!(propName in props)) problems.push(`${component}: propsNotInFigma names ${propName}, which isn't a prop`)
     }
-    for (const propName of Object.keys(propValuesDifferFromFigma)) {
+    for (const propName of Object.keys(propsWithDifferentValuesInFigma)) {
       if (!(propName in props))
-        problems.push(`${component}: propValuesDifferFromFigma names ${propName}, which isn't a prop`)
+        problems.push(`${component}: propsWithDifferentValuesInFigma names ${propName}, which isn't a prop`)
     }
   }
 
   for (const figmaName of Object.keys(figmaVariants)) {
-    if (matchedFigma.has(figmaName) || figmaName in figmaVariantsWithoutProp) continue
+    if (matchedFigma.has(figmaName) || figmaName in figmaVariantPropertiesNotInCode) continue
     problems.push(
       `Figma's "${figmaNode.name}" has a ${figmaName} variant (${figmaVariants[figmaName].join(', ')}) that no prop of ` +
-        `${components.join(', ')} matches: add the prop, or list it in figma-components.json's figmaVariantsWithoutProp with the props it comes from`,
+        `${components.join(', ')} matches: add the prop, or list it in figma-components.json's figmaVariantPropertiesNotInCode with the props it comes from`,
     )
   }
-  for (const figmaName of Object.keys(figmaVariantsWithoutProp)) {
+  for (const figmaName of Object.keys(figmaVariantPropertiesNotInCode)) {
     if (!(figmaName in figmaVariants)) {
       problems.push(
-        `${wholeComponent}: figmaVariantsWithoutProp names ${figmaName}, which Figma's "${figmaNode.name}" doesn't have`,
+        `${wholeComponent}: figmaVariantPropertiesNotInCode names ${figmaName}, which Figma's "${figmaNode.name}" doesn't have`,
       )
     } else if (matchedFigma.has(figmaName)) {
-      problems.push(`${wholeComponent}: figmaVariantsWithoutProp names ${figmaName}, but a prop now matches it`)
+      problems.push(`${wholeComponent}: figmaVariantPropertiesNotInCode names ${figmaName}, but a prop now matches it`)
     }
   }
 }

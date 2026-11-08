@@ -44,11 +44,11 @@ const meta = {
       ],
       whenNotToUse: ['A card’s headline figure: use `Readout`.', 'Rows that open something: use `ListRow`.'],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A `<dl>`: each row a `<dt>` label and a `<dd>` value.',
           'An empty row isn’t rendered, so no label is read alone.',
         ],
-        toHandle: ['Words for a value that isn’t text, like a meter’s `aria-label`.'],
+        handledByYourCode: ['Words for a value that isn’t text, like a meter’s `aria-label`.'],
       },
     } satisfies Guidance,
   },

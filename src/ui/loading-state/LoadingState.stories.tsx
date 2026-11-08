@@ -18,11 +18,11 @@ const meta = {
         'A wait inside a dialog: use `Spinner`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A status region (`role="status"`), so the label is announced.',
           'The spinner is silent; the label speaks for it.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A label naming what’s loading: “Scanning your network…”.',
           'Swapping it out once data or an error arrives.',
         ],

@@ -20,8 +20,8 @@ const meta = {
         'A wait inside a `<button>`: use `ButtonSpinner`.',
       ],
       accessibility: {
-        builtIn: ['Silent: no role or text, so screen readers skip it.'],
-        toHandle: ['Words for the wait, in a `role="status"` or live region.'],
+        handledByComponent: ['Silent: no role or text, so screen readers skip it.'],
+        handledByYourCode: ['Words for the wait, in a `role="status"` or live region.'],
       },
     } satisfies Guidance,
   },

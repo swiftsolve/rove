@@ -25,8 +25,11 @@ const meta = {
         'A wait in a dialog or page area: use `Spinner`.',
       ],
       accessibility: {
-        builtIn: ['Hidden from screen readers (`aria-hidden`).', 'An inline `<svg>`, valid inside a `<button>`.'],
-        toHandle: ['A name for the wait: `role="img"` and an `aria-label` on a wrapper.'],
+        handledByComponent: [
+          'Hidden from screen readers (`aria-hidden`).',
+          'An inline `<svg>`, valid inside a `<button>`.',
+        ],
+        handledByYourCode: ['A name for the wait: `role="img"` and an `aria-label` on a wrapper.'],
       },
     } satisfies Guidance,
   },

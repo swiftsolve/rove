@@ -11,7 +11,7 @@ type FigmaNode = { figmaName: string; figmaNodeId: string }
 // which is figma-components.json's key, so every story finds its Figma component with
 // nothing set on the story itself.
 const COMPONENTS: Record<string, FigmaNode | null> = figma.components
-const FILE = new URL(figma.figmaFile)
+const FILE = new URL(figma.figmaFileUrl)
 
 const COLUMN: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%' }
 const EMBED: React.CSSProperties = { flex: 1, width: '100%', border: 0 }

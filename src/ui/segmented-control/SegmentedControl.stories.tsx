@@ -36,12 +36,12 @@ const meta = {
       ],
       whenNotToUse: ['Turning one setting on or off: use `Toggle`.', 'Running an action: use `Button`.'],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A radio group, each segment a radio on a native `<button>`.',
           'One Tab stop. The arrow keys move and choose.',
           'Each segment is named by its label. The thumb is hidden.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A name for the group: `label`, or `aria-labelledby` at a title.',
           '`aria-describedby` pointing at the row’s description, when it has one.',
         ],

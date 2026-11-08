@@ -48,12 +48,12 @@ const meta = {
         'A few actions on one item: use `Menu`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A modal `dialog`, named by its title and described by `description`.',
           'Focus moves in, onto the panel when no field takes it, and stays inside; the page behind is hidden from screen readers.',
           'Escape closes it, and focus returns to the control that opened it.',
         ],
-        toHandle: [
+        handledByYourCode: [
           '`autoFocus` on a form’s first field, as Add a service does.',
           'A live region (`aria-live`) around a body that changes while open, as Share Wi‑Fi does.',
         ],

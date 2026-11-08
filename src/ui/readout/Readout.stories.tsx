@@ -35,11 +35,11 @@ const meta = {
         'A number inside a line of text, easing each poll: use `MetricValue`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'Labelled, a `<dt>` and `<dd>`, read as a pair.',
           'With `spokenValue`, the moving digits are hidden and it’s read instead.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A `<dl>` around labelled readouts.',
           'A `spokenValue` while the figure animates.',
           'With no label, a title nearby that says what the figure is.',

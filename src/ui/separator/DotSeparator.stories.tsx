@@ -21,8 +21,11 @@ const meta = {
         'A missing value that should show: use `NoValue`.',
       ],
       accessibility: {
-        builtIn: ['The dot is hidden from screen readers.', 'A truncated item keeps its full text for screen readers.'],
-        toHandle: [
+        handledByComponent: [
+          'The dot is hidden from screen readers.',
+          'A truncated item keeps its full text for screen readers.',
+        ],
+        handledByYourCode: [
           'Items that read well in a row, without the dots.',
           'The full value elsewhere when truncation can cut it off.',
         ],

@@ -50,12 +50,12 @@ const meta = {
         'An event on a timeline: use `TimelineNode`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'The plain tile is a `<span>`; library icons in it are `aria-hidden`.',
           '`IconTileButton` is a native `<button>` named by `label`.',
           'Disabled, the button stays focusable and says so, but ignores presses.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'Words beside a plain tile that say what the item is.',
           'A button `label` with the item and its state: “Video calls: Good”.',
         ],

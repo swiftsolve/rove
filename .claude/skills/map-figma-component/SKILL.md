@@ -20,7 +20,7 @@ each key means. Two checks hold it true:
 
 The Figma MCP server (the claude.ai Figma connector) and Figma's `figma-use`
 skill, loaded before the first `use_figma` call. Call `create_session` with the
-file key first (the part after `/design/` in figma-components.json's `figmaFile`), and pass
+file key first (the part after `/design/` in figma-components.json's `figmaFileUrl`), and pass
 its session id to every call after. Without the server, stop and say the entry
 is left: never guess a node id.
 
@@ -59,10 +59,10 @@ is left: never guess a node id.
    the side that has it:
    - `propsNotInFigma`: a code prop Figma has no variant for, with why
      (`tooltipSide`: "Figma draws the tooltip on its own.").
-   - `figmaVariantsWithoutProp`: a Figma variant code has no prop for, with how code
+   - `figmaVariantPropertiesNotInCode`: a Figma variant code has no prop for, with how code
      chooses it, starting "In code" (`Has label`: "In code, on when the
      label prop is set.").
-   - `propValuesDifferFromFigma`: a code prop whose values differ from Figma's on purpose,
+   - `propsWithDifferentValuesInFigma`: a code prop whose values differ from Figma's on purpose,
      with why.
 
    An exception that no longer applies fails the check too, so drop it. The

@@ -1,7 +1,7 @@
 import { cx } from 'class-variance-authority'
 import { extendTailwindMerge } from 'tailwind-merge'
 
-import { textStyleClasses, theme } from './cn-theme.gen.json'
+import { tailwindThemeNames, textStyleClasses } from './cn-theme.gen.json'
 
 // tailwind-merge must know the theme's names, or it can't tell a font size
 // from a colour: `text-sm` and `text-secondary` would look like two text
@@ -14,7 +14,7 @@ const mergeClasses = extendTailwindMerge<'text-style'>({
     // weight wins, as the utilities layer beats text-styles.css's components.
     conflictingClassGroups: { 'text-style': ['font-size', 'font-family', 'font-weight', 'leading', 'tracking'] },
   },
-  override: { theme },
+  override: { theme: tailwindThemeNames },
 })
 
 /**

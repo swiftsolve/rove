@@ -3,11 +3,11 @@
   "title": "Figma components map",
   "description": "Maps each UI library component to its component in the Rove Design System Figma file. Edited by hand (the map-figma-component skill). npm run gen copies each entry into components.gen.json, and checks/figma-library.mjs holds it to Figma.",
   "type": "object",
-  "required": ["figmaFile", "components"],
+  "required": ["figmaFileUrl", "components"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "figmaFile": {
+    "figmaFileUrl": {
       "description": "The Rove Design System file's URL. Its file key is the part after /design/.",
       "type": "string",
       "pattern": "^https://www\\.figma\\.com/design/"
@@ -45,12 +45,12 @@
           "type": "object",
           "additionalProperties": { "type": "string", "minLength": 1 }
         },
-        "figmaVariantsWithoutProp": {
+        "figmaVariantPropertiesNotInCode": {
           "description": "Figma variant properties code has no prop for, by their name in Figma, each with how code chooses it, starting 'In code'.",
           "type": "object",
           "additionalProperties": { "type": "string", "pattern": "^In code" }
         },
-        "propValuesDifferFromFigma": {
+        "propsWithDifferentValuesInFigma": {
           "description": "Code props whose values differ from their Figma variant property's on purpose, each with why.",
           "type": "object",
           "additionalProperties": { "type": "string", "minLength": 1 }

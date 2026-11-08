@@ -91,13 +91,13 @@ const meta = {
         'An icon action anywhere else: use `IconButton`.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A `<nav>` landmark named by `label`, its items in lists.',
           'Each item is a native button named by its `label`, also its tooltip.',
           'The current page’s item has `aria-current="page"`.',
           'One Tab stop, on the current page’s item. Up and Down move between items, Home and End to the ends.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A `label` naming the rail: “Main navigation”.',
           '`isActive` on the current page’s item, and only that one.',
           'An action item’s label says what it does: “Switch to light mode”.',

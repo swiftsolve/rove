@@ -29,12 +29,12 @@ const meta = {
         'Submitting the form: use a `Button` outside the field.',
       ],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'A native `<input>`, named by its `label`.',
           '`feedback` is its description, announced as it changes.',
           '`isInvalid` sets `aria-invalid`.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A `label` that names the value, like “Address”.',
           'Sample input in `placeholder`, never the only hint.',
           'An error in words in `feedback`, so red isn’t the only cue.',

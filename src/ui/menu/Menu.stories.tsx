@@ -41,12 +41,12 @@ const meta = {
       ],
       whenNotToUse: ['The page’s main action: use `Button`.', 'One frequent action: use `IconButton`.'],
       accessibility: {
-        builtIn: [
+        handledByComponent: [
           'The kebab is a menu button that says whether it’s open.',
           'Enter opens it on its first item, and the arrows move between items.',
           'Escape, a click outside or an item closes it, and focus returns.',
         ],
-        toHandle: [
+        handledByYourCode: [
           'A kebab `label` that names its subject: “Options for Google”.',
           'Item labels that say what happens: Edit, Remove.',
         ],

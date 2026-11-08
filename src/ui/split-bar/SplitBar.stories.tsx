@@ -31,8 +31,8 @@ const meta = {
       ],
       whenNotToUse: ['A rating or signal: use `BarMeter`.', 'A single headline amount: use `Readout`.'],
       accessibility: {
-        builtIn: ['An image to screen readers (`role="img"`), named by `label`.'],
-        toHandle: [
+        handledByComponent: ['An image to screen readers (`role="img"`), named by `label`.'],
+        handledByYourCode: [
           'A `label` that says both amounts, down then up.',
           'Figures beside it: colour alone doesn’t say which segment is which.',
         ],

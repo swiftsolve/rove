@@ -19,8 +19,8 @@ const meta = {
         'A status read out as it changes: use `ScreenReaderStatus`.',
       ],
       accessibility: {
-        builtIn: ['The shown text is hidden from screen readers.', 'The spoken text is hidden on screen.'],
-        toHandle: ['Spoken text that says the same as the screen, in words.'],
+        handledByComponent: ['The shown text is hidden from screen readers.', 'The spoken text is hidden on screen.'],
+        handledByYourCode: ['Spoken text that says the same as the screen, in words.'],
       },
     } satisfies Guidance,
   },

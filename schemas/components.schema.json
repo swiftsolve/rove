@@ -3,7 +3,7 @@
   "title": "UI library components",
   "description": "components.gen.json: the UI library's public API in one file, written by scripts/gen/components.mjs from src/ui. Import everything from @/ui.",
   "type": "object",
-  "required": ["figmaFile", "components", "icons", "helpers"],
+  "required": ["figmaFileUrl", "components", "iconNames", "otherExports"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
@@ -12,9 +12,9 @@
     "$comment": {
       "type": "string"
     },
-    "figmaFile": {
-      "description": "The Rove Design System file's URL.",
-      "type": "string"
+    "figmaFileUrl": {
+      "description": "The Rove Design System file's URL, copied from figma-components.json.",
+      "$ref": "figma-components.schema.json#/properties/figmaFileUrl"
     },
     "components": {
       "description": "Every component, by its export name.",
@@ -23,7 +23,7 @@
         "$ref": "#/definitions/component"
       }
     },
-    "icons": {
+    "iconNames": {
       "description": "Every icon component's export name, A to Z.",
       "type": "array",
       "items": {
@@ -31,7 +31,7 @@
         "pattern": "Icon$"
       }
     },
-    "helpers": {
+    "otherExports": {
       "description": "Every other export (hooks, functions, constants), by name, with its doc comment.",
       "type": "object",
       "additionalProperties": {
@@ -42,10 +42,10 @@
   "definitions": {
     "component": {
       "type": "object",
-      "required": ["group", "sourceFile", "description", "figma", "props", "storyIds"],
+      "required": ["libraryGroup", "sourceFile", "description", "figmaComponent", "props", "storyIds"],
       "additionalProperties": false,
       "properties": {
-        "group": {
+        "libraryGroup": {
           "description": "Its group in the library, from the comment above it in src/ui/index.ts.",
           "type": "string"
         },
@@ -58,9 +58,12 @@
           "type": "string",
           "minLength": 1
         },
-        "figma": {
-          "description": "Its entry in figma-components.json (see schemas/figma-components.schema.json), or null when Figma has none.",
-          "type": ["object", "null"]
+        "figmaComponent": {
+          "description": "Its entry in figma-components.json, or null when Figma has none.",
+          "oneOf": [
+            { "description": "The component has no Figma counterpart.", "type": "null" },
+            { "$ref": "figma-components.schema.json#/definitions/figmaComponent" }
+          ]
         },
         "props": {
           "description": "Its own props, A to Z.",
@@ -90,18 +93,18 @@
       "required": ["description"],
       "additionalProperties": false,
       "properties": {
-        "type": {
+        "typeScriptType": {
           "description": "Its TypeScript type, when it isn't a set of values.",
           "type": "string"
         },
-        "values": {
+        "allowedValues": {
           "description": "The values it takes, when it's a union of literals.",
           "type": "array",
           "items": {
             "type": ["string", "number"]
           }
         },
-        "default": {
+        "defaultValue": {
           "description": "Its value when left out.",
           "type": "string"
         },
@@ -138,14 +141,14 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "builtIn": {
+            "handledByComponent": {
               "description": "What it already does for assistive tech.",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            "toHandle": {
+            "handledByYourCode": {
               "description": "What the code using it must still do.",
               "type": "array",
               "items": {

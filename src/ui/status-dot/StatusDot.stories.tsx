@@ -23,8 +23,8 @@ const meta = {
       ],
       whenNotToUse: ['A flag beside a title: use `Badge`.', 'Live data in a card header: use `LiveBadge`.'],
       accessibility: {
-        builtIn: ['Hidden from screen readers (`aria-hidden`).'],
-        toHandle: ['Words beside it that say the status on their own.'],
+        handledByComponent: ['Hidden from screen readers (`aria-hidden`).'],
+        handledByYourCode: ['Words beside it that say the status on their own.'],
       },
     } satisfies Guidance,
   },

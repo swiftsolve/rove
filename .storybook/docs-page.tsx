@@ -19,9 +19,9 @@ export type Guidance = {
    */
   accessibility: {
     /** What the component does for you: its element, roles, names, keyboard. */
-    builtIn: string[]
+    handledByComponent: string[]
     /** What you pass or write around it: props, labels, wrapping markup. */
-    toHandle: string[]
+    handledByYourCode: string[]
   }
 }
 
@@ -70,8 +70,8 @@ function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
     {
       title: 'Accessibility',
       groups: [
-        { label: 'Built in', lines: accessibility.builtIn },
-        { label: 'To handle', lines: accessibility.toHandle },
+        { label: 'Built in', lines: accessibility.handledByComponent },
+        { label: 'To handle', lines: accessibility.handledByYourCode },
       ],
     },
   ]
