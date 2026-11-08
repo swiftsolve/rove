@@ -63,9 +63,11 @@ A function is named for its effect:
 
 - one that acts (fetches, writes, focuses, schedules) is a verb phrase:
   `fetchFigmaJson`, `wakeAudioContext`, `flashHighlight`;
-- one that only computes a value is named for the value, with no `get`:
-  `testStatusText`, `restyleReason`, not `restyles`; a conversion keeps its
-  verb, `formatSpeedMbps`, `parseServiceInput`;
+- one that only computes a value is named for the value: `testStatusText`,
+  `restyleReason`, not `restyles`. A conversion keeps its verb,
+  `formatSpeedMbps`, `parseServiceInput`. `get` reads outside state (a store,
+  storage, the backend), `getSetting`, or leaves the value's name free for the
+  variable that holds it, `getLinkCapacityMbps`;
 - one that answers yes or no reads as a question: `isSameText`, `hasGradient`;
 - an event handler is `onX`, as a prop and as a local: `onKeyDown`.
 
