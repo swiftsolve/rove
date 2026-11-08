@@ -3,7 +3,7 @@ import { cx } from 'class-variance-authority'
 
 import { releaseNoteItems } from '@/app/utils/release-notes'
 import type { PendingUpdate } from '@/app/utils/updater'
-import { ArrowRightIcon, Button, Dialog, DownloadIcon, ScreenReaderStatus } from '@/ui'
+import { Button, Dialog, DownloadIcon, ScreenReaderStatus } from '@/ui'
 
 function installLabel(isInstalling: boolean, hasFailed: boolean): string {
   if (isInstalling) return 'Installing…'
@@ -28,15 +28,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
   return (
     <Dialog
       title="Update available"
-      // The version diff: the current one dim, the new one in the accent.
-      description={
-        <p className="flex items-center gap-6 tabular-nums">
-          <span className="text-tertiary">{update.currentVersion}</span>
-          <ArrowRightIcon size={13} className="text-tertiary" />
-          <span className="sr-only">{' to '}</span>
-          <span className="font-semibold text-accent-text">{update.version}</span>
-        </p>
-      }
+      description={`Version ${update.version} is ready.`}
       onClose={onDismiss}
       canClose={!isInstalling}
       cancelLabel="Later"
