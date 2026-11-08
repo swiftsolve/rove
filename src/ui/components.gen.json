@@ -89,12 +89,12 @@
           "Checking a field’s value, like Test: use `TextFieldAction`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A native `<button>`, `type=\"button\"` unless set.",
             "Disabled and loading stay focusable, ignore presses and tell screen readers.",
             "Its icon and spinner are hidden from screen readers."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A label that says what happens, like “Run test”.",
             "On a disabled button, a `Tooltip` that says why."
           ]
@@ -191,13 +191,13 @@
           "An item’s tile that opens it: use `IconTileButton`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A native `<button>`, named by `label`. The icon is hidden.",
             "Shows `label` as a tooltip on hover and keyboard focus.",
             "A longer `tooltip` is read as its description.",
             "Disabled and loading stay focusable and ignore presses."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label` that says what happens, like “Close”.",
             "An icon that means that action at a glance.",
             "On a disabled button, a `tooltip` that says why."
@@ -259,12 +259,12 @@
           "A whole card that opens a view: use `Card` with `onOpen`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "In the app, a `<button>` with `role=\"link\"`.",
             "With `href`, an `<a>` that opens a new window and says so.",
             "Its own focus style, accent and underline, so don’t add a ring."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Words that name where it goes, like “All hosts”.",
             "Screen-reader-only words for where it goes, when the label doesn’t say."
           ]
@@ -303,12 +303,12 @@
           "A link in a line of text: use `Link`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A `<button>` with `role=\"link\"`, as it opens a view.",
             "Covers its container, so a click anywhere opens it.",
             "Its focus ring follows the container’s corners."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label`, or `aria-labelledby` pointing at a heading.",
             "A positioned container (`relative`) for it to cover.",
             "Controls raised above it (`relative z-2`), as siblings, never nested.",
@@ -357,12 +357,12 @@
           "One frequent action: use `IconButton`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The kebab is a menu button that says whether it’s open.",
             "Enter opens it on its first item, and the arrows move between items.",
             "Escape, a click outside or an item closes it, and focus returns."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A kebab `label` that names its subject: “Options for Google”.",
             "Item labels that say what happens: Edit, Remove."
           ]
@@ -529,12 +529,12 @@
           "Submitting the form: use a `Button` outside the field."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A native `<input>`, named by its `label`.",
             "`feedback` is its description, announced as it changes.",
             "`isInvalid` sets `aria-invalid`."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label` that names the value, like “Address”.",
             "Sample input in `placeholder`, never the only hint.",
             "An error in words in `feedback`, so red isn’t the only cue."
@@ -639,12 +639,12 @@
           "A status the user can’t change: use `Badge` or `StatusDot`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A native `<button>` with `role=\"switch\"`: a click or Space flips it.",
             "Screen readers hear its `label` and whether it’s on.",
             "Disabled stays focusable, ignores flips and sets `aria-disabled`."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label` that repeats the setting’s title.",
             "`aria-describedby` pointing at the row’s description.",
             "On a disabled switch, a `Tooltip` that says why."
@@ -699,12 +699,12 @@
           "Running an action: use `Button`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A radio group, each segment a radio on a native `<button>`.",
             "One Tab stop. The arrow keys move and choose.",
             "Each segment is named by its label. The thumb is hidden."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A name for the group: `label`, or `aria-labelledby` at a title.",
             "`aria-describedby` pointing at the row’s description, when it has one."
           ]
@@ -780,12 +780,12 @@
           "A few actions on one item: use `Menu`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A modal `dialog`, named by its title and described by `description`.",
             "Focus moves in, onto the panel when no field takes it, and stays inside; the page behind is hidden from screen readers.",
             "Escape closes it, and focus returns to the control that opened it."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "`autoFocus` on a form’s first field, as Add a service does.",
             "A live region (`aria-live`) around a body that changes while open, as Share Wi‑Fi does."
           ]
@@ -891,12 +891,12 @@
           "A value that may be stale, like a rating while a new test runs: set `isDisabled`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Opens on keyboard focus, not only on hover.",
             "Its content describes the trigger, after any description it had.",
             "No description when it repeats the trigger’s `aria-label`."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A focusable trigger: keyboard users can’t reach a tip on plain text.",
             "Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text."
           ]
@@ -945,11 +945,11 @@
           "A failure the user should act on: use `Banner`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Plain text; capitals come from CSS, so it’s read as typed.",
             "`LiveBadge`’s dot is hidden from screen readers."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Words that carry the meaning without the colour."
           ]
         }
@@ -1031,10 +1031,10 @@
           "Live data in a card header: use `LiveBadge`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Hidden from screen readers (`aria-hidden`)."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Words beside it that say the status on their own."
           ]
         }
@@ -1070,10 +1070,10 @@
           "A wait inside a `<button>`: use `ButtonSpinner`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Silent: no role or text, so screen readers skip it."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Words for the wait, in a `role=\"status\"` or live region."
           ]
         }
@@ -1115,11 +1115,11 @@
           "A wait in a dialog or page area: use `Spinner`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Hidden from screen readers (`aria-hidden`).",
             "An inline `<svg>`, valid inside a `<button>`."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A name for the wait: `role=\"img\"` and an `aria-label` on a wrapper."
           ]
         }
@@ -1155,11 +1155,11 @@
           "A wait inside a dialog: use `Spinner`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A status region (`role=\"status\"`), so the label is announced.",
             "The spinner is silent; the label speaks for it."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A label naming what’s loading: “Scanning your network…”.",
             "Swapping it out once data or an error arrives."
           ]
@@ -1212,12 +1212,12 @@
           "A choice to make before going on: use `Dialog`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "An alert (`role=\"alert\"`), read as it appears.",
             "Dismiss and Retry are `Button`s; Retry is busy while it runs.",
             "The icon is hidden from screen readers."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A title that says what failed: “Couldn’t scan for devices”.",
             "Rendering it only while there’s an error."
           ]
@@ -1272,11 +1272,11 @@
           "One missing value in a row: use `NoValue`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The title is an `<h2>`, in the page outline.",
             "The placeholder rows and lock are hidden from screen readers."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A title naming what’s empty: “No devices found”.",
             "`role=\"status\"` on a note an action adds, so it’s announced."
           ]
@@ -1356,11 +1356,11 @@
           "Rows that open something: use `ListRow`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A `<dl>`: each row a `<dt>` label and a `<dd>` value.",
             "An empty row isn’t rendered, so no label is read alone."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Words for a value that isn’t text, like a meter’s `aria-label`."
           ]
         }
@@ -1466,11 +1466,11 @@
           "A page still loading: use `LoadingState`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The bar is `aria-hidden`; screen readers hear `label` instead.",
             "A drawn bar, not a dash, so nothing reads as “dash”."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label` that says why: “Not measured”, “Unknown”.",
             "A label nearby, like a row’s, that says what’s missing."
           ]
@@ -1544,11 +1544,11 @@
           "A number inside a line of text, easing each poll: use `MetricValue`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Labelled, a `<dt>` and `<dd>`, read as a pair.",
             "With `spokenValue`, the moving digits are hidden and it’s read instead."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `<dl>` around labelled readouts.",
             "A `spokenValue` while the figure animates.",
             "With no label, a title nearby that says what the figure is."
@@ -1607,12 +1607,12 @@
           "A value that never changes: use `DataRow`’s `value`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "Snaps to each new value under reduced motion.",
             "Plain text: screen readers read the number shown.",
             "A null `format` draws `NoValue`, heard as “None”."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A label around it that says what it measures.",
             "The status in words where it matters, not only colour.",
             "A change worth announcing, through `ScreenReaderStatus`."
@@ -1670,11 +1670,11 @@
           "Comparing traffic between rows: use `SplitBar`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "`aria-hidden`: it’s a picture of the value.",
             "Bars fill with `currentColor`; unlit ones are a faint tint of it."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "The value in words: an `sr-only` word or a `role=\"meter\"` wrapper.",
             "A text colour on its container with 3:1 contrast, for the bars."
           ]
@@ -1733,10 +1733,10 @@
           "A single headline amount: use `Readout`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "An image to screen readers (`role=\"img\"`), named by `label`."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label` that says both amounts, down then up.",
             "Figures beside it: colour alone doesn’t say which segment is which."
           ]
@@ -1787,11 +1787,11 @@
           "A row holding a bar or other block content: use `StretchedLink`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A native `<button>` named by its text; the chevron is hidden.",
             "Disabled, it stays focusable and says so (`aria-disabled`), but ignores presses."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A list around the rows: `<ul role=\"list\">`, an `<li>` each.",
             "A rating in words, not colour alone: “Excellent”, in its level’s colour.",
             "Spans, not divs, inside: a button holds only inline content."
@@ -1858,12 +1858,12 @@
           "An event on a timeline: use `TimelineNode`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The plain tile is a `<span>`; library icons in it are `aria-hidden`.",
             "`IconTileButton` is a native `<button>` named by `label`.",
             "Disabled, the button stays focusable and says so, but ignores presses."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Words beside a plain tile that say what the item is.",
             "A button `label` with the item and its state: “Video calls: Good”."
           ]
@@ -1971,11 +1971,11 @@
           "A message about the whole page: use `Banner`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "An `<li>`: in a list, screen readers count the nodes.",
             "The marker is `aria-hidden`; the lines carry the event."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `<ul role=\"list\">` around the nodes.",
             "Lines that say what happened, not only colour or icon.",
             "A `<time>` for when it happened."
@@ -2047,12 +2047,12 @@
           "A row in a card that opens a page: use `ListRow`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A `section` card is a region named by its header’s title.",
             "With `onOpen`, one link covers the card, first in Tab order.",
             "`CardList` is a list named by its `label`."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `CardHeader` on a `section` card, or your own `aria-labelledby`.",
             "A `linkLabel` when the title doesn’t say what the card shows.",
             "Body controls on an openable card raised above its link (`relative z-2`)."
@@ -2219,11 +2219,11 @@
           "A few actions behind a button: use `Menu`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The trigger is a native `<button>` with `aria-expanded`.",
             "A closed panel leaves the page and the accessibility tree."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A trigger name that says what it shows: “Connection details”.",
             "The trigger’s look: hover, focus and any chevron.",
             "With `hasFocusFrame`, the header’s hover look on focus too."
@@ -2292,11 +2292,11 @@
           "A missing value that should show: use `NoValue`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The dot is hidden from screen readers.",
             "A truncated item keeps its full text for screen readers."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Items that read well in a row, without the dots.",
             "The full value elsewhere when truncation can cut it off."
           ]
@@ -2374,12 +2374,12 @@
           "A status anywhere else: use a `StatusDot` beside its words."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A `<header>` landmark that also drags the window.",
             "`TitleBarStatus` is `role=\"status\"`, so a change is read out.",
             "`WindowButton`s are named “Minimize” and “Close”, out of the Tab order."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A brand with its name as text and its mark hidden.",
             "Status words that make sense heard alone: “No internet”."
           ]
@@ -2524,13 +2524,13 @@
           "An icon action anywhere else: use `IconButton`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "A `<nav>` landmark named by `label`, its items in lists.",
             "Each item is a native button named by its `label`, also its tooltip.",
             "The current page’s item has `aria-current=\"page\"`.",
             "One Tab stop, on the current page’s item. Up and Down move between items, Home and End to the ends."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "A `label` naming the rail: “Main navigation”.",
             "`isActive` on the current page’s item, and only that one.",
             "An action item’s label says what it does: “Switch to light mode”."
@@ -2600,13 +2600,13 @@
           "An error about the page: use `Banner` below it."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The title is the page’s `<h1>`, in a `<header>`.",
             "The info button is named by `info.label`, its hint in a tooltip.",
             "A new `status` is announced to screen readers.",
             "The back button is named “Back”, with a matching tooltip."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Labels and tooltips on the actions you pass.",
             "`status` words that make sense heard alone."
           ]
@@ -2634,11 +2634,11 @@
           "An error the user must see: use `Banner`, which announces it."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "`role=\"status\"`: a polite live region.",
             "Hidden on screen, still read by screen readers."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Keep it mounted; pass empty text when there’s nothing to say.",
             "Text that makes sense heard alone.",
             "New text only when the status changes, not on every tick."
@@ -2676,11 +2676,11 @@
           "A status read out as it changes: use `ScreenReaderStatus`."
         ],
         "accessibility": {
-          "handledByComponent": [
+          "builtIn": [
             "The shown text is hidden from screen readers.",
             "The spoken text is hidden on screen."
           ],
-          "handledByYourCode": [
+          "toHandle": [
             "Spoken text that says the same as the screen, in words."
           ]
         }

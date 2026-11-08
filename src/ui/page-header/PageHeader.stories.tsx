@@ -50,16 +50,13 @@ const meta = {
       ],
       whenNotToUse: ['A card’s title: use `CardHeader`.', 'An error about the page: use `Banner` below it.'],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'The title is the page’s `<h1>`, in a `<header>`.',
           'The info button is named by `info.label`, its hint in a tooltip.',
           'A new `status` is announced to screen readers.',
           'The back button is named “Back”, with a matching tooltip.',
         ],
-        handledByYourCode: [
-          'Labels and tooltips on the actions you pass.',
-          '`status` words that make sense heard alone.',
-        ],
+        toHandle: ['Labels and tooltips on the actions you pass.', '`status` words that make sense heard alone.'],
       },
     } satisfies Guidance,
   },

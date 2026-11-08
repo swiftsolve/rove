@@ -22,11 +22,8 @@ const meta = {
         'An error the user must see: use `Banner`, which announces it.',
       ],
       accessibility: {
-        handledByComponent: [
-          '`role="status"`: a polite live region.',
-          'Hidden on screen, still read by screen readers.',
-        ],
-        handledByYourCode: [
+        builtIn: ['`role="status"`: a polite live region.', 'Hidden on screen, still read by screen readers.'],
+        toHandle: [
           'Keep it mounted; pass empty text when there’s nothing to say.',
           'Text that makes sense heard alone.',
           'New text only when the status changes, not on every tick.',

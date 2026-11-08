@@ -48,12 +48,12 @@ const meta = {
         'A status anywhere else: use a `StatusDot` beside its words.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'A `<header>` landmark that also drags the window.',
           '`TitleBarStatus` is `role="status"`, so a change is read out.',
           '`WindowButton`s are named “Minimize” and “Close”, out of the Tab order.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A brand with its name as text and its mark hidden.',
           'Status words that make sense heard alone: “No internet”.',
         ],

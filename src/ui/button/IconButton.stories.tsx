@@ -30,13 +30,13 @@ const meta = {
         'An item’s tile that opens it: use `IconTileButton`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'A native `<button>`, named by `label`. The icon is hidden.',
           'Shows `label` as a tooltip on hover and keyboard focus.',
           'A longer `tooltip` is read as its description.',
           'Disabled and loading stay focusable and ignore presses.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A `label` that says what happens, like “Close”.',
           'An icon that means that action at a glance.',
           'On a disabled button, a `tooltip` that says why.',

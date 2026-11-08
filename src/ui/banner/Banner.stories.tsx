@@ -22,12 +22,12 @@ const meta = {
         'A choice to make before going on: use `Dialog`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'An alert (`role="alert"`), read as it appears.',
           'Dismiss and Retry are `Button`s; Retry is busy while it runs.',
           'The icon is hidden from screen readers.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A title that says what failed: “Couldn’t scan for devices”.',
           'Rendering it only while there’s an error.',
         ],

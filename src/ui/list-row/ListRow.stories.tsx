@@ -63,11 +63,11 @@ const meta = {
         'A row holding a bar or other block content: use `StretchedLink`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'A native `<button>` named by its text; the chevron is hidden.',
           'Disabled, it stays focusable and says so (`aria-disabled`), but ignores presses.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A list around the rows: `<ul role="list">`, an `<li>` each.',
           'A rating in words, not colour alone: “Excellent”, in its level’s colour.',
           'Spans, not divs, inside: a button holds only inline content.',

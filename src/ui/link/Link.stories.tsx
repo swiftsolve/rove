@@ -27,12 +27,12 @@ const meta = {
         'A whole card that opens a view: use `Card` with `onOpen`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'In the app, a `<button>` with `role="link"`.',
           'With `href`, an `<a>` that opens a new window and says so.',
           'Its own focus style, accent and underline, so don’t add a ring.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'Words that name where it goes, like “All hosts”.',
           'Screen-reader-only words for where it goes, when the label doesn’t say.',
         ],

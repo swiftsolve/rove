@@ -32,12 +32,12 @@ const meta = {
         'Checking a field’s value, like Test: use `TextFieldAction`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'A native `<button>`, `type="button"` unless set.',
           'Disabled and loading stay focusable, ignore presses and tell screen readers.',
           'Its icon and spinner are hidden from screen readers.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A label that says what happens, like “Run test”.',
           'On a disabled button, a `Tooltip` that says why.',
         ],

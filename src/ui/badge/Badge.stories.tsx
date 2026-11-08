@@ -19,11 +19,11 @@ const meta = {
         'A failure the user should act on: use `Banner`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'Plain text; capitals come from CSS, so it’s read as typed.',
           '`LiveBadge`’s dot is hidden from screen readers.',
         ],
-        handledByYourCode: ['Words that carry the meaning without the colour.'],
+        toHandle: ['Words that carry the meaning without the colour.'],
       },
     } satisfies Guidance,
   },

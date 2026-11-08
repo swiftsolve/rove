@@ -141,14 +141,14 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "handledByComponent": {
+            "builtIn": {
               "description": "What it already does for assistive tech.",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            "handledByYourCode": {
+            "toHandle": {
               "description": "What the code using it must still do.",
               "type": "array",
               "items": {

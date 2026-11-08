@@ -83,11 +83,11 @@ const meta = {
         'A few actions behind a button: use `Menu`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'The trigger is a native `<button>` with `aria-expanded`.',
           'A closed panel leaves the page and the accessibility tree.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A trigger name that says what it shows: “Connection details”.',
           'The trigger’s look: hover, focus and any chevron.',
           'With `hasFocusFrame`, the header’s hover look on focus too.',

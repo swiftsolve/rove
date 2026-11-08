@@ -35,12 +35,12 @@ const meta = {
         'A value that never changes: use `DataRow`’s `value`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'Snaps to each new value under reduced motion.',
           'Plain text: screen readers read the number shown.',
           'A null `format` draws `NoValue`, heard as “None”.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A label around it that says what it measures.',
           'The status in words where it matters, not only colour.',
           'A change worth announcing, through `ScreenReaderStatus`.',

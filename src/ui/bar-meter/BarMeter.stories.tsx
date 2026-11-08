@@ -33,11 +33,11 @@ const meta = {
         'Comparing traffic between rows: use `SplitBar`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           '`aria-hidden`: it’s a picture of the value.',
           'Bars fill with `currentColor`; unlit ones are a faint tint of it.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'The value in words: an `sr-only` word or a `role="meter"` wrapper.',
           'A text colour on its container with 3:1 contrast, for the bars.',
         ],

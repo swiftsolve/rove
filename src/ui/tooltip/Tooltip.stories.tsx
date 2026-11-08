@@ -27,12 +27,12 @@ const meta = {
         'A value that may be stale, like a rating while a new test runs: set `isDisabled`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'Opens on keyboard focus, not only on hover.',
           'Its content describes the trigger, after any description it had.',
           'No description when it repeats the trigger’s `aria-label`.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A focusable trigger: keyboard users can’t reach a tip on plain text.',
           'Over plain text, `shouldDescribe={false}` and the hint in `sr-only` text.',
         ],

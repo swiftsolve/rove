@@ -21,11 +21,11 @@ const meta = {
         'A page still loading: use `LoadingState`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'The bar is `aria-hidden`; screen readers hear `label` instead.',
           'A drawn bar, not a dash, so nothing reads as “dash”.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A `label` that says why: “Not measured”, “Unknown”.',
           'A label nearby, like a row’s, that says what’s missing.',
         ],

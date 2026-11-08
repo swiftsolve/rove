@@ -28,11 +28,11 @@ const meta = {
         'One missing value in a row: use `NoValue`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'The title is an `<h2>`, in the page outline.',
           'The placeholder rows and lock are hidden from screen readers.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A title naming what’s empty: “No devices found”.',
           '`role="status"` on a note an action adds, so it’s announced.',
         ],

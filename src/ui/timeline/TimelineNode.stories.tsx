@@ -60,11 +60,11 @@ const meta = {
         'A message about the whole page: use `Banner`.',
       ],
       accessibility: {
-        handledByComponent: [
+        builtIn: [
           'An `<li>`: in a list, screen readers count the nodes.',
           'The marker is `aria-hidden`; the lines carry the event.',
         ],
-        handledByYourCode: [
+        toHandle: [
           'A `<ul role="list">` around the nodes.',
           'Lines that say what happened, not only colour or icon.',
           'A `<time>` for when it happened.',
