@@ -58,9 +58,8 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
       <div className={CARD_CONTENT}>
         <div className="flex items-center gap-8 pb-12">
           <IconTile
-            size="sm"
             color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
-            icon={<CapabilityIcon id={capability.id} size={16} />}
+            icon={<CapabilityIcon id={capability.id} size={17} />}
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <h2 className="type-heading">{capability.label}</h2>
