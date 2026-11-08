@@ -43,7 +43,9 @@ stay identical.
    in the commit of the folder that owns the renamed thing.
 6. **Prove nothing moved.** Shoot the "after" set from the checkout in both
    themes, then `diff -rq` each against its "before" folder. Done when both
-   diffs print nothing. A pixel-identical sweep is no change a user would
+   diffs print nothing. If a shot differs, shoot the HEAD copy again: a shot
+   that also differs from its own first run is timing, not your change, and
+   "after" matching that rerun clears it. A pixel-identical sweep is no change a user would
    see, so it needs no `resync-sites`.
 
 Report each folder with what got plainer, or "already plain".
