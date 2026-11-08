@@ -68,7 +68,9 @@ Fair warning: at multi-gigabit rates one test moves 1–2 GB. That's inherent to
 how throughput measurement works.
 
 **Data usage.** Every 30 s the backend adds counter deltas to per-day buckets
-in the app-data dir, so totals survive restarts. The kernel's counters reset at
+in the app-data dir, so totals survive restarts. Today's total also counts
+what's moved since the last save, read fresh each time the view asks, so it
+climbs every couple of seconds instead of in 30 s steps. The kernel's counters reset at
 boot, which the delta logic handles. The "since boot" totals in the UI are read
 straight from `/sys/class/net/*/statistics` at query time: kernel truth, no
 bookkeeping.

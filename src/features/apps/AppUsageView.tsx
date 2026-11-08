@@ -1,8 +1,11 @@
+import { useRef } from 'react'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { AppIcon } from '@/features/apps/components/AppIcon'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { UsageRow } from '@/features/apps/components/UsageRow'
 import { useAppUsage } from '@/features/apps/hooks/useAppUsage'
+import { useRowGlide } from '@/features/apps/hooks/useRowGlide'
 import { busiestTotal } from '@/features/apps/utils/transfer'
 import { AppsIcon, Banner, CardList, DotSeparator, GlobeIcon, LayersIcon, Link, PageHeader } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
@@ -39,6 +42,8 @@ export function AppUsageView() {
   const { navigate } = useNavigation()
   const { apps } = usage
   const busiest = busiestTotal(apps)
+  const listRef = useRef<HTMLUListElement>(null)
+  useRowGlide(listRef, apps.map((app) => app.name).join('\n'))
 
   return (
     <div className="page">
@@ -53,7 +58,7 @@ export function AppUsageView() {
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={apps.length === 0} copy={BODY_COPY}>
-        <CardList label="Apps by usage">
+        <CardList label="Apps by usage" ref={listRef}>
           {apps.map((app) => (
             <UsageRow
               key={app.name}

@@ -1,8 +1,9 @@
 import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { DataUsageSummary } from '@/types'
 
-// Slower than the per-app breakdowns: the daily totals are a summary.
-const POLL_INTERVAL_MS = 10_000
+// Every 2 s, so today's total climbs as traffic moves: the backend adds what's
+// moved since its last 30 s save to it, a cheap counter read.
+const POLL_INTERVAL_MS = 2_000
 
 const EMPTY_USAGE: DataUsageSummary = { days: [], bootRxBytes: 0, bootTxBytes: 0, trackingSince: null }
 

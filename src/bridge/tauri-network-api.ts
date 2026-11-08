@@ -83,6 +83,8 @@ const tauriNetworkApi: NetworkAPI = {
   getServiceHistory: () => call<ServiceEvent[]>('get_service_history'),
   clearServiceHistory: () => call<void>('clear_service_history'),
   onServicesTimeline: (callback: () => void) => subscribeEvent('services-timeline', callback),
+  onAppUsage: (callback: () => void) => subscribeEvent('app-usage', callback),
+  onHostUsage: (callback: () => void) => subscribeEvent('host-usage', callback),
   runSpeedTest: (runToken: string) => call<SpeedTestResult>('run_speed_test', { runToken }),
   cancelSpeedTest: (runToken: string) => call<void>('cancel_speed_test', { runToken }),
   getDataUsage: () => call<DataUsageSummary>('get_data_usage'),

@@ -110,23 +110,10 @@ impl UsageTracker {
 
     /// One 30 s tick: add the per-interface deltas to today's bucket.
     pub fn sample(&mut self, networks: &sysinfo::Networks) {
-        let mut rx_delta = 0u64;
-        let mut tx_delta = 0u64;
-
-        for (name, data) in networks.iter() {
-            if crate::utils::net::is_virtual_interface(name) {
-                continue;
-            }
-            let rx = data.total_received();
-            let tx = data.total_transmitted();
-            if let Some(last) = self.last_bytes.get(name) {
-                // A counter that went down (reboot, driver reload, re-enumeration)
-                // credits nothing: crediting the new reading in full would dump a
-                // phantom multi-GB spike into today's bucket.
-                rx_delta += rx.saturating_sub(last.rx);
-                tx_delta += tx.saturating_sub(last.tx);
-            }
-            self.last_bytes.insert(name.clone(), ByteCounts { rx, tx });
+        let readings = physical_readings(networks);
+        let ByteCounts { rx: rx_delta, tx: tx_delta } = rise_since(&self.last_bytes, &readings);
+        for (name, counts) in readings {
+            self.last_bytes.insert(name, counts);
         }
         // Forget interfaces that disappeared (Docker/VPN churn) so `last_bytes`
         // stays bounded over a long session.
@@ -172,10 +159,15 @@ impl UsageTracker {
     }
 
     pub fn summary(&self, networks: &sysinfo::Networks) -> DataUsageSummary {
+        // Today also counts what's moved since the last tick, so it climbs as
+        // the view polls rather than in 30 s steps. Read, not saved: the next
+        // tick saves the same rise.
+        let unsaved = rise_since(&self.last_bytes, &physical_readings(networks));
         let days = (1 - SUMMARY_DAYS..=0)
             .map(|offset| {
                 let key = local_date_key(offset);
                 let (rx, tx) = self.store.usage_day(&key).unwrap_or((0, 0));
+                let (rx, tx) = if offset == 0 { (rx + unsaved.rx, tx + unsaved.tx) } else { (rx, tx) };
                 DailyUsage { date: key, rx_bytes: rx, tx_bytes: tx }
             })
             .collect();
@@ -191,9 +183,56 @@ impl UsageTracker {
     }
 }
 
+/// Each physical interface's cumulative counters, by name.
+fn physical_readings(networks: &sysinfo::Networks) -> Vec<(String, ByteCounts)> {
+    networks
+        .iter()
+        .filter(|(name, _)| !crate::utils::net::is_virtual_interface(name))
+        .map(|(name, data)| (name.clone(), ByteCounts { rx: data.total_received(), tx: data.total_transmitted() }))
+        .collect()
+}
+
+/// How far `readings` have risen past `last`, summed. An interface with no
+/// last reading credits nothing yet, and a counter that went down (reboot,
+/// driver reload, re-enumeration) credits nothing: crediting the new reading
+/// in full would dump a phantom multi-GB spike into today's bucket.
+fn rise_since(last: &HashMap<String, ByteCounts>, readings: &[(String, ByteCounts)]) -> ByteCounts {
+    let mut rise = ByteCounts::default();
+    for (name, now) in readings {
+        if let Some(before) = last.get(name) {
+            rise.rx += now.rx.saturating_sub(before.rx);
+            rise.tx += now.tx.saturating_sub(before.tx);
+        }
+    }
+    rise
+}
+
 /// A received/sent byte pair: a counter reading or a running total.
 #[derive(Default, Clone, Copy)]
 pub(crate) struct ByteCounts {
     pub(crate) rx: u64,
     pub(crate) tx: u64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn reading(name: &str, rx: u64, tx: u64) -> (String, ByteCounts) {
+        (name.to_string(), ByteCounts { rx, tx })
+    }
+
+    #[test]
+    fn rise_since_sums_each_interfaces_climb() {
+        let last = HashMap::from([reading("en0", 100, 10), reading("en1", 50, 5)]);
+        let rise = rise_since(&last, &[reading("en0", 160, 15), reading("en1", 70, 5)]);
+        assert_eq!((rise.rx, rise.tx), (80, 5));
+    }
+
+    #[test]
+    fn rise_since_credits_nothing_for_a_new_or_reset_counter() {
+        let last = HashMap::from([reading("en0", 1_000, 1_000)]);
+        let rise = rise_since(&last, &[reading("en0", 20, 30), reading("en5", 900, 900)]);
+        assert_eq!((rise.rx, rise.tx), (0, 0));
+    }
 }

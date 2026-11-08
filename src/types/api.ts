@@ -95,6 +95,10 @@ export type NetworkAPI = {
   clearServiceHistory(): Promise<void>
   /** Fires when the services heartbeat has folded a fresh probe into the timeline, so a page showing it can re-read. */
   onServicesTimeline(callback: () => void): Unsubscribe
+  /** Fires after each per-app usage sample, so the Apps view can re-read at once. */
+  onAppUsage(callback: () => void): Unsubscribe
+  /** Fires after each host sample, and again once new names and flags land, for the Hosts and Traffic views. */
+  onHostUsage(callback: () => void): Unsubscribe
   /** `runToken` names this run, so a Stop sent before the run reaches the backend still stops it. */
   runSpeedTest(runToken: string): Promise<SpeedTestResult>
   /** Stops the run with this token, now or as soon as it starts. */

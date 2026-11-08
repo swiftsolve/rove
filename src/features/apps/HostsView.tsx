@@ -3,6 +3,7 @@ import { AppGroup } from '@/features/apps/components/AppGroup'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { useExpandedApps } from '@/features/apps/hooks/useExpandedApps'
 import { useHostUsage } from '@/features/apps/hooks/useHostUsage'
+import { useRowGlide } from '@/features/apps/hooks/useRowGlide'
 import { useScrollToFocusedApp } from '@/features/apps/hooks/useScrollToFocusedApp'
 import { Banner, CardList, PageHeader } from '@/ui'
 import { POLLING_DESCRIPTION } from '@/utils/copy'
@@ -25,6 +26,7 @@ export function HostsView() {
   const focusApp = location.appsSub?.view === 'hosts' ? (location.appsSub.app ?? null) : null
   const { isExpanded, toggle } = useExpandedApps(focusApp)
   const listRef = useScrollToFocusedApp(focusApp, apps)
+  useRowGlide(listRef, apps.map((app) => app.name).join('\n'))
 
   return (
     <div className="page">

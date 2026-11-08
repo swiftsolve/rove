@@ -1282,6 +1282,9 @@ function createMockNetworkApi(): NetworkAPI {
     // No heartbeat in the mock, so the timeline never nudges; it renders what
     // `getServiceHistory` returned on mount.
     onServicesTimeline: () => () => undefined,
+    // No samplers in the mock either: the usage views fall back to their poll.
+    onAppUsage: () => () => undefined,
+    onHostUsage: () => () => undefined,
     runSpeedTest: async (): Promise<SpeedTestResult> => {
       isCancelled = false
       const { downloadMbps: resultDownloadMbps, uploadMbps: resultUploadMbps } = MOCK_SPEED_RESULT

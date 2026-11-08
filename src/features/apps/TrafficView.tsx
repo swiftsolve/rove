@@ -1,7 +1,10 @@
+import { useRef } from 'react'
+
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { TrafficIcon } from '@/features/apps/components/TrafficIcon'
 import { UsageBody, type UsageBodyCopy } from '@/features/apps/components/UsageBody'
 import { UsageRow } from '@/features/apps/components/UsageRow'
+import { useRowGlide } from '@/features/apps/hooks/useRowGlide'
 import { useTrafficUsage } from '@/features/apps/hooks/useTrafficUsage'
 import { busiestTotal } from '@/features/apps/utils/transfer'
 import { Banner, CardList, PageHeader } from '@/ui'
@@ -22,6 +25,8 @@ export function TrafficView() {
   const { back } = useNavigation()
   const { types } = usage
   const busiest = busiestTotal(types)
+  const listRef = useRef<HTMLUListElement>(null)
+  useRowGlide(listRef, types.map((type) => type.id).join('\n'))
 
   return (
     <div className="page">
@@ -35,7 +40,7 @@ export function TrafficView() {
       {error && <Banner variant="error" title={error} description={POLLING_DESCRIPTION} onRetry={reload} />}
 
       <UsageBody support={usage.support} isFirstLoad={isFirstLoad} isEmpty={types.length === 0} copy={BODY_COPY}>
-        <CardList label="Traffic types by usage">
+        <CardList label="Traffic types by usage" ref={listRef}>
           {types.map((type) => (
             <UsageRow
               key={type.id}

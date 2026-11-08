@@ -62,6 +62,8 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
                 if let Some(units) = rove_core::apps::sample_units().await {
                     let state = handle.state::<AppState>();
                     lock(&state.app_usage).ingest(units);
+                    // The Apps view refetches on this rather than waiting for a poll.
+                    let _ = handle.emit("app-usage", &());
                 }
             };
             // A panic here must not end per-app tracking for the session.
@@ -100,6 +102,10 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                     }
                     (tracker.pending_hostnames(), tracker.pending_countries())
                 };
+                // The Hosts and Traffic views refetch on this: once for the
+                // new byte counts, and again below once names and flags land.
+                let _ = handle.emit("host-usage", &());
+                let is_enriching = !need_hosts.is_empty() || !need_countries.is_empty();
 
                 // Misses are recorded too, so each peer resolves once.
                 if !need_hosts.is_empty() {
@@ -126,6 +132,9 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                     .unwrap_or_default();
                     let state = handle.state::<AppState>();
                     lock(&state.host_usage).record_countries(resolved);
+                }
+                if is_enriching {
+                    let _ = handle.emit("host-usage", &());
                 }
             };
             // A panic here must not end host tracking for the session.

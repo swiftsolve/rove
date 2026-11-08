@@ -1,10 +1,11 @@
 import { cx } from 'class-variance-authority'
-import { memo } from 'react'
+import { memo, useRef } from 'react'
 
 import { AppIcon } from '@/features/apps/components/AppIcon'
 import { ByteTotal } from '@/features/apps/components/ByteTotal'
 import { HostRow } from '@/features/apps/components/HostRow'
 import { RowName } from '@/features/apps/components/RowName'
+import { useRowGlide } from '@/features/apps/hooks/useRowGlide'
 import { appGroupLabel } from '@/features/apps/utils/host-labels'
 import { totalBytes } from '@/features/apps/utils/transfer'
 import type { AppHosts } from '@/types'
@@ -50,6 +51,8 @@ export const AppGroup = memo(function AppGroup({
 }) {
   const total = totalBytes(app)
   const hostCount = app.hosts.length
+  const hostsRef = useRef<HTMLUListElement>(null)
+  useRowGlide(hostsRef, app.hosts.map((host) => host.ip).join('\n'))
   return (
     <Collapsible
       as="li"
@@ -78,7 +81,7 @@ export const AppGroup = memo(function AppGroup({
         </CollapsibleTrigger>
       </h2>
       <CollapsiblePanel>
-        <ul role="list" aria-label={`Hosts for ${app.name}`} className={HOSTS}>
+        <ul ref={hostsRef} role="list" aria-label={`Hosts for ${app.name}`} className={HOSTS}>
           {app.hosts.map((host) => (
             <HostRow key={host.ip} host={host} />
           ))}

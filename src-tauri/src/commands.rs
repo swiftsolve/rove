@@ -248,7 +248,10 @@ pub fn cancel_speed_test(state: tauri::State<'_, AppState>, run_token: String) {
 
 #[tauri::command]
 pub fn get_data_usage(state: tauri::State<'_, AppState>) -> DataUsageSummary {
-    let networks = lock(&state.networks);
+    // Fresh counters, so today's total includes what's moved since the last
+    // 30 s tick. Cheap: a read of each interface's counters.
+    let mut networks = lock(&state.networks);
+    networks.refresh(true);
     lock(&state.usage).as_ref().map(|tracker| tracker.summary(&networks)).unwrap_or(DataUsageSummary {
         days: vec![],
         boot_rx_bytes: 0,
