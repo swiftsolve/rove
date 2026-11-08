@@ -47,7 +47,13 @@ const NO_EM_DASH = [
   'TemplateElement[value.raw=/—/]',
   'JSXText[value=/(?=[\\s\\S]*[^\\s—])[\\s\\S]*—/]',
 ].map((selector) => ({ selector, message: NO_EM_DASH_MESSAGE }))
-const CODE_STYLE = [...NO_DOT_GLYPH, ...NO_DASH_VALUE, ...NO_EM_DASH]
+// An event handler is onX as a local too, the name its prop takes.
+const NO_HANDLE_PREFIX_MESSAGE = 'Name an event handler onX (onClick), as a local and as a prop, not handleX.'
+const NO_HANDLE_PREFIX = [
+  'VariableDeclarator[id.name=/^handle[A-Z]/]',
+  'FunctionDeclaration[id.name=/^handle[A-Z]/]',
+].map((selector) => ({ selector, message: NO_HANDLE_PREFIX_MESSAGE }))
+const CODE_STYLE = [...NO_DOT_GLYPH, ...NO_DASH_VALUE, ...NO_EM_DASH, ...NO_HANDLE_PREFIX]
 
 // ── Boolean names ──────────────────────────────────────────────────────────
 
@@ -68,6 +74,13 @@ const BOOLEAN_PREFIXES = [
   'may',
 ]
 const BOOLEAN_EXEMPT = '^(_|aria-|data-)|^(value|fallback)$'
+// The scripts have no types for naming-convention, so they catch a boolean by
+// its shape: a variable set to a comparison or a `!`.
+const NOT_A_QUESTION = `:not([id.name=/^(${BOOLEAN_PREFIXES.join('|')})[A-Z0-9]|^(${BOOLEAN_PREFIXES.join('|').toUpperCase()})_/])`
+const UNTYPED_BOOLEAN_NAME = [
+  `VariableDeclarator[init.type="BinaryExpression"][init.operator=/^(===|!==|==|!=|<|>|<=|>=|in|instanceof)$/]${NOT_A_QUESTION}`,
+  `VariableDeclarator[init.type="UnaryExpression"][init.operator="!"]${NOT_A_QUESTION}`,
+].map((selector) => ({ selector, message: `Name a boolean as a question: ${BOOLEAN_PREFIXES.join('/')} + a noun.` }))
 
 export default tseslint.config(
   // ── Not ours to lint ─────────────────────────────────────────────────────
@@ -100,6 +113,8 @@ export default tseslint.config(
     rules: {
       'comments/max-lines': 'error',
       'eslint-comments/require-description': 'error',
+      // Named steps over dense expressions: a third case is an if or a lookup.
+      'no-nested-ternary': 'error',
     },
   },
 
@@ -253,5 +268,6 @@ export default tseslint.config(
         PopStateEvent: 'readonly',
       },
     },
+    rules: { 'no-restricted-syntax': ['error', ...NO_HANDLE_PREFIX, ...UNTYPED_BOOLEAN_NAME] },
   },
 )

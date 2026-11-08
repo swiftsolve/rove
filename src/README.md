@@ -104,7 +104,8 @@ are in `src/ui/components.gen.json`: read it first, not the sources.
   `hasGradient`, `canRunTest`, `shouldShowLabel`, `wasDeclined`, or a verb
   phrase (`needsNetworkInfo`). [✓ CHECKED by `eslint.config.js`]
   - It covers props, `useState` pairs (`[isOpen, setIsOpen]`), params, fields
-    and module constants (`IS_MAC`).
+    and module constants (`IS_MAC`). In `scripts/`, which have no types, it
+    covers a variable set to a comparison or a `!`.
   - A name the DOM or a library picks keeps its name: alias Recharts' `active`
     to `isActive` where you read it.
 - Data that's shared and must not change (a context value, a list passed

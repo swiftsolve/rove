@@ -158,6 +158,13 @@ function AppFrameScene(): JSX.Element {
 const DOWNLOADS = [182, 204, 168, 231, 196]
 const UPLOADS = [24, 31, 22, 36, 27]
 
+/** The rating's lit bars for a download speed in Mbps, 2 to 4. */
+function signalBarsFor(downloadMbps: number): number {
+  if (downloadMbps > 215) return 4
+  if (downloadMbps > 175) return 3
+  return 2
+}
+
 function DataDisplayScene(): JSX.Element {
   // One reading a beat: download, then upload, in turn.
   const step = useStep(DOWNLOADS.length * 2, BEAT)
@@ -180,7 +187,7 @@ function DataDisplayScene(): JSX.Element {
           unit="Mbps"
           spokenValue="24"
         />
-        <BarMeter value={down > 215 ? 4 : down > 175 ? 3 : 2} color="var(--status-good)" />
+        <BarMeter value={signalBarsFor(down)} color="var(--status-good)" />
       </div>
       <SplitBar label="Download and upload" down={down} up={up} max={280} />
     </div>
@@ -230,9 +237,12 @@ function InputsScene(): JSX.Element {
   const tick = useStep(INPUT_BEATS.length * TICKS_PER_BEAT, TYPE_BEAT)
   const beat = Math.floor(tick / TICKS_PER_BEAT)
   const at = (name: (typeof INPUT_BEATS)[number]): number => INPUT_BEATS.indexOf(name)
-  const typed = beat === at('type') ? tick : beat === at('clear') ? 0 : TYPED.length
-  const theme =
-    beat >= at('light') && beat < at('system') ? 'light' : beat >= at('system') && beat < at('dark') ? 'system' : 'dark'
+  let typed = TYPED.length
+  if (beat === at('type')) typed = tick
+  if (beat === at('clear')) typed = 0
+  let theme = 'dark'
+  if (beat >= at('light') && beat < at('system')) theme = 'light'
+  if (beat >= at('system') && beat < at('dark')) theme = 'system'
   const isSoundOn = beat >= at('sound-on') && beat < at('sound-off')
   return (
     <div className="intro-form">

@@ -52,7 +52,8 @@ Figma, `rove-tokens`, this code, and the docs that describe it.
 Write the version a newcomer reads in one pass: named steps over dense
 expressions, the codebase's existing pattern over a new one. Something clever
 earns its place only when the plain version is wrong or too slow, and its
-comment says which.
+comment says which. A nested ternary is out: a third case is an `if` or a
+lookup. [✓ CHECKED by `eslint.config.js`]
 
 Every name (a variable, function, prop, type or file) says what it is in the
 reader's words, however long that makes it: `meterWidth`, not `span`;
@@ -70,6 +71,7 @@ A function is named for its effect:
   variable that holds it, `getLinkCapacityMbps`;
 - one that answers yes or no reads as a question: `isSameText`, `hasGradient`;
 - an event handler is `onX`, as a prop and as a local: `onKeyDown`.
+  [✓ CHECKED by `eslint.config.js`, for `handleX`]
 
 ### Commit only your paths
 
