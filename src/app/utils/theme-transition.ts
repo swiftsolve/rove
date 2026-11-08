@@ -67,8 +67,8 @@ function lightThemeTokenNames(rules: CSSRuleList): string[] {
     if (rule instanceof CSSStyleRule && rule.selectorText === ':root.theme-light') {
       return Array.from(rule.style).filter((name) => name.startsWith('--'))
     }
-    if ('cssRules' in rule) {
-      const names = lightThemeTokenNames((rule as CSSGroupingRule).cssRules)
+    if ('cssRules' in rule && rule.cssRules instanceof CSSRuleList) {
+      const names = lightThemeTokenNames(rule.cssRules)
       if (names.length > 0) return names
     }
   }

@@ -99,6 +99,14 @@ async function readToken(): Promise<string | undefined> {
   return /^\s*FIGMA_TOKEN\s*=\s*["']?([^"'\s]+)/m.exec(env)?.[1]
 }
 
+/** Why a request failed: the network's code (`ENOTFOUND`) when it gives one, else the error's message. */
+function failureReason(error: unknown): string {
+  if (!(error instanceof Error)) return String(error)
+  const { cause } = error
+  const code = cause instanceof Object && 'code' in cause ? cause.code : undefined
+  return typeof code === 'string' ? code : error.message
+}
+
 /**
  * A REST API answer, as JSON. Offline skips, and so does a server error that
  * outlasts two retries; a bad token or file key answers, and fails.
@@ -108,9 +116,7 @@ async function fetchFigmaJson<Answer>(token: string, path: string): Promise<Answ
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((done) => setTimeout(done, attempt * 2000))
     response = await fetch(`${FIGMA_API}${path}`, { headers: { 'X-Figma-Token': token } }).catch((error: unknown) => {
-      const reason =
-        error instanceof Error ? ((error.cause as { code?: string } | undefined)?.code ?? error.message) : ''
-      console.log(`Figma skipped: Figma couldn't be reached (${reason})`)
+      console.log(`Figma skipped: Figma couldn't be reached (${failureReason(error)})`)
       process.exit(0)
     })
     if (response.status < 500) break

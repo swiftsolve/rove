@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { HOME_LOCATION, isSameLocation, locationKey, parentLocation } from './location'
+import { HOME_LOCATION, isAppLocation, isSameLocation, locationKey, parentLocation } from './location'
 
 describe('parentLocation', () => {
   it('goes from a subpage to its tab, and from a tab to Home', () => {
@@ -34,5 +34,15 @@ describe('locationKey', () => {
     expect(locationKey({ tab: 'apps', appsSub: { view: 'hosts', app: 'Zoom' } })).not.toBe(
       locationKey({ tab: 'apps', appsSub: { view: 'hosts', app: 'Slack' } }),
     )
+  })
+})
+
+describe('isAppLocation', () => {
+  it('accepts a tab this build has, and nothing else history might hold', () => {
+    expect(isAppLocation({ tab: 'speed', speedSub: { view: 'history' } })).toBe(true)
+    expect(isAppLocation({ tab: 'retired-tab' })).toBe(false)
+    expect(isAppLocation({ speedSub: { view: 'history' } })).toBe(false)
+    expect(isAppLocation(null)).toBe(false)
+    expect(isAppLocation('home')).toBe(false)
   })
 })

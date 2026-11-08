@@ -1,5 +1,5 @@
 import type { ReturnPoint } from '@/app/utils/return-point'
-import type { AppTab } from '@/app/utils/tabs'
+import { APP_TABS, type AppTab } from '@/app/utils/tabs'
 import type { CapabilityId } from '@/types'
 
 /** A subpage layered over the Speed tab. `null` means the tab's main page. */
@@ -40,6 +40,17 @@ export type Navigation = {
 }
 
 export const HOME_LOCATION: AppLocation = { tab: 'home' }
+
+/**
+ * Whether a value read back from history is a location this build can show.
+ * An entry can outlive the build that wrote it, so its tab is checked; a
+ * subpage this build doesn't know already falls back to its tab's main page.
+ */
+export function isAppLocation(value: unknown): value is AppLocation {
+  if (value == null || typeof value !== 'object' || !('tab' in value)) return false
+  const { tab } = value
+  return APP_TABS.some((appTab) => appTab === tab)
+}
 
 /**
  * Where Back goes when there's no app history entry to pop: a subpage to its

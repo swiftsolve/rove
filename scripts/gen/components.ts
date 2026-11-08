@@ -115,9 +115,8 @@ function describeProp(prop: PropItem): PropEntry {
   const defaultValue = (prop.defaultValue as { value?: string } | null)?.value
   if (defaultValue !== undefined) entry.default = defaultValue
   if (prop.required) entry.isRequired = true
-  if (prop.description) entry.description = prop.description
-  // A prop with no description is reported, and fails the schema check.
-  return entry as PropEntry
+  // An empty one is reported above, and fails the schema check.
+  return { ...entry, description: prop.description }
 }
 
 // The `guidance` object literal in a stories file, as plain data: its string

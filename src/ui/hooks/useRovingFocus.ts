@@ -53,8 +53,9 @@ export function useRovingFocus(
     }
 
     const onKeyDown = (event: KeyboardEvent): void => {
+      if (!(event.target instanceof HTMLElement)) return
       const groupItems = getItems()
-      const index = groupItems.indexOf(event.target as HTMLElement)
+      const index = groupItems.indexOf(event.target)
       if (index === -1) return
       const nextIndex = targetIndex(event.key, index, groupItems.length, orientation)
       if (nextIndex === null) return
@@ -65,8 +66,8 @@ export function useRovingFocus(
     }
     // A click focuses an item too, so the stop follows focus however it got there.
     const onFocusIn = (event: FocusEvent): void => {
-      const item = event.target as HTMLElement
-      if (getItems().includes(item)) setTabStop(item)
+      const item = event.target
+      if (item instanceof HTMLElement && getItems().includes(item)) setTabStop(item)
     }
     const onFocusOut = (event: FocusEvent): void => {
       if (!group.contains(event.relatedTarget as Node | null)) resetTabStop()

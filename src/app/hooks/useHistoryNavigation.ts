@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { type HistoryStep, historyStepForButton, historyStepForKey } from '@/app/utils/history-shortcuts'
-import { type AppLocation, HOME_LOCATION, isSameLocation, type Navigation, parentLocation } from '@/app/utils/location'
-import { captureReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/return-point'
+import {
+  type AppLocation,
+  HOME_LOCATION,
+  isAppLocation,
+  isSameLocation,
+  type Navigation,
+  parentLocation,
+} from '@/app/utils/location'
+import { captureReturnPoint, isReturnPoint, type ReturnPoint, trackClicks } from '@/app/utils/return-point'
 import { isTauri } from '@/bridge/tauri-network-api'
 import { IS_MAC } from '@/utils/platform'
 
@@ -21,7 +28,8 @@ function readField(state: unknown, key: string): unknown {
 }
 
 function readLocation(state: unknown): AppLocation | null {
-  return (readField(state, LOCATION_KEY) as AppLocation | undefined) ?? null
+  const location = readField(state, LOCATION_KEY)
+  return isAppLocation(location) ? location : null
 }
 
 function readDepth(state: unknown): number {
@@ -30,7 +38,8 @@ function readDepth(state: unknown): number {
 }
 
 function readReturnPoint(state: unknown): ReturnPoint | null {
-  return (readField(state, RETURN_KEY) as ReturnPoint | undefined) ?? null
+  const returnPoint = readField(state, RETURN_KEY)
+  return isReturnPoint(returnPoint) ? returnPoint : null
 }
 
 // A new entry starts with no return point: the current entry's is its own.

@@ -16,6 +16,19 @@ export type ReturnPoint = {
   scrollTop: number
 }
 
+/** Whether a value read back from history is a whole return point: an entry can outlive the build that wrote it. */
+export function isReturnPoint(value: unknown): value is ReturnPoint {
+  if (value == null || typeof value !== 'object') return false
+  const fields: Partial<Record<keyof ReturnPoint, unknown>> = value
+  return (
+    typeof fields.signature === 'string' &&
+    typeof fields.index === 'number' &&
+    typeof fields.tagName === 'string' &&
+    typeof fields.isFocusVisible === 'boolean' &&
+    typeof fields.scrollTop === 'number'
+  )
+}
+
 function signatureOf(element: Element): string {
   return [element.tagName, element.getAttribute('aria-label') ?? '', element.textContent.trim()].join('|')
 }
