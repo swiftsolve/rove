@@ -54,6 +54,12 @@ expressions, the codebase's existing pattern over a new one. Something clever
 earns its place only when the plain version is wrong or too slow, and its
 comment says which.
 
+Every name (a variable, function, prop, type or file) says what it is in the
+reader's words, however long that makes it: `meterWidth`, not `span`;
+`itemSelector`, not `items`. A function's name says what it returns or does:
+`restyleReason`, not `restyles`. A short name suits only a scope seen at a
+glance, like `i` in a loop or `x` and `y` in geometry.
+
 ### Commit only your paths
 
 Other sessions work in this checkout and commit to `master` alongside you.
