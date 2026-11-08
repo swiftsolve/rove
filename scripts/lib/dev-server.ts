@@ -19,13 +19,16 @@ export type RunningServer = { url: string; stop: () => void }
 export type AppLocation = { tab: string; [subpage: string]: unknown }
 
 /** The part of src-tauri/tauri.conf.json the scripts read: the app window's size. */
-type TauriConfig = { app: { windows: [{ width: number; height: number }] } }
+type WindowSize = { width: number; height: number }
+type TauriConfig = { app: { windows: WindowSize[] } }
 
 /** The app window's size, from the Tauri config, so a page opens the size the window is. */
-export async function readWindowSize(): Promise<{ width: number; height: number }> {
+export async function readWindowSize(): Promise<WindowSize> {
   const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
-  const { width, height } = app.windows[0]
-  return { width, height }
+  // Rove has one window; its config lists it first.
+  const [appWindow] = app.windows
+  if (!appWindow) throw new Error('src-tauri/tauri.conf.json lists no window')
+  return { width: appWindow.width, height: appWindow.height }
 }
 
 /** The value after `--<name>` on the command line, or `fallback`. */
