@@ -48,7 +48,7 @@ function ValueAndUnit({ value, unit, spokenValue, size }: ValueParts & Pick<Read
 type ReadoutProps = ValueParts & {
   /** Names the figure ("Download", "Data used"). With one, render the readout inside a `<dl>`. */
   label?: string
-  /** An icon: before the label, or before the figure when there's no label. */
+  /** An icon that means something (the direction arrows): before the label, or before the figure when there's no label. */
   icon?: ReactNode
   /** `compact` for a summary card's figure, which has no label. */
   size?: VariantOf<typeof figureVariants, 'size'>

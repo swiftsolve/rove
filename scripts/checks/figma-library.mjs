@@ -63,8 +63,6 @@ const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
 const GUIDE_LABELS = {
   whenToUse: 'When to use',
   whenNotToUse: 'When not to use',
-  // Figma only, between the two: how to use it well, for designers.
-  guidelines: 'Guidelines',
   accessibility: 'Accessibility',
 }
 /** Lowercase letters and digits only, so `Body layout`, `bodyLayout` and `Down only` compare. */
@@ -154,11 +152,9 @@ function figmaGuide(texts) {
   const whenNotToUse = at(GUIDE_LABELS.whenNotToUse, whenToUse)
   const accessibility = at(GUIDE_LABELS.accessibility, whenNotToUse)
   if ([whenToUse, whenNotToUse, accessibility].includes(-1)) return null
-  const guidelines = at(GUIDE_LABELS.guidelines, whenNotToUse)
-  const end = guidelines !== -1 && guidelines < accessibility ? guidelines : accessibility
   return {
     whenToUse: texts.slice(whenToUse + 1, whenNotToUse),
-    whenNotToUse: texts.slice(whenNotToUse + 1, end),
+    whenNotToUse: texts.slice(whenNotToUse + 1, accessibility),
   }
 }
 

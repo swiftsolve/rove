@@ -27,7 +27,7 @@ const meta = {
     guidance: {
       whenToUse: [
         'A headline figure and its unit: live speed, data used.',
-        'Labelled pairs side by side: Traffic’s “Download” and “Upload”.',
+        'Labelled pairs side by side, sharing the row equally: Traffic’s “Download” and “Upload”.',
         'A Home stat card’s figure, `compact` and unlabelled.',
       ],
       whenNotToUse: [

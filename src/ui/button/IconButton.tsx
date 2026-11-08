@@ -40,7 +40,7 @@ type IconButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'aria-label' 
   iconSize?: 16 | 14
   /** The tooltip, when it should say more than the label (a help button's hint). */
   tooltip?: ReactNode
-  /** The side its tooltip opens on. */
+  /** The side its tooltip opens on, clear of what it explains. */
   tooltipSide?: 'top' | 'bottom' | 'left' | 'right'
   /** Drops input and dims the button. It stays focusable, so its tooltip can say why. */
   isDisabled?: boolean

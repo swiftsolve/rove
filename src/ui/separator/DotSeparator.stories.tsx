@@ -11,7 +11,7 @@ const meta = {
     docs: { subtitle: 'A small dot between items on one line.', toc: GUIDANCE_TOC },
     guidance: {
       whenToUse: [
-        'Short facts on one line, like a device’s vendor and model.',
+        'Short facts on one line, like a device’s vendor and model, in place of a typed dot.',
         'Facts that may be empty, in `InlineMeta`: they drop out with their dots.',
         'Parts you lay out yourself, a bare `DotSeparator` between them: the Services header.',
       ],

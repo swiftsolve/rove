@@ -15,7 +15,7 @@ const bannerVariants = cva('type-body banner', {
 })
 
 type BannerProps = {
-  /** `error`, a failure: a red wash, and a red Dismiss. */
+  /** `error`, a failure, shown until it clears: a red wash, and a red Dismiss. */
   variant: VariantOf<typeof bannerVariants, 'variant'>
   /** What happened. Dismiss hides the banner until this changes. */
   title: string

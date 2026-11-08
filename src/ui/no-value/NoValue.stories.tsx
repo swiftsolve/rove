@@ -12,7 +12,7 @@ const meta = {
     docs: { subtitle: 'A short drawn bar where a value is missing.', toc: GUIDANCE_TOC },
     guidance: {
       whenToUse: [
-        'Where a value would be but there’s none: not measured, unknown.',
+        'Where a value would be but there’s none, in place of a dash or “N/A”: not measured, unknown.',
         'A value the formatter returns as null: `?? <NoValue />`.',
       ],
       whenNotToUse: [

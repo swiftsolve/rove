@@ -60,7 +60,7 @@
             "soft"
           ],
           "default": "soft",
-          "description": "`solid` for a page's main action, or stopping it; `soft` for everything else."
+          "description": "`solid` for a page's main action, or stopping it, one per view; `soft` for everything else."
         }
       },
       "hasElementProps": true,
@@ -156,7 +156,7 @@
             "right"
           ],
           "default": "bottom",
-          "description": "The side its tooltip opens on."
+          "description": "The side its tooltip opens on, clear of what it explains."
         },
         "variant": {
           "values": [
@@ -218,7 +218,7 @@
       "props": {
         "children": {
           "type": "ReactNode",
-          "description": "The label."
+          "description": "The label, with no typed “›” or “→”: the link draws its own."
         },
         "href": {
           "type": "string",
@@ -886,7 +886,8 @@
         "whenNotToUse": [
           "Naming an icon-only button: use `IconButton`; its `label` is the tooltip.",
           "A message the user must see: use `Banner`.",
-          "Anything to click: use `Menu` or `Dialog`."
+          "Anything to click: use `Menu` or `Dialog`.",
+          "A value that may be stale, like a rating while a new test runs: set `isDisabled`."
         ],
         "accessibility": {
           "builtIn": [
@@ -1190,7 +1191,7 @@
         "variant": {
           "type": "\"error\"",
           "isRequired": true,
-          "description": "`error`, a failure: a red wash, and a red Dismiss."
+          "description": "`error`, a failure, shown until it clears: a red wash, and a red Dismiss."
         }
       },
       "stories": [
@@ -1455,7 +1456,7 @@
       ],
       "guidance": {
         "whenToUse": [
-          "Where a value would be but there’s none: not measured, unknown.",
+          "Where a value would be but there’s none, in place of a dash or “N/A”: not measured, unknown.",
           "A value the formatter returns as null: `?? <NoValue />`."
         ],
         "whenNotToUse": [
@@ -1493,7 +1494,7 @@
         },
         "icon": {
           "type": "ReactNode",
-          "description": "An icon: before the label, or before the figure when there's no label."
+          "description": "An icon that means something (the direction arrows): before the label, or before the figure when there's no label."
         },
         "label": {
           "type": "string",
@@ -1534,7 +1535,7 @@
       "guidance": {
         "whenToUse": [
           "A headline figure and its unit: live speed, data used.",
-          "Labelled pairs side by side: Traffic’s “Download” and “Upload”.",
+          "Labelled pairs side by side, sharing the row equally: Traffic’s “Download” and “Upload”.",
           "A Home stat card’s figure, `compact` and unlabelled."
         ],
         "whenNotToUse": [
@@ -2288,7 +2289,7 @@
       ],
       "guidance": {
         "whenToUse": [
-          "Short facts on one line, like a device’s vendor and model.",
+          "Short facts on one line, like a device’s vendor and model, in place of a typed dot.",
           "Facts that may be empty, in `InlineMeta`: they drop out with their dots.",
           "Parts you lay out yourself, a bare `DotSeparator` between them: the Services header."
         ],

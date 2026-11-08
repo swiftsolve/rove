@@ -57,7 +57,7 @@ const buttonVariants = cva(
  */
 export type ButtonAppearance =
   | {
-      /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
+      /** `solid` for a page's main action, or stopping it, one per view; `soft` for everything else. */
       variant: 'solid'
       /**
        * Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface.
@@ -71,7 +71,7 @@ export type ButtonAppearance =
       size?: VariantOf<typeof buttonVariants, 'size'>
     }
   | {
-      /** `solid` for a page's main action, or stopping it; `soft` for everything else. */
+      /** `solid` for a page's main action, or stopping it, one per view; `soft` for everything else. */
       variant?: 'soft'
       /** Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface. */
       tone?: 'neutral' | 'negative'

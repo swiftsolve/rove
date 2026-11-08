@@ -37,7 +37,7 @@ const LABEL = cx(
 const ICON_SIZE = 13
 
 type SharedProps = {
-  /** The label. */
+  /** The label, with no typed “›” or “→”: the link draws its own. */
   children: ReactNode
   /** An icon before the label. */
   icon?: IconComponent

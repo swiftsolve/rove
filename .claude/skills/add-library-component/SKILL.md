@@ -80,8 +80,8 @@ Without the server, stop after the code side and say the Figma side is left.
      (`checks/figma-library.mjs` holds them to it).
    - Accessibility, as what they needn't draw (Built in) and what they decide
      or note (To handle).
-   - A Guidelines block, only in Figma: Do and Don't columns for placement,
-     variants and content, each Don't the mistake its Do prevents.
+   - No Guidelines block: a rule about one property goes in its row's
+     Description, as the prop's description holds it in code.
 3. Its entry in `src/ui/figma-components.json`: the `map-figma-component` skill
    (`.claude/skills/map-figma-component/SKILL.md`). For a changed one too when
    a prop or value is renamed or removed: the check reads only the entry's

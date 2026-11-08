@@ -24,6 +24,7 @@ const meta = {
         'Naming an icon-only button: use `IconButton`; its `label` is the tooltip.',
         'A message the user must see: use `Banner`.',
         'Anything to click: use `Menu` or `Dialog`.',
+        'A value that may be stale, like a rating while a new test runs: set `isDisabled`.',
       ],
       accessibility: {
         builtIn: [
