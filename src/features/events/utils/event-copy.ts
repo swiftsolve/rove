@@ -50,8 +50,8 @@ function subjectName(event: NetworkEvent): string {
 export function subjectKind(event: NetworkEvent, subject: string): string | null {
   if (!event.kind || event.kind === 'unknown') return null
   const label = LAN_DEVICE_KIND_LABELS[event.kind]
-  const lead = (label.split(' ')[0] ?? label).toLowerCase()
-  if (subject.toLowerCase().includes(lead)) return null
+  const labelFirstWord = (label.split(' ')[0] ?? label).toLowerCase()
+  if (subject.toLowerCase().includes(labelFirstWord)) return null
   return label
 }
 

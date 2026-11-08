@@ -92,6 +92,14 @@ function testPhase(isTesting: boolean, outcome: TestOutcome | null): TestPhase {
   return 'idle'
 }
 
+/** What's shown under the address: a bad address first, then a failed test, then a failed save. */
+function errorText(inputError: string | null, hasTestFailed: boolean, hasSaveFailed: boolean): string | null {
+  if (inputError != null) return inputError
+  if (hasTestFailed) return 'Could not test that address. Try again.'
+  if (hasSaveFailed) return 'Could not add that service.'
+  return null
+}
+
 function confirmLabel(isBusy: boolean, isEditing: boolean, isDown: boolean): string {
   if (isBusy) return isEditing ? 'Saving…' : 'Adding…'
   if (isDown) return isEditing ? 'Save anyway' : 'Add anyway'
@@ -133,10 +141,7 @@ export function AddServiceDialog({ onAdd, onClose, editing }: AddServiceDialogPr
   const outcome = test.isSuccess ? test.data : null
   const isTesting = test.isPending
   const phase = testPhase(isTesting, outcome)
-  const error =
-    inputError ??
-    (test.isError ? 'Could not test that address. Try again.' : null) ??
-    (save.isError ? 'Could not add that service.' : null)
+  const error = errorText(inputError, test.isError, save.isError)
 
   // An edit that leaves the address alone is just a rename: it saves without a
   // re-test, since the host it would probe is the one already tracked.

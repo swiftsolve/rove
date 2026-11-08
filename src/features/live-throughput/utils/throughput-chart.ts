@@ -150,7 +150,8 @@ export function headMbps(samples: readonly number[], progress: number): number {
   // The edge sits two slots behind the newest point, `progress` of the way to the next.
   const edge = pointCount - 3 + progress
   const segment = Math.min(pointCount - 2, Math.max(0, Math.floor(edge)))
-  return bezierAt(segmentHeights(heights, segment), Math.min(1, Math.max(0, edge - segment)))
+  const alongSegment = Math.min(1, Math.max(0, edge - segment))
+  return bezierAt(segmentHeights(heights, segment), alongSegment)
 }
 
 function round(value: number): number {

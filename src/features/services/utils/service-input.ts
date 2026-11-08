@@ -4,6 +4,9 @@ import { isIpv4 } from '@/utils/ip'
 /** A plausible DNS hostname: dot-separated labels of letters/digits/hyphens. */
 const HOSTNAME = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
 
+/** A URL scheme at the start, such as "https://" or "ftp://". */
+const SCHEME_PREFIX = /^[a-z][a-z0-9+.-]*:\/\//i
+
 /**
  * A display label from a host, e.g. api.github.com → "Github". An IP stays as-is.
  * Best-effort: good enough for a label, not a public-suffix parser.
@@ -26,7 +29,7 @@ export function parseServiceInput(raw: string): ServiceDefinition | null {
   if (!trimmed) return null
 
   // A scheme lets the URL parser handle "host:port/path" and bare hosts alike.
-  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  const withScheme = SCHEME_PREFIX.test(trimmed) ? trimmed : `https://${trimmed}`
 
   let host: string
   try {

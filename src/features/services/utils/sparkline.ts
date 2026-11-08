@@ -43,10 +43,17 @@ export function placePoints(
   const isFlat = max === min
 
   // Right-aligned, leaving the unfilled part of the window blank.
-  const xAt = (i: number): number => (span <= 1 ? width : ((span - sampleCount + i) / (span - 1)) * width)
-  // Identical values have no range to scale over, so they sit on the midline.
-  const yAt = (ms: number): number =>
-    isFlat ? VERTICAL_PAD + innerHeight / 2 : VERTICAL_PAD + innerHeight - ((ms - min) / (max - min)) * innerHeight
+  const xAt = (i: number): number => {
+    if (span <= 1) return width
+    const slot = span - sampleCount + i
+    return (slot / (span - 1)) * width
+  }
+  const yAt = (ms: number): number => {
+    // Identical values have no range to scale over, so they sit on the midline.
+    if (isFlat) return VERTICAL_PAD + innerHeight / 2
+    const shareOfRange = (ms - min) / (max - min)
+    return VERTICAL_PAD + innerHeight - shareOfRange * innerHeight
+  }
 
   return samples.map((sample, i) => ({
     x: xAt(i),

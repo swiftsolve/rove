@@ -9,5 +9,7 @@ import { formatSpeedMbps } from '@/utils/format'
 export function testStatusText(isTesting: boolean, progress: SpeedTestProgress, result: SpeedResult | null): string {
   if (isTesting) return progress.message || 'Starting…'
   if (progress.phase !== 'complete' || result == null) return ''
-  return `Speed test complete. Download ${formatSpeedMbps(result.downloadMbps) ?? 'unknown'}, upload ${formatSpeedMbps(result.uploadMbps) ?? 'unknown'}.`
+  const download = formatSpeedMbps(result.downloadMbps) ?? 'unknown'
+  const upload = formatSpeedMbps(result.uploadMbps) ?? 'unknown'
+  return `Speed test complete. Download ${download}, upload ${upload}.`
 }

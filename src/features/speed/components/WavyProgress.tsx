@@ -34,9 +34,13 @@ function buildStaticWave(width: number): string {
   let prevX = start
   let prevY = waveY(start, 0)
   let path = `M ${prevX.toFixed(2)} ${prevY.toFixed(2)}`
+  // Each sample is a control point and the curve ends midway to the next, so
+  // the joins between curves stay smooth.
   for (let x = start + WAVE_SAMPLE_STEP; x <= width; x += WAVE_SAMPLE_STEP) {
     const y = waveY(x, 0)
-    path += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${((prevX + x) / 2).toFixed(2)} ${((prevY + y) / 2).toFixed(2)}`
+    const midX = (prevX + x) / 2
+    const midY = (prevY + y) / 2
+    path += ` Q ${prevX.toFixed(2)} ${prevY.toFixed(2)} ${midX.toFixed(2)} ${midY.toFixed(2)}`
     prevX = x
     prevY = y
   }

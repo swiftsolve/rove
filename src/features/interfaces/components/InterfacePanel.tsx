@@ -56,6 +56,7 @@ function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }) {
 }
 
 export function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
+  const linkSpeed = iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : null
   return (
     <Card as="li">
       <div className={PANEL_HEADER}>
@@ -82,9 +83,7 @@ export function InterfacePanel({ iface }: { iface: NetworkInterfaceSummary }) {
       <CardBody>
         <DataList density="compact">
           <DataRow label="Type" value={formatConnectionType(iface.connectionType)} />
-          <DataRow label="Link speed">
-            {(iface.speedMbps != null ? formatSpeedMbps(iface.speedMbps) : null) ?? <NoValue />}
-          </DataRow>
+          <DataRow label="Link speed">{linkSpeed ?? <NoValue />}</DataRow>
           <DataRow label="IP address">{formatDisplayValue(iface.ipAddress) ?? <NoValue />}</DataRow>
           <DataRow label="MAC">{formatMac(iface.macAddress) ?? <NoValue />}</DataRow>
         </DataList>

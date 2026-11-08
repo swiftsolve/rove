@@ -30,9 +30,9 @@ function trafficPeak(download: readonly number[], upload: readonly number[]): nu
 
 /**
  * Y-axis max from the rates on the chart (`download` and `upload`, Mbps),
- * never jumping to full link speed on light traffic. While a test downloads, the last result is a floor, so
- * the axis doesn't jump as the test ramps up; link speed is no guide, as
- * Wi-Fi's runs far above what a test reaches.
+ * never jumping to full link speed on light traffic. While a test downloads,
+ * the last result is a floor, so the axis doesn't jump as the test ramps up;
+ * link speed is no guide, as Wi-Fi's runs far above what a test reaches.
  */
 export function resolveChartScale(
   download: readonly number[],
