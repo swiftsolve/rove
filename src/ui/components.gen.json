@@ -13,54 +13,54 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The label."
         },
         "icon": {
-          "typeScriptType": "IconComponent",
+          "type": "IconComponent",
           "description": "An icon before the label."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the button. It stays focusable, so a tooltip can say why."
         },
         "isLoading": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and swaps the leading icon (or, with none, adds one) for a spinner."
         },
         "loadingLabel": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The label while loading (\"Retrying…\"), when it should say so."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement>",
+          "type": "MouseEventHandler<HTMLButtonElement>",
           "description": "Runs the action. Not called while disabled or loading."
         },
         "size": {
-          "allowedValues": [
+          "values": [
             "sm",
             "md"
           ],
-          "defaultValue": "md (solid), sm (soft)",
+          "default": "md (solid), sm (soft)",
           "description": "`md`, or the more compact `sm`."
         },
         "tone": {
-          "allowedValues": [
+          "values": [
             "accent",
             "negative",
             "neutral"
           ],
-          "defaultValue": "accent (solid), neutral (soft)",
+          "default": "accent (solid), neutral (soft)",
           "description": "Solid: `accent` or `negative`. Soft: `neutral`, or `negative` on a red surface."
         },
         "variant": {
-          "allowedValues": [
+          "values": [
             "solid",
             "soft"
           ],
-          "defaultValue": "soft",
+          "default": "soft",
           "description": "`solid` for a page's main action, or stopping it, one per view; `soft` for everything else."
         }
       },
@@ -114,57 +114,57 @@
       },
       "props": {
         "icon": {
-          "typeScriptType": "IconComponent",
+          "type": "IconComponent",
           "isRequired": true,
           "description": "The icon."
         },
         "iconSize": {
-          "allowedValues": [
+          "values": [
             16,
             14
           ],
-          "defaultValue": "16",
+          "default": "16",
           "description": "16, or 14 for an icon that reads large (Play). The spinner matches it."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the button. It stays focusable, so its tooltip can say why."
         },
         "isLoading": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and swaps the icon for a spinner. Pair it with a label saying what is under way (“Scanning…”)."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the button (it has no visible text) and is its tooltip, unless `tooltip` says more."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement>",
+          "type": "MouseEventHandler<HTMLButtonElement>",
           "description": "Runs the action. Not called while disabled or loading."
         },
         "tooltip": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The tooltip, when it should say more than the label (a help button's hint)."
         },
         "tooltipSide": {
-          "allowedValues": [
+          "values": [
             "top",
             "bottom",
             "left",
             "right"
           ],
-          "defaultValue": "bottom",
+          "default": "bottom",
           "description": "The side its tooltip opens on, clear of what it explains."
         },
         "variant": {
-          "allowedValues": [
+          "values": [
             "soft",
             "ghost"
           ],
-          "defaultValue": "soft",
+          "default": "soft",
           "description": "`soft`, an inset chip; `ghost`, no background until hovered."
         }
       },
@@ -224,23 +224,23 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The label, with no typed “›” or “→”: the link draws its own."
         },
         "href": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "A real address, opened in a new window."
         },
         "icon": {
-          "typeScriptType": "IconComponent",
+          "type": "IconComponent",
           "description": "An icon before the label."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
+          "type": "boolean",
           "description": "Drops input and dims the link. It stays focusable, so a tooltip can say why."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLAnchorElement>",
+          "type": "MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLAnchorElement>",
           "description": "Opens the view. Not called while disabled."
         }
       },
@@ -284,11 +284,11 @@
       "figmaComponent": null,
       "props": {
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Names it: it has no text of its own, since the container's content shows\nthrough. Leave it out only to name it by a heading (`aria-labelledby`)."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement>",
+          "type": "MouseEventHandler<HTMLButtonElement>",
           "description": "Opens the view the container summarises."
         }
       },
@@ -333,16 +333,16 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "A MenuTrigger and a MenuContent."
         },
         "isOpen": {
-          "typeScriptType": "boolean",
+          "type": "boolean",
           "description": "Controlled open state; leave both out to let the menu keep its own."
         },
         "onOpenChange": {
-          "typeScriptType": "((isOpen: boolean) => void)",
+          "type": "((isOpen: boolean) => void)",
           "description": "Called with the new state when the menu opens or closes."
         }
       },
@@ -385,7 +385,7 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "MenuItems, in order."
         }
@@ -409,25 +409,25 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The label."
         },
         "icon": {
-          "typeScriptType": "IconComponent",
+          "type": "IconComponent",
           "description": "An icon before the label."
         },
         "onClick": {
-          "typeScriptType": "() => void",
+          "type": "() => void",
           "isRequired": true,
           "description": "Runs the action; the menu closes."
         },
         "tone": {
-          "allowedValues": [
+          "values": [
             "negative",
             "neutral"
           ],
-          "defaultValue": "neutral",
+          "default": "neutral",
           "description": "`negative` for a destructive action (Remove, Clear history): red text on a red-tinted highlight."
         }
       },
@@ -450,7 +450,7 @@
       },
       "props": {
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the kebab, which has no visible text: \"Options for Google\"."
         }
@@ -482,38 +482,38 @@
       },
       "props": {
         "action": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "A button inside the field's border, after the text: a TextFieldAction."
         },
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "On the field as a whole: its place in the form, such as space above it (`mt-16`)."
         },
         "feedback": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "Under the field and read as its description: a hint, a result, an error.\nA live region, so it's announced as it changes."
         },
         "isInvalid": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "The value failed to parse or check: a red border, and `aria-invalid`."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the field, above it."
         },
         "onChange": {
-          "typeScriptType": "(value: string) => void",
+          "type": "(value: string) => void",
           "isRequired": true,
           "description": "Called with the new text on every edit."
         },
         "placeholder": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Sample input, shown while it's empty: \"example.com or 192.168.1.1\"."
         },
         "value": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "What's typed in it."
         }
@@ -563,26 +563,26 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "The label: a word, \"Test\"."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the button."
         },
         "isLoading": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and shows a spinner in the label's place."
         },
         "loadingLabel": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Names the button while loading, when only a spinner shows (\"Testing\"); the label when left out."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement>",
+          "type": "MouseEventHandler<HTMLButtonElement>",
           "isRequired": true,
           "description": "Runs the action on the field's value."
         }
@@ -609,22 +609,22 @@
       },
       "props": {
         "isChecked": {
-          "typeScriptType": "boolean",
+          "type": "boolean",
           "isRequired": true,
           "description": "Whether it's on."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Drops input and dims the switch. It stays focusable, like a disabled Button, so a tooltip can say why."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the switch, which shows no text of its own."
         },
         "onChange": {
-          "typeScriptType": "(isChecked: boolean) => void",
+          "type": "(isChecked: boolean) => void",
           "isRequired": true,
           "description": "Called with the new state when the switch is flipped."
         }
@@ -673,21 +673,21 @@
       },
       "props": {
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Names the group, unless `aria-labelledby` points at text on screen that does."
         },
         "onChange": {
-          "typeScriptType": "(value: Value) => void",
+          "type": "(value: Value) => void",
           "isRequired": true,
           "description": "Called with the option the user picks."
         },
         "options": {
-          "typeScriptType": "SegmentedOption<Value>[]",
+          "type": "SegmentedOption<Value>[]",
           "isRequired": true,
           "description": "The segments, in order: each a value, its label and an optional icon."
         },
         "value": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "The chosen option's value."
         }
@@ -732,42 +732,42 @@
       },
       "props": {
         "actions": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The footer's buttons, main action last."
         },
         "cancelLabel": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Label for a button before the actions that closes the dialog."
         },
         "canClose": {
-          "typeScriptType": "boolean",
-          "defaultValue": "true",
+          "type": "boolean",
+          "default": "true",
           "description": "False while something runs that closing would abandon: every way out is off."
         },
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The body, in a recessed well. Omit for a dialog that's only a header and actions."
         },
         "description": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The line under the title, read as the dialog's description."
         },
         "footnote": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "A line under the body, on the panel: a caption or status."
         },
         "isDirty": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Holds input the user typed: a stray click on the backdrop won't throw it away."
         },
         "onClose": {
-          "typeScriptType": "() => void",
+          "type": "() => void",
           "isRequired": true,
           "description": "Escape, the close button, Cancel and a backdrop click: close it here."
         },
         "title": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "Names the dialog."
         }
@@ -810,12 +810,12 @@
       "figmaComponent": null,
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The component that renders the Dialog: mounted while open and while it leaves."
         },
         "isOpen": {
-          "typeScriptType": "boolean",
+          "type": "boolean",
           "isRequired": true,
           "description": "Opens the Dialog; false plays its leave animation, then unmounts it."
         }
@@ -841,43 +841,43 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactElement<{ 'aria-label'?: string | undefined; 'aria-describedby'?: string | undefined; }, string | JSXElementConstructor<any>>",
+          "type": "ReactElement<{ 'aria-label'?: string | undefined; 'aria-describedby'?: string | undefined; }, string | JSXElementConstructor<any>>",
           "isRequired": true,
           "description": "The trigger: one element that takes a ref and props. Keyboard and screen\nreader users reach the tip only on a focusable one (a button). Over plain\ntext, set `shouldDescribe={false}` and put the hint in sr-only text too."
         },
         "content": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "Shown on hover and keyboard focus."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Never opens: for content that would be stale (a rating while a new test runs)."
         },
         "maxWidth": {
-          "typeScriptType": "number",
-          "defaultValue": "260",
+          "type": "number",
+          "default": "260",
           "description": "The bubble's width (px) before its content wraps; wider for one-line content like a hostname."
         },
         "shouldDescribe": {
-          "typeScriptType": "boolean",
-          "defaultValue": "true",
+          "type": "boolean",
+          "default": "true",
           "description": "False when the content only repeats the trigger's accessible name, so a\nscreen reader doesn't read it twice. A string equal to the trigger's\n`aria-label` is caught without it."
         },
         "side": {
-          "allowedValues": [
+          "values": [
             "top",
             "bottom",
             "left",
             "right"
           ],
-          "defaultValue": "bottom",
+          "default": "bottom",
           "description": "The trigger's side the bubble opens on, centred on the trigger: `bottom`\nor `top` stack it, `left` or `right` set it beside it (the nav rail). It\nflips to the other side when it would leave the window, and slides along\nto stay inside it."
         },
         "sideOffset": {
-          "typeScriptType": "number",
-          "defaultValue": "6",
+          "type": "number",
+          "default": "6",
           "description": "The gap (px) between the trigger and the bubble."
         }
       },
@@ -924,12 +924,12 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "A word or two; it's set in capitals."
         },
         "tone": {
-          "allowedValues": [
+          "values": [
             "negative",
             "positive",
             "warning"
@@ -976,8 +976,8 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
-          "defaultValue": "Live",
+          "type": "ReactNode",
+          "default": "Live",
           "description": "Its words."
         }
       },
@@ -1006,7 +1006,7 @@
       },
       "props": {
         "pulse": {
-          "allowedValues": [
+          "values": [
             "calm",
             "live",
             "busy"
@@ -1014,12 +1014,12 @@
           "description": "A breathing pulse, at the pace of what it marks: `calm` for a steady\nstate (connected), `live` for data streaming in, `busy` for work under way\n(a scan)."
         },
         "tone": {
-          "allowedValues": [
+          "values": [
             "accent",
             "positive",
             "current"
           ],
-          "defaultValue": "current",
+          "default": "current",
           "description": "Its colour: the text colour (`current`), `positive` for a healthy state\nwhose words stay quiet (online), or `accent` for work under way (a scan)."
         }
       },
@@ -1061,8 +1061,8 @@
       },
       "props": {
         "size": {
-          "typeScriptType": "number",
-          "defaultValue": "24",
+          "type": "number",
+          "default": "24",
           "description": "Its width in px."
         }
       },
@@ -1100,13 +1100,13 @@
       },
       "props": {
         "color": {
-          "typeScriptType": "string",
-          "defaultValue": "currentColor",
+          "type": "string",
+          "default": "currentColor",
           "description": "Any CSS colour."
         },
         "size": {
-          "typeScriptType": "number",
-          "defaultValue": "14",
+          "type": "number",
+          "default": "14",
           "description": "In px: match the icon it replaces."
         }
       },
@@ -1146,7 +1146,7 @@
       },
       "props": {
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "What's loading, as a sentence that ends in an ellipsis: \"Loading usage…\"."
         }
@@ -1187,21 +1187,21 @@
       },
       "props": {
         "description": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "One short line under the title: how old what's on screen is, or what happens next."
         },
         "onRetry": {
-          "typeScriptType": "(() => Promise<void>)",
+          "type": "(() => Promise<void>)",
           "description": "Shows Retry, busy until the returned promise settles."
         },
         "title": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "What happened. Dismiss hides the banner until this changes."
         },
         "variant": {
-          "typeScriptType": "\"error\"",
+          "type": "\"error\"",
           "isRequired": true,
           "description": "`error`, a failure, shown until it clears: a red wash, and a red Dismiss."
         }
@@ -1245,20 +1245,20 @@
       },
       "props": {
         "actions": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "Controls below the description, usually a retry button."
         },
         "description": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "A line or two naming what will fill the page, or why it can't."
         },
         "isLocked": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "A lock badge over the placeholder rows, for a list that can't fill until\nthe user acts (admin access needed) rather than one waiting for data."
         },
         "title": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "What's empty: \"No devices found\"."
         }
@@ -1304,7 +1304,7 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The note. Give it `role=\"status\"` when it appears in answer to an action, so it's announced."
         }
@@ -1332,20 +1332,20 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "DataRows, as direct children (fragments are fine)."
         },
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a layout: space above it (`mt-12`)."
         },
         "density": {
-          "allowedValues": [
+          "values": [
             "default",
             "compact"
           ],
-          "defaultValue": "default",
+          "default": "default",
           "description": "The air between rows: `default` 8px, `compact` 4px for a short or repeated list."
         }
       },
@@ -1384,12 +1384,12 @@
       "figmaComponent": null,
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The DataLists, one per topic."
         },
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a layout: space above it (`mt-12`)."
         }
       },
@@ -1414,24 +1414,24 @@
       },
       "props": {
         "align": {
-          "allowedValues": [
+          "values": [
             "center",
             "baseline"
           ],
-          "defaultValue": "baseline",
+          "default": "baseline",
           "description": "`center` for a value with no text baseline of its own (signal bars, a badge)."
         },
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "A value that isn't plain text (a badge, signal bars), in `value`'s place."
         },
         "label": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "What the value is: \"Gateway\"."
         },
         "value": {
-          "typeScriptType": "string | null",
+          "type": "string | null",
           "description": "The value as text. With no value and no children, the row isn't drawn."
         }
       },
@@ -1459,8 +1459,8 @@
       },
       "props": {
         "label": {
-          "typeScriptType": "string",
-          "defaultValue": "None",
+          "type": "string",
+          "default": "None",
           "description": "What a screen reader hears in its place: \"Not measured\", \"Unknown\"."
         }
       },
@@ -1509,36 +1509,36 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a layout: `min-w-0 flex-1` to share a row with other readouts."
         },
         "icon": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "An icon that means something (the direction arrows): before the label, or before the figure when there's no label."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Names the figure (\"Download\", \"Data used\"). With one, render the readout inside a `<dl>`."
         },
         "size": {
-          "allowedValues": [
+          "values": [
             "compact",
             "large"
           ],
-          "defaultValue": "large",
+          "default": "large",
           "description": "`compact` for a summary card's figure, which has no label."
         },
         "spokenValue": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "What a screen reader hears instead, when the visible number is animating\n(\"182 Mbps\" while the digits still count up to it)."
         },
         "unit": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "After the number, smaller: \"Mbps\", \"GB\"."
         },
         "value": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "The number, formatted: \"182\", \"4.6\"."
         }
@@ -1585,16 +1585,16 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a layout: a column's width and alignment\n(`min-w-[46px] text-right`). It takes its size and colour from the text\naround it."
         },
         "format": {
-          "typeScriptType": "(n: number) => string | null",
+          "type": "(n: number) => string | null",
           "isRequired": true,
           "description": "Turns the number, mid-ease too, into its text: `(n) => n.toFixed(1)`. Null draws a NoValue bar."
         },
         "status": {
-          "allowedValues": [
+          "values": [
             "negative",
             "positive",
             "warning"
@@ -1602,7 +1602,7 @@
           "description": "How healthy the value is, in the status text colours."
         },
         "value": {
-          "typeScriptType": "number",
+          "type": "number",
           "isRequired": true,
           "description": "The latest value; the figure eases toward it."
         }
@@ -1657,21 +1657,21 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "The meter's place in its row."
         },
         "color": {
-          "typeScriptType": "string",
-          "defaultValue": "currentColor",
+          "type": "string",
+          "default": "currentColor",
           "description": "The bars' colour: any CSS colour, usually a status token (`var(--status-positive)`)."
         },
         "isDimmed": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Grey bars that read as inactive: a stale rating waiting on a new test."
         },
         "value": {
-          "typeScriptType": "number",
+          "type": "number",
           "isRequired": true,
           "description": "Lit bars, 0 to 4."
         }
@@ -1724,26 +1724,26 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a row: a width (`w-[320px]`) or an inset to line up with an icon (`ml-[3px]`)."
         },
         "down": {
-          "typeScriptType": "number",
+          "type": "number",
           "isRequired": true,
           "description": "The download segment's value, in the same unit as `max`."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Reads the bar out, since it's an image to screen readers."
         },
         "max": {
-          "typeScriptType": "number",
+          "type": "number",
           "isRequired": true,
           "description": "The value a full track stands for. Rows in one list share it, so their bars compare at a glance."
         },
         "up": {
-          "typeScriptType": "number",
+          "type": "number",
           "isRequired": true,
           "description": "The upload segment's value, after the download one."
         }
@@ -1783,17 +1783,17 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The row's content: an icon tile, a title and its description. Anything\nright-aligned (a rating) goes last, after a text column that takes `flex-1`."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Inert for now (results that are being replaced): faded like any disabled\ncontrol, no hover, no action. It keeps its place in the Tab order."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement>",
+          "type": "MouseEventHandler<HTMLButtonElement>",
           "isRequired": true,
           "description": "What the row opens."
         }
@@ -1847,26 +1847,26 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "The tile's place in its row: `shrink-0` so a long name can't squeeze it."
         },
         "color": {
-          "typeScriptType": "TintColor",
+          "type": "TintColor",
           "isRequired": true,
           "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken background with a secondary\nicon, for something uncategorised or not yet rated."
         },
         "icon": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The icon, sized by the caller: `<VideoCallIcon size={17} />`."
         },
         "size": {
-          "allowedValues": [
+          "values": [
             "sm",
             "md",
             "lg"
           ],
-          "defaultValue": "md",
+          "default": "md",
           "description": "30, 32 or 36px square."
         }
       },
@@ -1915,41 +1915,41 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "The tile's place in its row: `shrink-0` so a long name can't squeeze it."
         },
         "color": {
-          "typeScriptType": "TintColor",
+          "type": "TintColor",
           "isRequired": true,
           "description": "The icon's colour, washed across the tile: any CSS colour, usually a token\n(`var(--status-positive)`). `neutral` is the sunken background with a secondary\nicon, for something uncategorised or not yet rated."
         },
         "icon": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The icon, sized by the caller: `<VideoCallIcon size={17} />`."
         },
         "isDisabled": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Inert while what it opens is being replaced: no hover, no action, same look."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names it: the icon alone says nothing to a screen reader."
         },
         "onClick": {
-          "typeScriptType": "MouseEventHandler<HTMLButtonElement>",
+          "type": "MouseEventHandler<HTMLButtonElement>",
           "isRequired": true,
           "description": "Opens what the tile stands for."
         },
         "size": {
-          "allowedValues": [
+          "values": [
             "sm",
             "md",
             "lg"
           ],
-          "defaultValue": "md",
+          "default": "md",
           "description": "30, 32 or 36px square."
         }
       },
@@ -1988,12 +1988,12 @@
       },
       "props": {
         "color": {
-          "typeScriptType": "TintColor",
+          "type": "TintColor",
           "isRequired": true,
           "description": "The icon's colour, washed across the marker: any CSS colour, usually a\nstatus token (`var(--status-positive)`). `neutral` is a hollow ring with a\ntertiary icon, for something quiet that left."
         },
         "icon": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The marker's icon, sized by the caller: `<ArrowRightIcon size={15} />`."
         }
@@ -2047,28 +2047,28 @@
       },
       "props": {
         "as": {
-          "allowedValues": [
+          "values": [
             "div",
             "li",
             "section"
           ],
-          "defaultValue": "section",
+          "default": "section",
           "description": "`section` is named by its CardHeader's title, so give it one.\n`div` or `li` for a card with no header, such as a card in a list."
         },
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "A CardHeader, a CardBody and an optional CardFooter, or your own content."
         },
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a layout: a width (`max-w-[320px]`) or a grid span (`col-span-2`)."
         },
         "linkLabel": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "What a screen reader says for the card's link, which has no visible text,\nwhen its CardHeader's title isn't enough: what the card shows, then where\nit goes (\"Usage: 3.2 GB today. Open Usage.\"). A card with no CardHeader needs it."
         },
         "onOpen": {
-          "typeScriptType": "(() => void)",
+          "type": "(() => void)",
           "description": "Opens the view the card summarises: the whole card is its link, and its header ends in a caret."
         }
       },
@@ -2118,17 +2118,17 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The content."
         },
         "layout": {
-          "allowedValues": [
+          "values": [
             "default",
             "rows",
             "flush"
           ],
-          "defaultValue": "default",
+          "default": "default",
           "description": "`default` pads all round. `rows` for rows that carry their own vertical\npadding (settings, list rows): no top padding. `flush` for a\nDataListStack, whose hairlines run to the card's sides."
         }
       },
@@ -2149,7 +2149,7 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The footnote or status."
         }
@@ -2169,15 +2169,15 @@
       },
       "props": {
         "actions": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "Controls or a badge at the end of the row."
         },
         "icon": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "A 16px icon before the title."
         },
         "title": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the card: a `section` card is labelled by it."
         }
@@ -2199,11 +2199,11 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The rows, as `<li>`s. They own their padding, so the hairlines run edge to edge."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the list."
         }
@@ -2220,30 +2220,30 @@
       "figmaComponent": null,
       "props": {
         "as": {
-          "allowedValues": [
+          "values": [
             "div",
             "li"
           ],
-          "defaultValue": "div",
+          "default": "div",
           "description": "`li` for a group in a list."
         },
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "A CollapsibleTrigger and a CollapsiblePanel, wherever the layout puts them."
         },
         "hasFocusFrame": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Rings the whole collapsible (trigger and open panel) when the trigger has\nkeyboard focus, instead of the trigger: for a trigger that spans a card's\nor group's header. Give the header its hover look on focus too."
         },
         "isOpen": {
-          "typeScriptType": "boolean",
+          "type": "boolean",
           "isRequired": true,
           "description": "Whether the panel shows."
         },
         "onOpenChange": {
-          "typeScriptType": "(isOpen: boolean) => void",
+          "type": "(isOpen: boolean) => void",
           "isRequired": true,
           "description": "Called with the new state when the trigger is pressed."
         }
@@ -2286,7 +2286,7 @@
       "figmaComponent": null,
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "What the trigger shows and hides. Pad an element inside: the panel's\n`className` is for its place (`mt-8`), as padding would survive at height 0."
         }
@@ -2361,17 +2361,17 @@
       },
       "props": {
         "className": {
-          "typeScriptType": "string",
+          "type": "string",
           "description": "Its place in a line: `flex-[0_1_auto]` to shrink, not grow, beside other\nitems. It takes its type from the line it sits in."
         },
         "items": {
-          "typeScriptType": "ReactNode[]",
+          "type": "ReactNode[]",
           "isRequired": true,
           "description": "The chunks, in order. Empty ones (null, false, '') are dropped, with their dots."
         },
         "shouldTruncate": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "Keep the items on one line, each ellipsizing as space runs out. Otherwise they wrap."
         }
       },
@@ -2390,16 +2390,16 @@
       },
       "props": {
         "brand": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The product mark and name, at the start."
         },
         "controls": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "At the end: WindowButtons, on a frameless window."
         },
         "status": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "Beside the brand: a TitleBarStatus."
         }
       },
@@ -2444,12 +2444,12 @@
       },
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The status in words: \"Connected\"."
         },
         "tone": {
-          "allowedValues": [
+          "values": [
             "negative",
             "neutral",
             "positive"
@@ -2474,7 +2474,7 @@
       },
       "props": {
         "action": {
-          "allowedValues": [
+          "values": [
             "close",
             "minimize"
           ],
@@ -2482,7 +2482,7 @@
           "description": "Which button: its icon, its name, and (for `close`) a red hover."
         },
         "onClick": {
-          "typeScriptType": "() => void",
+          "type": "() => void",
           "isRequired": true,
           "description": "Minimises or closes the window."
         }
@@ -2503,22 +2503,22 @@
       },
       "props": {
         "icon": {
-          "typeScriptType": "IconComponent",
+          "type": "IconComponent",
           "isRequired": true,
           "description": "The icon."
         },
         "isActive": {
-          "typeScriptType": "boolean",
-          "defaultValue": "false",
+          "type": "boolean",
+          "default": "false",
           "description": "The current page's item: tinted, with the accent bar."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Names the item, which shows only its icon; also its tooltip."
         },
         "onClick": {
-          "typeScriptType": "() => void",
+          "type": "() => void",
           "isRequired": true,
           "description": "Goes to the page, or runs the action."
         }
@@ -2546,17 +2546,17 @@
       },
       "props": {
         "footer": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "Utilities at the bottom edge, below a hairline: settings, the theme switch."
         },
         "label": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "Accessible name for the navigation landmark."
         },
         "main": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The pages, from the top."
         }
@@ -2607,31 +2607,31 @@
       },
       "props": {
         "actions": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The page's controls (its main action, refresh), at the header's end."
         },
         "description": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The line under the title. It fades in when it first shows, when its text\nchanges or it swaps between text and an element (or arrives after\n`null`), and each time `status` clears. `null` keeps the line's height\nwhile there's nothing to show; leave it out to have no line."
         },
         "icon": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "The page's nav icon, in a chip: a top-level page."
         },
         "info": {
-          "typeScriptType": "{ label: string; hint: ReactNode; }",
+          "type": "{ label: string; hint: ReactNode; }",
           "description": "An info button before the actions, past a divider, never among them: its name and hint."
         },
         "onBack": {
-          "typeScriptType": "(() => void)",
+          "type": "(() => void)",
           "description": "A back button in the chip's place: a page layered over a tab."
         },
         "status": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "description": "Shown in the description's place while something loads or runs (\"Checking…\")."
         },
         "title": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "The page's name."
         }
@@ -2709,12 +2709,12 @@
       "figmaComponent": null,
       "props": {
         "children": {
-          "typeScriptType": "ReactNode",
+          "type": "ReactNode",
           "isRequired": true,
           "description": "What the screen shows."
         },
         "spoken": {
-          "typeScriptType": "string",
+          "type": "string",
           "isRequired": true,
           "description": "What a screen reader says instead, in plain words: \"at least 25 Mbps\" for \"≥ 25 Mbps\"."
         }

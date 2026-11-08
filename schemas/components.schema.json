@@ -93,18 +93,18 @@
       "required": ["description"],
       "additionalProperties": false,
       "properties": {
-        "typeScriptType": {
+        "type": {
           "description": "Its TypeScript type, when it isn't a set of values.",
           "type": "string"
         },
-        "allowedValues": {
+        "values": {
           "description": "The values it takes, when it's a union of literals.",
           "type": "array",
           "items": {
             "type": ["string", "number"]
           }
         },
-        "defaultValue": {
+        "default": {
           "description": "Its value when left out.",
           "type": "string"
         },

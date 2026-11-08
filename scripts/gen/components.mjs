@@ -92,11 +92,11 @@ function readProps(components) {
 function describeProp(prop) {
   const entry = {}
   if (prop.type.name === 'enum' && prop.type.value?.every(({ value }) => /^["\d]/.test(value))) {
-    entry.allowedValues = prop.type.value.map(({ value }) => JSON.parse(value))
+    entry.values = prop.type.value.map(({ value }) => JSON.parse(value))
   } else {
-    entry.typeScriptType = prop.type.raw ?? prop.type.name
+    entry.type = prop.type.raw ?? prop.type.name
   }
-  if (prop.defaultValue?.value !== undefined) entry.defaultValue = prop.defaultValue.value
+  if (prop.defaultValue?.value !== undefined) entry.default = prop.defaultValue.value
   if (prop.required) entry.isRequired = true
   if (prop.description) entry.description = prop.description
   return entry

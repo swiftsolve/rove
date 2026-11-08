@@ -173,11 +173,10 @@ function variantsOf(node) {
 
 /** A code prop's values to compare, or null when it takes anything (a string, a node). */
 function valuesOf(prop) {
-  if (prop.allowedValues) return prop.allowedValues
-  if (prop.typeScriptType === 'boolean') return ['false', 'true']
+  if (prop.values) return prop.values
+  if (prop.type === 'boolean') return ['false', 'true']
   // A single literal (`variant: 'error'`) reaches the component list as its type.
-  if (LITERAL_UNION.test(prop.typeScriptType ?? ''))
-    return prop.typeScriptType.split(' | ').map((literal) => literal.slice(1, -1))
+  if (LITERAL_UNION.test(prop.type ?? '')) return prop.type.split(' | ').map((literal) => literal.slice(1, -1))
   return null
 }
 
@@ -257,7 +256,7 @@ for (const [nodeId, components] of componentsByNode) {
       const figmaName = Object.keys(figmaVariants).find((name) => keys.has(comparisonKey(name)))
 
       if (!figmaName) {
-        if (prop.allowedValues && !(propName in propsNotInFigma)) {
+        if (prop.values && !(propName in propsNotInFigma)) {
           problems.push(
             `${component}.${propName} (${values.join(', ')}) has no variant property on Figma's "${figmaNode.name}": ` +
               `add one, or list it in figma-components.json's propsNotInFigma with why`,
@@ -273,7 +272,7 @@ for (const [nodeId, components] of componentsByNode) {
       }
 
       const codeValues = values.map(comparisonKey)
-      const hasDefault = prop.defaultValue !== undefined
+      const hasDefault = prop.default !== undefined
       // Figma's None stands for an optional prop left unset, which code has no value for.
       const isUnsetStandIn = (value) => value === UNSET_OPTION && !hasDefault && !codeValues.includes(UNSET_OPTION)
       const figmaValues = figmaVariants[figmaName].map(comparisonKey).filter((value) => !isUnsetStandIn(value))
