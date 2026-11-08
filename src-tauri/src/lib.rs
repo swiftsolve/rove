@@ -146,13 +146,14 @@ fn prepare_linux_desktop() {
         "linux desktop environment"
     );
 
-    // On the NVIDIA driver WebKitGTK's compositor waits on a frame callback
-    // that never comes, so the window looks hung. Disabling compositing fixes
-    // it (repaints flush synchronously); forcing GDK_BACKEND=x11 freezes
-    // WebKitGTK 2.52, so that's left alone. A user's own value wins. Needs the
-    // opaque window (`transparent: false` in tauri.conf.json).
-    if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
-        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    // On NVIDIA, WebKitGTK's DMA-BUF renderer waits on a frame callback that
+    // never comes, so the window looks hung. Turning off just that renderer
+    // keeps GPU compositing and smooth scrolling (turning off compositing drew
+    // every frame in software). GDK_BACKEND=x11 freezes WebKitGTK 2.52, so it's
+    // left alone. A user's own value wins. Needs `transparent: false` in
+    // tauri.conf.json.
+    if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
     }
 }
 
