@@ -7,19 +7,30 @@ Part 1 of [The Home page, line by line](README.md).
 Home is one file that stacks five cards. Each card is its own component in its
 own file, and each reads the data it needs for itself.
 
-```mermaid
-flowchart TD
-  HV["HomeView.tsx<br/>the page: which cards, in what order"]
-  HV --> CC["ConnectionCard<br/>network name, signal, speed"]
-  HV --> TC["TrafficCard<br/>live download and upload"]
-  HV --> CAP["CapabilitiesCard<br/>what the connection can handle"]
-  HV --> ROW["two-column row"]
-  ROW --> UC["UsageCard<br/>today's data"]
-  ROW --> DC["DevicesCard<br/>devices online"]
-  CC --> CS["ConnectionStrip<br/>the row you always see"]
-  CC --> CD["ConnectionDetailsPanel<br/>opens on click"]
-  UC --> SC["StatCard<br/>shared small-card layout"]
-  DC --> SC
+The page from top to bottom, each box named after the component that draws it:
+
+```text
+HomeView.tsx
+┌──────────────────────────────────────────────────────────┐
+│ ConnectionCard                                           │
+│ ┌──────────────────────────────────────────────────────┐ │
+│ │ ConnectionStrip          always visible              │ │
+│ │   icon · network name · signal, speed, band, lock    │ │
+│ ├──────────────────────────────────────────────────────┤ │
+│ │ ConnectionDetailsPanel   opens on click              │ │
+│ │   network name, signal, channel, IP, gateway…        │ │
+│ └──────────────────────────────────────────────────────┘ │
+├──────────────────────────────────────────────────────────┤
+│ TrafficCard                          when connected      │
+│   SpeedReadout × 2 (download, upload) · ThroughputChart  │
+├──────────────────────────────────────────────────────────┤
+│ CapabilitiesCard                     connected or tested │
+│   a tile per activity · footer: status · Speed test ›    │
+├────────────────────────────────┬─────────────────────────┤
+│ UsageCard                      │ DevicesCard             │
+│   today's data, down and up    │   devices online        │
+│   (built on StatCard)          │   (built on StatCard)   │
+└────────────────────────────────┴─────────────────────────┘
 ```
 
 ## What's on the page, top to bottom
