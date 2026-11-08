@@ -45,7 +45,9 @@ is left: never guess a node id.
 2. **Write the entry**, keyed by the code name:
    `{ "figmaName": "…", "figmaNodeId": "…" }`,
    with the node id as `use_figma` returns it (`42:189`; a link's `node-id`
-   has `-` for `:`). A component with no Figma counterpart is `null`. Two
+   has `-` for `:`). A component with no Figma counterpart is
+   `{ "whyNoFigmaComponent": "…" }`, saying why in a short sentence: it draws
+   nothing of its own, or only arranges components that are in Figma. Two
    components can share one node, as `DataList` and `DataRow` share
    `Data row`.
 

@@ -12,11 +12,11 @@ const REPO = 'https://github.com/swiftsolve/rove'
 // The Rove Tokens Storybook, whose tokens these components are built from.
 const TOKENS = 'https://rove.swiftsolve.net/storybook/tokens/'
 
-type Component = { libraryGroup: string; storyIds: string[]; figmaComponent: unknown }
+type Component = { libraryGroup: string; storyIds: string[]; figmaComponent: { figmaNodeId?: string } | null }
 const components = Object.values(componentList.components as Record<string, Component>)
 // Every figure on the page is counted from the component list, so none can go stale.
 const storyCount = components.reduce((sum, { storyIds }) => sum + storyIds.length, 0)
-const inFigma = components.filter((component) => component.figmaComponent !== null).length
+const inFigma = components.filter((component) => component.figmaComponent?.figmaNodeId).length
 
 /** A Docs page, from inside the preview iframe: `./?path=` is the manager. */
 const docsHref = (id: string): string => `./?path=/docs/${id}`

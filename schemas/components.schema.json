@@ -59,10 +59,10 @@
           "minLength": 1
         },
         "figmaComponent": {
-          "description": "Its entry in figma-components.json, or null when Figma has none.",
+          "description": "Its entry in figma-components.json: its Figma component, or why it has none.",
           "oneOf": [
-            { "description": "The component has no Figma counterpart.", "type": "null" },
-            { "$ref": "figma-components.schema.json#/definitions/figmaComponent" }
+            { "$ref": "figma-components.schema.json#/definitions/figmaComponent" },
+            { "$ref": "figma-components.schema.json#/definitions/noFigmaComponent" }
           ]
         },
         "props": {

@@ -6,11 +6,12 @@ import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 import figma from '../src/ui/figma-components.json'
 
 type FigmaNode = { figmaName: string; figmaNodeId: string }
+type NoFigmaNode = { whyNoFigmaComponent: string }
 
 // A story's title ends in its component's name ('Containers/Card/CardHeader'),
 // which is figma-components.json's key, so every story finds its Figma component with
 // nothing set on the story itself.
-const COMPONENTS: Record<string, FigmaNode | null> = figma.components
+const COMPONENTS: Record<string, FigmaNode | NoFigmaNode> = figma.components
 const FILE = new URL(figma.figmaFileUrl)
 
 const COLUMN: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%' }
@@ -27,7 +28,7 @@ export function FigmaPanel({ isActive }: { isActive: boolean }): JSX.Element {
 
   return (
     <AddonPanel active={isActive}>
-      {component ? (
+      {component && 'figmaNodeId' in component ? (
         <div style={COLUMN}>
           {/* Only while the tab is open, so other tabs don't load Figma. */}
           {isActive && (
@@ -47,8 +48,8 @@ export function FigmaPanel({ isActive }: { isActive: boolean }): JSX.Element {
         </div>
       ) : (
         <EmptyTabContent
-          title={component === null ? `${name} has no Figma component` : `${name} isn't in figma-components.json`}
-          description="It's built from other components, or lives only in code."
+          title={component ? `${name} has no Figma component` : `${name} isn't in figma-components.json`}
+          description={component?.whyNoFigmaComponent}
         />
       )}
     </AddonPanel>

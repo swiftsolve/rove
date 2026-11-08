@@ -281,7 +281,9 @@
       "libraryGroup": "Actions",
       "sourceFile": "src/ui/link/StretchedLink.tsx",
       "description": "A transparent link stretched over its positioned container (a row; a Card\ndraws its own with `onOpen`), so a click anywhere opens the view the\ncontainer summarises. It's a link to a screen reader, as it moves to another\nview rather than acting. A control in the container raises itself above it\nand stays a sibling, never nested. The focus ring follows the container's\ncorners, just inside the edge; `className` can round it where they don't (a\nlist's first and last rows). `data-stretched-link` lets the container style\nitself while it has focus.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Draws nothing: an invisible link over a row, so a click anywhere opens its view."
+      },
       "props": {
         "label": {
           "type": "string",
@@ -807,7 +809,9 @@
       "libraryGroup": "Overlays",
       "sourceFile": "src/ui/dialog/Dialog.tsx",
       "description": "Opens and closes a Dialog. Its children mount when `isOpen` turns true and\nstay mounted until the Dialog's leave animation ends after it turns false,\nso the component that renders the Dialog (and its state) lives only that long.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Draws nothing: it opens and closes a Dialog, which is in Figma."
+      },
       "props": {
         "children": {
           "type": "ReactNode",
@@ -1381,7 +1385,9 @@
       "libraryGroup": "Data display",
       "sourceFile": "src/ui/data-list/DataList.tsx",
       "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Only arranges Data lists, which are in Figma, with a hairline between groups."
+      },
       "props": {
         "children": {
           "type": "ReactNode",
@@ -2217,7 +2223,9 @@
       "libraryGroup": "Containers",
       "sourceFile": "src/ui/collapsible/Collapsible.tsx",
       "description": "Shows and hides a panel from a trigger: a card's details, a group's rows.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Draws nothing of its own: it shows and hides a panel."
+      },
       "props": {
         "as": {
           "values": [
@@ -2283,7 +2291,9 @@
       "libraryGroup": "Containers",
       "sourceFile": "src/ui/collapsible/Collapsible.tsx",
       "description": "What the trigger shows and hides, growing and shrinking to its height; out\nof the page, and the accessibility tree, while closed.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Draws nothing: it holds what the trigger shows and hides."
+      },
       "props": {
         "children": {
           "type": "ReactNode",
@@ -2304,7 +2314,9 @@
       "libraryGroup": "Containers",
       "sourceFile": "src/ui/collapsible/Collapsible.tsx",
       "description": "The button that opens and closes the panel; it says which (aria-expanded)\nand what it controls. `data-panel-open` is set while open, for styling.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Draws nothing: it makes its children the button that opens the panel."
+      },
       "props": {},
       "passesExtraPropsToElement": true,
       "storyIds": [
@@ -2673,7 +2685,9 @@
       "libraryGroup": "Accessibility",
       "sourceFile": "src/ui/screen-reader/ScreenReaderStatus.tsx",
       "description": "A status only a screen reader hears: hidden on screen, and read out each\ntime its text changes (\"Testing download…\"). Keep it mounted and pass empty\ntext when there's nothing to say: a region that mounts already holding its\ntext often isn't announced.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Hidden on screen: only a screen reader hears it."
+      },
       "props": {},
       "passesExtraPropsToElement": true,
       "storyIds": [
@@ -2706,7 +2720,9 @@
       "libraryGroup": "Accessibility",
       "sourceFile": "src/ui/screen-reader/SpokenText.tsx",
       "description": "Text that reads differently than it looks: the screen shows `children`,\nand a screen reader hears `spoken`, so it never reads out a symbol such as\n\"≥\", a bracket or a slash.",
-      "figmaComponent": null,
+      "figmaComponent": {
+        "whyNoFigmaComponent": "Looks like its children: only what a screen reader hears differs."
+      },
       "props": {
         "children": {
           "type": "ReactNode",

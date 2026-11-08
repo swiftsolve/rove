@@ -17,7 +17,7 @@
  *   node scripts/gen/components.mjs --check   # fail if it's stale or incomplete
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
- * own props has no doc comment, or a component has no entry in figma-components.json (`null` says it has no Figma counterpart), or a
+ * own props has no doc comment, or a component has no entry in figma-components.json (`{ whyNoFigmaComponent }` says why it has no Figma counterpart), or a
  * component with a Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
  * `Containers/Card/CardHeader`) has no usage guide.
  *
@@ -216,7 +216,7 @@ for (const { name, group, source } of components) {
   }
   if (!(name in figmaMap.components)) {
     problems.push(
-      `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: add ${name}, with its Figma component, or null if it has none`,
+      `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: add ${name}, with its Figma component, or { whyNoFigmaComponent } if it has none`,
     )
   }
   const figmaVariantPropertiesNotInCode = figmaMap.components[name]?.figmaVariantPropertiesNotInCode ?? {}

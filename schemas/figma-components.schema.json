@@ -16,14 +16,24 @@
       "description": "Every component src/ui/index.ts exports, by its export name.",
       "type": "object",
       "additionalProperties": {
-        "oneOf": [
-          { "description": "The component has no Figma counterpart.", "type": "null" },
-          { "$ref": "#/definitions/figmaComponent" }
-        ]
+        "oneOf": [{ "$ref": "#/definitions/figmaComponent" }, { "$ref": "#/definitions/noFigmaComponent" }]
       }
     }
   },
   "definitions": {
+    "noFigmaComponent": {
+      "description": "A component with no Figma counterpart, and why.",
+      "type": "object",
+      "required": ["whyNoFigmaComponent"],
+      "additionalProperties": false,
+      "properties": {
+        "whyNoFigmaComponent": {
+          "description": "Why Figma has none: it draws nothing of its own, or only arranges components that are in Figma.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
     "figmaVariantPropertyNotInCode": {
       "description": "How code chooses a Figma variant property it has no prop for.",
       "type": "object",

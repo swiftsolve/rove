@@ -23,7 +23,9 @@
         }
       }
     },
-    "StretchedLink": null,
+    "StretchedLink": {
+      "whyNoFigmaComponent": "Draws nothing: an invisible link over a row, so a click anywhere opens its view."
+    },
     "Menu": {
       "figmaName": "Menu",
       "figmaNodeId": "498:719"
@@ -66,7 +68,7 @@
       "figmaName": "Dialog",
       "figmaNodeId": "372:235"
     },
-    "DialogRoot": null,
+    "DialogRoot": { "whyNoFigmaComponent": "Draws nothing: it opens and closes a Dialog, which is in Figma." },
     "Tooltip": {
       "figmaName": "Tooltip",
       "figmaNodeId": "43:7",
@@ -123,7 +125,9 @@
         "density": "Figma has the row, not the list: a list's spacing is its frame's gap."
       }
     },
-    "DataListStack": null,
+    "DataListStack": {
+      "whyNoFigmaComponent": "Only arranges Data lists, which are in Figma, with a hairline between groups."
+    },
     "DataRow": {
       "figmaName": "Data row",
       "figmaNodeId": "15:642",
@@ -226,9 +230,11 @@
       "figmaName": "Card list",
       "figmaNodeId": "555:132"
     },
-    "Collapsible": null,
-    "CollapsiblePanel": null,
-    "CollapsibleTrigger": null,
+    "Collapsible": { "whyNoFigmaComponent": "Draws nothing of its own: it shows and hides a panel." },
+    "CollapsiblePanel": { "whyNoFigmaComponent": "Draws nothing: it holds what the trigger shows and hides." },
+    "CollapsibleTrigger": {
+      "whyNoFigmaComponent": "Draws nothing: it makes its children the button that opens the panel."
+    },
     "NoValue": {
       "figmaName": "No value",
       "figmaNodeId": "708:667",
@@ -283,7 +289,7 @@
         }
       }
     },
-    "ScreenReaderStatus": null,
-    "SpokenText": null
+    "ScreenReaderStatus": { "whyNoFigmaComponent": "Hidden on screen: only a screen reader hears it." },
+    "SpokenText": { "whyNoFigmaComponent": "Looks like its children: only what a screen reader hears differs." }
   }
 }

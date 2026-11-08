@@ -203,7 +203,7 @@ if (!fileKey) {
 
 // Several components can share one Figma node (Card, CardBody, CardFooter), so
 // each node is asked for once and its variants are matched against all of them.
-const mappedEntries = Object.entries(mapping).filter(([, entry]) => entry !== null)
+const mappedEntries = Object.entries(mapping).filter(([, entry]) => 'figmaNodeId' in entry)
 const componentsByNode = new Map()
 for (const [component, entry] of mappedEntries)
   componentsByNode.set(entry.figmaNodeId, [...(componentsByNode.get(entry.figmaNodeId) ?? []), component])
