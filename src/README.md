@@ -142,6 +142,10 @@ These hold in `src/` and `scripts/` alike.
   page's `window`. A test fixture built partial on purpose, and a style object
   that sets a custom property (React's `CSSProperties` has no `--name`), may
   cast too. A double cast (`as unknown as`) says why beside it.
+  - The type it casts to claims no more than the data promises: a list
+    stays a list (`WindowSize[]`, not `[WindowSize]`), a field that may be
+    missing stays optional, and the code checks what it assumes, so a
+    surprise fails with a message instead of an `undefined`.
 - A data file's shape is one named type that every reader imports, like
   `scripts/lib/library-json-types.ts`, not a shape written again inline.
 - A value of more than two parts is an object, read by name. A table of rows
