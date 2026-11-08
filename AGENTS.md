@@ -33,6 +33,7 @@ agents, open the file.
 | Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
 | Map a library component to its Figma component, in `src/ui/figma-components.json` | `.claude/skills/map-figma-component/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
+| Sweep `src/` and `scripts/` for code that isn't plain | `.claude/skills/readability-sweep/SKILL.md` |
 
 ## Rules
 
