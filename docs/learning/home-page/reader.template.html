@@ -704,6 +704,36 @@
     font-size: 0.8em;
   }
 
+  /* Concept and hook pages */
+  .hook-entry {
+    max-width: 760px;
+  }
+  .hook-entry h2 code {
+    font-size: 0.85em;
+    color: var(--accent);
+    background: none;
+    padding: 0;
+  }
+  .hook-entry p + p {
+    margin-top: 6px;
+  }
+  .concept-points {
+    margin: 10px 0 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 4px;
+  }
+  .concept-points li {
+    color: var(--text-2);
+  }
+  .hook-files {
+    font-size: 13.5px;
+    margin-top: 10px;
+  }
+  .hook-files a code {
+    color: var(--accent);
+  }
+
   /* Terms: dotted underline, definition on hover, focus or tap */
   .term {
     font: inherit;
@@ -1180,6 +1210,7 @@
     const link = (id, label, count) =>
       `<a href="#${id}"${id === currentId ? ' aria-current="page"' : ''}><span>${label}</span>${count ? `<span class="count">${count}</span>` : ''}</a>`
     let html = `<div class="nav-group">${link('overview', 'Overview')}</div>`
+    html += `<div class="nav-group"><div class="nav-label">Basics</div>${link('typescript', 'TypeScript')}${link('cva', 'Styling with cva')}${link('refs', 'Refs')}</div>`
     for (const group of GROUPS) {
       html += `<div class="nav-group"><div class="nav-label">${group}</div>`
       if (group === 'Hooks and data') html += link('data-flow', 'How data flows')
@@ -1477,7 +1508,7 @@
 
   function fileLinkByName(fileName) {
     const file = FILES.find((f) => f.path.endsWith('/' + fileName))
-    return file ? `<a href="#${file.id}"><code>${file.title}</code></a>` : `<code>${fileName}</code>`
+    return file ? `<a href="#${file.id}"><code>${fileName}</code></a>` : `<code>${fileName}</code>`
   }
 
   function reactHooksView() {
@@ -1498,6 +1529,259 @@
     <h2>One rule for all of them</h2>
     <p>Call hooks at the top of a component or another hook, never inside an <code>if</code> or a loop. React tells them apart only by their order, so the order must be the same every render.</p>
     ${sections}
+  </article>`
+  }
+
+  // Concept pages: each section is a short explanation, a real example from these files, and what to notice.
+  const TYPESCRIPT_SECTIONS = [
+    {
+      title: 'What TypeScript adds',
+      text: 'TypeScript is JavaScript plus **types**: notes saying what kind of value goes where. The editor checks them as you type, so passing text where a number belongs is caught before the app runs. When the app is built, every type is deleted; the browser only ever runs plain JavaScript.',
+      code: `// JavaScript would accept anything as info.\n// TypeScript knows info must be a NetworkInfo.\nexport function ConnectionCard({ info }: ConnectionCardProps) {`,
+      file: 'ConnectionCard.tsx',
+    },
+    {
+      title: '`: Type` says what something is',
+      text: 'A colon after a name gives its type. After a function’s brackets, it says what the function returns.',
+      code: `let stopTimer: ReturnType<typeof setTimeout> | null = null\n\nexport function HomeView(): JSX.Element | null {\n//                         ^ returns something to draw, or nothing`,
+      points: [
+        '`string` is text, `number` a number, `boolean` true or false.',
+        '`null` means “nothing here”, on purpose.',
+      ],
+      file: 'HomeView.tsx',
+    },
+    {
+      title: '`type X = { … }` describes a shape',
+      text: 'A type alias names the shape of an object: which fields it has and what each holds. Every component’s props are described this way.',
+      code: `type StatCardProps = {\n  icon: ReactNode\n  title: string\n  onOpen: () => void\n  isLoading?: boolean   // ? = optional: may be left out\n  children: ReactNode\n}`,
+      points: [
+        '`?` after a field name makes it optional. Left out, it’s `undefined`.',
+        'Using `StatCard` without `title` is an error in the editor.',
+      ],
+      file: 'StatCard.tsx',
+    },
+    {
+      title: '`|` means “or”',
+      text: 'A union type allows any one of several types. With quoted words, it lists the exact values allowed.',
+      code: `publicIp: string | null            // an address, or nothing yet\n\nexport type SpeedSeries = 'down' | 'up'   // only these two words\n\nas?: 'section' | 'div' | 'li'      // which HTML tag the Card uses`,
+      points: [
+        "Anything else, like `'sideways'`, is an error.",
+        'Before using a `string | null`, the code checks it isn’t `null`.',
+      ],
+      file: 'DirectionIcon.tsx',
+    },
+    {
+      title: 'Function types: `() => …`',
+      text: 'The type of a function: its inputs in brackets, then an arrow, then what it returns.',
+      code: `onOpen: () => void              // takes nothing, returns nothing\nrescan: () => Promise<void>     // takes nothing, finishes later\nqueryFn: (() => Promise<T>) | undefined`,
+      points: [
+        '`void` means it returns nothing useful.',
+        'A prop like `onOpen` is a function the parent hands down to be called on a click.',
+      ],
+      file: 'StatCard.tsx',
+    },
+    {
+      title: 'Angle brackets: `<T>` fills in a type',
+      text: 'Some types are templates with a gap. `<…>` fills the gap. A **generic** function has a gap of its own, filled by whoever calls it.',
+      code: `Promise<void>            // a promise of nothing\nReactNode[]              // a list of drawable things ([] = list)\nRecord<Variant, Tone[]>  // an object: each Variant key holds a list of Tones\n\nexport function useBackendQuery<T>({ … })\n// T is whatever this query returns: usage data, a device scan…`,
+      points: ['`useBackendQuery` is written once; `T` lets each caller say what its data is, and get that type back.'],
+      file: 'useBackendQuery.ts',
+    },
+    {
+      title: 'Building types from other types',
+      text: 'Rather than copy fields, a type can be built from others.',
+      code: `// & joins two shapes: all of IconProps, plus series\ntype DirectionIconProps = IconProps & {\n  series: SpeedSeries\n}\n\n// Pick keeps only the fields named\ntype AddressRowsProps = Pick<ConnectionDetailsPanelProps, 'info' | 'publicIp' | 'isPublicIpLoading'>\n\n// Omit takes everything except the fields named.\n// ComponentProps<'section'> is every prop a real <section> accepts.\ntype CardProps = Omit<ComponentProps<'section'>, 'className' | 'children'> & { … }`,
+      points: [
+        'So a `Card` accepts anything a `<section>` does (`id`, `aria-label`…), except the two it handles itself.',
+        '`keyof X` is the list of X’s field names: `Omit<…, keyof TileLookProps>` drops all of them.',
+      ],
+      file: 'Card.tsx',
+    },
+    {
+      title: '`typeof` turns a value into a type',
+      text: 'In a type, `typeof x` means “the type of this value”. It saves writing a type out by hand.',
+      code: `// whatever setTimeout returns, whatever that is on this platform\nlet stopTimer: ReturnType<typeof setTimeout> | null = null\n\n// the values the badge recipe allows for tone\ntone: VariantOf<typeof badgeVariants, 'tone'>`,
+      file: 'useLiveThroughput.ts',
+    },
+    {
+      title: '`as const` and `satisfies`',
+      text: '`as const` freezes a value’s type to exactly what’s written. `satisfies` checks a value against a type without changing it.',
+      code: `const BAR_HEIGHTS = [2, 4, 6, 8] as const\n// the type is exactly [2, 4, 6, 8], not “some numbers”\n\nconst CONNECTION_ICONS = {\n  wifi: { Icon: WifiIcon, color: 'var(--accent-default)' },\n  ethernet: { Icon: EthernetIcon, color: 'var(--accent-default)' },\n  disconnected: { Icon: OfflineIcon, color: 'var(--status-negative)' },\n} as const satisfies Record<ConnectionDisplayVariant, { Icon: IconComponent; color: IconTileColor }>`,
+      points: ['`satisfies` here means: miss a connection type, or misspell a colour, and the editor complains.'],
+      file: 'ConnectionStrip.tsx',
+    },
+    {
+      title: '`import type`',
+      text: 'Imports something only for its type. Since types vanish at build time, the import vanishes too.',
+      code: `import type { NetworkInfo } from '@/types'         // type only\nimport { isConnectedNetwork } from '@/types'       // real code\nimport { type ComponentProps, createContext } from 'react'  // mixed`,
+      file: 'ConnectionCard.tsx',
+    },
+    {
+      title: 'Handling “maybe nothing”: `?.`, `??`, `!= null`',
+      text: 'Plain JavaScript, used everywhere because so many values can be `null` or `undefined`.',
+      code: `const downloaded = splitBytes(today?.rxBytes ?? 0)\n// today?.rxBytes: rxBytes, or undefined if today is missing\n// ?? 0: if that's null or undefined, use 0\n\nconst hasTotals = today != null || …\n// != null is true unless today is null or undefined`,
+      file: 'UsageCard.tsx',
+    },
+    {
+      title: 'Unpacking props: `{ a, b, ...rest }`',
+      text: 'Destructuring takes fields out of an object by name. `...props` gathers the rest, to pass along untouched.',
+      code: `export function Badge({ tone, className, children, ...props }: BadgeProps) {\n  return (\n    <span className={…} {...props}>   // hand the rest to the <span>\n      {children}\n    </span>\n  )\n}`,
+      points: ['So `<Badge tone="positive" id="vpn">` reaches the `<span>` with its `id`.'],
+      file: 'Badge.tsx',
+    },
+    {
+      title: 'React’s own types',
+      text: 'Three types from React appear in most files.',
+      code: `ReactNode     // anything React can draw: an element, text, a number, null\nJSX.Element   // one drawn element, what <div>…</div> produces\nComponentProps<'button'>   // every prop a real <button> takes`,
+      file: 'StatCard.tsx',
+    },
+  ]
+
+  const CVA_SECTIONS = [
+    {
+      title: 'The problem cva solves',
+      text: 'A component with options, like a badge that can be green, amber or red, needs different classes for each. Without help, that’s a pile of `if`s. **cva** (class variance authority) lets you write it as a **recipe**: the classes every badge gets, plus the classes each option adds.',
+    },
+    {
+      title: 'A recipe, start to finish',
+      text: 'The whole `Badge` recipe. `cva` takes the base classes, then the options.',
+      code: `const badgeVariants = cva(\n  // 1. base: every badge gets these\n  'type-badge inline-flex shrink-0 items-center rounded-full px-8 py-4',\n  {\n    variants: {\n      tone: {            // 2. an axis: one option the caller picks\n        positive: 'bg-status-positive/(--opacity-tint-md) text-positive',\n        warning: 'bg-status-warning/(--opacity-tint-md) text-warning',\n        negative: 'bg-status-negative/(--opacity-tint-md) text-negative',\n      },\n    },\n  },\n)`,
+      file: 'Badge.tsx',
+    },
+    {
+      title: 'Calling it gives a class string',
+      text: '`cva` returns a function. Call it with the options and it hands back one string of classes: the base, plus each option’s.',
+      code: `badgeVariants({ tone: 'positive' })\n// → 'type-badge inline-flex shrink-0 items-center rounded-full px-8 py-4\n//    bg-status-positive/(--opacity-tint-md) text-positive'\n\n<span className={cn(badgeVariants({ tone }), className)}>`,
+      points: ['The component never chooses a class itself; it just passes its props to the recipe.'],
+      file: 'Badge.tsx',
+    },
+    {
+      title: '`defaultVariants` and `null`',
+      text: 'A default is used when the caller leaves the option out. `null` means the option adds no classes.',
+      code: `variants: {\n  variant: {\n    soft: 'bg-inset',   // a grey chip\n    ghost: null,        // nothing extra: no fill until hovered\n  },\n},\ndefaultVariants: { variant: 'soft' },   // <IconButton> alone is soft`,
+      file: 'IconButton.tsx',
+    },
+    {
+      title: '`compoundVariants`: when two options meet',
+      text: 'Some classes depend on a combination. A compound variant adds its classes only when every option it names matches.',
+      code: `compoundVariants: [\n  {\n    variant: 'soft',\n    tone: 'neutral',      // only a soft AND neutral button gets these\n    class: 'bg-inset text-secondary usable:hover:bg-hover usable:hover:text-primary',\n  },\n  …\n]`,
+      file: 'Button.tsx',
+    },
+    {
+      title: 'The prop’s type comes from the recipe',
+      text: 'The allowed values are written once, in the recipe. `VariantOf` reads them back out as a type, so the prop can’t drift from the recipe.',
+      code: `type BadgeProps = … & {\n  tone: VariantOf<typeof badgeVariants, 'tone'>\n  //    = 'positive' | 'warning' | 'negative'\n}\n\n<Badge tone="blue">   // error: not in the recipe`,
+      points: ['Add a `tone` to the recipe and the prop accepts it at once. Nothing else to update.'],
+      file: 'Badge.tsx',
+    },
+    {
+      title: '`cx` and `cn`: joining classes',
+      text: '`cx` joins class names into one string and skips empty ones (`false`, `null`, `undefined`), so a condition can sit inline. `cn` does the same, then settles clashes: when two Tailwind classes set the same thing, the later one wins.',
+      code: `cx('flex', isOpen && 'rotate-180')   // 'flex rotate-180', or just 'flex'\n\ncn('px-12', 'px-8')                  // 'px-8': the later padding wins\ncn(badgeVariants({ tone }), className)\n// the recipe first, then whatever the caller passed, which can override it`,
+      points: [
+        'Rule of thumb: `cn` where a component merges its classes with a `className` from outside; `cx` for plain joins.',
+      ],
+      file: 'Badge.tsx',
+    },
+    {
+      title: 'Why the classes are in that order',
+      text: 'Nobody orders them by hand. Prettier, which formats the code on every commit, has a Tailwind plugin that sorts the classes inside every `cva`, `cx` and `cn` string (`.prettierrc.json` names those three). Write them in any order; formatting puts them back in Tailwind’s.',
+      code: `// you write\ncn('text-secondary rounded-full flex px-8')\n// formatting turns it into\ncn('flex rounded-full px-8 text-secondary')`,
+      points: [
+        'Tailwind’s order runs roughly: Rove’s own named classes first (`type-badge`, `surface`, `page`), then layout (`flex`, `items-center`), size and spacing (`size-[28px]`, `px-8`), shape (`rounded-full`), colour (`bg-…`, `text-…`), then motion (`transition-…`, `duration-…`).',
+        'Classes with a prefix (`hover:`, `usable:hover:`, `data-disabled:`) sort after the plain ones.',
+        'So two files listing the same classes always list them the same way, and a diff shows only real changes.',
+      ],
+    },
+    {
+      title: 'How they’re grouped into lines',
+      text: 'The grouping is by hand. A short recipe is one string. A long one becomes a list, one line per job, so you can see what each line is for. `cva` and `cn` join the list into one string.',
+      code: `const iconButtonVariants = cva(\n  [\n    'inline-flex size-[28px] items-center justify-center rounded-sm',   // shape and layout\n    'text-secondary usable:hover:bg-hover usable:hover:text-primary',   // colour, and on hover\n    'transition-[color,background,transform] duration-(--duration-fast) ease-in-out', // motion\n    STATE_CLASSES,   // shared: how disabled and loading look\n    PRESS,           // shared: the small nudge when pressed\n  ],\n  { variants: { … } },\n)`,
+      points: [
+        'Within each line, formatting still sorts the classes.',
+        'Classes every pressable control needs live once, as named strings in `ui/utils/pressable.ts`: `STATE_CLASSES` and `PRESS`. Button, IconButton and Link all drop them into their lists.',
+        'Options go in `variants`, never in the base list: the base is what every version gets.',
+      ],
+      file: 'IconButton.tsx',
+    },
+    {
+      title: 'Reading the classes inside',
+      text: 'The strings are Tailwind utility classes: one small style each. Rove’s are named after its design tokens.',
+      code: `px-8 py-4                       // padding: 8px left and right, 4px top and bottom\nrounded-full                    // fully round ends\nbg-status-positive/(--opacity-tint-md)\n//  background: the green status colour, at the medium tint's opacity\ntext-positive                   // text in the green status colour\nusable:hover:bg-hover           // on hover, only while not disabled\nduration-(--duration-fast)      // transition length from a token`,
+      points: ['`usable:` is Rove’s own prefix. `(--name)` reads a CSS variable, usually a token.'],
+    },
+  ]
+
+  const REF_SECTIONS = [
+    {
+      title: 'A ref is a box with one slot',
+      text: '`useRef` gives an object with a single field, `current`. It’s the same object every render, and changing `current` does **not** re-render. That’s the whole difference from `useState`.',
+      code: `const countRef = useRef(0)\ncountRef.current += 1   // remembered, but nothing redraws\n\nconst [count, setCount] = useState(0)\nsetCount(count + 1)     // remembered, and the component redraws`,
+      points: ['Rule of thumb: **state** for what’s drawn, a **ref** for what isn’t.'],
+    },
+    {
+      title: 'A ref to an element on the page',
+      text: 'Pass a ref to an element’s `ref` prop and React puts the real element in `current` once it’s on the page. It’s `null` until then, which is why the type says `| null` and the starting value is `null`.',
+      code: `const rowRef = useRef<HTMLUListElement>(null)\n//                    ^ will hold a <ul>   ^ empty at first\n\n<ul ref={rowRef} role="list" className={CAPABILITY_ROW}>\n// after it appears, rowRef.current is that <ul>`,
+      file: 'CapabilitiesCard.tsx',
+    },
+    {
+      title: 'Handing the ref to a hook',
+      text: 'The Capabilities card gives its row to `useRovingFocus`, which needs the real `<ul>` to listen for arrow keys inside it.',
+      code: `useRovingFocus(rowRef, { itemSelector: 'button', orientation: 'horizontal' })\n\n// inside useRovingFocus\nexport function useRovingFocus(groupRef: RefObject<HTMLElement | null>, …) {\n  useEffect(() => {\n    const group = groupRef.current   // read inside the effect: by now it's filled\n    if (!group) return\n    group.addEventListener('keydown', onKeyDown)\n    …`,
+      points: [
+        '`RefObject<HTMLElement | null>` is the type of a ref holding an element, or nothing.',
+        'It reads `current` in an effect, because effects run after the element is on the page. During render, it would still be `null`.',
+      ],
+      file: 'useRovingFocus.ts',
+    },
+    {
+      title: 'A ref to remember a value',
+      text: '`useCountUp` animates a number towards its target, a little each frame. Where the animation has got to lives in a ref; the number on screen lives in state.',
+      code: `const [value, setValue] = useState(target)   // what's drawn\nconst currentRef = useRef(target)            // where the animation is\n\nconst step = () => {\n  currentRef.current += remaining * EASE_FACTOR  // move a bit closer\n  setValue(currentRef.current)                   // draw it\n  frameId = requestAnimationFrame(step)          // again next frame\n}`,
+      points: [
+        'If the position were state, the effect would need it as an input and restart 60 times a second. A ref lets the loop run on undisturbed.',
+      ],
+      file: 'useCountUp.ts',
+    },
+    {
+      title: '`ref` as a prop',
+      text: 'In React 19 a component takes `ref` like any other prop. `Card` takes one and passes it to the element it draws, so a screen can get hold of a card’s real element.',
+      code: `export function Card({ as: Element = 'section', …, ref, ...props }: CardProps) {\n  …\n  // The ref is typed for a section; the cast lets it fit a div or li.\n  <Element ref={ref as never} …>`,
+      points: [
+        '`as never` is a cast: it tells TypeScript to accept the value without checking. It’s used here because the ref’s type is for a `<section>` while the element might be a `<div>` or `<li>`.',
+      ],
+      file: 'Card.tsx',
+    },
+    {
+      title: 'Two rules',
+      text: 'Don’t read or change `ref.current` while rendering, only in effects and event handlers: rendering should depend only on props and state. And never use a ref for something the screen shows; the screen won’t update when it changes.',
+    },
+  ]
+
+  function conceptSectionHtml(section) {
+    const fileLink = section.file ? `<p class="hook-files">From ${fileLinkByName(section.file)}</p>` : ''
+    const points = section.points
+      ? `<ul class="concept-points">${section.points.map((point) => `<li>${inlineHtml(point)}</li>`).join('')}</ul>`
+      : ''
+    return `<section class="hook-entry">
+    <h2>${inlineHtml(section.title)}</h2>
+    <p>${inlineHtml(section.text)}</p>
+    ${section.code ? codeBlock(section.code) : ''}
+    ${points}
+    ${fileLink}
+  </section>`
+  }
+
+  // Backticks become code, **double stars** bold.
+  const inlineHtml = (text) => codeHtml(text).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+
+  function conceptView(title, lede, sections) {
+    return `<article class="view flow">
+    <div class="eyebrow">Basics</div>
+    <h1>${title}</h1>
+    <p class="lede">${inlineHtml(lede)}</p>
+    ${sections.map(conceptSectionHtml).join('')}
   </article>`
   }
 
@@ -1662,10 +1946,28 @@
     else if (id === 'glossary') html = glossaryView()
     else if (id === 'data-flow') html = dataFlowView()
     else if (id === 'react-hooks') html = reactHooksView()
+    else if (id === 'typescript')
+      html = conceptView(
+        'TypeScript, in plain words',
+        'Every piece of TypeScript syntax these files use, each shown on a real line from Rove.',
+        TYPESCRIPT_SECTIONS,
+      )
+    else if (id === 'refs')
+      html = conceptView(
+        'Refs',
+        'A ref is how a component remembers something without redrawing, or gets hold of a real element on the page.',
+        REF_SECTIONS,
+      )
+    else if (id === 'cva')
+      html = conceptView(
+        'Styling with cva',
+        'How Rove’s components pick their classes: a **recipe** of base classes plus options, written with `cva`.',
+        CVA_SECTIONS,
+      )
     else html = overviewView()
     main.innerHTML = html
     document.getElementById('nav').innerHTML = navHtml(
-      byId[id] || id === 'glossary' || id === 'data-flow' || id === 'react-hooks' ? id : 'overview',
+      byId[id] || ['glossary', 'data-flow', 'react-hooks', 'typescript', 'cva', 'refs'].includes(id) ? id : 'overview',
     )
     currentFile = byId[id] || null
     hideTip()
