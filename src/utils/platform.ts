@@ -7,14 +7,17 @@ export const IS_MAC = typeof navigator !== 'undefined' && navigator.userAgent.in
 /** True on Windows, where the per-app usage views need Rove relaunched as administrator. */
 export const IS_WINDOWS = typeof navigator !== 'undefined' && navigator.userAgent.includes('Win')
 
+const IS_LINUX = typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent)
+
+function platformName(): string {
+  if (IS_MAC) return 'macOS'
+  if (IS_WINDOWS) return 'Windows'
+  if (IS_LINUX) return 'Linux'
+  return 'Desktop'
+}
+
 /** The OS's name, for display (About): macOS, Windows, Linux, or Desktop when it can't tell. */
-export const PLATFORM_NAME = IS_MAC
-  ? 'macOS'
-  : IS_WINDOWS
-    ? 'Windows'
-    : typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent)
-      ? 'Linux'
-      : 'Desktop'
+export const PLATFORM_NAME = platformName()
 
 /**
  * True on WebKitGTK, the Linux Tauri webview. Two of its quirks need dodging,
