@@ -17,7 +17,7 @@ stay identical.
 1. **Baseline from HEAD.** Other sessions edit this checkout, so shoot the
    "before" set from a clean copy, never the working tree:
    `git archive HEAD | tar -x -C <scratch>/head`, symlink `node_modules` into
-   it, then from there run `node scripts/screenshots.mjs --stable --out
+   it, then from there run `node scripts/screenshots.ts --stable --out
    <scratch>/before-dark` and again with `--theme light`. Done when both
    folders hold the full set (113 shots each as of 2026-11).
 2. **Review by folder.** Split into disjoint groups (`src/ui`;
@@ -26,7 +26,7 @@ stay identical.
    shared brief: the bar above, the house rules (boolean prefixes, comment
    length, no em dash in copy), edit only, never stage or commit, rename
    callers repo-wide, regenerate `components.gen.json` with
-   `node scripts/gen/components.mjs` instead of editing it, and report each
+   `node scripts/gen/components.ts` instead of editing it, and report each
    file changed with what got plainer. A reviewer that changes a check script
    proves it reports the same problems on files that break the rule on
    purpose. Done when every folder is reported, as changed or already plain.

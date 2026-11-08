@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import tseslint from 'typescript-eslint'
 
-import comments from './scripts/eslint/comments.mjs'
+import comments from './scripts/eslint/comments.ts'
 
 // ── Import boundaries ──────────────────────────────────────────────────────
 
@@ -74,13 +74,31 @@ const BOOLEAN_PREFIXES = [
   'may',
 ]
 const BOOLEAN_EXEMPT = '^(_|aria-|data-)|^(value|fallback)$'
-// The scripts have no types for naming-convention, so they catch a boolean by
-// its shape: a variable set to a comparison or a `!`.
-const NOT_A_QUESTION = `:not([id.name=/^(${BOOLEAN_PREFIXES.join('|')})[A-Z0-9]|^(${BOOLEAN_PREFIXES.join('|').toUpperCase()})_/])`
-const UNTYPED_BOOLEAN_NAME = [
-  `VariableDeclarator[init.type="BinaryExpression"][init.operator=/^(===|!==|==|!=|<|>|<=|>=|in|instanceof)$/]${NOT_A_QUESTION}`,
-  `VariableDeclarator[init.type="UnaryExpression"][init.operator="!"]${NOT_A_QUESTION}`,
-].map((selector) => ({ selector, message: `Name a boolean as a question: ${BOOLEAN_PREFIXES.join('/')} + a noun.` }))
+// A boolean reads as a yes/no question (isOpen, canRunTest) or a verb phrase
+// (needsNetworkInfo). Left alone: object keys and names taken from an object by
+// destructuring (other APIs' options); array destructuring, like a useState
+// pair, is covered. Also `aria-*` and `data-*`, and useSetting's generic
+// `value` and `fallback`.
+const BOOLEAN_NAMING = [
+  'error',
+  {
+    selector: ['variable', 'parameter', 'typeProperty', 'classProperty', 'accessor'],
+    types: ['boolean'],
+    format: null,
+    prefix: BOOLEAN_PREFIXES,
+    filter: { regex: BOOLEAN_EXEMPT, match: false },
+  },
+  {
+    // A module constant: IS_MAC.
+    selector: 'variable',
+    modifiers: ['const'],
+    types: ['boolean'],
+    format: ['UPPER_CASE'],
+    prefix: BOOLEAN_PREFIXES.map((prefix) => `${prefix.toUpperCase()}_`),
+    filter: { regex: '^[A-Z][A-Z0-9_]*$', match: true },
+  },
+  { selector: 'variable', modifiers: ['destructured'], types: ['boolean'], format: null },
+]
 
 export default tseslint.config(
   // ── Not ours to lint ─────────────────────────────────────────────────────
@@ -91,10 +109,11 @@ export default tseslint.config(
   // ── Presets ──────────────────────────────────────────────────────────────
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  // The app's code has type information, so it gets the strict, type-aware sets.
+  // The app's code and the tooling scripts have type information, so they get
+  // the strict, type-aware sets.
   ...[...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked].map((config) => ({
     ...config,
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'scripts/**/*.ts'],
   })),
   reactHooks.configs.flat.recommended,
   { ...jsxA11y.configs.strict, files: ['src/**/*.tsx'] },
@@ -107,7 +126,7 @@ export default tseslint.config(
     rules: { 'simple-import-sort/imports': 'error' },
   },
   {
-    // Comments: short (scripts/eslint/comments.mjs), and a lint exception says
+    // Comments: short (scripts/eslint/comments.ts), and a lint exception says
     // why.
     plugins: { comments, 'eslint-comments': eslintComments },
     rules: {
@@ -132,9 +151,10 @@ export default tseslint.config(
     },
   },
 
-  // ── The app's source ─────────────────────────────────────────────────────
+  // ── The app's source, and the tooling scripts ───────────────────────────
   {
-    files: ['src/**/*.{ts,tsx}'],
+    // Node runs the scripts as .ts; scripts/tsconfig.json types them.
+    files: ['src/**/*.{ts,tsx}', 'scripts/**/*.ts'],
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
@@ -152,31 +172,7 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
       // A rejection passes on whatever the inner promise rejected with.
       '@typescript-eslint/prefer-promise-reject-errors': ['error', { allowThrowingUnknown: true }],
-      // A boolean reads as a yes/no question (isOpen, canRunTest) or a verb
-      // phrase (needsNetworkInfo). It needs types, so it covers src. Left alone:
-      // object keys and names taken from an object by destructuring (other
-      // APIs' options); array destructuring, like a useState pair, is covered.
-      // Also `aria-*` and `data-*`, and useSetting's generic `value` and `fallback`.
-      '@typescript-eslint/naming-convention': [
-        'error',
-        {
-          selector: ['variable', 'parameter', 'typeProperty', 'classProperty', 'accessor'],
-          types: ['boolean'],
-          format: null,
-          prefix: BOOLEAN_PREFIXES,
-          filter: { regex: BOOLEAN_EXEMPT, match: false },
-        },
-        {
-          // A module constant: IS_MAC.
-          selector: 'variable',
-          modifiers: ['const'],
-          types: ['boolean'],
-          format: ['UPPER_CASE'],
-          prefix: BOOLEAN_PREFIXES.map((prefix) => `${prefix.toUpperCase()}_`),
-          filter: { regex: '^[A-Z][A-Z0-9_]*$', match: true },
-        },
-        { selector: 'variable', modifiers: ['destructured'], types: ['boolean'], format: null },
-      ],
+      '@typescript-eslint/naming-convention': BOOLEAN_NAMING,
     },
   },
   {
@@ -247,27 +243,5 @@ export default tseslint.config(
         ...CODE_STYLE,
       ],
     },
-  },
-
-  // ── Tooling scripts ──────────────────────────────────────────────────────
-  {
-    // Tooling scripts run under Node, so they get Node's globals, plus the
-    // browser ones, because a script driving a page (see screenshots.mjs) ships
-    // callbacks that are serialized and run inside it.
-    files: ['scripts/**/*.mjs'],
-    languageOptions: {
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        fetch: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        localStorage: 'readonly',
-        window: 'readonly',
-        document: 'readonly',
-        PopStateEvent: 'readonly',
-      },
-    },
-    rules: { 'no-restricted-syntax': ['error', ...NO_HANDLE_PREFIX, ...UNTYPED_BOOLEAN_NAME] },
   },
 )

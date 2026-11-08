@@ -8,15 +8,15 @@
  * missing from them isn't recognised, so `cn('text-sm', 'text-lg')` keeps both;
  * generating them means a token change can't leave one out.
  *
- *   node scripts/gen/cn-theme.mjs           # rewrite it
- *   node scripts/gen/cn-theme.mjs --check   # fail if it's stale
+ *   node scripts/gen/cn-theme.ts           # rewrite it
+ *   node scripts/gen/cn-theme.ts --check   # fail if it's stale
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { schemaProblems } from '../lib/json-schema.mjs'
+import { schemaProblems } from '../lib/json-schema.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const APP_THEME_CSS = join(ROOT, 'src/styles/tailwind.css')
@@ -45,24 +45,23 @@ const NAMESPACES = [
   'animate',
 ]
 
-const relativeToRoot = (path) => relative(ROOT, path)
-const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
+const relativeToRoot = (path: string) => relative(ROOT, path)
+const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
 /** Theme names by namespace, from every `@theme` block: `--text-sm` is `text: sm`. */
-function themeNames(css) {
-  const names = Object.fromEntries(NAMESPACES.map((namespace) => [namespace, []]))
-  names.color.push(...BUILT_IN_COLORS)
-  for (const [, block] of stripComments(css).matchAll(/@theme[^{]*\{([\s\S]*?)\n\}/g)) {
-    for (const [, variable] of block.matchAll(/^\s*--([a-z0-9-]+)\s*:/gm)) {
+function themeNames(css: string): Record<string, string[]> {
+  const names = new Map(NAMESPACES.map((namespace) => [namespace, namespace === 'color' ? [...BUILT_IN_COLORS] : []]))
+  for (const [, block = ''] of stripComments(css).matchAll(/@theme[^{]*\{([\s\S]*?)\n\}/g)) {
+    for (const [, variable = ''] of block.matchAll(/^\s*--([a-z0-9-]+)\s*:/gm)) {
       const namespace = NAMESPACES.find((ns) => variable.startsWith(`${ns}-`))
       if (!namespace) {
         console.error(`The Tailwind theme: --${variable} is in no namespace; add it to NAMESPACES here and to cn.ts`)
         process.exit(1)
       }
-      names[namespace].push(variable.slice(namespace.length + 1))
+      names.get(namespace)?.push(variable.slice(namespace.length + 1))
     }
   }
-  return names
+  return Object.fromEntries(names)
 }
 
 const themeCss = await Promise.all([TOKENS_THEME_CSS, APP_THEME_CSS].map((path) => readFile(path, 'utf8')))

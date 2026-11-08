@@ -9,7 +9,7 @@
  *   - a length, weight or duration that equals a token on its scale: `p-[12px]`
  *     is `p-12`, `rounded-[8px]` is `rounded-sm`, `duration-[140ms]` is
  *     `duration-(--duration-fast)`, and the same in CSS (font sizes are
- *     text-styles.mjs's: text takes a text style, not a size);
+ *     text-styles.ts's: text takes a text style, not a size);
  *   - spacing: every gap, padding and margin is built from spacing tokens
  *     (`gap-8`, `px-(--card-padding)`, a `calc()` of tokens), so one off the
  *     scale (`gap-[5px]`, `calc(var(--card-padding) - 1px)`) needs a reason;
@@ -24,7 +24,7 @@
  * A raw value that has to stay goes in ALLOWED with its reason. The dev mock
  * (src/bridge/mock-network-api.ts), tests and assets aren't checked.
  *
- *   node scripts/checks/raw-values.mjs
+ *   node scripts/checks/raw-values.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -36,8 +36,10 @@ const SRC = join(ROOT, 'src')
 const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')]
 const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tokens.css')
 
+type AllowedEntry = { file: string; value: string }
+
 /** Raw values that stay, by file and the exact text flagged. */
-const ALLOWED = [
+const ALLOWED: AllowedEntry[] = [
   // A scanner needs dark modules on white in both themes, and the mark's tile is that white.
   { file: 'src/features/connection/components/WifiQrCode.tsx', value: '#ffffff' },
   // The brand icon's gradient, the same as the app icon's.
@@ -84,11 +86,11 @@ const ALLOWED = [
   { file: 'src/app/components/UpdateDialog.tsx', value: 'pl-[26px]' },
 ]
 
-async function listFiles(dir) {
+async function listFiles(dir: string): Promise<string[]> {
   if (SKIPPED.includes(dir)) return []
   const entries = await readdir(dir, { withFileTypes: true })
   const nested = await Promise.all(
-    entries.map((entry) => {
+    entries.map(async (entry) => {
       const path = join(dir, entry.name)
       return entry.isDirectory() ? listFiles(path) : [path]
     }),
@@ -97,29 +99,29 @@ async function listFiles(dir) {
 }
 
 /** Each `--name: value` the tokens define, plain values only (not `var()`). */
-async function readTokens() {
+async function readTokens(): Promise<Map<string, string>> {
   const css = await readFile(TOKENS_CSS, 'utf8')
-  const tokens = new Map()
-  for (const [, name, value] of css.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
+  const tokens = new Map<string, string>()
+  for (const [, name = '', value = ''] of css.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
     if (!value.includes('var(') && !tokens.has(name)) tokens.set(name, value.trim())
   }
   return tokens
 }
 
 /** A scale's tokens by value: `{ '12px': '--spacing-12' }`. */
-function tokensByValue(tokens, prefix) {
-  const byValue = new Map()
+function tokensByValue(tokens: Map<string, string>, prefix: string): Map<string, string> {
+  const byValue = new Map<string, string>()
   for (const [name, value] of tokens) if (name.startsWith(prefix)) byValue.set(value, name)
   return byValue
 }
 
 /** Blank out comments, keeping line numbers. `//` after a `:` is a URL, not a comment. */
-function stripComments(code, isCss) {
-  const blank = (text) => text.replace(/[^\n]/g, ' ')
+function stripComments(code: string, isCss: boolean): string {
+  const blank = (text: string) => text.replace(/[^\n]/g, ' ')
   const withoutBlocks = code.replace(/\/\*[\s\S]*?\*\//g, blank)
   return isCss
     ? withoutBlocks
-    : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_, before, comment) => before + blank(comment))
+    : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_match, before: string, comment: string) => before + blank(comment))
 }
 
 const tokens = await readTokens()
@@ -128,10 +130,10 @@ const RADIUS_SCALE = tokensByValue(tokens, '--radius-')
 const WEIGHT_SCALE = tokensByValue(tokens, '--weight-')
 const DURATION_SCALE = tokensByValue(tokens, '--duration-')
 
-const tokenSuffix = (name, prefix) => name.slice(prefix.length)
+const tokenSuffix = (name: string, prefix: string) => name.slice(prefix.length)
 
 /** The token scale a CSS property's values come from, or null for one no scale covers. */
-function scaleForProperty(property) {
+function scaleForProperty(property: string): Map<string, string> | null {
   if (SPACING_PROPERTY.test(property)) return SPACING_SCALE
   if (RADIUS_PROPERTY.test(property)) return RADIUS_SCALE
   if (property === 'font-weight') return WEIGHT_SCALE
@@ -154,7 +156,7 @@ const RAW_LENGTH = /(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/
  * set aside: `var(--card-padding)`, `calc(-1 * var(--spacing-12))`, `0`,
  * `auto`, `inherit`.
  */
-const isBuiltFromTokens = (value) => !RAW_LENGTH.test(value.replace(TOKEN_READ, ''))
+const isBuiltFromTokens = (value: string) => !RAW_LENGTH.test(value.replace(TOKEN_READ, ''))
 
 // CSS properties by the scale their lengths come from.
 const SPACING_PROPERTY =
@@ -171,29 +173,29 @@ const PX_LENGTH = /^-?\d*\.?\d+px$/
 const ARBITRARY_VALUE = /(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g
 const TIME = /(?<![A-Za-z0-9.-])(\d*\.?\d+)(ms|s)(?![A-Za-z0-9-])/g
 
-const toMs = (amount, unit) => (unit === 's' ? Number(amount) * 1000 : Number(amount))
+const toMs = (amount: string, unit: string) => (unit === 's' ? Number(amount) * 1000 : Number(amount))
 
 /** The duration token equal to `amount` `unit`, in ms or s either side (`0.14s` is `140ms`), if any. */
-function durationToken(amount, unit) {
+function durationToken(amount: string, unit: string): string | undefined {
   const ms = toMs(amount, unit)
   for (const [value, name] of DURATION_SCALE) {
-    const tokenTime = value.match(/^(\d*\.?\d+)(ms|s)$/)
-    if (tokenTime && toMs(tokenTime[1], tokenTime[2]) === ms) return name
+    const [, tokenAmount, tokenUnit] = /^(\d*\.?\d+)(ms|s)$/.exec(value) ?? []
+    if (tokenAmount && tokenUnit && toMs(tokenAmount, tokenUnit) === ms) return name
   }
   return undefined
 }
 
 const files = (await listFiles(SRC)).filter((f) => /\.(?:tsx?|css)$/.test(f) && !/\.test\.tsx?$/.test(f))
-const problems = []
-const usedAllowedEntries = new Set()
+const problems: string[] = []
+const usedAllowedEntries = new Set<AllowedEntry>()
 
 for (const file of files) {
   const relativePath = relative(ROOT, file)
   const isCss = file.endsWith('.css')
   const code = stripComments(await readFile(file, 'utf8'), isCss)
-  const lineAt = (index) => code.slice(0, index).split('\n').length
+  const lineAt = (index: number) => code.slice(0, index).split('\n').length
 
-  const report = (index, value, message) => {
+  const report = (index: number, value: string, message: string) => {
     const allowed = ALLOWED.find((entry) => entry.file === relativePath && entry.value === value)
     if (allowed) {
       usedAllowedEntries.add(allowed)
@@ -210,7 +212,12 @@ for (const file of files) {
     report(match.index, match[0], `${match[0]}…) is a raw easing; use --ease-out, --ease-in-out or --ease-pulse`)
 
   // Arbitrary values (`[...]`) and stylesheet declarations get the stricter rules.
-  const checkValue = (index, value, describe, suggest = (token) => `var(${token})`) => {
+  const checkValue = (
+    index: number,
+    value: string,
+    describe: (raw: string) => string,
+    suggest = (token: string) => `var(${token})`,
+  ) => {
     for (const match of value.matchAll(NAMED_COLOUR))
       report(index, match[0], `${describe(match[0])} is a raw colour; use a colour token`)
     for (const match of value.matchAll(EASING_KEYWORD))
@@ -219,7 +226,7 @@ for (const file of files) {
         match[0],
         `${describe(match[0])} is a keyword easing; use var(--ease-out), var(--ease-in-out) or var(--ease-pulse)`,
       )
-    for (const [time, amount, unit] of value.matchAll(TIME)) {
+    for (const [time, amount = '', unit = ''] of value.matchAll(TIME)) {
       const token = durationToken(amount, unit)
       if (token) report(index, time, `${describe(time)} is ${token}; use ${suggest(token)}`)
     }
@@ -229,7 +236,7 @@ for (const file of files) {
     // An @font-face's descriptors describe the font file, not a style.
     const cssWithoutFontFaces = code.replace(/@font-face\s*\{[^}]*\}/g, (block) => block.replace(/[^\n]/g, ' '))
     for (const match of cssWithoutFontFaces.matchAll(/(?<![\w-])([a-z-]+)\s*:\s*([^;{}]+)(?=[;}])/g)) {
-      const [, property, value] = match
+      const [, property = '', value = ''] = match
       checkValue(match.index, value, (raw) => `${property}: ${raw}`)
       const propertyScale = scaleForProperty(property)
       const valueParts = value.trim().split(/\s+/)
@@ -260,24 +267,22 @@ for (const file of files) {
 
   // Tailwind utilities, with any variants (`hover:`, `not-last:`) and a leading `-`.
   for (const match of code.matchAll(ARBITRARY_VALUE)) {
-    const [arbitraryClass, utility, value] = match
+    const [arbitraryClass, utility = '', value = ''] = match
     const isTiming = utility === 'duration' || utility === 'delay'
     checkValue(match.index, value, () => arbitraryClass, isTiming ? (token) => `${utility}-(${token})` : undefined)
     const unsignedLength = value.replace(/^-/, '')
     if (!PX_LENGTH.test(unsignedLength)) continue
-    if (SPACING_UTILITY.test(utility) && SPACING_SCALE.has(unsignedLength)) {
-      const step = tokenSuffix(SPACING_SCALE.get(unsignedLength), '--spacing-')
+    const spacingToken = SPACING_SCALE.get(unsignedLength)
+    const radiusToken = RADIUS_SCALE.get(unsignedLength)
+    if (SPACING_UTILITY.test(utility) && spacingToken) {
+      const step = tokenSuffix(spacingToken, '--spacing-')
       const sign = arbitraryClass.startsWith('-') || value.startsWith('-') ? '-' : ''
+      report(match.index, arbitraryClass, `${arbitraryClass} is ${spacingToken}; use ${sign}${utility}-${step}`)
+    } else if (RADIUS_UTILITY.test(utility) && radiusToken) {
       report(
         match.index,
         arbitraryClass,
-        `${arbitraryClass} is ${SPACING_SCALE.get(unsignedLength)}; use ${sign}${utility}-${step}`,
-      )
-    } else if (RADIUS_UTILITY.test(utility) && RADIUS_SCALE.has(unsignedLength)) {
-      report(
-        match.index,
-        arbitraryClass,
-        `${arbitraryClass} is ${RADIUS_SCALE.get(unsignedLength)}; use ${utility}-${tokenSuffix(RADIUS_SCALE.get(unsignedLength), '--radius-')}`,
+        `${arbitraryClass} is ${radiusToken}; use ${utility}-${tokenSuffix(radiusToken, '--radius-')}`,
       )
     }
   }
@@ -285,7 +290,7 @@ for (const file of files) {
   // Every gap, padding and margin is a spacing step and every corner a radius
   // (DESIGN.md, Layout and Shapes), so one off the scale needs a reason in ALLOWED.
   for (const match of code.matchAll(ARBITRARY_VALUE)) {
-    const [arbitraryClass, utility, value] = match
+    const [arbitraryClass, utility = '', value = ''] = match
     if (SPACE_UTILITY.test(utility) && !isBuiltFromTokens(value) && !SPACING_SCALE.has(value.replace(/^-/, ''))) {
       report(
         match.index,
@@ -304,16 +309,15 @@ for (const file of files) {
 
   // Bare-number durations and delays (`duration-140`), which Tailwind reads as ms.
   for (const match of code.matchAll(/(?<![\w-])(duration|delay)-(\d+)(?![\w-])/g)) {
-    const token = durationToken(match[2], 'ms')
-    if (token) report(match.index, match[0], `${match[0]} is ${token}; use ${match[1]}-(${token})`)
+    const [utilityClass, utility = '', amount = ''] = match
+    const token = durationToken(amount, 'ms')
+    if (token) report(match.index, utilityClass, `${utilityClass} is ${token}; use ${utility}-(${token})`)
   }
 }
 
 for (const entry of ALLOWED) {
   if (!usedAllowedEntries.has(entry))
-    problems.push(
-      `scripts/checks/raw-values.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`,
-    )
+    problems.push(`scripts/checks/raw-values.ts: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`)
 }
 
 if (problems.length > 0) {

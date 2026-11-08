@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "cn theme names",
-  "description": "cn-theme.gen.json: the theme's names and text style classes, written by scripts/gen/cn-theme.mjs, so cn() merges Rove's own utilities (type-caption, p-12) as it does Tailwind's.",
+  "description": "cn-theme.gen.json: the theme's names and text style classes, written by scripts/gen/cn-theme.ts, so cn() merges Rove's own utilities (type-caption, p-12) as it does Tailwind's.",
   "type": "object",
   "required": ["tailwindThemeNames", "textStyleClasses"],
   "additionalProperties": false,

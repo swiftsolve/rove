@@ -11,7 +11,7 @@
  * `[--name:…]` class). Tailwind's own `--tw-*` properties are its business.
  * One a library sets at runtime goes in SET_AT_RUNTIME, with who sets it.
  *
- *   node scripts/checks/custom-properties.mjs
+ *   node scripts/checks/custom-properties.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -25,7 +25,7 @@ const require = createRequire(import.meta.url)
 const TOKEN_FILES = ['tokens.css', 'text-styles.css'].map((f) => require.resolve(`@swiftsolve/rove-tokens/${f}`))
 
 /** Custom properties a library sets on its own elements while it runs, by who sets them. */
-const SET_AT_RUNTIME = {
+const SET_AT_RUNTIME: Record<string, string> = {
   '--collapsible-panel-height': "Base UI's Collapsible, on the panel, for its height transition",
 }
 
@@ -34,21 +34,23 @@ const SET_IN_STYLE = /['"](--[\w-]+)['"]\s*[:\]]/g
 const SET_IN_CLASS = /\[(--[\w-]+):/g
 const READ = /var\(\s*(--[\w-]+)|\((--[\w-]+)\)/g
 
-async function listFiles(dir) {
+async function listFiles(dir: string): Promise<string[]> {
   if (SKIPPED.includes(dir)) return []
   const entries = await readdir(dir, { withFileTypes: true })
   const nested = await Promise.all(
-    entries.map((entry) => (entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)])),
+    entries.map(async (entry) => (entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)])),
   )
   return nested.flat()
 }
 
 const files = (await listFiles(SRC)).filter((file) => /\.(?:css|tsx?)$/.test(file))
-const sources = await Promise.all(files.map(async (file) => [file, await readFile(file, 'utf8')]))
+const sources = await Promise.all(
+  files.map(async (file): Promise<[file: string, text: string]> => [file, await readFile(file, 'utf8')]),
+)
 
-const defined = new Set()
-const addDefinedNames = (text, pattern) => {
-  for (const [, name] of text.matchAll(pattern)) defined.add(name)
+const defined = new Set<string>()
+const addDefinedNames = (text: string, pattern: RegExp) => {
+  for (const [, name] of text.matchAll(pattern)) if (name) defined.add(name)
 }
 for (const file of TOKEN_FILES) addDefinedNames(await readFile(file, 'utf8'), DECLARED)
 for (const [, text] of sources) {
@@ -57,11 +59,11 @@ for (const [, text] of sources) {
   addDefinedNames(text, SET_IN_CLASS)
 }
 
-const problems = []
-const runtimeNamesRead = new Set()
+const problems: string[] = []
+const runtimeNamesRead = new Set<string>()
 for (const [file, text] of sources) {
   for (const match of text.matchAll(READ)) {
-    const name = match[1] ?? match[2]
+    const name = match[1] ?? match[2] ?? ''
     if (defined.has(name) || name.startsWith('--tw-')) continue
     if (name in SET_AT_RUNTIME) {
       runtimeNamesRead.add(name)
@@ -73,7 +75,7 @@ for (const [file, text] of sources) {
 }
 for (const name of Object.keys(SET_AT_RUNTIME)) {
   if (!runtimeNamesRead.has(name))
-    problems.push(`scripts/checks/custom-properties.mjs: SET_AT_RUNTIME lists ${name}, which nothing reads`)
+    problems.push(`scripts/checks/custom-properties.ts: SET_AT_RUNTIME lists ${name}, which nothing reads`)
 }
 
 if (problems.length > 0) {

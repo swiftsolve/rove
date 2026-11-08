@@ -1,6 +1,6 @@
 ---
 name: map-figma-component
-description: Write or fix a library component's entry in src/ui/figma-components.json, which maps it to its Figma component in the Rove Design System file, with any deliberate differences and why. Use once a component exists in Figma, when gen/components.mjs reports a missing entry, when checks/figma-library.mjs reports a stale node, name or variant, or after a Figma component is renamed or rebuilt.
+description: Write or fix a library component's entry in src/ui/figma-components.json, which maps it to its Figma component in the Rove Design System file, with any deliberate differences and why. Use once a component exists in Figma, when gen/components.ts reports a missing entry, when checks/figma-library.ts reports a stale node, name or variant, or after a Figma component is renamed or rebuilt.
 ---
 
 # Map a component to Figma
@@ -10,9 +10,9 @@ edited directly, and `npm run gen` copies each entry into
 `components.gen.json`. `schemas/figma-components.schema.json` says what
 each key means. Two checks hold it true:
 
-- `gen/components.mjs --check` fails while a component has no entry, or an
+- `gen/components.ts --check` fails while a component has no entry, or an
   entry breaks the schema.
-- `checks/figma-library.mjs` fails when a node is gone or renamed, or when its
+- `checks/figma-library.ts` fails when a node is gone or renamed, or when its
   variants and the component's props disagree, unless the entry gives the
   reason.
 
@@ -51,7 +51,7 @@ is left: never guess a node id.
    components can share one node, as `DataList` and `DataRow` share
    `Data row`.
 
-3. **Run the check**: `node scripts/checks/figma-library.mjs`, with
+3. **Run the check**: `node scripts/checks/figma-library.ts`, with
    `FIGMA_TOKEN` in `.env.local`. It skips, and passes, without one: read the
    same data through `use_figma` instead and pass it in with `--from` (the
    script's header says how).
@@ -77,7 +77,7 @@ is left: never guess a node id.
 
 ## Done
 
-- `node scripts/checks/figma-library.mjs` passes against the file, not just
+- `node scripts/checks/figma-library.ts` passes against the file, not just
   skips: with `FIGMA_TOKEN`, or with `--from` data you read through
   `use_figma`. The summary says which.
 - `npm run check` passes, and `components.gen.json` is committed with

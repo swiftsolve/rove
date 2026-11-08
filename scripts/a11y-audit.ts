@@ -8,7 +8,7 @@
  *   npm run a11y -- --limit all                    # list every place, not the first 12
  *
  * It saves no images: axe reads the live page, colours included. It reaches
- * each place the way scripts/screenshots.mjs does: the Vite dev server and the
+ * each place the way scripts/screenshots.ts does: the Vite dev server and the
  * browser mock bridge, a real Chrome (the app pauses while hidden), and history
  * state to move between screens. Exits non-zero when axe
  * reports any violation, a tab has no scenario, or a scenario's button isn't
@@ -18,12 +18,14 @@ import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import type axe from 'axe-core'
 import { chromium } from 'playwright-core'
 
-import { flag, startDevServer } from './lib/dev-server.mjs'
+import { type AppLocation, flag, type RunningServer, startDevServer } from './lib/dev-server.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8'))
+type TauriConfig = { app: { windows: [{ width: number; height: number }] } }
+const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
 const { width, height } = app.windows[0]
 const AXE_SOURCE = await readFile(resolve(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8')
 
@@ -35,11 +37,18 @@ const RULE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
 // Hidden-yet-focusable is the technique, so aria-hidden-focus would flag it.
 const EXCLUDED = [['[data-base-ui-focus-guard]']]
 
+/** A node axe flagged, marked in the page with whether it sits in a faded preview. */
+type FlaggedNode = axe.NodeResult & { isInFadedPreview: boolean }
+/** The colours axe measured for a contrast failure. */
+type ContrastData = { fgColor: string; bgColor: string; contrastRatio: number; expectedContrastRatio: string }
+/** One rule's violations across every place. */
+type ViolatedRule = { impact: axe.ImpactValue | undefined; help: string; helpUrl: string; places: Set<string> }
+
 /**
  * An open menu is portalled to the end of <body>, outside the landmarks; it
  * belongs to its trigger, which is inside them. Only `region` is waived for it.
  */
-function isPortalledMenu(ruleId, node) {
+function isPortalledMenu(ruleId: string, node: FlaggedNode): boolean {
   return ruleId === 'region' && node.html.includes('role="menu"')
 }
 
@@ -48,7 +57,7 @@ function isPortalledMenu(ruleId, node) {
  * purpose: they only preview what a test will rate, and a screen reader still
  * reads them. Only `color-contrast` is waived inside `[data-faded-preview]`.
  */
-function isFadedPreview(ruleId, node) {
+function isFadedPreview(ruleId: string, node: FlaggedNode): boolean {
   return ruleId === 'color-contrast' && node.isInFadedPreview
 }
 
@@ -58,18 +67,19 @@ function isFadedPreview(ruleId, node) {
  * found. Page functions can't close over script variables, so the label
  * travels as an argument.
  */
-function clickButton(label) {
-  const buttons = [...document.querySelectorAll('button, [role="button"]')]
+function clickButton(label: string): boolean {
+  const buttons = [...document.querySelectorAll<HTMLElement>('button, [role="button"]')]
   const button = label
-    ? buttons.find((el) => (el.getAttribute('aria-label') ?? el.textContent ?? '').includes(label))
+    ? buttons.find((el) => (el.getAttribute('aria-label') ?? el.textContent).includes(label))
     : buttons.find((el) => el.hasAttribute('aria-expanded'))
   button?.click()
   return button !== undefined
 }
 
 /** Runs in the page: every tab id, read from the app's own list through the dev server. */
-async function appTabs() {
-  const { APP_TABS } = await import('/src/app/utils/tabs.ts')
+async function appTabs(): Promise<readonly string[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc can't resolve a path only the dev server serves; `as string` stops it trying
+  const { APP_TABS } = (await import('/src/app/utils/tabs.ts' as string)) as { APP_TABS: readonly string[] }
   return APP_TABS
 }
 
@@ -79,7 +89,7 @@ async function appTabs() {
  * audit checks against the app's tab list; add a subpage, dialog or menu here
  * by hand.
  */
-const SCENARIOS = [
+const SCENARIOS: [name: string, location: AppLocation, buttonLabel?: string][] = [
   ['home', { tab: 'home' }],
   ['home: details open', { tab: 'home' }, ''],
   ['home: share Wi-Fi', { tab: 'home' }, 'Share Wi‑Fi'],
@@ -106,15 +116,15 @@ const existingUrl = flag('url', null)
 // How many places to list per rule; `--limit all` lists every one.
 const limitFlag = flag('limit', '12')
 const placeLimit = limitFlag === 'all' ? Infinity : Number(limitFlag)
-const server = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
+const server: RunningServer = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
 const browser = await chromium.launch(
   process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
 )
 
-/** rule id → { impact, help, helpUrl, places: Set of "scenario: target" } */
-const violations = new Map()
+/** Each violated rule by its id, with the "scenario: target" places it failed. */
+const violations = new Map<string, ViolatedRule>()
 /** What the audit couldn't check: a tab with no scenario, a button it couldn't find. */
-const gaps = new Set()
+const gaps = new Set<string>()
 
 try {
   for (const theme of ['dark', 'light']) {
@@ -131,7 +141,7 @@ try {
     for (const [name, location, buttonLabel] of SCENARIOS) {
       await page.keyboard.press('Escape')
       await page.evaluate((to) => {
-        const state = { ...(window.history.state ?? {}), __roveNav: to }
+        const state = { ...(window.history.state as Record<string, unknown> | null), __roveNav: to }
         window.history.pushState(state, '')
         window.dispatchEvent(new PopStateEvent('popstate', { state }))
       }, location)
@@ -142,30 +152,34 @@ try {
         await page.waitForTimeout(800)
       }
       await page.addScriptTag({ content: AXE_SOURCE })
-      const axeResults = await page.evaluate(
+      const axeViolations = await page.evaluate(
         async ({ tags, exclude }) => {
-          const results = await window.axe.run(
+          const results = await (window as unknown as { axe: typeof axe }).axe.run(
             { include: [['html']], exclude },
             { runOnly: { type: 'tag', values: tags } },
           )
           // Page functions return plain data, so mark each node here, where the DOM is.
-          for (const node of results.violations.flatMap((violation) => violation.nodes)) {
-            node.isInFadedPreview = Boolean(document.querySelector(node.target[0])?.closest('[data-faded-preview]'))
-          }
-          return results
+          const isInFadedPreview = (node: axe.NodeResult) =>
+            Boolean(document.querySelector(String(node.target[0]))?.closest('[data-faded-preview]'))
+          return results.violations.map((violation) => ({
+            ...violation,
+            nodes: violation.nodes.map((node): FlaggedNode => ({ ...node, isInFadedPreview: isInFadedPreview(node) })),
+          }))
         },
         { tags: RULE_TAGS, exclude: EXCLUDED },
       )
-      for (const violation of axeResults.violations) {
+      for (const violation of axeViolations) {
         const { id, impact, help, helpUrl } = violation
         const entry = violations.get(id) ?? { impact, help, helpUrl, places: new Set() }
         for (const node of violation.nodes) {
           if (isPortalledMenu(id, node) || isFadedPreview(id, node)) continue
           // Contrast failures carry the measured colours; show them so the fix
           // can go to the right design token.
-          const contrast = node.any.find((check) => check.data?.contrastRatio)?.data
+          const contrast = node.any
+            .map((check) => check.data as Partial<ContrastData> | null)
+            .find((data) => data?.contrastRatio)
           const detail = contrast
-            ? ` (${contrast.fgColor} on ${contrast.bgColor}: ${contrast.contrastRatio}:1, needs ${contrast.expectedContrastRatio})`
+            ? ` (${String(contrast.fgColor)} on ${String(contrast.bgColor)}: ${String(contrast.contrastRatio)}:1, needs ${String(contrast.expectedContrastRatio)})`
             : ''
           entry.places.add(`${theme} ${name}: ${node.target.join(' ')}${detail}`)
         }
@@ -179,12 +193,12 @@ try {
   server.stop()
 }
 
-const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor']
+const IMPACT_ORDER: (axe.ImpactValue | undefined)[] = ['critical', 'serious', 'moderate', 'minor']
 const violationsByImpact = [...violations].sort(
   ([, a], [, b]) => IMPACT_ORDER.indexOf(a.impact) - IMPACT_ORDER.indexOf(b.impact),
 )
 for (const [id, rule] of violationsByImpact) {
-  console.log(`\n[${rule.impact}] ${id}: ${rule.help} (${rule.places.size} places)\n  ${rule.helpUrl}`)
+  console.log(`\n[${String(rule.impact)}] ${id}: ${rule.help} (${rule.places.size} places)\n  ${rule.helpUrl}`)
   for (const place of [...rule.places].slice(0, placeLimit)) console.log(`  - ${place}`)
   if (rule.places.size > placeLimit) console.log(`  … and ${rule.places.size - placeLimit} more`)
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Figma components map",
-  "description": "Maps each UI library component to its component in the Rove Design System Figma file. Edited by hand (the map-figma-component skill). npm run gen copies each entry into components.gen.json, and checks/figma-library.mjs holds it to Figma.",
+  "description": "Maps each UI library component to its component in the Rove Design System Figma file. Edited by hand (the map-figma-component skill). npm run gen copies each entry into components.gen.json, and checks/figma-library.ts holds it to Figma.",
   "type": "object",
   "required": ["figmaFileUrl", "components"],
   "additionalProperties": false,

@@ -19,7 +19,7 @@ are in `src/ui/components.gen.json`: read it first, not the sources. For how
 one is used, read its stories, beside its source (`Link.stories.tsx`). Each
 project JSON file has a schema in `schemas/`, `<name>.schema.json`, that says
 what every key means, and the generators fail on a file that breaks it.
-[✓ CHECKED by `gen/components.mjs`, `gen/cn-theme.mjs`]
+[✓ CHECKED by `gen/components.ts`, `gen/cn-theme.ts`]
 
 - Icons come from `@/ui` (`<HomeIcon />`; the brand mark is `<BrandIcon />`).
   A new one joins the library, in `src/ui/icons/`.
@@ -98,7 +98,7 @@ what every key means, and the generators fail on a file that breaks it.
   - Exports, props and type fields take `/** */`; implementation notes take
     `//`.
   - A `//` note runs at most 6 lines and a `/** */` doc at most 10; anything
-    longer goes in `docs/`. [✓ CHECKED by `eslint/comments.mjs`]
+    longer goes in `docs/`. [✓ CHECKED by `eslint/comments.ts`]
   - A lint exception is a line-level disable that says why after `--`.
     [✓ CHECKED by `eslint.config.js`]
 
@@ -108,8 +108,7 @@ what every key means, and the generators fail on a file that breaks it.
   `hasGradient`, `canRunTest`, `shouldShowLabel`, `wasDeclined`, or a verb
   phrase (`needsNetworkInfo`). [✓ CHECKED by `eslint.config.js`]
   - It covers props, `useState` pairs (`[isOpen, setIsOpen]`), params, fields
-    and module constants (`IS_MAC`). In `scripts/`, which have no types, it
-    covers a variable set to a comparison or a `!`.
+    and module constants (`IS_MAC`), in `src/` and `scripts/` alike.
   - A name the DOM or a library picks keeps its name: alias Recharts' `active`
     to `isActive` where you read it.
 - Data that's shared and must not change (a context value, a list passed
@@ -148,13 +147,13 @@ apply here. This section is how they're written as Tailwind utilities.
   preflight: `styles/base.css` is the reset.
 - A token is its utility: `p-12`, not `p-[12px]`; `rounded-sm`, not
   `rounded-[8px]`; `duration-(--duration-fast)`. A gap built from tokens is a
-  `calc()` of them. [✓ CHECKED by `checks/raw-values.mjs`]
+  `calc()` of them. [✓ CHECKED by `checks/raw-values.ts`]
   - A raw value that has to stay (the QR code's white plate, a gap set by an
     icon's ink, the About tile's app-icon corner) goes in
-    `scripts/checks/raw-values.mjs`'s `ALLOWED` list, with why. DESIGN.md's
+    `scripts/checks/raw-values.ts`'s `ALLOWED` list, with why. DESIGN.md's
     Layout says which reasons count.
 - Text takes a text style's class and a colour utility:
-  `type-caption text-tertiary`. [✓ CHECKED by `checks/text-styles.mjs`]
+  `type-caption text-tertiary`. [✓ CHECKED by `checks/text-styles.ts`]
   - The classes (`type-caption`, `type-body-medium`, `type-body`, …)
     come from `rove-tokens`' `text-styles.css`, set no colour, and sit under
     every utility, so `font-medium`, `leading-[1.2]` or the `num` face beside
@@ -164,7 +163,7 @@ apply here. This section is how they're written as Tailwind utilities.
   - A style sets its own line height, so text that keeps its line's (a
     timeline row's `*:leading-[1.3]`, a button's) adds `leading-[inherit]`.
   - A stylesheet sets all four of a style's `--type-<style>-*` variables.
-  - Text no style fits at all goes in `scripts/checks/text-styles.mjs`'s
+  - Text no style fits at all goes in `scripts/checks/text-styles.ts`'s
     `ALLOWED` list, with why.
 - Shared layout and faces (`num`, `metric-value`, `surface`, `page`,
   `page-header`, `banner`, …) are `@utility` definitions in
@@ -204,14 +203,14 @@ apply here. This section is how they're written as Tailwind utilities.
   wherever a component merges a `className` from outside, which is how a view
   adjusts a child. `cx` only joins fixed classes. tailwind-merge groups the
   theme's names and `type-*` classes from `cn-theme.gen.json`, so after a new
-  theme name or text style, `npm run gen`. [✓ CHECKED by `gen/cn-theme.mjs`]
+  theme name or text style, `npm run gen`. [✓ CHECKED by `gen/cn-theme.ts`]
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`); a tweak more than one
   view needs becomes a new variant.
 - `className` on a library component places it in a layout: margin,
   position, z-index, size, flex or grid item, its own text alignment, rounding
   to fit its container, showing or hiding it.
-  [✓ CHECKED by `checks/ui-classname.mjs`]
+  [✓ CHECKED by `checks/ui-classname.ts`]
   - Padding, inner layout, type, colour or surface is a missing variant, or a
     style for an element the view owns: a card that lays out its own content
     does it in a `<div>` inside the Card. InlineMeta and MetricValue take

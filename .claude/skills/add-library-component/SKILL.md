@@ -43,7 +43,7 @@ The library's rules (stories, docs pages, what every component does) are in
 
 - Run its folder's tests in seconds:
   `npx vitest run --project=storybook --project=dom src/ui/<folder>`.
-- `gen/components.mjs --check` (`npm run gen`, then `npm run check`) says what's
+- `gen/components.ts --check` (`npm run gen`, then `npm run check`) says what's
   missing: a doc comment, a usage guide, a `play` story for a handler, a
   version bump. Fix what it names rather than guessing.
 - Look at every story in Storybook (`npm run storybook`) in both themes before
@@ -77,7 +77,7 @@ Without the server, stop after the code side and say the Figma side is left.
    properties table. A changed one's section changes with it. Guidance is the
    stories' guide worded for designers:
    - When to use and When not to use, line for line with the stories'
-     (`checks/figma-library.mjs` holds them to it).
+     (`checks/figma-library.ts` holds them to it).
    - Accessibility, as what they needn't draw (Built in) and what they decide
      or note (To handle).
    - No Guidelines block: a rule about one property goes in its row's
@@ -90,7 +90,7 @@ Without the server, stop after the code side and say the Figma side is left.
 ## Done
 
 - `npm run check` passes, with `FIGMA_TOKEN` in `.env.local` so
-  `checks/figma-library.mjs` holds the names, variants, values and guides to the file.
+  `checks/figma-library.ts` holds the names, variants, values and guides to the file.
 - A screenshot of the Figma docs section matches the stories.
 - Commit, then run the `resync-sites` skill: the Storybooks change, and the
   demo too if a screen uses the component.

@@ -37,7 +37,7 @@ library imports only itself (by relative path) and packages, never app code.
   - The order within a folder is set in `.storybook/preview.tsx`.
 - A component that takes a handler (`onClick`, `onChange`, `onBack`) has a
   story that drives it with a `play` function.
-  [✓ CHECKED by `gen/components.mjs`]
+  [✓ CHECKED by `gen/components.ts`]
   - It asserts what the guide promises: keyboard, focus, the callbacks, a
     disabled one ignoring a press.
   - It's named for the interaction (`Pressing`, `EscapeCloses`) and tagged
@@ -52,7 +52,7 @@ library imports only itself (by relative path) and packages, never app code.
 - Its usage guide is the stories' `guidance` parameter (`Guidance` in
   `.storybook/docs-page.tsx`), with `docs: { toc: GUIDANCE_TOC }` beside it.
   Every component has one, written for its whole family (Card's covers
-  CardHeader and the rest). [✓ CHECKED by `gen/components.mjs`]
+  CardHeader and the rest). [✓ CHECKED by `gen/components.ts`]
 
   It has three parts, a few words a line:
   - When to use: a situation, then how if it needs saying, then an example
@@ -69,10 +69,10 @@ library imports only itself (by relative path) and packages, never app code.
   `npm run gen` writes it from the code and `figma-components.json`, so a
   change goes in those and the file is regenerated. Every component and prop
   of its own has a doc comment, and every component an entry in
-  `figma-components.json`. [✓ CHECKED by `gen/components.mjs`]
+  `figma-components.json`. [✓ CHECKED by `gen/components.ts`]
 - Figma matches the library: each entry's node and name, every variant
   property and its values, and the usage guide's When to use and When not to
-  use, line for line. [✓ CHECKED by `checks/figma-library.mjs`, skipped
+  use, line for line. [✓ CHECKED by `checks/figma-library.ts`, skipped
   without `FIGMA_TOKEN`]
 
 ### Every component

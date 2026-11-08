@@ -11,15 +11,17 @@ import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
-const LINTED_FILE = /\.(ts|tsx|js|mjs)$/
+const LINTED_FILE = /\.(ts|tsx|js)$/
 
-const hookInput = JSON.parse(readFileSync(0, 'utf8'))
+type HookInput = { tool_input?: { file_path?: string } }
+const hookInput = JSON.parse(readFileSync(0, 'utf8')) as HookInput
 const editedFile = hookInput.tool_input?.file_path
 const relativePath = editedFile ? relative(ROOT, resolve(editedFile)) : ''
 // Outside this checkout (another worktree, the scratchpad) isn't ours to lint.
 if (!relativePath || relativePath.startsWith('..')) process.exit(0)
 
-const runNpx = (command, args) => spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
+const runNpx = (command: string, args: string[]) =>
+  spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
 
 if (relativePath.endsWith('.rs')) {
   // rustfmt finds rustfmt.toml from the file's directory up.

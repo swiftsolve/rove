@@ -10,7 +10,7 @@ mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACMR)
 
 scripts=()
 for file in "${staged[@]}"; do
-  case "$file" in *.ts | *.tsx | *.js | *.mjs) scripts+=("$file") ;; esac
+  case "$file" in *.ts | *.tsx | *.js) scripts+=("$file") ;; esac
 done
 
 if [ ${#scripts[@]} -gt 0 ]; then

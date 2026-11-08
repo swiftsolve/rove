@@ -30,19 +30,20 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { chromium } from 'playwright-core'
+import { chromium, type Locator, type Page } from 'playwright-core'
 
-import { flag, freePort, startDevServer } from './lib/dev-server.mjs'
+import { type AppLocation, flag, freePort, type RunningServer, startDevServer } from './lib/dev-server.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 // Kept in sync with src-tauri/tauri.conf.json: the shots are only useful if
 // they're the size the window actually is.
-const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8'))
+type TauriConfig = { app: { windows: [{ width: number; height: number }] } }
+const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
 const { width, height } = app.windows[0]
 
 /** Every screen worth a shot: each tab, plus the subpages layered over one. */
-const SCREENS = [
+const SCREENS: [name: string, location: AppLocation][] = [
   ['01-home', { tab: 'home' }],
   ['02-speed', { tab: 'speed' }],
   ['03-speed-details', { tab: 'speed', speedSub: { view: 'details', target: 'streaming-4k' } }],
@@ -65,7 +66,7 @@ const SCREENS = [
  * tooltips, a focus ring. Each is
  * [name, location, what to do once it has settled].
  */
-const SCENES = [
+const SCENES: [name: string, location: AppLocation, act: (page: Page) => Promise<void>][] = [
   ['16-home-details', { tab: 'home' }, (page) => page.locator('button[aria-expanded]').first().click()],
   ['17-home-share-wifi', { tab: 'home' }, (page) => button(page, 'Share Wi‑Fi').click()],
   [
@@ -95,7 +96,7 @@ const SCENES = [
   ['24-focus-ring', { tab: 'services' }, (page) => button(page, 'Add service').focus()],
 ]
 
-function button(page, name) {
+function button(page: Page, name: string | RegExp): Locator {
   return page.getByRole('button', { name, exact: typeof name === 'string' })
 }
 
@@ -112,16 +113,16 @@ const isStable = process.argv.includes('--stable')
 const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
 
 /** Moves the app to `location` the way the tab bar does. */
-function navigateTo(page, location) {
+function navigateTo(page: Page, location: AppLocation): Promise<void> {
   return page.evaluate((to) => {
-    const state = { ...(window.history.state ?? {}), __roveNav: to }
+    const state = { ...(window.history.state as Record<string, unknown> | null), __roveNav: to }
     window.history.pushState(state, '')
     window.dispatchEvent(new PopStateEvent('popstate', { state }))
   }, location)
 }
 
 /** Start Storybook and resolve once its story index answers. */
-async function startStorybook() {
+async function startStorybook(): Promise<RunningServer> {
   const port = await freePort()
   const storybook = spawn(
     process.execPath,
@@ -143,19 +144,24 @@ async function startStorybook() {
   throw new Error('storybook never answered')
 }
 
+/** The part of Storybook's preview this script reads: how far the story's render has got. */
+type StorybookPreview = { currentRender?: { phase: string } }
+/** A Storybook index entry: a story, or a component's Docs page. */
+type StoryEntry = { id: string; title: string; name: string; type: 'story' | 'docs' }
+
 /**
  * The UI library's stories to shoot: each component's All States, or every
  * story of a component that has none. Single states would repeat what the
  * overview shows.
  */
-async function libraryStories(storybookUrl) {
-  const index = await (await fetch(`${storybookUrl}/index.json`)).json()
+async function libraryStories(storybookUrl: string): Promise<StoryEntry[]> {
+  const index = (await (await fetch(`${storybookUrl}/index.json`)).json()) as { entries: Record<string, StoryEntry> }
   const stories = Object.values(index.entries).filter((entry) => entry.type === 'story')
   const withOverview = new Set(stories.filter((story) => story.name === 'All States').map((story) => story.title))
   return stories.filter((story) => !withOverview.has(story.title) || story.name === 'All States')
 }
 
-const server = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
+const server: RunningServer = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()
 let libraryCount = 0
 console.log(`${existingUrl ? 'using' : 'started'} ${server.url}`)
 
@@ -163,7 +169,7 @@ await mkdir(out, { recursive: true })
 
 // `channel: 'chrome'` uses the Chrome that's already installed, so playwright-core
 // stays a ~3 MB dependency with no browser download behind it. CHROME_PATH
-// points it at another Chromium, as in a11y-audit.mjs.
+// points it at another Chromium, as in a11y-audit.ts.
 const browser = await chromium.launch(
   process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
 )
@@ -193,7 +199,7 @@ try {
     })
   }
   /** Lets the app run for `ms`: on the fake clock when stable, else in real time. */
-  const settle = (ms) => (isStable ? page.clock.runFor(ms) : page.waitForTimeout(ms))
+  const settle = (ms: number) => (isStable ? page.clock.runFor(ms) : page.waitForTimeout(ms))
 
   await page.goto(server.url, { waitUntil: 'networkidle' })
   await page.waitForSelector('[data-app-shell]')
@@ -236,7 +242,9 @@ try {
     // The UI library, from Storybook: the states no screen shows. Its own page,
     // without the fake clock, which would stall Storybook's startup; paused
     // animations and reduced motion hold it still.
-    const storybook = existingStorybookUrl ? { url: existingStorybookUrl, stop: () => {} } : await startStorybook()
+    const storybook: RunningServer = existingStorybookUrl
+      ? { url: existingStorybookUrl, stop: () => {} }
+      : await startStorybook()
     try {
       const stories = await libraryStories(storybook.url)
       await mkdir(`${out}/25-library`, { recursive: true })
@@ -252,7 +260,10 @@ try {
         // story's render reaches 'finished' once its play function has run,
         // then a moment for what it opened to place itself.
         await libraryPage.evaluate(() => document.fonts.ready)
-        await libraryPage.waitForFunction(() => window.__STORYBOOK_PREVIEW__?.currentRender?.phase === 'finished')
+        await libraryPage.waitForFunction(() => {
+          const { __STORYBOOK_PREVIEW__: preview } = window as { __STORYBOOK_PREVIEW__?: StorybookPreview }
+          return preview?.currentRender?.phase === 'finished'
+        })
         await libraryPage.waitForTimeout(600)
         await libraryPage.screenshot({
           path: `${out}/25-library/${story.id}.png`,

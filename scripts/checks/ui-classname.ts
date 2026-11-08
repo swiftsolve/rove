@@ -14,21 +14,21 @@
  * imported constants to their strings. A prop passed through or a CSS module
  * class can't be read, so it isn't checked.
  *
- *   node scripts/checks/ui-classname.mjs
+ *   node scripts/checks/ui-classname.ts
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
-import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import ts from 'typescript'
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const ts = createRequire(import.meta.url)('typescript')
 const SCANNED_DIRS = ['src/app', 'src/features']
 const UTILITIES_CSS = 'src/styles/utilities.css'
 
 /** Components whose className is their whole look, by design. */
-function isExempt(name) {
+function isExempt(name: string): boolean {
   // A glyph is drawn in currentColor, so its colour is the caller's to set.
   if (name.endsWith('Icon')) return true
   // An unstyled button: the view gives it its look.
@@ -36,7 +36,7 @@ function isExempt(name) {
 }
 
 const TEXT_ALIGN = /^text-(left|right|center|start|end|justify)$/
-const RESTYLE_RULES = [
+const RESTYLE_RULES: [reason: string, pattern: RegExp][] = [
   ['padding', /^p[xytrblse]?-/],
   ['its own layout', /^(flex|inline-flex|grid|inline-grid|contents|table)$/],
   ['its own layout', /^flex-(row|col|wrap|nowrap)/],
@@ -53,7 +53,7 @@ const ARBITRARY_PROPERTIES =
   /^(padding|font|color|background|border|box-shadow|display|gap|line-height|letter-spacing|text-|white-space)/
 
 const utilityNames = [...readFileSync(join(ROOT, UTILITIES_CSS), 'utf8').matchAll(/@utility ([\w-]+)/g)].map(
-  (m) => m[1],
+  ([, name = '']) => name,
 )
 
 /**
@@ -61,66 +61,60 @@ const utilityNames = [...readFileSync(join(ROOT, UTILITIES_CSS), 'utf8').matchAl
  * important mark or its `-` sign: `md:-mt-4` is `mt-4`. A `:` inside brackets
  * belongs to the value, so only one outside them ends a variant.
  */
-function utilityOf(token) {
+function utilityOf(token: string): string {
   let depth = 0
   let start = 0
   for (let i = 0; i < token.length; i++) {
-    if ('[('.includes(token[i])) depth++
-    else if ('])'.includes(token[i])) depth--
-    else if (token[i] === ':' && depth === 0) start = i + 1
+    const character = token.charAt(i)
+    if ('[('.includes(character)) depth++
+    else if ('])'.includes(character)) depth--
+    else if (character === ':' && depth === 0) start = i + 1
   }
   return token.slice(start).replace(/^!|!$/g, '').replace(/^-/, '')
 }
 
 /** Whether `utility` is the @utility `name`, or one of its values when `name` ends in `-*`. */
-function isCustomUtility(utility, name) {
+function isCustomUtility(utility: string, name: string): boolean {
   if (utility === name) return true
   return name.endsWith('-*') && utility.startsWith(name.slice(0, -1))
 }
 
 /** Why a class restyles a component, or null when it only places it. */
-function restyleReason(token) {
+function restyleReason(token: string): string | null {
   const utility = utilityOf(token)
   if (!utility) return null
-  const property = utility.match(/^\[([a-z-]+):/)
-  if (property) return ARBITRARY_PROPERTIES.test(property[1]) ? property[1] : null
+  const [, property] = /^\[([a-z-]+):/.exec(utility) ?? []
+  if (property) return ARBITRARY_PROPERTIES.test(property) ? property : null
   if (TEXT_ALIGN.test(utility)) return null
   for (const [reason, pattern] of RESTYLE_RULES) if (pattern.test(utility)) return reason
   const name = utilityNames.find((utilityName) => isCustomUtility(utility, utilityName))
   return name ? `the ${name} utility` : null
 }
 
-async function tsxFiles(dir) {
-  const files = []
+async function tsxFiles(dir: string): Promise<string[]> {
+  const files: string[] = []
   for (const entry of await readdir(join(ROOT, dir), { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) files.push(...(await tsxFiles(path)))
-    else if (/\.tsx$/.test(entry.name) && !/\.(test|stories)\.tsx$/.test(entry.name)) files.push(path)
+    else if (entry.name.endsWith('.tsx') && !/\.(test|stories)\.tsx$/.test(entry.name)) files.push(path)
   }
   return files
 }
 
-const parsedSources = new Map()
-function parsedSource(file) {
-  if (!parsedSources.has(file)) {
-    const text = readFileSync(join(ROOT, file), 'utf8')
-    parsedSources.set(
-      file,
-      ts.createSourceFile(
-        file,
-        text,
-        ts.ScriptTarget.Latest,
-        true,
-        file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-      ),
-    )
-  }
-  return parsedSources.get(file)
+const parsedSources = new Map<string, ts.SourceFile>()
+function parsedSource(file: string): ts.SourceFile {
+  const cached = parsedSources.get(file)
+  if (cached) return cached
+  const text = readFileSync(join(ROOT, file), 'utf8')
+  const scriptKind = file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+  const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind)
+  parsedSources.set(file, sourceFile)
+  return sourceFile
 }
 
 /** The file a relative or `@/` import points at, if it's in the repo. */
-function resolveImport(from, specifier) {
-  let base
+function resolveImport(from: string, specifier: string): string | null {
+  let base: string
   if (specifier.startsWith('@/')) base = join('src', specifier.slice(2))
   else if (specifier.startsWith('.')) base = join(dirname(from), specifier)
   else return null
@@ -130,7 +124,7 @@ function resolveImport(from, specifier) {
 }
 
 /** The initializer of a top-level `const name`, in this file or the one it's imported from. */
-function constantInitializer(file, name) {
+function constantInitializer(file: string, name: string): { file: string; node: ts.Expression } | null {
   const sourceFile = parsedSource(file)
   for (const statement of sourceFile.statements) {
     if (ts.isVariableStatement(statement)) {
@@ -145,7 +139,8 @@ function constantInitializer(file, name) {
       ts.isNamedImports(statement.importClause.namedBindings)
     ) {
       const element = statement.importClause.namedBindings.elements.find((e) => e.name.text === name)
-      const target = element && resolveImport(file, statement.moduleSpecifier.text)
+      const specifier = statement.moduleSpecifier
+      const target = element && ts.isStringLiteral(specifier) && resolveImport(file, specifier.text)
       if (target) return constantInitializer(target, (element.propertyName ?? element.name).text)
     }
   }
@@ -153,7 +148,7 @@ function constantInitializer(file, name) {
 }
 
 /** Every class string an expression can produce, as far as it can be read statically. */
-function classStrings(file, node, seen = new Set()) {
+function classStrings(file: string, node: ts.Node | undefined, seen = new Set<string>()): string[] {
   if (!node) return []
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return [node.text]
   if (ts.isTemplateExpression(node)) {
@@ -189,27 +184,30 @@ function classStrings(file, node, seen = new Set()) {
   return []
 }
 
-const problems = []
+const problems: string[] = []
 let placementCount = 0
 
 for (const file of (await Promise.all(SCANNED_DIRS.map(tsxFiles))).flat()) {
   const sourceFile = parsedSource(file)
-  const uiNames = new Set()
+  const uiNames = new Set<string>()
   for (const statement of sourceFile.statements) {
     const bindings =
       ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
       statement.moduleSpecifier.text === '@/ui' &&
       statement.importClause?.namedBindings
     if (bindings && ts.isNamedImports(bindings)) bindings.elements.forEach((e) => uiNames.add(e.name.text))
   }
   if (uiNames.size === 0) continue
 
-  const visit = (node) => {
+  const visit = (node: ts.Node) => {
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
       const tag = node.tagName.getText(sourceFile)
       const attribute =
         uiNames.has(tag) && !isExempt(tag)
-          ? node.attributes.properties.find((a) => ts.isJsxAttribute(a) && a.name.getText(sourceFile) === 'className')
+          ? node.attributes.properties.find(
+              (a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && a.name.getText(sourceFile) === 'className',
+            )
           : null
       if (attribute) {
         placementCount++

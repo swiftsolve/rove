@@ -232,7 +232,8 @@ rove/
 ├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
 │                               runs), gen/ (the *.gen.* files `npm run gen`
 │                               writes), hooks/ (git and Claude Code), eslint/,
-│                               screenshots and the a11y audit
+│                               screenshots and the a11y audit; TypeScript that
+│                               Node runs as is, typed by its own tsconfig.json
 ├── schemas/                    a JSON Schema for each project JSON file
 │                               (figma-components, components, cn-theme): what
 │                               each key means; the generators validate against them

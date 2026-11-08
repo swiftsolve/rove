@@ -40,11 +40,13 @@
  * node's name, type and componentPropertyDefinitions by id, and `docs` each
  * docs section's text, in order and outside component instances, by its name:
  *
- *   node scripts/checks/figma-library.mjs [--from figma-data.json]
+ *   node scripts/checks/figma-library.ts [--from figma-data.json]
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import type { ComponentListJson, FigmaComponent, FigmaComponentsJson, PropEntry } from '../lib/library-json-types.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const FIGMA_COMPONENTS_JSON = join(ROOT, 'src/ui/figma-components.json')
@@ -67,60 +69,81 @@ const GUIDE_LABELS = {
   whenNotToUse: 'When not to use',
   accessibility: 'Accessibility',
 }
+
+/** The part of a Figma node this check reads, from the REST API or `use_figma`. */
+type FigmaNode = {
+  id: string
+  name: string
+  type: string
+  characters?: string
+  children?: FigmaNode[]
+  componentPropertyDefinitions?: Record<string, { type: string; variantOptions?: string[] }>
+}
+/** A REST API answer for nodes by id: each one, or null when the file has no such node. */
+type FigmaNodesAnswer = { nodes: Record<string, { document: FigmaNode } | null> }
+/** The mapped nodes by id, and each docs section's text by its name (none from a file that has only nodes). */
+type FigmaData = { nodes: Record<string, FigmaNode | undefined>; docs?: Record<string, string[]> }
+/** A guide's lines per section. */
+type GuideLines = { whenToUse: string[]; whenNotToUse: string[] }
+
 /** Lowercase letters and digits only, so `Body layout`, `bodyLayout` and `Down only` compare. */
-const comparisonKey = (text) =>
+const comparisonKey = (text: string | number) =>
   String(text)
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
 
 /** FIGMA_TOKEN from the shell, else from the git-ignored .env.local. */
-async function readToken() {
+async function readToken(): Promise<string | undefined> {
   if (process.env.FIGMA_TOKEN) return process.env.FIGMA_TOKEN
   const env = await readFile(join(ROOT, '.env.local'), 'utf8').catch(() => '')
-  return env.match(/^\s*FIGMA_TOKEN\s*=\s*["']?([^"'\s]+)/m)?.[1]
+  return /^\s*FIGMA_TOKEN\s*=\s*["']?([^"'\s]+)/m.exec(env)?.[1]
 }
 
 /**
  * A REST API answer, as JSON. Offline skips, and so does a server error that
  * outlasts two retries; a bad token or file key answers, and fails.
  */
-async function fetchFigmaJson(token, path) {
-  let response
+async function fetchFigmaJson<Answer>(token: string, path: string): Promise<Answer> {
+  let response: Response | undefined
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((done) => setTimeout(done, attempt * 2000))
-    response = await fetch(`${FIGMA_API}${path}`, { headers: { 'X-Figma-Token': token } }).catch((error) => {
-      console.log(`Figma skipped: Figma couldn't be reached (${error.cause?.code ?? error.message})`)
+    response = await fetch(`${FIGMA_API}${path}`, { headers: { 'X-Figma-Token': token } }).catch((error: unknown) => {
+      const reason =
+        error instanceof Error ? ((error.cause as { code?: string } | undefined)?.code ?? error.message) : ''
+      console.log(`Figma skipped: Figma couldn't be reached (${reason})`)
       process.exit(0)
     })
     if (response.status < 500) break
   }
-  if (response.status >= 500) {
-    console.log(`Figma skipped: Figma answered ${response.status} three times`)
+  if (!response || response.status >= 500) {
+    console.log(`Figma skipped: Figma answered ${String(response?.status)} three times`)
     process.exit(0)
   }
   if (!response.ok) {
     console.error(`Figma answered ${response.status}: ${await response.text()}`)
     process.exit(1)
   }
-  return response.json()
+  return (await response.json()) as Answer
 }
 
 /** A node's text in document order, leaving out what's inside a component or its instances. */
-function textsOf(node) {
+function textsOf(node: FigmaNode): string[] {
   if (INSTANCE_TYPES.has(node.type)) return []
-  if (node.type === 'TEXT') return [node.characters]
+  if (node.type === 'TEXT') return [node.characters ?? '']
   return (node.children ?? []).flatMap(textsOf)
 }
 
-/**
- * The mapped nodes by id (`{ name, type, componentPropertyDefinitions }`) and
- * the docs sections' text by section name, from a file or the REST API.
- */
-async function readFigma(fileKey, nodeIds, sectionNames) {
+/** The mapped nodes and the docs sections' text, from a file (`--from`) or the REST API. */
+async function readFigma(fileKey: string, nodeIds: string[], sectionNames: Set<string>): Promise<FigmaData> {
   const fromIndex = process.argv.indexOf('--from')
   if (fromIndex !== -1) {
-    const figmaData = JSON.parse(await readFile(resolve(process.argv[fromIndex + 1]), 'utf8'))
-    return 'nodes' in figmaData ? figmaData : { nodes: figmaData }
+    const fromPath = process.argv[fromIndex + 1]
+    if (!fromPath) {
+      console.error('--from takes the path of a JSON file')
+      process.exit(1)
+    }
+    const figmaData = JSON.parse(await readFile(resolve(fromPath), 'utf8')) as FigmaData | FigmaData['nodes']
+    return 'nodes' in figmaData ? (figmaData as FigmaData) : { nodes: figmaData }
   }
 
   const token = await readToken()
@@ -128,30 +151,34 @@ async function readFigma(fileKey, nodeIds, sectionNames) {
     console.log('Figma skipped: no FIGMA_TOKEN in the shell or .env.local')
     process.exit(0)
   }
-  const { nodes } = await fetchFigmaJson(token, `/files/${fileKey}/nodes?ids=${nodeIds.join(',')}&depth=1`)
+  const { nodes } = await fetchFigmaJson<FigmaNodesAnswer>(
+    token,
+    `/files/${fileKey}/nodes?ids=${nodeIds.join(',')}&depth=1`,
+  )
 
   // A docs section is a frame on a page's top frame, named for its component.
-  const { document } = await fetchFigmaJson(token, `/files/${fileKey}?depth=3`)
-  const sectionIds = document.children
+  const { document } = await fetchFigmaJson<{ document: FigmaNode }>(token, `/files/${fileKey}?depth=3`)
+  const sectionIds = (document.children ?? [])
     .flatMap((page) => page.children ?? [])
     .flatMap((frame) => frame.children ?? [])
     .filter((section) => sectionNames.has(section.name))
     .map((section) => section.id)
   const sections =
     sectionIds.length > 0
-      ? (await fetchFigmaJson(token, `/files/${fileKey}/nodes?ids=${sectionIds.join(',')}`)).nodes
+      ? (await fetchFigmaJson<FigmaNodesAnswer>(token, `/files/${fileKey}/nodes?ids=${sectionIds.join(',')}`)).nodes
       : {}
-  const docs = {}
-  for (const { document: section } of Object.values(sections)) {
-    const texts = textsOf(section)
-    if (texts.includes(GUIDE_LABELS.whenToUse)) docs[section.name] = texts
+  const docs: Record<string, string[]> = {}
+  for (const answer of Object.values(sections)) {
+    if (!answer) continue
+    const texts = textsOf(answer.document)
+    if (texts.includes(GUIDE_LABELS.whenToUse)) docs[answer.document.name] = texts
   }
-  return { nodes: Object.fromEntries(Object.entries(nodes).map(([id, node]) => [id, node?.document])), docs }
+  return { nodes: Object.fromEntries(Object.entries(nodes).map(([id, answer]) => [id, answer?.document])), docs }
 }
 
 /** A Figma guide's lines per section, read off its docs section's text. */
-function figmaGuide(texts) {
-  const at = (label, from) => texts.indexOf(label, from)
+function figmaGuide(texts: string[]): GuideLines | null {
+  const at = (label: string, from: number) => texts.indexOf(label, from)
   const whenToUse = at(GUIDE_LABELS.whenToUse, 0)
   const whenNotToUse = at(GUIDE_LABELS.whenNotToUse, whenToUse)
   const accessibility = at(GUIDE_LABELS.accessibility, whenNotToUse)
@@ -163,25 +190,26 @@ function figmaGuide(texts) {
 }
 
 /** A Figma node's variant properties, `{ Tone: ['Accent', …] }`, without the interaction state. */
-function variantsOf(node) {
+function variantsOf(node: FigmaNode): Record<string, string[]> {
   return Object.fromEntries(
     Object.entries(node.componentPropertyDefinitions ?? {})
       .filter(([name, { type }]) => type === 'VARIANT' && name !== INTERACTION_STATE)
-      .map(([name, { variantOptions }]) => [name, variantOptions]),
+      .map(([name, { variantOptions }]) => [name, variantOptions ?? []]),
   )
 }
 
 /** A code prop's values to compare, or null when it takes anything (a string, a node). */
-function valuesOf(prop) {
-  if (prop.values) return prop.values
+function valuesOf(prop: PropEntry): string[] | null {
+  if (prop.values) return prop.values.map(String)
   if (prop.type === 'boolean') return ['false', 'true']
   // A single literal (`variant: 'error'`) reaches the component list as its type.
-  if (LITERAL_UNION.test(prop.type ?? '')) return prop.type.split(' | ').map((literal) => literal.slice(1, -1))
+  const type = prop.type ?? ''
+  if (LITERAL_UNION.test(type)) return type.split(' | ').map((literal) => literal.slice(1, -1))
   return null
 }
 
 /** The keys a Figma variant property may use for a prop: `isDisabled` is `Disabled`, CardBody's `layout` is `Body layout`. */
-function keysFor(component, wholeComponent, propName) {
+function keysFor(component: string, wholeComponent: string, propName: string): Set<string> {
   const part = component.startsWith(wholeComponent) ? component.slice(wholeComponent.length) : ''
   const bare = propName.replace(BOOLEAN_PREFIX, '')
   return new Set([
@@ -191,11 +219,13 @@ function keysFor(component, wholeComponent, propName) {
   ])
 }
 
-const isSameSet = (a, b) => a.length === b.length && a.every((value) => b.includes(value))
+const isSameSet = (a: string[], b: string[]) => a.length === b.length && a.every((value) => b.includes(value))
 
-const { figmaFileUrl, components: mapping } = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8'))
-const { components: componentList } = JSON.parse(await readFile(COMPONENT_LIST, 'utf8'))
-const fileKey = figmaFileUrl.match(/figma\.com\/design\/([^/]+)/)?.[1]
+const { figmaFileUrl, components: mapping } = JSON.parse(
+  await readFile(FIGMA_COMPONENTS_JSON, 'utf8'),
+) as FigmaComponentsJson
+const { components: componentList } = JSON.parse(await readFile(COMPONENT_LIST, 'utf8')) as ComponentListJson
+const fileKey = /figma\.com\/design\/([^/]+)/.exec(figmaFileUrl)?.[1]
 if (!fileKey) {
   console.error(`figma-components.json's figmaFileUrl isn't a figma.com/design URL: ${figmaFileUrl}`)
   process.exit(1)
@@ -203,8 +233,11 @@ if (!fileKey) {
 
 // Several components can share one Figma node (Card, CardBody, CardFooter), so
 // each node is asked for once and its variants are matched against all of them.
-const mappedEntries = Object.entries(mapping).filter(([, entry]) => 'figmaNodeId' in entry)
-const componentsByNode = new Map()
+const mappedEntries = Object.entries(mapping).filter(
+  (pair): pair is [string, FigmaComponent] => 'figmaNodeId' in pair[1],
+)
+const mappedComponents = new Map(mappedEntries)
+const componentsByNode = new Map<string, string[]>()
 for (const [component, entry] of mappedEntries)
   componentsByNode.set(entry.figmaNodeId, [...(componentsByNode.get(entry.figmaNodeId) ?? []), component])
 
@@ -214,7 +247,7 @@ const { nodes, docs } = await readFigma(
   [...componentsByNode.keys()],
   new Set(guidedEntries.map(([, { figmaName }]) => figmaName)),
 )
-const problems = []
+const problems: string[] = []
 
 for (const [nodeId, components] of componentsByNode) {
   const figmaNode = nodes[nodeId]
@@ -223,10 +256,9 @@ for (const [nodeId, components] of componentsByNode) {
     continue
   }
   for (const component of components) {
-    if (figmaNode.name !== mapping[component].figmaName) {
-      problems.push(
-        `${component}: node ${nodeId} is "${figmaNode.name}" in Figma, not "${mapping[component].figmaName}"`,
-      )
+    const { figmaName } = mappedComponents.get(component) ?? {}
+    if (figmaNode.name !== figmaName) {
+      problems.push(`${component}: node ${nodeId} is "${figmaNode.name}" in Figma, not "${String(figmaName)}"`)
     }
   }
   if (!COMPONENT_TYPES.has(figmaNode.type) || VARIANT_NAME.test(figmaNode.name)) {
@@ -237,16 +269,16 @@ for (const [nodeId, components] of componentsByNode) {
   }
 
   // The shortest name is the whole (Card); the rest are its parts (CardBody).
-  const wholeComponent = [...components].sort((a, b) => a.length - b.length)[0]
+  const wholeComponent = [...components].sort((a, b) => a.length - b.length)[0] ?? ''
   const figmaVariants = variantsOf(figmaNode)
   const figmaVariantPropertiesNotInCode = Object.assign(
     {},
-    ...components.map((component) => mapping[component].figmaVariantPropertiesNotInCode),
-  )
-  const matchedFigma = new Set()
+    ...components.map((component) => mappedComponents.get(component)?.figmaVariantPropertiesNotInCode),
+  ) as Record<string, unknown>
+  const matchedFigma = new Set<string>()
 
   for (const component of components) {
-    const { propsNotInFigma = {}, propsWithDifferentValuesInFigma = {} } = mapping[component]
+    const { propsNotInFigma = {}, propsWithDifferentValuesInFigma = {} } = mappedComponents.get(component) ?? {}
     const props = componentList[component]?.props ?? {}
 
     for (const [propName, prop] of Object.entries(props)) {
@@ -271,16 +303,18 @@ for (const [nodeId, components] of componentsByNode) {
         )
       }
 
+      const figmaOptions = figmaVariants[figmaName] ?? []
       const codeValues = values.map(comparisonKey)
       const hasDefault = prop.default !== undefined
       // Figma's None stands for an optional prop left unset, which code has no value for.
-      const isUnsetStandIn = (value) => value === UNSET_OPTION && !hasDefault && !codeValues.includes(UNSET_OPTION)
-      const figmaValues = figmaVariants[figmaName].map(comparisonKey).filter((value) => !isUnsetStandIn(value))
+      const isUnsetStandIn = (value: string) =>
+        value === UNSET_OPTION && !hasDefault && !codeValues.includes(UNSET_OPTION)
+      const figmaValues = figmaOptions.map(comparisonKey).filter((value) => !isUnsetStandIn(value))
       const isSame = isSameSet(codeValues, figmaValues)
       if (!isSame && !(propName in propsWithDifferentValuesInFigma)) {
         problems.push(
           `${component}.${propName} is ${values.join(' | ')} in code, ` +
-            `but ${figmaName} on Figma's "${figmaNode.name}" is ${figmaVariants[figmaName].join(' | ')}`,
+            `but ${figmaName} on Figma's "${figmaNode.name}" is ${figmaOptions.join(' | ')}`,
         )
       } else if (isSame && propName in propsWithDifferentValuesInFigma) {
         problems.push(
@@ -298,10 +332,10 @@ for (const [nodeId, components] of componentsByNode) {
     }
   }
 
-  for (const figmaName of Object.keys(figmaVariants)) {
+  for (const [figmaName, options] of Object.entries(figmaVariants)) {
     if (matchedFigma.has(figmaName) || figmaName in figmaVariantPropertiesNotInCode) continue
     problems.push(
-      `Figma's "${figmaNode.name}" has a ${figmaName} variant (${figmaVariants[figmaName].join(', ')}) that no prop of ` +
+      `Figma's "${figmaNode.name}" has a ${figmaName} variant (${options.join(', ')}) that no prop of ` +
         `${components.join(', ')} matches: add the prop, or list it in figma-components.json's figmaVariantPropertiesNotInCode with the props it comes from`,
     )
   }
@@ -319,30 +353,32 @@ for (const [nodeId, components] of componentsByNode) {
 // The usage guides. A component the code names is looked for by its Figma
 // name, or its own for one Figma lacks; spaces and case don't count, so
 // StretchedLink is found as "Stretched link".
-const figmaNameOf = (component) => mapping[component]?.figmaName ?? component
+const figmaNameOf = (component: string) => mappedComponents.get(component)?.figmaName ?? component
 for (const [component, { figmaName }] of docs ? guidedEntries : []) {
-  const guide = componentList[component].guidance
-  const texts = docs[figmaName]
+  const guide = componentList[component]?.guidance ?? {}
+  const whenToUseLines = guide.whenToUse ?? []
+  const whenNotToUseLines = guide.whenNotToUse ?? []
+  const texts = docs?.[figmaName]
   const figmaGuideLines = texts && figmaGuide(texts)
   if (!figmaGuideLines) {
     problems.push(`${component} has a usage guide, but Figma's "${figmaName}" docs section has none: add it there`)
     continue
   }
   const sections = [
-    ['whenToUse', GUIDE_LABELS.whenToUse, guide.whenToUse],
-    ['whenNotToUse', GUIDE_LABELS.whenNotToUse, guide.whenNotToUse],
+    { label: GUIDE_LABELS.whenToUse, lines: whenToUseLines, figmaLines: figmaGuideLines.whenToUse },
+    { label: GUIDE_LABELS.whenNotToUse, lines: whenNotToUseLines, figmaLines: figmaGuideLines.whenNotToUse },
   ]
-  for (const [section, label, lines] of sections) {
-    if (lines.length !== figmaGuideLines[section].length) {
+  for (const { label, lines, figmaLines } of sections) {
+    if (lines.length !== figmaLines.length) {
       problems.push(
-        `${component}'s usage guide has ${lines.length} ${label} lines in code, ${figmaGuideLines[section].length} in Figma's "${figmaName}": ` +
+        `${component}'s usage guide has ${lines.length} ${label} lines in code, ${figmaLines.length} in Figma's "${figmaName}": ` +
           `bring the side that's behind up to date`,
       )
     }
   }
   const insteadText = comparisonKey(figmaGuideLines.whenNotToUse.join(' '))
   const namedAlternatives = new Set(
-    guide.whenNotToUse.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, alternative]) => alternative)),
+    whenNotToUseLines.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, alternative = '']) => alternative)),
   )
   for (const alternative of namedAlternatives) {
     if (!(alternative in componentList) || insteadText.includes(comparisonKey(figmaNameOf(alternative)))) continue

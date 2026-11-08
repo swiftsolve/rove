@@ -21,7 +21,7 @@
  * in Figma. The dev mock
  * (src/bridge/mock-network-api.ts), tests and assets aren't checked.
  *
- *   node scripts/checks/text-styles.mjs
+ *   node scripts/checks/text-styles.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -34,36 +34,38 @@ const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')
 // The Tailwind theme src/styles/tailwind.css imports.
 const THEME = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tailwind-theme.css')
 
+type AllowedEntry = { file: string; value: string }
+
 /** Sizes that stay, by file and the exact text flagged. */
-const ALLOWED = [
+const ALLOWED: AllowedEntry[] = [
   // The About page's wordmark, at Display's size: no sans style is that large.
   { file: 'src/features/about/AboutView.tsx', value: 'text-3xl' },
   // A flag emoji in a fixed slot, sized like an icon, not text.
   { file: 'src/features/apps/components/HostRow.tsx', value: 'text-sm' },
 ]
 
-async function listFiles(dir) {
+async function listFiles(dir: string): Promise<string[]> {
   if (SKIPPED.includes(dir)) return []
   const entries = await readdir(dir, { withFileTypes: true })
   const nested = await Promise.all(
-    entries.map((entry) => (entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)])),
+    entries.map(async (entry) => (entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)])),
   )
   return nested.flat().filter((path) => !SKIPPED.includes(path))
 }
 
 /** Blank out comments, keeping line numbers. `//` after a `:` is a URL, not a comment. */
-function stripComments(code, isCss) {
-  const blank = (text) => text.replace(/[^\n]/g, ' ')
+function stripComments(code: string, isCss: boolean): string {
+  const blank = (text: string) => text.replace(/[^\n]/g, ' ')
   const withoutBlocks = code.replace(/\/\*[\s\S]*?\*\//g, blank)
   return isCss
     ? withoutBlocks
-    : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_, before, comment) => before + blank(comment))
+    : withoutBlocks.replace(/(^|[^:])(\/\/.*)$/gm, (_match, before: string, comment: string) => before + blank(comment))
 }
 
 const themeCss = await readFile(THEME, 'utf8')
-const SIZE_STEPS = [...themeCss.matchAll(/--text-([\w-]+)\s*:\s*var\(--font-size-/g)].map(([, step]) => step)
+const SIZE_STEPS = [...themeCss.matchAll(/--text-([\w-]+)\s*:\s*var\(--font-size-/g)].map((match) => match[1] ?? '')
 if (SIZE_STEPS.length === 0) {
-  console.error(`scripts/checks/text-styles.mjs: found no --text-* sizes in ${relative(ROOT, THEME)}`)
+  console.error(`scripts/checks/text-styles.ts: found no --text-* sizes in ${relative(ROOT, THEME)}`)
   process.exit(1)
 }
 
@@ -77,15 +79,15 @@ const CSS_FONT_SIZE = /(?<![\w-])font-size\s*:\s*([^;}\n]+)/g
 const STYLE_SIZE_VARIABLE = /^var\(--type-[\w-]+-size\)$/
 
 const files = (await listFiles(SRC)).filter((file) => /\.(?:css|tsx?)$/.test(file) && !/\.test\.tsx?$/.test(file))
-const problems = []
-const usedAllowedEntries = new Set()
+const problems: string[] = []
+const usedAllowedEntries = new Set<AllowedEntry>()
 
 for (const file of files) {
   const relativePath = relative(ROOT, file)
   const isCss = file.endsWith('.css')
   const code = stripComments(await readFile(file, 'utf8'), isCss)
 
-  const report = (index, value, message) => {
+  const report = (index: number, value: string, message: string) => {
     const entry = ALLOWED.find((allowed) => allowed.file === relativePath && allowed.value === value)
     if (entry) {
       usedAllowedEntries.add(entry)
@@ -96,7 +98,7 @@ for (const file of files) {
   }
 
   for (const match of code.matchAll(CSS_FONT_SIZE)) {
-    const value = match[1].trim()
+    const value = (match[1] ?? '').trim()
     if (STYLE_SIZE_VARIABLE.test(value)) continue
     report(
       match.index,
@@ -119,7 +121,7 @@ for (const file of files) {
 for (const entry of ALLOWED) {
   if (!usedAllowedEntries.has(entry))
     problems.push(
-      `scripts/checks/text-styles.mjs: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`,
+      `scripts/checks/text-styles.ts: ALLOWED lists ${entry.value} in ${entry.file}, which no longer has it`,
     )
 }
 

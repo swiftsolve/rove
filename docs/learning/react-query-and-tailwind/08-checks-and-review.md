@@ -8,7 +8,7 @@ Part 8 of [Learning Rove's UI](README.md).
 
 Some rules in [src/README.md](../../../src/README.md) and
 [src/ui/README.md](../../../src/ui/README.md) end with a tag like
-**[✓ CHECKED by `checks/raw-values.mjs`]**. It means `npm run check` fails if
+**[✓ CHECKED by `checks/raw-values.ts`]**. It means `npm run check` fails if
 you break the rule, and the file it names is the check, so you can open it to
 see exactly what counts. A rule without the tag is judgment: nothing stops
 you, and review has to notice.
@@ -26,7 +26,7 @@ From [package.json](../../../package.json):
 ```
 
 In order: TypeScript; ESLint, Prettier and every script in `scripts/checks`
-(through [run.mjs](../../../scripts/checks/run.mjs), which also runs each
+(through [run.ts](../../../scripts/checks/run.ts), which also runs each
 generator in `scripts/gen` with `--check`); then Vitest, which runs the unit
 and DOM tests and every story, with its `play` function and axe.
 
@@ -35,20 +35,20 @@ Each file's opening comment says what it guards. In short:
 | File | Fails on |
 | --- | --- |
 | [eslint.config.js](../../../eslint.config.js) | A feature importing inside `src/ui`, the library importing app code, a context read without its hook; a boolean not named as a question; `interface`; a bare `<button>` outside the library; a typed `·`, `•` or lone `—`; an em dash in copy; a lint exception with no reason |
-| [eslint/comments.mjs](../../../scripts/eslint/comments.mjs) | A `//` note over 6 lines, a `/** */` doc over 10 |
-| [checks/raw-values.mjs](../../../scripts/checks/raw-values.mjs) | A raw colour or easing, a value that has a token (`p-[12px]`), spacing or a corner off the scale |
-| [checks/text-styles.mjs](../../../scripts/checks/text-styles.mjs) | A font size with no text style |
-| [checks/ui-classname.mjs](../../../scripts/checks/ui-classname.mjs) | A `className` that restyles a library component instead of placing it |
-| [checks/custom-properties.mjs](../../../scripts/checks/custom-properties.mjs) | A `var(--…)` nothing defines, such as a typo |
-| [checks/figma-library.mjs](../../../scripts/checks/figma-library.mjs) | The library and the Figma file disagreeing: a node, a name, a variant's values, a usage guide's lines (skipped without `FIGMA_TOKEN`) |
-| [gen/components.mjs](../../../scripts/gen/components.mjs) | A stale `components.gen.json`; a component or prop without a doc comment, a Figma entry or a usage guide; a handler no `play` story drives |
-| [gen/cn-theme.mjs](../../../scripts/gen/cn-theme.mjs) | A stale `cn-theme.gen.json`, so `cn` would miss a theme name ([chapter 3](03-cva-cx-cn.md)) |
+| [eslint/comments.ts](../../../scripts/eslint/comments.ts) | A `//` note over 6 lines, a `/** */` doc over 10 |
+| [checks/raw-values.ts](../../../scripts/checks/raw-values.ts) | A raw colour or easing, a value that has a token (`p-[12px]`), spacing or a corner off the scale |
+| [checks/text-styles.ts](../../../scripts/checks/text-styles.ts) | A font size with no text style |
+| [checks/ui-classname.ts](../../../scripts/checks/ui-classname.ts) | A `className` that restyles a library component instead of placing it |
+| [checks/custom-properties.ts](../../../scripts/checks/custom-properties.ts) | A `var(--…)` nothing defines, such as a typo |
+| [checks/figma-library.ts](../../../scripts/checks/figma-library.ts) | The library and the Figma file disagreeing: a node, a name, a variant's values, a usage guide's lines (skipped without `FIGMA_TOKEN`) |
+| [gen/components.ts](../../../scripts/gen/components.ts) | A stale `components.gen.json`; a component or prop without a doc comment, a Figma entry or a usage guide; a handler no `play` story drives |
+| [gen/cn-theme.ts](../../../scripts/gen/cn-theme.ts) | A stale `cn-theme.gen.json`, so `cn` would miss a theme name ([chapter 3](03-cva-cx-cn.md)) |
 
 ## Exceptions carry a reason
 
 Sometimes a raw value is right. The check doesn't ban it; it wants the reason
 written down, beside the exception
-([raw-values.mjs](../../../scripts/checks/raw-values.mjs)):
+([raw-values.ts](../../../scripts/checks/raw-values.ts)):
 
 ```js
   // A scanner needs dark modules on white in both themes.

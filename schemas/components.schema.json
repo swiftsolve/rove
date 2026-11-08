@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "UI library components",
-  "description": "components.gen.json: the UI library's public API in one file, written by scripts/gen/components.mjs from src/ui. Import everything from @/ui.",
+  "description": "components.gen.json: the UI library's public API in one file, written by scripts/gen/components.ts from src/ui. Import everything from @/ui.",
   "type": "object",
   "required": ["figmaFileUrl", "components", "iconNames", "otherExports"],
   "additionalProperties": false,

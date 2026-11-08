@@ -25,7 +25,7 @@ The rules a screen follows (where code goes, names and copy, styles) are in
 ## Done
 
 - `npm run check` and `npm run a11y` pass. The audit visits only the places
-  in `SCENARIOS` (`scripts/a11y-audit.mjs`): it fails on a tab with none, but
+  in `SCENARIOS` (`scripts/a11y-audit.ts`): it fails on a tab with none, but
   a new subpage, dialog or menu gets its line there by hand.
 - `npm run dev` in both themes, and `npm run screenshots -- --stable --out
   <dir>` (and `--theme light`): read the PNGs for the new screen.

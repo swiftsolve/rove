@@ -103,7 +103,7 @@ const preview: Preview = {
     a11y: {
       test: 'error',
       // Base UI's focus guards are hidden yet focusable by design; the app's
-      // audit (scripts/a11y-audit.mjs) leaves them out too.
+      // audit (scripts/a11y-audit.ts) leaves them out too.
       context: { include: ['body'], exclude: ['[data-base-ui-focus-guard]'] },
     },
   },

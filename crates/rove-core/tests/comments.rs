@@ -1,5 +1,5 @@
 //! The house rule for comments, as the UI's ESLint rule holds it
-//! (`scripts/eslint/comments.mjs`), over every `.rs` file in the workspace:
+//! (`scripts/eslint/comments.ts`), over every `.rs` file in the workspace:
 //! short, a `//` note in at most 6 lines of text, a `///` doc in at most 10,
 //! and anything longer belongs in `docs/`. A module's `//!` header, which
 //! documents the whole file, is exempt.

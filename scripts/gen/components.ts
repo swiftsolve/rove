@@ -13,8 +13,8 @@
  *
  * Icons, hooks and helpers follow, by name and doc comment.
  *
- *   node scripts/gen/components.mjs           # rewrite components.gen.json
- *   node scripts/gen/components.mjs --check   # fail if it's stale or incomplete
+ *   node scripts/gen/components.ts           # rewrite components.gen.json
+ *   node scripts/gen/components.ts --check   # fail if it's stale or incomplete
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
  * own props has no doc comment, or a component has no entry in figma-components.json (`{ whyNoFigmaComponent }` says why it has no Figma counterpart), or a
@@ -30,11 +30,18 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { withCustomConfig } from 'react-docgen-typescript'
+import { type ComponentDoc, type PropItem, withCustomConfig } from 'react-docgen-typescript'
 import { storyNameFromExport, toId } from 'storybook/internal/csf'
 import ts from 'typescript'
 
-import { schemaProblems } from '../lib/json-schema.mjs'
+import { schemaProblems } from '../lib/json-schema.ts'
+import type {
+  ComponentEntry,
+  ComponentListJson,
+  FigmaComponentsJson,
+  Guidance,
+  PropEntry,
+} from '../lib/library-json-types.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const UI_DIR = join(ROOT, 'src/ui')
@@ -46,22 +53,29 @@ const COMPONENT_LIST_SCHEMA = join(ROOT, 'schemas/components.schema.json')
 const FIGMA_COMPONENTS_SCHEMA = join(ROOT, 'schemas/figma-components.schema.json')
 const isCheck = process.argv.includes('--check')
 
-const problems = []
-const relativeToRoot = (path) => relative(ROOT, path)
+/** A component the index exports, under its group's comment, and the file it comes from. */
+type LibraryComponent = { name: string; group: string; source: string }
+/** What a component's stories file gives: its story ids, and whether it drives the component and has a guide. */
+type StoriesInfo = { ids: string[]; file: string | null; hasInteraction?: boolean; guidance?: Guidance | null }
+/** A `guidance` literal as plain data. */
+type GuidanceData = string | GuidanceData[] | { [key: string]: GuidanceData }
+
+const problems: string[] = []
+const relativeToRoot = (path: string) => relative(ROOT, path)
 
 // The index's grouped exports: a `// Group` line starts a group, a blank line
 // ends it. Exports outside a group (icons, hooks, helpers) aren't components.
-async function readIndex() {
-  const components = []
-  let group = null
+async function readIndex(): Promise<LibraryComponent[]> {
+  const components: LibraryComponent[] = []
+  let group: string | null = null
   for (const line of (await readFile(UI_INDEX, 'utf8')).split('\n')) {
-    const comment = line.match(/^\/\/ (.+)$/)
-    if (comment) group = comment[1]
+    const [, groupComment] = /^\/\/ (.+)$/.exec(line) ?? []
+    if (groupComment) group = groupComment
     if (line.trim() === '') group = null
-    const exported = line.match(/^export \{ (.+) \} from '(.+)'$/)
-    if (!exported || !group) continue
-    const source = join(UI_DIR, `${exported[2]}.tsx`)
-    for (const name of exported[1].split(', ')) {
+    const [, exportedNames, fromPath] = /^export \{ (.+) \} from '(.+)'$/.exec(line) ?? []
+    if (!exportedNames || !fromPath || !group) continue
+    const source = join(UI_DIR, `${fromPath}.tsx`)
+    for (const name of exportedNames.split(', ')) {
       // A component is PascalCase; types and constants (POLLING_DESCRIPTION) aren't.
       if (/^[A-Z][a-z]/.test(name)) components.push({ name, group, source })
     }
@@ -69,8 +83,8 @@ async function readIndex() {
   return components
 }
 
-function readProps(components) {
-  const elementProps = new Set()
+function readProps(components: LibraryComponent[]): { docs: Map<string, ComponentDoc>; elementProps: Set<string> } {
+  const elementProps = new Set<string>()
   const parser = withCustomConfig(join(ROOT, 'tsconfig.json'), {
     shouldExtractLiteralValuesFromEnum: true,
     shouldRemoveUndefinedFromOptional: true,
@@ -79,7 +93,7 @@ function readProps(components) {
     skipChildrenPropWithoutDoc: false,
     // A prop from a package is the DOM element's own attribute, passed through.
     propFilter: (prop, component) => {
-      const isOwn = !prop.parent || !prop.parent.fileName.includes('node_modules')
+      const isOwn = !prop.parent?.fileName.includes('node_modules')
       if (!isOwn) elementProps.add(component.name)
       return isOwn
     },
@@ -89,55 +103,63 @@ function readProps(components) {
   return { docs, elementProps }
 }
 
-function describeProp(prop) {
-  const entry = {}
-  if (prop.type.name === 'enum' && prop.type.value?.every(({ value }) => /^["\d]/.test(value))) {
-    entry.values = prop.type.value.map(({ value }) => JSON.parse(value))
+function describeProp(prop: PropItem): PropEntry {
+  const entry: Partial<PropEntry> = {}
+  // An enum's members, each as its source text: `"sm"`, `2`, or a type name.
+  const enumMembers = prop.type.name === 'enum' ? (prop.type.value as { value: string }[] | undefined) : undefined
+  if (enumMembers?.every(({ value }) => /^["\d]/.test(value))) {
+    entry.values = enumMembers.map(({ value }) => JSON.parse(value) as string | number)
   } else {
     entry.type = prop.type.raw ?? prop.type.name
   }
-  if (prop.defaultValue?.value !== undefined) entry.default = prop.defaultValue.value
+  const defaultValue = (prop.defaultValue as { value?: string } | null)?.value
+  if (defaultValue !== undefined) entry.default = defaultValue
   if (prop.required) entry.isRequired = true
   if (prop.description) entry.description = prop.description
-  return entry
+  // A prop with no description is reported, and fails the schema check.
+  return entry as PropEntry
 }
 
 // The `guidance` object literal in a stories file, as plain data: its string
 // arrays and nested objects. Null when the file sets none.
-function readGuidance(file, text) {
+function readGuidance(file: string, text: string): Guidance | null {
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
-  const toData = (node) => {
+  const toData = (node: ts.Expression): GuidanceData => {
     if (ts.isSatisfiesExpression(node) || ts.isAsExpression(node)) return toData(node.expression)
     if (ts.isStringLiteralLike(node)) return node.text
     if (ts.isArrayLiteralExpression(node)) return node.elements.map(toData)
     if (ts.isObjectLiteralExpression(node)) {
       return Object.fromEntries(
-        node.properties.map((property) => [property.name.getText(), toData(property.initializer)]),
+        node.properties.map((property) => {
+          if (!ts.isPropertyAssignment(property)) throw notPlainData()
+          return [property.name.getText(), toData(property.initializer)]
+        }),
       )
     }
-    throw new Error(`${relativeToRoot(file)}: guidance holds only strings, arrays and objects`)
+    throw notPlainData()
   }
-  let guidance = null
-  const visit = (node) => {
-    if (ts.isPropertyAssignment(node) && node.name.getText() === 'guidance') guidance = toData(node.initializer)
-    else ts.forEachChild(node, visit)
+  const notPlainData = () => new Error(`${relativeToRoot(file)}: guidance holds only strings, arrays and objects`)
+  const findGuidance = (node: ts.Node): ts.Expression | undefined => {
+    if (ts.isPropertyAssignment(node) && node.name.getText() === 'guidance') return node.initializer
+    return ts.forEachChild(node, findGuidance)
   }
-  visit(sourceFile)
-  return guidance
+  const guidance = findGuidance(sourceFile)
+  // The schema check below holds the data to Guidance's shape.
+  return guidance ? (toData(guidance) as Guidance) : null
 }
 
 // Story ids, from a component's own stories file beside its module
 // (card/CardBody.stories.tsx), or else the module's (Badge.tsx ↔ Badge.stories.tsx).
 // A component whose Docs page it is (the title ends in its name, and isn't a
 // part's under its parent) also takes the file's usage guide.
-async function readStories(source, name) {
+async function readStories(source: string, name: string): Promise<StoriesInfo> {
   const ownStoriesFile = join(dirname(source), `${name}.stories.tsx`)
   const file = existsSync(ownStoriesFile) ? ownStoriesFile : source.replace(/\.tsx$/, '.stories.tsx')
   const text = await readFile(file, 'utf8').catch(() => null)
   if (text === null) return { ids: [], file: null }
-  const title = text.match(/title: '(.+?)'/)?.[1]
+  const title = /title: '(.+?)'/.exec(text)?.[1]
   if (!title) return { ids: [], file }
-  const ids = [...text.matchAll(/^export const (\w+)/gm)].map(([, exportName]) =>
+  const ids = [...text.matchAll(/^export const (\w+)/gm)].map(([, exportName = '']) =>
     toId(title, storyNameFromExport(exportName)),
   )
   const hasInteraction = hasInteractionStory(file, text)
@@ -153,18 +175,19 @@ async function readStories(source, name) {
 // Whether a stories file has a story that drives the component: an exported
 // story object with a `play` function, tagged `!autodocs` so it stays off the
 // Docs page.
-function hasInteractionStory(file, text) {
+function hasInteractionStory(file: string, text: string): boolean {
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   return sourceFile.statements.some((statement) => {
+    if (!ts.isVariableStatement(statement)) return false
     const isExported = statement.modifiers?.some(({ kind }) => kind === ts.SyntaxKind.ExportKeyword)
-    if (!isExported || !ts.isVariableStatement(statement)) return false
+    if (!isExported) return false
     return statement.declarationList.declarations.some(({ initializer }) => {
       if (!initializer || !ts.isObjectLiteralExpression(initializer)) return false
-      const findProperty = (key) => initializer.properties.find((p) => p.name?.getText() === key)
+      const findProperty = (key: string) => initializer.properties.find((p) => p.name?.getText() === key)
       const tags = findProperty('tags')
       return (
-        Boolean(findProperty('play')) &&
-        Boolean(tags) &&
+        findProperty('play') !== undefined &&
+        tags !== undefined &&
         ts.isPropertyAssignment(tags) &&
         ts.isArrayLiteralExpression(tags.initializer) &&
         tags.initializer.elements.some((tag) => ts.isStringLiteralLike(tag) && tag.text === '!autodocs')
@@ -174,16 +197,18 @@ function hasInteractionStory(file, text) {
 }
 
 // Every other export of the index, with its doc comment, through the compiler.
-function readOtherExports(componentNames) {
+function readOtherExports(componentNames: Set<string>): Pick<ComponentListJson, 'iconNames' | 'otherExports'> {
   const program = ts.createProgram([UI_INDEX], {
     jsx: ts.JsxEmit.ReactJSX,
     allowImportingTsExtensions: true,
     noEmit: true,
   })
   const checker = program.getTypeChecker()
-  const indexModule = checker.getSymbolAtLocation(program.getSourceFile(UI_INDEX))
-  const iconNames = []
-  const otherExports = {}
+  const indexFile = program.getSourceFile(UI_INDEX)
+  const indexModule = indexFile && checker.getSymbolAtLocation(indexFile)
+  if (!indexModule) throw new Error(`${relativeToRoot(UI_INDEX)}: the compiler found no module`)
+  const iconNames: string[] = []
+  const otherExports: Record<string, string> = {}
   for (const symbol of checker.getExportsOfModule(indexModule)) {
     const name = symbol.getName()
     if (componentNames.has(name)) continue
@@ -198,12 +223,12 @@ function readOtherExports(componentNames) {
 
 const components = await readIndex()
 const { docs, elementProps } = readProps(components)
-const figmaMap = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8'))
+const figmaMap = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8')) as FigmaComponentsJson
 problems.push(...(await schemaProblems(FIGMA_COMPONENTS_SCHEMA, figmaMap, relativeToRoot(FIGMA_COMPONENTS_JSON))))
-const storiesByName = new Map()
+const storiesByName = new Map<string, StoriesInfo>()
 for (const { name, source } of components) storiesByName.set(name, await readStories(source, name))
 
-const componentEntries = {}
+const componentEntries: Record<string, ComponentEntry> = {}
 for (const { name, group, source } of components) {
   const doc = docs.get(name)
   if (!doc) {
@@ -214,12 +239,14 @@ for (const { name, group, source } of components) {
   for (const prop of Object.values(doc.props)) {
     if (!prop.description) problems.push(`${relativeToRoot(source)}: ${name}'s ${prop.name} prop needs a doc comment`)
   }
-  if (!(name in figmaMap.components)) {
+  const figmaEntry = figmaMap.components[name]
+  if (!figmaEntry) {
     problems.push(
       `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: add ${name}, with its Figma component, or { whyNoFigmaComponent } if it has none`,
     )
   }
-  const figmaVariantPropertiesNotInCode = figmaMap.components[name]?.figmaVariantPropertiesNotInCode ?? {}
+  const figmaVariantPropertiesNotInCode =
+    figmaEntry && 'figmaNodeId' in figmaEntry ? (figmaEntry.figmaVariantPropertiesNotInCode ?? {}) : {}
   for (const [figmaName, { fromProps }] of Object.entries(figmaVariantPropertiesNotInCode)) {
     for (const propName of fromProps.filter((propName) => !(propName in doc.props))) {
       problems.push(
@@ -227,7 +254,7 @@ for (const { name, group, source } of components) {
       )
     }
   }
-  const stories = storiesByName.get(name)
+  const stories = storiesByName.get(name) ?? { ids: [], file: null }
   const handlerProp = Object.keys(doc.props).find((prop) => /^on[A-Z]/.test(prop))
   if (handlerProp && stories.file && !stories.hasInteraction) {
     problems.push(
@@ -239,7 +266,7 @@ for (const { name, group, source } of components) {
     libraryGroup: group,
     sourceFile: relativeToRoot(source),
     description: doc.description,
-    figmaComponent: figmaMap.components[name] ?? null,
+    figmaComponent: figmaEntry ?? null,
     props: Object.fromEntries(
       Object.values(doc.props)
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -256,7 +283,7 @@ for (const name of Object.keys(figmaMap.components)) {
   }
 }
 
-const componentList = {
+const componentList: ComponentListJson = {
   $schema: '../../schemas/components.schema.json',
   $comment:
     'Generated by `npm run gen` from src/ui; edit the code, not this file. The schema says what each key means.',
