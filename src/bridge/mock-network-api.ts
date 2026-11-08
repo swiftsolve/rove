@@ -117,42 +117,102 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
   linkSpeedMbps: MOCK_LINK_CAPACITY_MBPS,
 }
 
+// The real QR code for the mock network's join URI
+// (`WIFI:T:WPA;S:Starlight_5G;P:correct-horse-battery;;`), as the backend
+// encodes it: version 6 at high error correction, 41x41 modules. A row per
+// line, its modules as bits, most significant first, padded to 44.
+const MOCK_QR_ROWS = [
+  'febdd5f0bf8',
+  '826e070ca08',
+  'baeb62afae8',
+  'ba2e33202e8',
+  'bab163abae8',
+  '825ea7d6208',
+  'feaaaaaabf8',
+  '00ae543c800',
+  '06752296aa8',
+  '69302840f18',
+  'ebc3771f460',
+  'cde1ecfd688',
+  'e21850fb5c8',
+  'f4c971e8648',
+  '56ceb544a30',
+  '956e57129d0',
+  '9f9ea488300',
+  'f5bf48613c8',
+  'be04ff1f358',
+  '14b2ebd9fd8',
+  '6b6086da940',
+  '05e025f8278',
+  '4742d470960',
+  'dc3d8df9290',
+  '6b17bc93dc8',
+  '097ef3309c0',
+  '06976578d40',
+  '89b4c7813f0',
+  '33e23efb520',
+  'e4637e629c8',
+  'd630d532b58',
+  'bc9728079b8',
+  'ab50c871fc0',
+  '00ee105d8f8',
+  'fe349815ab0',
+  '82f450bf888',
+  'ba2e5afcf88',
+  'ba349972d40',
+  'ba282c8f770',
+  '82666ebd700',
+  'fe15c497850',
+]
+
 /**
- * A decorative QR-like SVG. It doesn't scan (the backend makes the real one
- * with the `qrcode` crate), but gives the share dialog a faithful shape.
+ * The mock network's QR code, drawn as the backend draws it: rounded eyes and
+ * a dot per dark module. It scans, so the demo's dialog is the real thing.
  */
 export function mockQrSvg(): string {
-  const size = 25
+  const size = MOCK_QR_ROWS.length
   // The blank margin a scanner needs around the code.
   const quietZone = 4
   const side = size + quietZone * 2
-  // The three 7x7 corner squares a scanner locks onto.
-  const finderSize = 7
-  const finderEdge = finderSize - 1
-  const isFinder = (x: number, y: number): boolean => {
-    const isInBox = (bx: number, by: number): boolean => {
-      const dx = x - bx
-      const dy = y - by
-      if (dx < 0 || dx > finderEdge || dy < 0 || dy > finderEdge) return false
-      const isOnRing = dx === 0 || dx === finderEdge || dy === 0 || dy === finderEdge
-      const isInCore = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4
-      return isOnRing || isInCore
-    }
-    return isInBox(0, 0) || isInBox(size - finderSize, 0) || isInBox(0, size - finderSize)
-  }
-  let rects = ''
-  for (let y = 0; y < size; y++) {
+  // The three 7x7 corner finders, and version 6's one 5x5 alignment pattern.
+  const eyes = [
+    { x: 0, y: 0, size: 7 },
+    { x: size - 7, y: 0, size: 7 },
+    { x: 0, y: size - 7, size: 7 },
+    { x: 32, y: 32, size: 5 },
+  ]
+  const isInEye = (x: number, y: number): boolean =>
+    eyes.some((eye) => x >= eye.x && x < eye.x + eye.size && y >= eye.y && y < eye.y + eye.size)
+  let shapes = eyes.map((eye) => eyeSvg(eye.x + quietZone, eye.y + quietZone, eye.size)).join('')
+  MOCK_QR_ROWS.forEach((row, y) => {
+    const bits = BigInt(`0x${row}`)
     for (let x = 0; x < size; x++) {
-      // Finder patterns where they belong, otherwise a deterministic speckle.
-      const isDark = isFinder(x, y) || (x * 7 + y * 13 + x * y) % 3 === 0
-      if (isDark) rects += `<rect x="${x + quietZone}" y="${y + quietZone}" width="1" height="1"/>`
+      const isDark = ((bits >> BigInt(43 - x)) & 1n) === 1n
+      if (isDark && !isInEye(x, y)) {
+        shapes += `<circle cx="${x + quietZone + 0.5}" cy="${y + quietZone + 0.5}" r="0.42"/>`
+      }
     }
-  }
+  })
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" shape-rendering="crispEdges">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}">` +
     `<rect width="${side}" height="${side}" fill="#ffffff"/>` +
-    `<g fill="#000000">${rects}</g></svg>`
+    `<g fill="#000000">${shapes}</g></svg>`
   )
+}
+
+// A rounded finder or alignment pattern, as the backend's `eye_svg` draws it.
+function eyeSvg(x: number, y: number, size: number): string {
+  const centre = size - 4
+  const ring = roundedSquare(x, y, size, size * 0.3) + roundedSquare(x + 1, y + 1, size - 2, (size - 2) * 0.2)
+  return (
+    `<path fill-rule="evenodd" d="${ring}"/>` +
+    `<rect x="${x + 2}" y="${y + 2}" width="${centre}" height="${centre}" rx="${centre * 0.3}"/>`
+  )
+}
+
+function roundedSquare(x: number, y: number, side: number, r: number): string {
+  const edge = side - 2 * r
+  return `M${x + r},${y}h${edge}a${r},${r} 0 0 1 ${r},${r}v${edge}a${r},${r} 0 0 1 -${r},${r}h-${edge}a${r},${r} 0 0 1 -${r},-${r}v-${edge}a${r},${r} 0 0 1 ${r},-${r}z`
 }
 
 const MOCK_WIFI_SHARE: WifiShare = {

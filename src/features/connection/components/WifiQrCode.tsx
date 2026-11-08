@@ -16,9 +16,11 @@ export function WifiQrCode({ svg, alt }: { svg: string; alt: string }) {
         width={240}
         height={240}
       />
-      {/* About a fifth of the code's width: well inside what high error correction recovers. */}
-      <span className="absolute top-1/2 left-1/2 flex size-[48px] -translate-1/2 items-center justify-center rounded-md bg-[#ffffff]">
-        <BrandIcon size={36} hasGradient />
+      {/* Well inside what high error correction recovers. The tile is the
+          mark's ink (28 by 24) with 4px all round; the ring opens at the
+          bottom, so the mark drops 1.75px to centre its ink. */}
+      <span className="absolute top-1/2 left-1/2 flex h-[32px] w-[36px] -translate-1/2 items-center justify-center rounded-md bg-[#ffffff]">
+        <BrandIcon size={34} hasGradient className="translate-y-[1.75px]" />
       </span>
     </div>
   )

@@ -112,9 +112,10 @@ fn build_wifi_uri(ssid: &str, encryption: &str, password: Option<&str>) -> Strin
     }
 }
 
-/// `data` as a self-contained SVG QR code (a 1x1 rect per dark module, white
-/// field, the spec's 4-module quiet zone), so the frontend inlines it as a data
-/// URI with no QR library.
+/// `data` as a self-contained SVG QR code (a dot per dark module, the corner
+/// finders and the alignment patterns as rounded squares, white field, the
+/// spec's 4-module quiet zone), so the frontend inlines it as a data URI with
+/// no QR library.
 fn qr_svg(data: &str) -> Result<String, String> {
     use qrcode::{Color, EcLevel, QrCode};
 
@@ -124,27 +125,85 @@ fn qr_svg(data: &str) -> Result<String, String> {
         .map_err(|e| format!("Could not encode the Wi-Fi QR code: {e}"))?;
     let width = code.width();
     let colors = code.to_colors();
+    let is_dark = |x: usize, y: usize| colors[y * width + x] == Color::Dark;
 
     const QUIET: usize = 4;
+    // A finder is 7x7 modules, in three corners.
+    const FINDER: usize = 7;
     let dim = width + QUIET * 2;
+    // Modules an eye draws whole, so the dots skip them.
+    let mut is_drawn = vec![false; width * width];
+    let mut shapes = String::new();
 
-    let mut rects = String::new();
+    for (fx, fy) in [(0, 0), (width - FINDER, 0), (0, width - FINDER)] {
+        shapes.push_str(&eye_svg(fx + QUIET, fy + QUIET, FINDER));
+        mark_drawn(&mut is_drawn, width, fx, fy, FINDER);
+    }
+    // An alignment pattern: a 5x5 functional block, a dark ring and centre
+    // round a light ring. Drawn whole, as dots break up the ring a scanner
+    // measures.
+    for y in 2..width - 2 {
+        for x in 2..width - 2 {
+            let is_alignment = !is_drawn[y * width + x]
+                && (y - 2..=y + 2).all(|ny| {
+                    (x - 2..=x + 2).all(|nx| {
+                        let ring = nx.abs_diff(x).max(ny.abs_diff(y));
+                        code.is_functional(nx, ny) && !is_drawn[ny * width + nx] && is_dark(nx, ny) == (ring != 1)
+                    })
+                });
+            if is_alignment {
+                shapes.push_str(&eye_svg(x - 2 + QUIET, y - 2 + QUIET, 5));
+                mark_drawn(&mut is_drawn, width, x - 2, y - 2, 5);
+            }
+        }
+    }
     for y in 0..width {
         for x in 0..width {
-            if colors[y * width + x] == Color::Dark {
-                let px = x + QUIET;
-                let py = y + QUIET;
-                rects.push_str(&format!("<rect x=\"{px}\" y=\"{py}\" width=\"1\" height=\"1\"/>"));
+            if is_dark(x, y) && !is_drawn[y * width + x] {
+                let cx = x + QUIET;
+                let cy = y + QUIET;
+                // Dots a little under a module wide, so neighbours stay apart.
+                shapes.push_str(&format!("<circle cx=\"{cx}.5\" cy=\"{cy}.5\" r=\"0.42\"/>"));
             }
         }
     }
 
     Ok(format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {dim} {dim}\" \
-         shape-rendering=\"crispEdges\">\
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {dim} {dim}\">\
          <rect width=\"{dim}\" height=\"{dim}\" fill=\"#ffffff\"/>\
-         <g fill=\"#000000\">{rects}</g></svg>"
+         <g fill=\"#000000\">{shapes}</g></svg>"
     ))
+}
+
+/// Flags the `size` x `size` modules from `(x, y)` as drawn.
+fn mark_drawn(is_drawn: &mut [bool], width: usize, x: usize, y: usize, size: usize) {
+    for row in y..y + size {
+        is_drawn[row * width + x..row * width + x + size].fill(true);
+    }
+}
+
+/// A finder (7) or alignment pattern (5) at module `(x, y)`, rounded: a ring
+/// one module thick round a dark centre, the proportions a scanner locks onto.
+fn eye_svg(x: usize, y: usize, size: usize) -> String {
+    let outer = size as f32;
+    let centre = outer - 4.0;
+    format!(
+        "<path fill-rule=\"evenodd\" d=\"{}{}\"/><rect x=\"{}\" y=\"{}\" width=\"{centre}\" height=\"{centre}\" rx=\"{}\"/>",
+        rounded_square(x as f32, y as f32, outer, outer * 0.3),
+        rounded_square(x as f32 + 1.0, y as f32 + 1.0, outer - 2.0, (outer - 2.0) * 0.2),
+        x + 2,
+        y + 2,
+        centre * 0.3,
+    )
+}
+
+/// A closed path of a `side`-wide square at `(x, y)` with corners of radius `r`.
+fn rounded_square(x: f32, y: f32, side: f32, r: f32) -> String {
+    let edge = side - 2.0 * r;
+    format!(
+        "M{},{y}h{edge}a{r},{r} 0 0 1 {r},{r}v{edge}a{r},{r} 0 0 1 -{r},{r}h-{edge}a{r},{r} 0 0 1 -{r},-{r}v-{edge}a{r},{r} 0 0 1 {r},-{r}z",
+        x + r,
+    )
 }
 
 #[cfg(test)]
