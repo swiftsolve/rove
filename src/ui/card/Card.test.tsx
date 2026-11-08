@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '../button/Button'
 import { Card, focusCardLink } from './Card'
-import { CardHeader } from './CardHeader'
+import { CardHeader } from './components/CardHeader'
 
 describe('Card', () => {
   it('names an openable card’s link by its header’s title', async () => {

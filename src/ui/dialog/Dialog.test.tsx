@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '../button/Button'
-import { Dialog, DialogRoot } from './Dialog'
+import { DialogRoot } from './context/DialogRoot'
+import { Dialog } from './Dialog'
 
 /** Opens the dialog from a button, as the app does, and counts closes. */
 function Harness({ canClose, isDirty }: { canClose?: boolean; isDirty?: boolean }) {

@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 
-import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './Collapsible'
+import { Collapsible } from './Collapsible'
+import { CollapsiblePanel } from './components/CollapsiblePanel'
+import { CollapsibleTrigger } from './components/CollapsibleTrigger'
 
 function Harness() {
   const [isOpen, setIsOpen] = useState(false)

@@ -5,7 +5,8 @@ import { fn } from 'storybook/test'
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Button } from '../button/Button'
 import { PlusIcon, RefreshIcon } from '../icons/Icons'
-import { EmptyState, EmptyStateDescription } from './EmptyState'
+import { EmptyStateDescription } from './components/EmptyStateDescription'
+import { EmptyState } from './EmptyState'
 
 const meta = {
   title: 'Status and feedback/EmptyState',

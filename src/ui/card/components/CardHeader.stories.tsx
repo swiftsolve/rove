@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 
-import { Badge } from '../badge/Badge'
-import { IconButton } from '../button/IconButton'
-import { iconArg, iconElementControl } from '../icons/icon-options'
-import { RefreshIcon } from '../icons/Icons'
-import { Card } from './Card'
+import { Badge } from '../../badge/Badge'
+import { IconButton } from '../../button/IconButton'
+import { iconArg, iconElementControl } from '../../icons/icon-options'
+import { RefreshIcon } from '../../icons/Icons'
+import { Card } from '../Card'
 import { CardBody } from './CardBody'
 import { CardHeader } from './CardHeader'
 

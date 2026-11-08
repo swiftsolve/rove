@@ -15,6 +15,15 @@ library imports only itself (by relative path) and packages, never app code.
 - Each component has its own kebab-case folder at the top of `src/ui`, with
   its tests (`button/` holds Button and IconButton). There are no tiers: a
   component that starts using another stays where it is.
+- A family's folder is laid out like a feature's. Its main component sits at
+  the top with its tests and stories, beside any independent sibling
+  (IconButton). Each part that only works inside it is a file in
+  `components/`, a context it shares is in `context/` with its provider, a
+  hook only the family uses is in `hooks/`, and values its files share are in
+  `utils/`: `card/components/CardHeader.tsx`, `card/context/card-context.ts`,
+  `card/hooks/useCardContext.ts`, `nav-rail/utils/active-bar.ts`.
+  - A context is read through its hook and provided by its provider, as in
+    the app. [✓ CHECKED by `eslint.config.js`]
 - `index.ts`'s group comments (Actions, Inputs, Overlays…) group them by
   purpose, and the stories' titles and the Figma file's component pages follow
   the same groups in the same order.
@@ -32,8 +41,9 @@ library imports only itself (by relative path) and packages, never app code.
 - A family sits in a folder named for its parent (`Containers/Card/CardHeader`),
   and the parent's page shows its parts' props as tabs (`subcomponents`).
   - A part with props of its own (`CardBody`, `NavItem`) gets its own stories
-    file beside its module (`card/CardBody.stories.tsx`), so its props have
-    controls, which subcomponent tabs can't give.
+    file beside its module (`card/components/CardBody.stories.tsx`), so its
+    props have controls, which subcomponent tabs can't give. A part without
+    one takes its family's (`menu/Menu.stories.tsx`).
   - The order within a folder is set in `.storybook/preview.tsx`.
 - A component that takes a handler (`onClick`, `onChange`, `onBack`) has a
   story that drives it with a `play` function.

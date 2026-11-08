@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { TitleBarStatus } from './TitleBar'
+import { TitleBarStatus } from './TitleBarStatus'
 
 const meta = {
   title: 'App frame/TitleBar/TitleBarStatus',

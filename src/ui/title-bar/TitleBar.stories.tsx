@@ -3,7 +3,9 @@ import { fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BrandIcon } from '../icons/BrandIcon'
-import { TitleBar, TitleBarStatus, WindowButton } from './TitleBar'
+import { TitleBarStatus } from './components/TitleBarStatus'
+import { WindowButton } from './components/WindowButton'
+import { TitleBar } from './TitleBar'
 
 const brand = (
   <>

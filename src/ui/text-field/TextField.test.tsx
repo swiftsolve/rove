@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '../button/Button'
-import { TextField, TextFieldAction } from './TextField'
+import { TextFieldAction } from './components/TextFieldAction'
+import { TextField } from './TextField'
 
 function Harness({ onSubmit, onTest }: { onSubmit: () => void; onTest: () => void }) {
   const [address, setAddress] = useState('')

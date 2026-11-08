@@ -3,7 +3,7 @@ import { type ComponentProps, type ReactNode, useId } from 'react'
 
 import { StretchedLink } from '../link/StretchedLink'
 import { cn } from '../utils/cn'
-import { CardContext } from './card-context'
+import { CardProvider } from './context/CardProvider'
 
 type CardProps = Omit<ComponentProps<'section'>, 'className' | 'children'> & {
   /**
@@ -51,7 +51,7 @@ export function Card({ as: Element = 'section', onOpen, linkLabel, className, ch
   const titleId = useId()
   const isOpenable = onOpen != null
   return (
-    <CardContext value={{ titleId, isOpenable }}>
+    <CardProvider value={{ titleId, isOpenable }}>
       <Element
         // The ref is typed for a `section`; the cast lets it fit a `div` or `li`.
         ref={ref as never}
@@ -66,7 +66,7 @@ export function Card({ as: Element = 'section', onOpen, linkLabel, className, ch
         )}
         {children}
       </Element>
-    </CardContext>
+    </CardProvider>
   )
 }
 

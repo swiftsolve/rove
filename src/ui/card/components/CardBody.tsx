@@ -1,8 +1,8 @@
 import { cva } from 'class-variance-authority'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cn } from '../utils/cn'
-import type { VariantOf } from '../utils/variants'
+import { cn } from '../../utils/cn'
+import type { VariantOf } from '../../utils/variants'
 
 // The body's padding, by what it holds. Rows that carry their own vertical
 // padding stack with none above them, and just enough below to clear a footer

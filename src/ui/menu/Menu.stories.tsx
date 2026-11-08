@@ -4,7 +4,10 @@ import { expect, fn, screen, waitFor, within } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { EditIcon, TrashIcon } from '../icons/Icons'
-import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
+import { MenuContent } from './components/MenuContent'
+import { MenuItem } from './components/MenuItem'
+import { MenuTrigger } from './components/MenuTrigger'
+import { Menu } from './Menu'
 
 const onEdit = fn()
 const onRemove = fn()

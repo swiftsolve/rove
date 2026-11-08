@@ -3,7 +3,8 @@ import { type ComponentProps, useState } from 'react'
 import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
-import { TextField, TextFieldAction } from './TextField'
+import { TextFieldAction } from './components/TextFieldAction'
+import { TextField } from './TextField'
 
 const onTest = fn()
 

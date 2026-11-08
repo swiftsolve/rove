@@ -379,7 +379,7 @@
     },
     "MenuContent": {
       "libraryGroup": "Actions",
-      "sourceFile": "src/ui/menu/Menu.tsx",
+      "sourceFile": "src/ui/menu/components/MenuContent.tsx",
       "description": "The dropdown, under the kebab and lined up with its right edge.",
       "figmaComponent": {
         "figmaName": "Menu",
@@ -403,7 +403,7 @@
     },
     "MenuItem": {
       "libraryGroup": "Actions",
-      "sourceFile": "src/ui/menu/Menu.tsx",
+      "sourceFile": "src/ui/menu/components/MenuItem.tsx",
       "description": "One action in a MenuContent.",
       "figmaComponent": {
         "figmaName": "Menu item",
@@ -444,7 +444,7 @@
     },
     "MenuTrigger": {
       "libraryGroup": "Actions",
-      "sourceFile": "src/ui/menu/Menu.tsx",
+      "sourceFile": "src/ui/menu/components/MenuTrigger.tsx",
       "description": "The kebab that opens the menu. `className` is for where it sits (a row that reveals it on hover).",
       "figmaComponent": {
         "figmaName": "Menu trigger",
@@ -557,7 +557,7 @@
     },
     "TextFieldAction": {
       "libraryGroup": "Inputs",
-      "sourceFile": "src/ui/text-field/TextField.tsx",
+      "sourceFile": "src/ui/text-field/components/TextFieldAction.tsx",
       "description": "The button inside a TextField's border (Test). Disabled and loading work as on Button.",
       "figmaComponent": {
         "figmaName": "Text field",
@@ -807,7 +807,7 @@
     },
     "DialogRoot": {
       "libraryGroup": "Overlays",
-      "sourceFile": "src/ui/dialog/Dialog.tsx",
+      "sourceFile": "src/ui/dialog/context/DialogRoot.tsx",
       "description": "Opens and closes a Dialog. Its children mount when `isOpen` turns true and\nstay mounted until the Dialog's leave animation ends after it turns false,\nso the component that renders the Dialog (and its state) lives only that long.",
       "figmaComponent": {
         "whyNoFigmaComponent": "Draws nothing: it opens and closes a Dialog, which is in Figma."
@@ -1300,7 +1300,7 @@
     },
     "EmptyStateDescription": {
       "libraryGroup": "Status and feedback",
-      "sourceFile": "src/ui/empty-state/EmptyState.tsx",
+      "sourceFile": "src/ui/empty-state/components/EmptyStateDescription.tsx",
       "description": "A line of explanation under the title, also for extra notes the `actions` add.",
       "figmaComponent": {
         "figmaName": "Empty state",
@@ -1383,7 +1383,7 @@
     },
     "DataListStack": {
       "libraryGroup": "Data display",
-      "sourceFile": "src/ui/data-list/DataList.tsx",
+      "sourceFile": "src/ui/data-list/components/DataListStack.tsx",
       "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
       "figmaComponent": {
         "whyNoFigmaComponent": "Only arranges Data lists with a hairline between groups; Figma draws the stack by hand from Data rows and a divider, as in the Router card."
@@ -1409,7 +1409,7 @@
     },
     "DataRow": {
       "libraryGroup": "Data display",
-      "sourceFile": "src/ui/data-list/DataList.tsx",
+      "sourceFile": "src/ui/data-list/components/DataRow.tsx",
       "description": "One label and value. Render it in a DataList, which sets its spacing.",
       "figmaComponent": {
         "figmaName": "Data row",
@@ -2116,7 +2116,7 @@
     },
     "CardBody": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/CardBody.tsx",
+      "sourceFile": "src/ui/card/components/CardBody.tsx",
       "description": "The padded body. A little top padding gives the content more room below the title than above it.",
       "figmaComponent": {
         "figmaName": "Card",
@@ -2147,7 +2147,7 @@
     },
     "CardFooter": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/CardFooter.tsx",
+      "sourceFile": "src/ui/card/components/CardFooter.tsx",
       "description": "A sunken band below the body, flush to the card's edges: a footnote or status.",
       "figmaComponent": {
         "figmaName": "Card",
@@ -2167,7 +2167,7 @@
     },
     "CardHeader": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/CardHeader.tsx",
+      "sourceFile": "src/ui/card/components/CardHeader.tsx",
       "description": "The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something.",
       "figmaComponent": {
         "figmaName": "Card header",
@@ -2197,7 +2197,7 @@
     },
     "CardList": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/card/CardList.tsx",
+      "sourceFile": "src/ui/card/components/CardList.tsx",
       "description": "A list that is one card, with a hairline between its rows.",
       "figmaComponent": {
         "figmaName": "Card list",
@@ -2289,7 +2289,7 @@
     },
     "CollapsiblePanel": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/collapsible/Collapsible.tsx",
+      "sourceFile": "src/ui/collapsible/components/CollapsiblePanel.tsx",
       "description": "What the trigger shows and hides, growing and shrinking to its height; out\nof the page, and the accessibility tree, while closed.",
       "figmaComponent": {
         "whyNoFigmaComponent": "Draws nothing: it holds what the trigger shows and hides."
@@ -2312,7 +2312,7 @@
     },
     "CollapsibleTrigger": {
       "libraryGroup": "Containers",
-      "sourceFile": "src/ui/collapsible/Collapsible.tsx",
+      "sourceFile": "src/ui/collapsible/components/CollapsibleTrigger.tsx",
       "description": "The button that opens and closes the panel; it says which (aria-expanded)\nand what it controls. `data-panel-open` is set while open, for styling.",
       "figmaComponent": {
         "whyNoFigmaComponent": "Draws nothing: it makes its children the button that opens the panel."
@@ -2448,7 +2448,7 @@
     },
     "TitleBarStatus": {
       "libraryGroup": "App frame",
-      "sourceFile": "src/ui/title-bar/TitleBar.tsx",
+      "sourceFile": "src/ui/title-bar/components/TitleBarStatus.tsx",
       "description": "The connection status beside the brand: a dot (pulsing unless neutral) and its words, announced as they change.",
       "figmaComponent": {
         "figmaName": "Title bar status",
@@ -2478,7 +2478,7 @@
     },
     "WindowButton": {
       "libraryGroup": "App frame",
-      "sourceFile": "src/ui/title-bar/TitleBar.tsx",
+      "sourceFile": "src/ui/title-bar/components/WindowButton.tsx",
       "description": "Minimise or close the window. Out of the Tab order, like a native title\nbar's: otherwise the first Tab lands here instead of the nav rail, and a\nstray Enter closes the window.",
       "figmaComponent": {
         "figmaName": "Window button",
@@ -2507,7 +2507,7 @@
     },
     "NavItem": {
       "libraryGroup": "App frame",
-      "sourceFile": "src/ui/nav-rail/NavRail.tsx",
+      "sourceFile": "src/ui/nav-rail/components/NavItem.tsx",
       "description": "One rail button: a page, or an action such as the theme switch.",
       "figmaComponent": {
         "figmaName": "Nav item",

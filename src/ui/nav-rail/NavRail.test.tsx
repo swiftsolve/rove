@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { HomeIcon, SettingsIcon, SpeedIcon } from '../icons/Icons'
-import { NavItem, NavRail } from './NavRail'
+import { NavItem } from './components/NavItem'
+import { NavRail } from './NavRail'
 
 describe('NavRail', () => {
   it('is a named navigation landmark that marks the current page', () => {

@@ -3,9 +3,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { BarMeter } from '../bar-meter/BarMeter'
 import { Card } from '../card/Card'
-import { CardBody } from '../card/CardBody'
-import { CardHeader } from '../card/CardHeader'
-import { DataList, DataListStack, DataRow } from './DataList'
+import { CardBody } from '../card/components/CardBody'
+import { CardHeader } from '../card/components/CardHeader'
+import { DataListStack } from './components/DataListStack'
+import { DataRow } from './components/DataRow'
+import { DataList } from './DataList'
 
 const ROWS = (
   <>

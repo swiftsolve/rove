@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
-import { WindowButton } from './TitleBar'
+import { WindowButton } from './WindowButton'
 
 const meta = {
   title: 'App frame/TitleBar/WindowButton',

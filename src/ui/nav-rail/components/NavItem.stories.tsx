@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
-import { iconArg, iconComponentControl } from '../icons/icon-options'
-import { NavItem } from './NavRail'
+import { iconArg, iconComponentControl } from '../../icons/icon-options'
+import { NavItem } from './NavItem'
 
 const meta = {
   title: 'App frame/NavRail/NavItem',

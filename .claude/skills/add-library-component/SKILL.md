@@ -19,8 +19,11 @@ The library's rules (stories, docs pages, what every component does) are in
 
 ## Add one: the code side
 
-1. A kebab-case folder at the top of `src/ui` holding `Name.tsx`. A component
-   that renders one element takes `ComponentProps<'div'>` (its element's).
+1. A kebab-case folder at the top of `src/ui` holding `Name.tsx`. A part of an
+   existing family goes in that family's `components/` instead, its context in
+   `context/` and a hook only it uses in `hooks/` (`src/ui/README.md`: The
+   library). A component that renders one element takes
+   `ComponentProps<'div'>` (its element's).
    Styles are a CVA recipe; its defaults go in `defaultVariants` and in the
    destructured props.
 2. A doc comment on the component and on each prop of its own.

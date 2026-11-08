@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cn } from '../utils/cn'
+import { cn } from '../../utils/cn'
 
 type CardFooterProps = Omit<ComponentProps<'div'>, 'children'> & {
   /** The footnote or status. */

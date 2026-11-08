@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
-import { DataList, DataRow } from '../data-list/DataList'
+import { DataRow } from '../data-list/components/DataRow'
+import { DataList } from '../data-list/DataList'
 import { NoValue } from './NoValue'
 
 const meta = {

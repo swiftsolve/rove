@@ -7,7 +7,8 @@ import { Button } from '../button/Button'
 import { PortalProvider } from '../context/PortalProvider'
 import { PlusIcon } from '../icons/Icons'
 import { TextField } from '../text-field/TextField'
-import { Dialog, DialogRoot } from './Dialog'
+import { DialogRoot } from './context/DialogRoot'
+import { Dialog } from './Dialog'
 
 const meta = {
   title: 'Overlays/Dialog',

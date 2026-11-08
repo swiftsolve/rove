@@ -1,6 +1,6 @@
 import { Dialog as BaseDialog } from '@base-ui/react/dialog'
 import { cx } from 'class-variance-authority'
-import { createContext, type JSX, type ReactNode, use, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 
 import { Button } from '../button/Button'
 import { IconButton } from '../button/IconButton'
@@ -9,36 +9,7 @@ import { usePortalContainer } from '../hooks/usePortalContainer'
 import { CloseIcon } from '../icons/Icons'
 import { cn } from '../utils/cn'
 import { LAYER_DIALOG } from '../utils/layers'
-
-type DialogState = {
-  /** False while the Dialog plays its leave animation. */
-  isOpen: boolean
-  /** The leave animation finished: unmount. */
-  onExitComplete: () => void
-}
-
-const DialogStateContext = createContext<DialogState>({ isOpen: true, onExitComplete: () => {} })
-
-type DialogRootProps = {
-  /** Opens the Dialog; false plays its leave animation, then unmounts it. */
-  isOpen: boolean
-  /** The component that renders the Dialog: mounted while open and while it leaves. */
-  children: ReactNode
-}
-
-/**
- * Opens and closes a Dialog. Its children mount when `isOpen` turns true and
- * stay mounted until the Dialog's leave animation ends after it turns false,
- * so the component that renders the Dialog (and its state) lives only that long.
- */
-export function DialogRoot({ isOpen, children }: DialogRootProps): JSX.Element | null {
-  const [isMounted, setIsMounted] = useState(isOpen)
-  if (isOpen && !isMounted) setIsMounted(true)
-  if (!isMounted) return null
-  return (
-    <DialogStateContext value={{ isOpen, onExitComplete: () => setIsMounted(false) }}>{children}</DialogStateContext>
-  )
-}
+import { useDialogState } from './hooks/useDialogState'
 
 // Absolute (not fixed) in the PortalProvider's container, so the scrim covers
 // and the dialog centres over that area (the app's content column), not the
@@ -120,7 +91,7 @@ export function Dialog({
   canClose = true,
   isDirty = false,
 }: DialogProps) {
-  const { isOpen, onExitComplete } = use(DialogStateContext)
+  const { isOpen, onExitComplete } = useDialogState()
   const portalContainer = usePortalContainer()
   // Whatever had focus as the dialog mounted: the control that opened it, which
   // gets focus back on close. Base UI only knows its own Trigger part.

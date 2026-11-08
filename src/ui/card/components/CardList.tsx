@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cn } from '../utils/cn'
+import { cn } from '../../utils/cn'
 
 type CardListProps = Omit<ComponentProps<'ul'>, 'aria-label' | 'children'> & {
   /** Names the list. */

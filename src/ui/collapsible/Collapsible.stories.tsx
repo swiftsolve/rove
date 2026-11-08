@@ -4,9 +4,12 @@ import { expect, fn } from 'storybook/test'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { Card } from '../card/Card'
-import { DataList, DataRow } from '../data-list/DataList'
+import { DataRow } from '../data-list/components/DataRow'
+import { DataList } from '../data-list/DataList'
 import { ChevronDownIcon } from '../icons/Icons'
-import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './Collapsible'
+import { Collapsible } from './Collapsible'
+import { CollapsiblePanel } from './components/CollapsiblePanel'
+import { CollapsibleTrigger } from './components/CollapsibleTrigger'
 
 type CollapsibleArgs = ComponentProps<typeof Collapsible>
 

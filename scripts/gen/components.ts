@@ -27,7 +27,7 @@
  */
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
-import { dirname, join, relative, resolve } from 'node:path'
+import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { type ComponentDoc, type PropItem, withCustomConfig } from 'react-docgen-typescript'
@@ -147,15 +147,35 @@ function readGuidance(file: string, text: string): Guidance | null {
   return guidance ? (toData(guidance) as Guidance) : null
 }
 
+function ownStoriesFile(source: string, name: string): string {
+  return join(dirname(source), `${name}.stories.tsx`)
+}
+
+// A part in `components/`, `context/` or `hooks/` inside a family's folder
+// takes the stories of the family's main component, named for the folder
+// (title-bar/ ↔ TitleBar.stories.tsx). Null for a module at a family's top.
+function familyStoriesFile(source: string): string | null {
+  const partFolder = dirname(source)
+  if (!['components', 'context', 'hooks'].includes(basename(partFolder))) return null
+  const familyFolder = dirname(partFolder)
+  const familyName = basename(familyFolder)
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')
+  return join(familyFolder, `${familyName}.stories.tsx`)
+}
+
 // Story ids, from a component's own stories file beside its module
-// (card/CardBody.stories.tsx), or else the module's (Badge.tsx ↔ Badge.stories.tsx).
+// (card/components/CardBody.stories.tsx), or else the module's (Badge.tsx ↔
+// Badge.stories.tsx), or else, for a part in its family's folder, the family's
+// (menu/components/MenuItem.tsx ↔ menu/Menu.stories.tsx).
 // A component whose Docs page it is (the title ends in its name, and isn't a
 // part's under its parent) also takes the file's usage guide.
 async function readStories(source: string, name: string): Promise<StoriesInfo> {
-  const ownStoriesFile = join(dirname(source), `${name}.stories.tsx`)
-  const file = existsSync(ownStoriesFile) ? ownStoriesFile : source.replace(/\.tsx$/, '.stories.tsx')
-  const text = await readFile(file, 'utf8').catch(() => null)
-  if (text === null) return { ids: [], file: null }
+  const candidates = [ownStoriesFile(source, name), source.replace(/\.tsx$/, '.stories.tsx'), familyStoriesFile(source)]
+  const file = candidates.find((candidate): candidate is string => candidate !== null && existsSync(candidate))
+  if (file === undefined) return { ids: [], file: null }
+  const text = await readFile(file, 'utf8')
   const title = /title: '(.+?)'/.exec(text)?.[1]
   if (!title) return { ids: [], file }
   const ids = [...text.matchAll(/^export const (\w+)/gm)].map(([, exportName = '']) =>

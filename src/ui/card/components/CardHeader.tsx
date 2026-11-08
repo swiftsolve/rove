@@ -1,9 +1,9 @@
 import { cx } from 'class-variance-authority'
-import { type ComponentProps, type ReactNode, use } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
-import { ChevronRightIcon } from '../icons/Icons'
-import { cn } from '../utils/cn'
-import { CardContext } from './card-context'
+import { ChevronRightIcon } from '../../icons/Icons'
+import { cn } from '../../utils/cn'
+import { useCardContext } from '../hooks/useCardContext'
 
 // A fixed height, so a header with a button is no taller than one without.
 const HEADER = cx('flex items-center justify-between gap-12', 'h-(--card-header-height) px-(--card-header-padding-x)')
@@ -26,7 +26,7 @@ type CardHeaderProps = Omit<ComponentProps<'div'>, 'title' | 'children'> & {
 
 /** The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something. */
 export function CardHeader({ title, icon, actions, className, ...props }: CardHeaderProps) {
-  const { titleId, isOpenable } = use(CardContext)
+  const { titleId, isOpenable } = useCardContext()
   return (
     <div className={cn(HEADER, className)} {...props}>
       <div className="flex min-w-0 items-center gap-8">

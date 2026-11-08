@@ -17,7 +17,8 @@ import {
   SunIcon,
   UsageIcon,
 } from '../icons/Icons'
-import { NavItem, NavRail } from './NavRail'
+import { NavItem } from './components/NavItem'
+import { NavRail } from './NavRail'
 
 type Page = {
   label: string

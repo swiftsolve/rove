@@ -6,15 +6,20 @@ export { Button } from './button/Button'
 export { IconButton } from './button/IconButton'
 export { Link } from './link/Link'
 export { StretchedLink } from './link/StretchedLink'
-export { Menu, MenuContent, MenuItem, MenuTrigger } from './menu/Menu'
+export { Menu } from './menu/Menu'
+export { MenuContent } from './menu/components/MenuContent'
+export { MenuItem } from './menu/components/MenuItem'
+export { MenuTrigger } from './menu/components/MenuTrigger'
 
 // Inputs
-export { TextField, TextFieldAction } from './text-field/TextField'
+export { TextField } from './text-field/TextField'
+export { TextFieldAction } from './text-field/components/TextFieldAction'
 export { Toggle } from './toggle/Toggle'
 export { SegmentedControl, type SegmentedOption } from './segmented-control/SegmentedControl'
 
 // Overlays
-export { Dialog, DialogRoot } from './dialog/Dialog'
+export { Dialog } from './dialog/Dialog'
+export { DialogRoot } from './dialog/context/DialogRoot'
 export { Tooltip } from './tooltip/Tooltip'
 
 // Status and feedback
@@ -24,10 +29,13 @@ export { Spinner } from './spinner/Spinner'
 export { ButtonSpinner } from './spinner/ButtonSpinner'
 export { LoadingState } from './loading-state/LoadingState'
 export { Banner } from './banner/Banner'
-export { EmptyState, EmptyStateDescription } from './empty-state/EmptyState'
+export { EmptyState } from './empty-state/EmptyState'
+export { EmptyStateDescription } from './empty-state/components/EmptyStateDescription'
 
 // Data display
-export { DataList, DataListStack, DataRow } from './data-list/DataList'
+export { DataList } from './data-list/DataList'
+export { DataListStack } from './data-list/components/DataListStack'
+export { DataRow } from './data-list/components/DataRow'
 export { NoValue } from './no-value/NoValue'
 export { Readout } from './readout/Readout'
 export { MetricValue, type MetricStatus } from './metric-value/MetricValue'
@@ -39,16 +47,21 @@ export { TimelineNode, type TimelineNodeColor } from './timeline/TimelineNode'
 
 // Containers
 export { Card, focusCardLink } from './card/Card'
-export { CardBody } from './card/CardBody'
-export { CardFooter } from './card/CardFooter'
-export { CardHeader } from './card/CardHeader'
-export { CardList } from './card/CardList'
-export { Collapsible, CollapsiblePanel, CollapsibleTrigger } from './collapsible/Collapsible'
+export { CardBody } from './card/components/CardBody'
+export { CardFooter } from './card/components/CardFooter'
+export { CardHeader } from './card/components/CardHeader'
+export { CardList } from './card/components/CardList'
+export { Collapsible } from './collapsible/Collapsible'
+export { CollapsiblePanel } from './collapsible/components/CollapsiblePanel'
+export { CollapsibleTrigger } from './collapsible/components/CollapsibleTrigger'
 export { DotSeparator, InlineMeta } from './separator/DotSeparator'
 
 // App frame
-export { TitleBar, TitleBarStatus, WindowButton } from './title-bar/TitleBar'
-export { NavItem, NavRail } from './nav-rail/NavRail'
+export { TitleBar } from './title-bar/TitleBar'
+export { TitleBarStatus } from './title-bar/components/TitleBarStatus'
+export { WindowButton } from './title-bar/components/WindowButton'
+export { NavItem } from './nav-rail/components/NavItem'
+export { NavRail } from './nav-rail/NavRail'
 export { PageHeader } from './page-header/PageHeader'
 
 // Accessibility

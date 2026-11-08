@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { TrashIcon } from '../icons/Icons'
-import { Menu, MenuContent, MenuItem, MenuTrigger } from './Menu'
+import { MenuContent } from './components/MenuContent'
+import { MenuItem } from './components/MenuItem'
+import { MenuTrigger } from './components/MenuTrigger'
+import { Menu } from './Menu'
 
 function renderMenu(onEdit = vi.fn(), onRemove = vi.fn()): void {
   render(
