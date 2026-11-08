@@ -119,7 +119,7 @@ export function WeekChart({ days }: { days: DailyUsage[] }) {
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
   // One Tab stop, on today: the arrow keys move between days.
   const daysRef = useRef<HTMLDivElement>(null)
-  useRovingFocus(daysRef, { items: '[role="img"]', orientation: 'horizontal', current: '[data-today]' })
+  useRovingFocus(daysRef, { itemSelector: '[role="img"]', orientation: 'horizontal', currentSelector: '[data-today]' })
 
   return (
     <div className="relative" role="group" aria-label="Data used per day, last 7 days">

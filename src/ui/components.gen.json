@@ -2540,7 +2540,7 @@
     "PageHeader": {
       "group": "App frame",
       "source": "src/ui/page-header/PageHeader.tsx",
-      "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, an info button, then a divider and the actions at the\nend, over a full-width divider. It sits above the page content (`LAYER_RAISED`),\nso its tooltips aren't painted over by the content they drop into. The actions hold their size, so a long\ndescription wraps instead of squeezing them.",
+      "description": "The top of every page but Home: an icon chip (or a back button), the title\nwith a line under it, an info button, then a divider and the actions at the\nend, over a full-width divider. It sits above the page content\n(`LAYER_RAISED`), so its tooltips aren't painted over by the content they\ndrop into. The actions hold their size, so a long description wraps instead\nof squeezing them.",
       "figma": {
         "name": "Page header",
         "node": "542:10510",
@@ -2777,6 +2777,6 @@
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. It snaps under reduced motion\n(the global rule stops only CSS animations, not this one), and to or from a\nvalue that isn't finite, which no ease could reach.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
     "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount.",
-    "useRovingFocus": "Makes a group of items one Tab stop (a roving tabindex): the arrow keys move\nbetween them, and Home and End jump to the ends. Leaving the group puts the\nstop back on the `current` item. It sets the items' `tabIndex`, so they\nmustn't set their own.\n\nNot Base UI's Toolbar, its only public roving focus: it makes the group a\n`toolbar`, and its items throw outside one, but NavItem also stands alone."
+    "useRovingFocus": "Makes a group of items one Tab stop (a roving tabindex): the arrow keys move\nbetween them, and Home and End jump to the ends. Leaving the group puts the\nstop back on the `currentSelector` item. It sets the items' `tabIndex`, so they\nmustn't set their own.\n\nNot Base UI's Toolbar, its only public roving focus: it makes the group a\n`toolbar`, and its items throw outside one, but NavItem also stands alone."
   }
 }

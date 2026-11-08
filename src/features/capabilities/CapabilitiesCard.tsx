@@ -34,12 +34,12 @@ const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body
 
 const CAPABILITY_CELL = 'flex flex-[0_0_auto]'
 
+const FOOTER_STATUS = 'inline-flex min-w-0 items-center gap-4 truncate text-tertiary'
+
 // Bleeds to the card's edges; the card's own clip rounds its bottom corners.
 // Hand-built, not CardFooter: this band pads 14px and sits 16px below the
 // tiles, where CardFooter pads 12px under the body's 14px. The same before and
 // after a test, so the card keeps its height.
-const FOOTER_STATUS = 'inline-flex min-w-0 items-center gap-4 truncate text-tertiary'
-
 const FOOTER = cx(
   'type-caption mt-16 flex items-center justify-between gap-12',
   'w-[calc(100%+2*var(--card-body-padding))]',
@@ -56,7 +56,7 @@ export function CapabilitiesCard() {
   const hasResults = capabilities.length > 0
   // The rated tiles are one Tab stop: the arrow keys move between them.
   const rowRef = useRef<HTMLUListElement>(null)
-  useRovingFocus(rowRef, { items: 'button', orientation: 'horizontal' })
+  useRovingFocus(rowRef, { itemSelector: 'button', orientation: 'horizontal' })
 
   return (
     <Card>

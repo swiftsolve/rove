@@ -142,7 +142,7 @@ type NavRailProps = {
 export function NavRail({ label, main, footer }: NavRailProps) {
   const railRef = useRef<HTMLElement>(null)
   const bar = useActiveBar(railRef)
-  useRovingFocus(railRef, { items: 'button', orientation: 'vertical', current: '[aria-current="page"]' })
+  useRovingFocus(railRef, { itemSelector: 'button', orientation: 'vertical', currentSelector: '[aria-current="page"]' })
   return (
     // Horizontal padding is symmetric so the active pill and the accent bar read
     // as evenly inset; the top padding matches the content area's so the first

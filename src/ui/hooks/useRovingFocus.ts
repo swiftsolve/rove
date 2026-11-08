@@ -2,11 +2,11 @@ import { type RefObject, useEffect } from 'react'
 
 type RovingFocusOptions = {
   /** Selects the group's items inside it. */
-  items: string
+  itemSelector: string
   /** Which arrow keys move between them: Up and Down, or Left and Right. */
   orientation: 'vertical' | 'horizontal'
   /** Selects the item Tab lands on when focus comes back, such as the current page's; the first item without one. */
-  current?: string
+  currentSelector?: string
 }
 
 const NEXT_KEY = { vertical: 'ArrowDown', horizontal: 'ArrowRight' }
@@ -29,7 +29,7 @@ function targetIndex(
 /**
  * Makes a group of items one Tab stop (a roving tabindex): the arrow keys move
  * between them, and Home and End jump to the ends. Leaving the group puts the
- * stop back on the `current` item. It sets the items' `tabIndex`, so they
+ * stop back on the `currentSelector` item. It sets the items' `tabIndex`, so they
  * mustn't set their own.
  *
  * Not Base UI's Toolbar, its only public roving focus: it makes the group a
@@ -37,29 +37,29 @@ function targetIndex(
  */
 export function useRovingFocus(
   groupRef: RefObject<HTMLElement | null>,
-  { items, orientation, current }: RovingFocusOptions,
+  { itemSelector, orientation, currentSelector }: RovingFocusOptions,
 ): void {
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
 
-    const getItems = (): HTMLElement[] => [...group.querySelectorAll<HTMLElement>(items)]
+    const getItems = (): HTMLElement[] => [...group.querySelectorAll<HTMLElement>(itemSelector)]
     const setTabStop = (stop: HTMLElement | undefined): void => {
       for (const item of getItems()) item.tabIndex = item === stop ? 0 : -1
     }
     const resetTabStop = (): void => {
-      const currentItem = current ? group.querySelector<HTMLElement>(current) : null
+      const currentItem = currentSelector ? group.querySelector<HTMLElement>(currentSelector) : null
       setTabStop(currentItem ?? getItems()[0])
     }
 
     const onKeyDown = (event: KeyboardEvent): void => {
-      const all = getItems()
-      const index = all.indexOf(event.target as HTMLElement)
+      const groupItems = getItems()
+      const index = groupItems.indexOf(event.target as HTMLElement)
       if (index === -1) return
-      const next = targetIndex(event.key, index, all.length, orientation)
-      if (next === null) return
+      const nextIndex = targetIndex(event.key, index, groupItems.length, orientation)
+      if (nextIndex === null) return
       event.preventDefault()
-      const target = all[next]
+      const target = groupItems[nextIndex]
       setTabStop(target)
       target?.focus()
     }
@@ -87,5 +87,5 @@ export function useRovingFocus(
       group.removeEventListener('focusout', onFocusOut)
       changes.disconnect()
     }
-  }, [groupRef, items, orientation, current])
+  }, [groupRef, itemSelector, orientation, currentSelector])
 }

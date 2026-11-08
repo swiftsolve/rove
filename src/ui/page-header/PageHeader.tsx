@@ -71,9 +71,10 @@ function descriptionKey(description: ReactNode): string {
 /**
  * The top of every page but Home: an icon chip (or a back button), the title
  * with a line under it, an info button, then a divider and the actions at the
- * end, over a full-width divider. It sits above the page content (`LAYER_RAISED`),
- * so its tooltips aren't painted over by the content they drop into. The actions hold their size, so a long
- * description wraps instead of squeezing them.
+ * end, over a full-width divider. It sits above the page content
+ * (`LAYER_RAISED`), so its tooltips aren't painted over by the content they
+ * drop into. The actions hold their size, so a long description wraps instead
+ * of squeezing them.
  */
 export function PageHeader({ title, description, status, actions, info, icon, onBack }: PageHeaderProps) {
   const hasLine = description !== undefined || status !== undefined
