@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react'
 
 import { useNavigation } from '@/app/hooks/useNavigation'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useDevices } from '@/features/devices/hooks/useDevices'
 import { EmptyStatReadout, StatCard, StatReadout } from '@/features/home/components/StatCard'
 import { Button, ButtonSpinner, DevicesIcon, focusCardLink, SearchIcon } from '@/ui'
@@ -10,21 +11,25 @@ import { formatCount } from '@/utils/format'
 export function DevicesCard() {
   const { canHomeAutoScan, lastScan, isScanning, rescan } = useDevices()
   const { navigate } = useNavigation()
-  const onlineCount = lastScan ? lastScan.devices.filter((device) => device.isReachable).length : null
+  const isConnected = useNetwork().info?.isConnected ?? false
+  // Off a network there's nothing to count, so the card shows no count, scan
+  // or Discover rather than a figure from before.
+  const onlineCount = isConnected && lastScan ? lastScan.devices.filter((device) => device.isReachable).length : null
+  const isShowingScan = isConnected && isScanning
   // Where Home doesn't scan on load, the card offers one until the first scan.
-  const canDiscover = !canHomeAutoScan && !lastScan && !isScanning
+  const canDiscover = isConnected && !canHomeAutoScan && !lastScan && !isScanning
 
   return (
     <StatCard
       icon={<DevicesIcon size={15} />}
       title="Devices"
-      linkLabel={devicesLinkLabel(onlineCount, isScanning)}
+      linkLabel={devicesLinkLabel(onlineCount, isShowingScan)}
       onOpen={() => navigate({ tab: 'devices' })}
-      isLoading={isScanning}
+      isLoading={isShowingScan}
     >
       <DevicesCardBody
         onlineCount={onlineCount}
-        isScanning={isScanning}
+        isScanning={isShowingScan}
         onDiscover={canDiscover ? () => void rescan() : undefined}
       />
     </StatCard>

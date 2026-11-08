@@ -74,7 +74,7 @@ const INTERNET_LINE_TONES: Record<InternetLinkState, LineTone> = {
 /**
  * Home's path to the internet as three nodes joined by two links: this
  * computer, the router, the internet. Wi‑Fi is a dotted line, a cable solid.
- * A link that's down turns red.
+ * A link that's down turns red, and a link past it greys out.
  */
 export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }) {
   const { info } = useNetwork()
@@ -103,18 +103,12 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
             <IconTile size="lg" color={NODE_COLOR} icon={<RouterIcon size={16} />} />
             {/* While a test runs, its dashes flow outward until the result lands. */}
             <PathLink
-              tone={isTesting ? 'working' : INTERNET_LINE_TONES[internetState]}
-              isFlowing={isTesting}
-              captionKey={isTesting ? 'testing' : `${internetState}-${lastTest?.timestamp ?? 0}`}
-              above={
-                isTesting ? (
-                  <span className="text-tertiary">Testing…</span>
-                ) : (
-                  internetLineCaption(internetState, lastTest)
-                )
-              }
+              tone={internetLineTone(isConnected, isTesting, internetState)}
+              isFlowing={isConnected && isTesting}
+              captionKey={internetCaptionKey(isConnected, isTesting, internetState, lastTest)}
+              above={isConnected ? internetLineCaption(isTesting, internetState, lastTest) : null}
               below={
-                !isTesting && internetState === 'healthy' && lastTest ? (
+                isConnected && !isTesting && internetState === 'healthy' && lastTest ? (
                   <Rate series="up" mbps={lastTest.uploadMbps} />
                 ) : null
               }
@@ -130,7 +124,7 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
       </CardBody>
       <CardFooter>
         <div className="type-caption flex items-center justify-between gap-12">
-          <FooterStatus isTesting={isTesting} lastTest={lastTest} />
+          {isConnected && <FooterStatus isTesting={isTesting} lastTest={lastTest} />}
           <SpeedTestLink />
         </div>
       </CardFooter>
@@ -212,7 +206,31 @@ function WifiSignal({ info }: { info: WifiNetworkInfo }) {
   return <InlineMeta items={[strength, formatBand(info.frequency)]} />
 }
 
-function internetLineCaption(state: InternetLinkState, lastTest: SpeedHistoryEntry | null): ReactNode {
+// Off a router, nothing past it can be known: the internet line greys out
+// rather than doubling the red of the link that actually failed.
+function internetLineTone(isConnected: boolean, isTesting: boolean, state: InternetLinkState): LineTone {
+  if (!isConnected) return 'unknown'
+  if (isTesting) return 'working'
+  return INTERNET_LINE_TONES[state]
+}
+
+function internetCaptionKey(
+  isConnected: boolean,
+  isTesting: boolean,
+  state: InternetLinkState,
+  lastTest: SpeedHistoryEntry | null,
+): string {
+  if (!isConnected) return 'disconnected'
+  if (isTesting) return 'testing'
+  return `${state}-${lastTest?.timestamp ?? 0}`
+}
+
+function internetLineCaption(
+  isTesting: boolean,
+  state: InternetLinkState,
+  lastTest: SpeedHistoryEntry | null,
+): ReactNode {
+  if (isTesting) return <span className="text-tertiary">Testing…</span>
   if (state === 'offline') return <span className="text-negative">No internet</span>
   if (state === 'notTested' || !lastTest) return <span className="text-tertiary">Not tested</span>
   return <Rate series="down" mbps={lastTest.downloadMbps} />
@@ -274,6 +292,7 @@ function pathSummary(
   lastTest: SpeedHistoryEntry | null,
 ): string {
   const localSummary = localLinkSummary(info)
+  if (!info?.isConnected) return localSummary
   if (internetState === 'offline') return `${localSummary} No internet.`
   if (internetState === 'notTested' || !lastTest) return `${localSummary} Internet speed not tested yet.`
   const down = splitSpeedMbps(lastTest.downloadMbps)

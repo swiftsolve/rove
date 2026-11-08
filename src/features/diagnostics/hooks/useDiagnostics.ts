@@ -1,6 +1,7 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { overlayLiveMetrics } from '@/features/diagnostics/utils/live-metrics'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
@@ -33,11 +34,14 @@ function errorText(error: unknown): string | null {
 export function useDiagnostics(): UseDiagnosticsResult {
   const api = window.networkAPI
   const networkKey = useNetworkKey()
+  // Off a router there's no gateway to probe or path to the ISP.
+  const isConnected = useNetwork().info?.isConnected ?? false
+  const canCheck = networkKey != null && isConnected
 
   const snapshotQuery = useBackendQuery({
     queryKey: ['diagnostics', 'snapshot', networkKey],
     queryFn: api ? () => api.runDiagnostics() : undefined,
-    isEnabled: networkKey != null,
+    isEnabled: canCheck,
     errorMessage: ERROR_MESSAGE,
   })
 
@@ -46,7 +50,7 @@ export function useDiagnostics(): UseDiagnosticsResult {
   const liveQuery = useQuery<LiveDiagnostics | null>({
     queryKey: ['diagnostics', 'live', networkKey],
     queryFn: api ? () => api.runDiagnosticsLive() : skipToken,
-    enabled: networkKey != null,
+    enabled: canCheck,
     initialData: null,
     staleTime: Infinity,
     refetchInterval: LIVE_POLL_INTERVAL_MS,

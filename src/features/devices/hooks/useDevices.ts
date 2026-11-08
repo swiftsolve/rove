@@ -1,4 +1,5 @@
 import { useNavigation } from '@/app/hooks/useNavigation'
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
@@ -31,6 +32,8 @@ export function useDevices(): UseDevicesResult {
   const api = window.networkAPI
   const { location } = useNavigation()
   const networkKey = useNetworkKey()
+  // Off a network there's nothing to scan.
+  const isConnected = useNetwork().info?.isConnected ?? false
 
   // Home never auto-scans on macOS: discovery prompts for the Local Network
   // permission, which should follow the user opening Devices or tapping Discover.
@@ -44,7 +47,7 @@ export function useDevices(): UseDevicesResult {
   const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['devices', networkKey],
     queryFn: api ? () => scanDevices(api) : undefined,
-    isEnabled: shouldScanOnOpen && networkKey != null,
+    isEnabled: shouldScanOnOpen && isConnected && networkKey != null,
     errorMessage: 'Couldn’t scan for devices',
   })
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { DeviceRow } from '@/features/devices/components/DeviceRow'
 import { OnlineIndicator } from '@/features/devices/components/OnlineIndicator'
 import { ScanStatus } from '@/features/devices/components/ScanStatus'
@@ -12,6 +13,8 @@ import { IS_MAC } from '@/utils/platform'
 
 const SCAN_HINT =
   'Rove probes your subnet and listens for device announcements. Sleeping devices, guest networks and subnets over /24 can hide some.'
+
+const NOT_CONNECTED_HINT = 'Connect to Wi-Fi or a cable to find the devices on your network.'
 
 const NO_DEVICES_HINT = 'Nothing answered on this network. Check you’re on the right Wi-Fi.'
 
@@ -87,6 +90,7 @@ function DevicesBody({
 
 export function DevicesView() {
   const { lastScan, isScanning, error, rescan } = useDevices()
+  const isConnected = useNetwork().info?.isConnected ?? false
   const onRescan = (): void => void rescan()
   const devices = sortDevices(lastScan?.devices ?? [])
   const hasDevices = devices.length > 0
@@ -97,6 +101,20 @@ export function DevicesView() {
   // Only this machine (or nothing): on macOS, usually a withheld Local Network grant.
   const isOnlySelf = !isScanning && lastScan != null && devices.every((device) => device.isSelf)
   const shouldShowLocalNetworkHint = IS_MAC && isOnlySelf
+
+  // Off a network a scan can't run and the last one is another network's.
+  if (!isConnected) {
+    return (
+      <div className="page">
+        <PageHeader
+          icon={<DevicesIcon size={18} />}
+          title="Devices"
+          info={{ label: 'About device scanning', hint: SCAN_HINT }}
+        />
+        <EmptyState title="Not connected" description={NOT_CONNECTED_HINT} />
+      </div>
+    )
+  }
 
   return (
     <div className="page">

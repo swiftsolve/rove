@@ -1,3 +1,4 @@
+import { useNetwork } from '@/app/hooks/useNetwork'
 import { DnsCard } from '@/features/diagnostics/components/DnsCard'
 import { IspCard } from '@/features/diagnostics/components/IspCard'
 import { PathCard } from '@/features/diagnostics/components/PathCard'
@@ -11,6 +12,7 @@ const DIAGNOSTICS_HINT =
 
 export function DiagnosticsView() {
   const { diagnostics, isRunning, error, run } = useDiagnostics()
+  const isConnected = useNetwork().info?.isConnected ?? false
   const runDiagnostics = (): void => {
     void run()
   }
@@ -25,20 +27,23 @@ export function DiagnosticsView() {
         // The spinning Refresh button shows a check is running, so the
         // description stays put rather than giving way to a status.
         description="Your path to the internet"
+        // Off a router there's nothing to check, so no Refresh.
         actions={
-          <IconButton
-            label={isRunning ? 'Refreshing…' : 'Refresh'}
-            icon={RefreshIcon}
-            isLoading={isRunning}
-            onClick={runDiagnostics}
-          />
+          isConnected ? (
+            <IconButton
+              label={isRunning ? 'Refreshing…' : 'Refresh'}
+              icon={RefreshIcon}
+              isLoading={isRunning}
+              onClick={runDiagnostics}
+            />
+          ) : undefined
         }
         info={{ label: 'About connection checks', hint: DIAGNOSTICS_HINT }}
       />
 
-      <ScreenReaderStatus>{runStatusText(isRunning, hasDiagnostics)}</ScreenReaderStatus>
+      <ScreenReaderStatus>{isConnected ? runStatusText(isRunning, hasDiagnostics) : ''}</ScreenReaderStatus>
 
-      {error && (
+      {isConnected && error && (
         <Banner
           variant="error"
           title={error}
@@ -47,11 +52,13 @@ export function DiagnosticsView() {
         />
       )}
 
-      {isFirstCheck ? (
-        <LoadingState label="Checking your connection…" />
-      ) : (
+      {isConnected && isFirstCheck && <LoadingState label="Checking your connection…" />}
+
+      {/* Off a router, only the Path card shows: it says where the break is,
+          and the router, ISP and DNS cards would be all dashes. */}
+      {!(isConnected && isFirstCheck) && <PathCard diagnostics={isConnected ? diagnostics : null} />}
+      {isConnected && !isFirstCheck && (
         <>
-          <PathCard diagnostics={diagnostics} />
           <RouterCard diagnostics={diagnostics} />
           <IspCard diagnostics={diagnostics} />
           <DnsCard servers={diagnostics?.dnsServers ?? []} />
