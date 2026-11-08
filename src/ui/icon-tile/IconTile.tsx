@@ -83,13 +83,15 @@ export function IconTileButton({
       style={{ ...look.style, ...style }}
       className={cn(
         look.className,
-        // The lift springs; the tint eases fast, so it doesn't trail the motion.
-        // Kept on its own layer, so the icon isn't redrawn onto the pixel grid
-        // as the scale settles, which made it twitch on the way down.
-        '[transition:background_var(--duration-fast)_var(--ease-out),transform_var(--duration-spring)_var(--ease-spring)]',
-        'will-change-transform data-disabled:cursor-default',
-        'usable:hover:transform-[translateY(-2px)_scale(1.06)] usable:hover:bg-current/(--opacity-tint-lg)',
-        'usable:focus-visible:transform-[translateY(-2px)_scale(1.06)] usable:focus-visible:bg-current/(--opacity-tint-lg)',
+        // The lift follows the spring curve at hover speed, so it settles
+        // without dragging; the tint eases alongside it.
+        // A 3D transform even at rest keeps the tile on its own layer in
+        // WebKit (will-change alone doesn't), so the icon isn't redrawn onto
+        // the pixel grid when the lift settles, which nudged it sideways.
+        '[transition:background_var(--duration-fast)_var(--ease-out),transform_var(--duration-fast)_var(--ease-spring)]',
+        'transform-[translate3d(0,0,0)_scale(1)] will-change-transform data-disabled:cursor-default',
+        'usable:hover:transform-[translate3d(0,-2px,0)_scale(1.06)] usable:hover:bg-current/(--opacity-tint-lg)',
+        'usable:focus-visible:transform-[translate3d(0,-2px,0)_scale(1.06)] usable:focus-visible:bg-current/(--opacity-tint-lg)',
         className,
       )}
       aria-label={label}
