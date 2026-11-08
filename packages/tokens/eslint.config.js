@@ -14,6 +14,41 @@ const NO_EM_DASH = [
   'JSXText[value=/(?=[\\s\\S]*[^\\s—])[\\s\\S]*—/]',
 ].map((selector) => ({ selector, message: NO_EM_DASH_MESSAGE }))
 
+// ── Names ──────────────────────────────────────────────────────────────────
+// As in Rove. `no-restricted-syntax` doesn't merge across blocks, so the doc
+// copy block repeats these.
+
+// An event handler is onX as a local too, the name its prop takes.
+const NO_HANDLE_PREFIX_MESSAGE = 'Name an event handler onX (onClick), as a local and as a prop, not handleX.'
+const NO_HANDLE_PREFIX = [
+  'VariableDeclarator[id.name=/^handle[A-Z]/]',
+  'FunctionDeclaration[id.name=/^handle[A-Z]/]',
+].map((selector) => ({ selector, message: NO_HANDLE_PREFIX_MESSAGE }))
+// A boolean reads as a yes/no question. With no types to tell, it's caught by
+// its shape: a variable set to a comparison or a `!`.
+const BOOLEAN_PREFIXES = [
+  'is',
+  'are',
+  'has',
+  'have',
+  'can',
+  'should',
+  'was',
+  'were',
+  'did',
+  'does',
+  'will',
+  'needs',
+  'meets',
+  'may',
+]
+const NOT_A_QUESTION = `:not([id.name=/^(${BOOLEAN_PREFIXES.join('|')})[A-Z0-9]|^(${BOOLEAN_PREFIXES.join('|').toUpperCase()})_/])`
+const UNTYPED_BOOLEAN_NAME = [
+  `VariableDeclarator[init.type="BinaryExpression"][init.operator=/^(===|!==|==|!=|<|>|<=|>=|in|instanceof)$/]${NOT_A_QUESTION}`,
+  `VariableDeclarator[init.type="UnaryExpression"][init.operator="!"]${NOT_A_QUESTION}`,
+].map((selector) => ({ selector, message: `Name a boolean as a question: ${BOOLEAN_PREFIXES.join('/')} + a noun.` }))
+const NAMES = [...NO_HANDLE_PREFIX, ...UNTYPED_BOOLEAN_NAME]
+
 export default [
   // ── Not ours to lint ─────────────────────────────────────────────────────
   // Build outputs, and .claude's agent worktrees (other checkouts).
@@ -26,7 +61,12 @@ export default [
   {
     // Packages, then relative paths; each group alphabetical. `--fix` sorts them.
     plugins: { 'simple-import-sort': simpleImportSort },
-    rules: { 'simple-import-sort/imports': 'error' },
+    rules: {
+      'simple-import-sort/imports': 'error',
+      // Named steps over dense expressions: a third case is an if or a lookup.
+      'no-nested-ternary': 'error',
+      'no-restricted-syntax': ['error', ...NAMES],
+    },
   },
 
   // ── Node: the build, the checks, this config ──────────────────────────────
@@ -47,7 +87,7 @@ export default [
   {
     // The pages are doc copy.
     files: ['stories/**/*.{js,jsx}'],
-    rules: { 'no-restricted-syntax': ['error', ...NO_EM_DASH] },
+    rules: { 'no-restricted-syntax': ['error', ...NO_EM_DASH, ...NAMES] },
   },
 
   // ── The Figma plugin: Figma's sandbox ────────────────────────────────────
