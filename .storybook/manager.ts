@@ -29,7 +29,7 @@ const brandTitle = `
 `
 
 addons.setConfig({
-  theme: { ...theme, fontBase: SANS, brandTitle, brandImage: null },
+  theme: { ...theme, fontBase: SANS, brandTitle },
 })
 
 // A Figma tab beside Controls: the story's component in the design file.

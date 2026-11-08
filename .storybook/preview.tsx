@@ -4,7 +4,7 @@ import './preview.css'
 
 import { DocsContainer, type DocsContainerProps } from '@storybook/addon-docs/blocks'
 import type { Preview } from '@storybook/react-vite'
-import { type PropsWithChildren, useEffect, useState } from 'react'
+import { type JSX, type PropsWithChildren, useEffect, useState } from 'react'
 import { GLOBALS_UPDATED } from 'storybook/internal/core-events'
 import type { Globals } from 'storybook/internal/types'
 import { themes } from 'storybook/theming'

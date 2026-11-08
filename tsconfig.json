@@ -25,5 +25,5 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src", ".storybook"]
+  "include": ["src", ".storybook/**/*"]
 }

@@ -5,7 +5,7 @@ import { ConnectionDetailsPanel } from '../src/features/connection/components/Co
 import { ConnectionStrip } from '../src/features/connection/components/ConnectionStrip'
 import { ShareWifiButton } from '../src/features/connection/components/ShareWifiButton'
 import { WifiQrCode } from '../src/features/connection/components/WifiQrCode'
-import type { NetworkInfo } from '../src/types'
+import type { WifiNetworkInfo } from '../src/types'
 import {
   AppsIcon,
   Badge,
@@ -72,6 +72,13 @@ function useStep(count: number, ms: number): number {
   return step
 }
 
+/** The item at `index`, which the scenes keep inside the list by counting modulo its length. */
+function itemAt<Item>(items: readonly Item[], index: number): Item {
+  const item = items[index]
+  if (item === undefined) throw new Error(`No item at ${index} in a list of ${items.length}`)
+  return item
+}
+
 /**
  * The one tempo every scene keeps: each changes on a beat, or a few, so the
  * grid moves together, unhurried, and a scene changes one thing a beat, never
@@ -117,7 +124,7 @@ const FRAME_BEATS = [
  * status and controls over TabBar's rail, moving tab to tab, then the status changing.
  */
 function AppFrameScene(): JSX.Element {
-  const { tab: activeTab, verdict } = FRAME_BEATS[useStep(FRAME_BEATS.length, BEAT)]
+  const { tab: activeTab, verdict } = itemAt(FRAME_BEATS, useStep(FRAME_BEATS.length, BEAT))
   const { tone, label } = verdict
   return (
     <div className="intro-window">
@@ -168,8 +175,8 @@ function signalBarsFor(downloadMbps: number): number {
 function DataDisplayScene(): JSX.Element {
   // One reading a beat: download, then upload, in turn.
   const step = useStep(DOWNLOADS.length * 2, BEAT)
-  const down = useCountUp(DOWNLOADS[Math.floor((step + 1) / 2) % DOWNLOADS.length])
-  const up = useCountUp(UPLOADS[Math.floor(step / 2) % UPLOADS.length])
+  const down = useCountUp(itemAt(DOWNLOADS, Math.floor((step + 1) / 2) % DOWNLOADS.length))
+  const up = useCountUp(itemAt(UPLOADS, Math.floor(step / 2) % UPLOADS.length))
   return (
     <div className="intro-stack is-data">
       <div className="intro-row is-wide">
@@ -393,7 +400,7 @@ const LOADING_BEATS = 2
 function StatusScene(): JSX.Element {
   const step = useStep(LOADING_BEATS + STATES.length, BEAT)
   const isLoading = step < LOADING_BEATS
-  const { tone, label } = STATES[Math.max(0, step - LOADING_BEATS)]
+  const { tone, label } = itemAt(STATES, Math.max(0, step - LOADING_BEATS))
   return (
     // One cell, both states: they cross-fade without the stage changing size.
     <span className="intro-slot">
@@ -413,7 +420,7 @@ function StatusScene(): JSX.Element {
 }
 
 // Home's Wi‑Fi connection, as the dev mock (src/bridge/mock-network-api.ts) reports it.
-const NETWORK: NetworkInfo = {
+const NETWORK: WifiNetworkInfo = {
   connectionType: 'wifi',
   interfaceName: 'en0',
   isConnected: true,
@@ -482,7 +489,7 @@ const A11Y_MARKS = [
 
 /** Accessibility: one mark on an accent tile, changing a beat at a time: seeing, the accessibility mark, a voice. */
 function AccessibilityScene(): JSX.Element {
-  const { name, paths } = A11Y_MARKS[useStep(A11Y_MARKS.length, BEAT)]
+  const { name, paths } = itemAt(A11Y_MARKS, useStep(A11Y_MARKS.length, BEAT))
   return (
     <span className="intro-a11y-mark">
       {/* Keyed by mark, so each new one rises in. */}

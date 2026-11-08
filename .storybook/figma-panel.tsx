@@ -1,5 +1,5 @@
 // The manager builds with the classic JSX transform, so JSX needs React in scope.
-import React from 'react'
+import React, { type JSX } from 'react'
 import { AddonPanel, EmptyTabContent, Link } from 'storybook/internal/components'
 import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 
