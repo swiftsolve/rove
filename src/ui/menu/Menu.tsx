@@ -70,7 +70,13 @@ export function MenuContent({
 }) {
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Positioner className={LAYER_POPOVER} side="bottom" align="end" sideOffset={4}>
+      {/* Hidden once its kebab scrolls out of view, like a tooltip. */}
+      <BaseMenu.Positioner
+        className={cx(LAYER_POPOVER, 'data-anchor-hidden:hidden')}
+        side="bottom"
+        align="end"
+        sideOffset={4}
+      >
         <BaseMenu.Popup className={cn(CONTENT, className)} render={<div {...props} />}>
           {children}
         </BaseMenu.Popup>

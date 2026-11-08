@@ -91,8 +91,10 @@ export function Tooltip({
           document.body,
         )}
       <BaseTooltip.Portal>
+        {/* Hidden once its trigger scrolls out of view, so it never floats
+            alone over the title bar. */}
         <BaseTooltip.Positioner
-          className={LAYER_POPOVER}
+          className={cx(LAYER_POPOVER, 'data-anchor-hidden:hidden')}
           positionMethod="fixed"
           side={side}
           align="center"
