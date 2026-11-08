@@ -219,6 +219,14 @@ for (const { name, group, source } of components) {
       `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: add ${name}, with its Figma component, or null if it has none`,
     )
   }
+  const figmaVariantPropertiesNotInCode = figmaMap.components[name]?.figmaVariantPropertiesNotInCode ?? {}
+  for (const [figmaName, { fromProps }] of Object.entries(figmaVariantPropertiesNotInCode)) {
+    for (const propName of fromProps.filter((propName) => !(propName in doc.props))) {
+      problems.push(
+        `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: ${name}'s ${figmaName} comes from ${propName}, which isn't a prop`,
+      )
+    }
+  }
   const stories = storiesByName.get(name)
   const handlerProp = Object.keys(doc.props).find((prop) => /^on[A-Z]/.test(prop))
   if (handlerProp && stories.file && !stories.hasInteraction) {

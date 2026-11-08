@@ -22,8 +22,8 @@
  * isn't matched. A deliberate difference is written in the component's
  * figma-components.json entry: `propsNotInFigma` names a code prop Figma has
  * no variant for, with why (where a tooltip opens); `figmaVariantPropertiesNotInCode`
- * names a Figma variant code has no prop for, with how code chooses it (a Link
- * is External when it has `href`); `propsWithDifferentValuesInFigma` names a prop
+ * names a Figma variant code has no prop for, with the props that choose it
+ * and how (a Link is External when it has `href`); `propsWithDifferentValuesInFigma` names a prop
  * whose values differ on purpose, with why. figma-components.schema.json says
  * the same. An exception that no longer applies fails too, so the list stays
  * true.

@@ -59,16 +59,17 @@ is left: never guess a node id.
    the side that has it:
    - `propsNotInFigma`: a code prop Figma has no variant for, with why
      (`tooltipSide`: "Figma draws the tooltip on its own.").
-   - `figmaVariantPropertiesNotInCode`: a Figma variant code has no prop for, with how code
-     chooses it, starting "In code" (`Has label`: "In code, on when the
-     label prop is set.").
+   - `figmaVariantPropertiesNotInCode`: a Figma variant property code has no
+     prop for, as `fromProps`, the component's props that decide it (empty
+     when none does), and a `note` on how, with code in backticks
+     (`Has label`: ``{ "fromProps": ["label"], "note": "On when `label` is set." }``).
    - `propsWithDifferentValuesInFigma`: a code prop whose values differ from Figma's on purpose,
      with why.
 
-   An exception that no longer applies fails the check too, so drop it. The
-   check reads only the keys, so reread each string already in the entry
-   against the component's current props, and fix one that names a prop or
-   value that's gone.
+   An exception that no longer applies fails the check too, so drop it. `npm run gen`
+   checks each `fromProps` name is a prop, but reads no note, so reread each
+   note already in the entry against the component's current props, and fix
+   one that names a prop or value that's gone.
 
 5. `npm run gen`, so `components.gen.json` takes the entry.
 

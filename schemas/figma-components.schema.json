@@ -24,6 +24,24 @@
     }
   },
   "definitions": {
+    "figmaVariantPropertyNotInCode": {
+      "description": "How code chooses a Figma variant property it has no prop for.",
+      "type": "object",
+      "required": ["fromProps", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "fromProps": {
+          "description": "This component's props that decide it, checked against the code; empty when no prop does (CSS, or another component's prop).",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "note": {
+          "description": "How those props choose each value, in plain words with code in backticks; or, with no props, what does.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
     "figmaComponent": {
       "description": "The Figma component a library component maps to, and any differences kept on purpose.",
       "type": "object",
@@ -46,9 +64,9 @@
           "additionalProperties": { "type": "string", "minLength": 1 }
         },
         "figmaVariantPropertiesNotInCode": {
-          "description": "Figma variant properties code has no prop for, by their name in Figma, each with how code chooses it, starting 'In code'.",
+          "description": "Figma variant properties code has no prop for, by their name in Figma, each with how code chooses it.",
           "type": "object",
-          "additionalProperties": { "type": "string", "pattern": "^In code" }
+          "additionalProperties": { "$ref": "#/definitions/figmaVariantPropertyNotInCode" }
         },
         "propsWithDifferentValuesInFigma": {
           "description": "Code props whose values differ from their Figma variant property's on purpose, each with why.",

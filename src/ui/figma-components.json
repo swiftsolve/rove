@@ -17,7 +17,10 @@
       "figmaName": "Link",
       "figmaNodeId": "505:845",
       "figmaVariantPropertiesNotInCode": {
-        "Type": "In code, href makes an External link (a web address) and onClick a View link (a screen in the app)."
+        "Type": {
+          "fromProps": ["href", "onClick"],
+          "note": "External when `href` is set (a web address), View when `onClick` is set (a screen in the app)."
+        }
       }
     },
     "StretchedLink": null,
@@ -41,7 +44,10 @@
       "figmaName": "Text field",
       "figmaNodeId": "500:810",
       "figmaVariantPropertiesNotInCode": {
-        "Action": "In code, on when the action prop holds a TextFieldAction."
+        "Action": {
+          "fromProps": ["action"],
+          "note": "On when `action` is set."
+        }
       }
     },
     "TextFieldAction": {
@@ -83,7 +89,7 @@
         "pulse": "An animation: Figma draws the dot at rest."
       },
       "propsWithDifferentValuesInFigma": {
-        "tone": "current takes its words' colour, which Figma draws as each status."
+        "tone": "`current` takes its words' colour, which Figma draws as each status."
       }
     },
     "Spinner": {
@@ -129,7 +135,10 @@
       "figmaName": "Readout",
       "figmaNodeId": "4:106",
       "figmaVariantPropertiesNotInCode": {
-        "Has label": "In code, on when the label prop is set."
+        "Has label": {
+          "fromProps": ["label"],
+          "note": "On when `label` is set."
+        }
       }
     },
     "MetricValue": {
@@ -140,14 +149,20 @@
       "figmaName": "Bar meter",
       "figmaNodeId": "495:1044",
       "figmaVariantPropertiesNotInCode": {
-        "Value": "In code, the value prop, a number from 0 to 4."
+        "Value": {
+          "fromProps": ["value"],
+          "note": "`value`, a number from 0 to 4."
+        }
       }
     },
     "SplitBar": {
       "figmaName": "Split bar",
       "figmaNodeId": "556:619",
       "figmaVariantPropertiesNotInCode": {
-        "Mix": "In code, the down and up props: Mixed has both, Down only has up at 0, Empty has both at 0."
+        "Mix": {
+          "fromProps": ["down", "up"],
+          "note": "Mixed: `down` and `up` both above 0. Down only: `up` is 0. Empty: both are 0."
+        }
       }
     },
     "ListRow": {
@@ -158,7 +173,10 @@
       "figmaName": "Icon tile",
       "figmaNodeId": "495:585",
       "figmaVariantPropertiesNotInCode": {
-        "Neutral": "In code, color=\"neutral\"; any other colour is a tint."
+        "Neutral": {
+          "fromProps": ["color"],
+          "note": "On when `color=\"neutral\"`; any other colour draws a tint."
+        }
       }
     },
     "IconTileButton": {
@@ -169,8 +187,14 @@
       "figmaName": "Timeline node",
       "figmaNodeId": "580:539",
       "figmaVariantPropertiesNotInCode": {
-        "Neutral": "In code, color=\"neutral\": the hollow ring.",
-        "Last": "In code, no prop: CSS draws a list's last node without its line down."
+        "Neutral": {
+          "fromProps": ["color"],
+          "note": "On when `color=\"neutral\"`: a hollow ring."
+        },
+        "Last": {
+          "fromProps": [],
+          "note": "No prop: CSS draws the last node in a list without its line down."
+        }
       }
     },
     "Card": {
@@ -180,7 +204,10 @@
         "as": "The HTML element: it looks the same."
       },
       "figmaVariantPropertiesNotInCode": {
-        "Openable": "In code, on when the onOpen prop is set."
+        "Openable": {
+          "fromProps": ["onOpen"],
+          "note": "On when `onOpen` is set."
+        }
       }
     },
     "CardBody": {
@@ -206,7 +233,10 @@
       "figmaName": "No value",
       "figmaNodeId": "708:667",
       "figmaVariantPropertiesNotInCode": {
-        "Size": "In code, no prop: it sizes in em to its line. Display is a hero figure's size, Compact a row's."
+        "Size": {
+          "fromProps": [],
+          "note": "No prop: it sizes in em to its line of text. Display is a hero figure's size, Compact a row's."
+        }
       }
     },
     "DotSeparator": {
@@ -237,14 +267,20 @@
       "figmaName": "Nav rail",
       "figmaNodeId": "41:892",
       "figmaVariantPropertiesNotInCode": {
-        "Page": "In code, the page whose NavItem has isActive."
+        "Page": {
+          "fromProps": [],
+          "note": "No NavRail prop: it's the page whose `NavItem` has `isActive`."
+        }
       }
     },
     "PageHeader": {
       "figmaName": "Page header",
       "figmaNodeId": "542:10510",
       "figmaVariantPropertiesNotInCode": {
-        "Back": "In code, on when the onBack prop is set."
+        "Back": {
+          "fromProps": ["onBack"],
+          "note": "On when `onBack` is set."
+        }
       }
     },
     "ScreenReaderStatus": null,
