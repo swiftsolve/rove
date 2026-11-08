@@ -112,6 +112,12 @@ fn build_wifi_uri(ssid: &str, encryption: &str, password: Option<&str>) -> Strin
     }
 }
 
+/// The share dialog's round tile behind the Rove mark, as a share of the code's
+/// full width: `WifiQrCode`'s 36px circle on its 240px image.
+const MARK_TILE_SHARE: f32 = 36.0 / 240.0;
+/// Dots a little under a module wide, so neighbours stay apart.
+const DOT_RADIUS: f32 = 0.42;
+
 /// `data` as a self-contained SVG QR code (a dot per dark module, the corner
 /// finders and the alignment patterns as rounded squares, white field, the
 /// spec's 4-module quiet zone), so the frontend inlines it as a data URI with
@@ -157,13 +163,16 @@ fn qr_svg(data: &str) -> Result<String, String> {
             }
         }
     }
+    // The dialog's round tile over the centre, in modules. A dot it would cut
+    // in half is left out, so the tile sits in a clean round gap.
+    let middle = dim as f32 / 2.0;
+    let clear = MARK_TILE_SHARE / 2.0 * dim as f32 + DOT_RADIUS;
     for y in 0..width {
         for x in 0..width {
-            if is_dark(x, y) && !is_drawn[y * width + x] {
-                let cx = x + QUIET;
-                let cy = y + QUIET;
-                // Dots a little under a module wide, so neighbours stay apart.
-                shapes.push_str(&format!("<circle cx=\"{cx}.5\" cy=\"{cy}.5\" r=\"0.42\"/>"));
+            let (cx, cy) = ((x + QUIET) as f32 + 0.5, (y + QUIET) as f32 + 0.5);
+            let is_under_mark = (cx - middle).hypot(cy - middle) < clear;
+            if is_dark(x, y) && !is_drawn[y * width + x] && !is_under_mark {
+                shapes.push_str(&format!("<circle cx=\"{cx}\" cy=\"{cy}\" r=\"{DOT_RADIUS}\"/>"));
             }
         }
     }
@@ -237,6 +246,30 @@ mod tests {
         assert_eq!(build_wifi_uri("Net", "WPA", Some("p@ss")), "WIFI:T:WPA;S:Net;P:p@ss;;");
         // Secured but secret unknown: an empty password field, not a dropped one.
         assert_eq!(build_wifi_uri("Net", "WPA", None), "WIFI:T:WPA;S:Net;P:;;");
+    }
+
+    #[test]
+    fn qr_svg_leaves_a_clean_gap_for_the_mark() {
+        let svg = qr_svg("WIFI:T:WPA;S:Net;P:secret;;").expect("encodes");
+        let dim: f32 = svg
+            .split("viewBox=\"0 0 ")
+            .nth(1)
+            .and_then(|r| r.split(' ').next())
+            .and_then(|n| n.parse().ok())
+            .expect("viewBox");
+        let clear = MARK_TILE_SHARE / 2.0 * dim + DOT_RADIUS;
+        let dots: Vec<(f32, f32)> = svg
+            .split("<circle cx=\"")
+            .skip(1)
+            .map(|rest| {
+                let mut parts = rest.split('"');
+                let cx: f32 = parts.next().and_then(|v| v.parse().ok()).expect("cx");
+                let cy: f32 = parts.nth(1).and_then(|v| v.parse().ok()).expect("cy");
+                (cx, cy)
+            })
+            .collect();
+        assert!(!dots.is_empty());
+        assert!(dots.iter().all(|(cx, cy)| (cx - dim / 2.0).hypot(cy - dim / 2.0) >= clear));
     }
 
     #[test]

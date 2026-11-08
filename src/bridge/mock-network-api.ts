@@ -183,13 +183,20 @@ export function mockQrSvg(): string {
   ]
   const isInEye = (x: number, y: number): boolean =>
     eyes.some((eye) => x >= eye.x && x < eye.x + eye.size && y >= eye.y && y < eye.y + eye.size)
+  // The dialog's round tile over the centre (WifiQrCode's 36px circle on its
+  // 240px image), as the backend clears it: a dot it would cut is left out.
+  const dotRadius = 0.42
+  const clear = ((36 / 240) * side) / 2 + dotRadius
+  const isUnderMark = (cx: number, cy: number): boolean => Math.hypot(cx - side / 2, cy - side / 2) < clear
   let shapes = eyes.map((eye) => eyeSvg(eye.x + quietZone, eye.y + quietZone, eye.size)).join('')
   MOCK_QR_ROWS.forEach((row, y) => {
     const bits = BigInt(`0x${row}`)
     for (let x = 0; x < size; x++) {
       const isDark = ((bits >> BigInt(43 - x)) & 1n) === 1n
-      if (isDark && !isInEye(x, y)) {
-        shapes += `<circle cx="${x + quietZone + 0.5}" cy="${y + quietZone + 0.5}" r="0.42"/>`
+      const cx = x + quietZone + 0.5
+      const cy = y + quietZone + 0.5
+      if (isDark && !isInEye(x, y) && !isUnderMark(cx, cy)) {
+        shapes += `<circle cx="${cx}" cy="${cy}" r="${dotRadius}"/>`
       }
     }
   })
