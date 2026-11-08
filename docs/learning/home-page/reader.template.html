@@ -1210,7 +1210,7 @@
     const link = (id, label, count) =>
       `<a href="#${id}"${id === currentId ? ' aria-current="page"' : ''}><span>${label}</span>${count ? `<span class="count">${count}</span>` : ''}</a>`
     let html = `<div class="nav-group">${link('overview', 'Overview')}</div>`
-    html += `<div class="nav-group"><div class="nav-label">Basics</div>${link('typescript', 'TypeScript')}${link('cva', 'Styling with cva')}${link('refs', 'Refs')}</div>`
+    html += `<div class="nav-group"><div class="nav-label">Basics</div>${link('typescript', 'TypeScript')}${link('cva', 'Styling with cva')}${link('refs', 'Refs')}${link('data-attributes', 'Data attributes')}</div>`
     for (const group of GROUPS) {
       html += `<div class="nav-group"><div class="nav-label">${group}</div>`
       if (group === 'Hooks and data') html += link('data-flow', 'How data flows')
@@ -1759,6 +1759,81 @@
     },
   ]
 
+  const DATA_ATTRIBUTE_SECTIONS = [
+    {
+      title: 'What a data attribute is',
+      text: 'Any attribute whose name starts with `data-` is yours to invent. The browser does nothing with it and screen readers ignore it. It’s a label stuck on an element so CSS or code can find it later.',
+      code: `<div data-card-footer="">…</div>\n\n// In React: '' puts the attribute on, undefined leaves it off\ndata-openable={isOpenable ? '' : undefined}`,
+      points: [
+        'Its presence is the signal, so the value is an empty string. `false` would still add it, as the text “false”.',
+      ],
+      file: 'Card.tsx',
+    },
+    {
+      title: 'Class, aria or data: which one?',
+      text: 'Three kinds of attribute, three jobs.',
+      code: `className="px-12 bg-inset"      // how it looks; cn() may merge these\naria-expanded="true"             // what it means, for screen readers\ndata-collapsible-trigger=""      // what it is or its state, for CSS and code`,
+      points: [
+        'A data attribute names a fact that won’t change when the look does. Restyle a footer and `data-card-footer` stays put, so nothing that relies on it breaks.',
+        'Classes are a poor hook: `cn` sorts, merges and drops them, and a style tweak can rename one.',
+      ],
+    },
+    {
+      title: 'So a parent can style itself',
+      text: 'The network card draws a focus ring around its whole strip when the button inside has keyboard focus. CSS asks: does this element contain a focused trigger? The marker makes the trigger findable.',
+      code: `// The trigger marks itself\n<BaseCollapsible.Trigger data-collapsible-trigger="" {...props} />\n\n// The Collapsible around it\n'has-[[data-collapsible-trigger]:focus-visible]:[outline:var(--focus-outline)]'\n// has-[…]: “when something inside matches …”, here a trigger with keyboard focus`,
+      points: [
+        '`ConnectionStrip` uses the same marker to tint its background while the trigger has focus.',
+        'The openable card brightens its caret the same way, with `data-stretched-link`.',
+      ],
+      file: 'Collapsible.tsx',
+    },
+    {
+      title: 'So a neighbour can adjust',
+      text: 'A card body sits closer to a footer below it. The body checks whether the very next element is a footer.',
+      code: `<div data-card-footer="">…</div>      // the footer marks itself\n\n'has-[+[data-card-footer]]:pb-12'\n// +[…] means “the element straight after me”:\n// if that's a footer, shrink my bottom padding to 12px`,
+      file: 'Card.tsx',
+    },
+    {
+      title: 'So code can find an element',
+      text: 'When a control in an openable card is about to disappear, focus moves to the card’s own link instead of jumping to the top of the page. The code finds the card and its link by their markers.',
+      code: `export function focusCardLink(element: HTMLElement): void {\n  element\n    .closest('[data-openable]')        // walk up to the openable card\n    ?.querySelector(':scope > [data-stretched-link]')  // its own link\n    ?.focus()\n}`,
+      points: [
+        '`closest` searches upward through parents; `querySelector` searches inside. `:scope >` means a direct child only.',
+      ],
+      file: 'Card.tsx',
+    },
+    {
+      title: 'State a library sets for you',
+      text: 'Base UI, which runs the tooltip and the collapsible panel, adds data attributes that say what moment it’s in. Rove’s classes react to them, so the motion is pure CSS.',
+      code: `// Tooltip: start and end slightly raised and invisible, so it fades and slides\n'data-starting-style:opacity-0 data-starting-style:transform-[translateY(-3px)]'\n'data-ending-style:opacity-0 data-ending-style:transform-[translateY(-3px)]'\n\n// Collapsible panel: height 0 while opening starts and while closing ends\n'data-ending-style:h-0 data-starting-style:h-0'\n\n// Tooltip: hide when its trigger has scrolled out of view\n'data-anchor-hidden:hidden'`,
+      points: [
+        'A prefix like `data-starting-style:` means “only while that attribute is on”.',
+        'The trigger also gets `data-panel-open` while the panel is open, for anything that needs to look different then.',
+      ],
+      file: 'Tooltip.tsx',
+    },
+    {
+      title: 'State Rove sets on every button',
+      text: 'A disabled or loading button stays focusable, so a tooltip can still explain why. So Rove doesn’t use the HTML `disabled` attribute. It sets a pair instead: aria for screen readers, data for the look.',
+      code: `'aria-disabled': isDisabled || undefined,   // screen readers: “dimmed”\n'data-disabled': isDisabled ? '' : undefined, // CSS: style it as disabled\n'aria-busy': isLoading || undefined,\n'data-loading': isLoading ? '' : undefined,\n\n// one shared string styles them on every pressable\nSTATE_CLASSES = 'data-disabled:cursor-not-allowed data-disabled:opacity-(--opacity-disabled) data-loading:cursor-default'`,
+      points: [
+        'This is what the `usable:` prefix checks too: a style for while the control isn’t disabled or loading.',
+      ],
+      file: 'Button.tsx',
+    },
+    {
+      title: 'Not one: `--data-row-py`',
+      text: 'In `DataList`, `--data-row-py` looks similar but is a CSS variable (it starts with `--`), named after the data list. It holds a row’s vertical padding, which a density option changes.',
+      code: `default: '[--data-row-py:var(--row-padding-y)]',\ncompact: '[--data-row-py:var(--spacing-4)]',\n// each row: py-(--data-row-py)`,
+      file: 'DataList.tsx',
+    },
+    {
+      title: 'Rule of thumb',
+      text: 'Reach for a data attribute when CSS or code must find an element, or react to its state, and the name should outlive any restyle. Use a class for the look, and aria for what a screen reader should hear. Keep the value empty and let its presence do the talking.',
+    },
+  ]
+
   function conceptSectionHtml(section) {
     const fileLink = section.file ? `<p class="hook-files">From ${fileLinkByName(section.file)}</p>` : ''
     const points = section.points
@@ -1958,6 +2033,12 @@
         'A ref is how a component remembers something without redrawing, or gets hold of a real element on the page.',
         REF_SECTIONS,
       )
+    else if (id === 'data-attributes')
+      html = conceptView(
+        'Data attributes',
+        'When the Home page’s code puts a `data-` attribute on an element, and why that instead of a class or aria.',
+        DATA_ATTRIBUTE_SECTIONS,
+      )
     else if (id === 'cva')
       html = conceptView(
         'Styling with cva',
@@ -1967,7 +2048,9 @@
     else html = overviewView()
     main.innerHTML = html
     document.getElementById('nav').innerHTML = navHtml(
-      byId[id] || ['glossary', 'data-flow', 'react-hooks', 'typescript', 'cva', 'refs'].includes(id) ? id : 'overview',
+      byId[id] || ['glossary', 'data-flow', 'react-hooks', 'typescript', 'cva', 'refs', 'data-attributes'].includes(id)
+        ? id
+        : 'overview',
     )
     currentFile = byId[id] || null
     hideTip()
