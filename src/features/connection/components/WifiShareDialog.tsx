@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { ErrorNotice } from '@/app/components/ErrorNotice'
+import { WifiQrCode } from '@/features/connection/components/WifiQrCode'
 import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
 import { type ShareNotice, shareNotice } from '@/features/connection/utils/wifi-share-notice'
 import type { WifiShare } from '@/types'
@@ -80,16 +81,5 @@ function ShareState({
     )
   }
   if (!qr) return null
-  return (
-    // A white plate, so the QR keeps its quiet zone and contrast in dark mode.
-    <div className="flex animate-fade-in justify-center rounded-lg border border-line bg-[#ffffff] p-16">
-      <img
-        className="block size-[240px]"
-        src={`data:image/svg+xml,${encodeURIComponent(qr.qrSvg)}`}
-        alt={`QR code to join the Wi‑Fi network ${qr.ssid}`}
-        width={240}
-        height={240}
-      />
-    </div>
-  )
+  return <WifiQrCode svg={qr.qrSvg} alt={`QR code to join the Wi‑Fi network ${qr.ssid}`} />
 }

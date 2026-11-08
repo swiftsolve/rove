@@ -118,9 +118,9 @@ fn build_wifi_uri(ssid: &str, encryption: &str, password: Option<&str>) -> Strin
 fn qr_svg(data: &str) -> Result<String, String> {
     use qrcode::{Color, EcLevel, QrCode};
 
-    // Medium error correction: reliably scannable, and small enough to stay
-    // crisp in the dialog.
-    let code = QrCode::with_error_correction_level(data.as_bytes(), EcLevel::M)
+    // High error correction: the dialog covers the code's centre with the Rove
+    // mark, and H recovers up to 30% of it, far more than the mark hides.
+    let code = QrCode::with_error_correction_level(data.as_bytes(), EcLevel::H)
         .map_err(|e| format!("Could not encode the Wi-Fi QR code: {e}"))?;
     let width = code.width();
     let colors = code.to_colors();

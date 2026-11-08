@@ -4,6 +4,7 @@ import { mockQrSvg } from '../src/bridge/mock-network-api'
 import { ConnectionDetailsPanel } from '../src/features/connection/components/ConnectionDetailsPanel'
 import { ConnectionStrip } from '../src/features/connection/components/ConnectionStrip'
 import { ShareWifiButton } from '../src/features/connection/components/ShareWifiButton'
+import { WifiQrCode } from '../src/features/connection/components/WifiQrCode'
 import type { NetworkInfo } from '../src/types'
 import {
   AppsIcon,
@@ -255,7 +256,7 @@ function InputsScene(): JSX.Element {
 }
 
 // The share dialog's QR code, as the dev mock draws it.
-const QR_SRC = `data:image/svg+xml,${encodeURIComponent(mockQrSvg())}`
+const QR_SVG = mockQrSvg()
 
 // The library's own classes for the parts drawn in place: Tooltip's bubble
 // (tooltip/Tooltip.tsx) and Dialog's layers, panel, sizer and header
@@ -341,9 +342,7 @@ function OverlaysScene(): JSX.Element {
                   </div>
                   <div className="bg-base p-16">
                     {isQrReady ? (
-                      <div className="flex animate-fade-in justify-center rounded-lg border border-line bg-[#ffffff] p-16">
-                        <img className="block size-[240px]" src={QR_SRC} alt="" width={240} height={240} />
-                      </div>
+                      <WifiQrCode svg={QR_SVG} alt="" />
                     ) : (
                       <div className="flex animate-fade-in flex-col items-center gap-12 py-16 text-center">
                         <Spinner />
