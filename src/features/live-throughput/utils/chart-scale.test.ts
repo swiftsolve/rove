@@ -24,9 +24,13 @@ describe('resolveChartScale', () => {
     expect(resolveChartScale([30], [0], { linkCapacityMbps: 1200 })).toBe(50)
   })
 
-  it('drops a burst once traffic has settled', () => {
-    const download = [...Array<number>(15).fill(500), ...Array<number>(5).fill(2)]
-    expect(resolveChartScale(download, Array<number>(20).fill(0))).toBe(10)
+  it('keeps a burst in scale while it is still on the chart, however quiet traffic is now', () => {
+    const download = [500, ...Array<number>(59).fill(2)]
+    expect(resolveChartScale(download, Array<number>(60).fill(0))).toBe(1000)
+  })
+
+  it('drops a burst once it has scrolled off', () => {
+    expect(resolveChartScale(Array<number>(60).fill(2), Array<number>(60).fill(0))).toBe(10)
   })
 
   it('rounds past the last step up to the next thousand', () => {

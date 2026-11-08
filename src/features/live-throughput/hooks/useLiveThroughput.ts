@@ -11,7 +11,7 @@ import { sanitizeRate } from '@/types'
 export type LiveThroughputState = {
   /** The latest sample. */
   throughput: LiveThroughput
-  /** The last minute of samples, oldest first. */
+  /** The chart's minute of samples and the few it reaches back to, oldest first. */
   history: ThroughputHistory
 }
 
@@ -124,12 +124,16 @@ export function subscribeLiveThroughput(listener: () => void): () => void {
   return subscribeStore(listener)
 }
 
-// Vite HMR re-evaluates this module but keeps the previous bundle's backend
-// subscription and Tauri listeners, so release them here.
+// Vite HMR re-evaluates this module but keeps the previous bundle's Tauri
+// listeners, so release them here. The backend subscription stays on: the
+// new module subscribes again, and an unsubscribe sent now could land after
+// that and leave the feed off, as the grace period above guards against.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     cancelScheduledStop()
-    stopSourceNow()
+    detachEvents?.()
+    detachEvents = null
+    isSourceActive = false
     listeners.clear()
   })
 }

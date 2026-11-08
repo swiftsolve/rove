@@ -1,10 +1,18 @@
 import { sanitizeRate } from '@/types'
 
-/** One minute of history at one sample per second. */
-const THROUGHPUT_HISTORY_LENGTH = 60
+/** The chart's window: one minute at one sample per second. */
+export const CHART_WINDOW_SAMPLES = 60
 
-/** The chart's left-edge label: how far back the history reaches. */
-export const CHART_WINDOW_LABEL = `${THROUGHPUT_HISTORY_LENGTH}s ago`
+/**
+ * Thirty-two samples more than the window: the two the chart draws past its
+ * right edge, and thirty before its left edge for the curve and averaging to
+ * reach back over. The adaptive average carries every earlier sample, fading
+ * as it goes, so by then a sample leaving moves that edge by well under 1%.
+ */
+export const THROUGHPUT_HISTORY_LENGTH = CHART_WINDOW_SAMPLES + 32
+
+/** The chart's left-edge label: how far back the window reaches. */
+export const CHART_WINDOW_LABEL = `${CHART_WINDOW_SAMPLES}s ago`
 
 export type ThroughputHistory = {
   download: number[]

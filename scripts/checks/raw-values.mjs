@@ -70,7 +70,7 @@ const ALLOWED = [
   // Lined up with something that isn't spacing: an icon's width, a label column.
   { file: 'src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-body-padding)+21px)]' },
   { file: 'src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--spacing-12))]' },
-  { file: 'src/features/live-throughput/components/ThroughputChart.tsx', value: 'pr-[26px]' },
+  { file: 'src/features/live-throughput/components/ThroughputChart.tsx', value: 'pr-[calc(28px+var(--spacing-12))]' },
   { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pl-[5px]' },
   { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pb-[22px]' },
   // Lifts the empty state a little above centre, under the page header.
