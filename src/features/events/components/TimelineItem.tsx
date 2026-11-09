@@ -34,11 +34,11 @@ import { formatDuration, formatMac } from '@/utils/format'
 
 // The icon says what happened; the tint says how to read it.
 const TONE_COLORS = {
-  /** Recoveries & connections: a known device came back, or a link came up. */
+  /** Recoveries & connections: this computer's link or internet came up. */
   join: 'var(--status-positive)',
   /**
-   * Something new on the network: worth a look, but neither good nor bad, so
-   * the accent rather than a status colour.
+   * A device appeared, new or back again: worth a look, but neither good nor
+   * bad (devices come and go all day), so the accent rather than a status colour.
    */
   arrival: 'var(--accent-default)',
   /**
@@ -70,7 +70,7 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   device_joined: { icon: ArrowRightIcon, tone: 'arrival' },
   ap_appeared: { icon: RouterIcon, tone: 'alert' },
   device_offline: { icon: ArrowLeftIcon, tone: 'leave' },
-  device_online: { icon: RefreshIcon, tone: 'join' },
+  device_online: { icon: RefreshIcon, tone: 'arrival' },
   gateway_changed: { icon: ShieldAlertIcon, tone: 'danger' },
   wifi_connected: { icon: WifiIcon, tone: 'join' },
   ethernet_connected: { icon: EthernetIcon, tone: 'join' },
