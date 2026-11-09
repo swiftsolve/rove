@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { isNetworkInfoEqual } from '@/app/utils/network-info-equal'
 import { queryClient } from '@/app/utils/query-client'
 import { getNetworkApi, NO_BACKEND_MESSAGE } from '@/bridge/network-api'
-import { isNetworkInfoEqual } from '@/features/connection/utils/network-info-equal'
 import { useOnNetworkChanged } from '@/hooks/useOnNetworkChanged'
 import { usePageVisible } from '@/hooks/usePageVisible'
 import type { NetworkInfo } from '@/types'

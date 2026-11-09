@@ -116,7 +116,7 @@ each one updates data you can also ask for:
 
 - **Internet status** sends a new verdict. It's written straight into its
   query's cache with `setQueryData`
-  ([useInternetStatusSource.ts](../../../src/features/connection/hooks/useInternetStatusSource.ts)):
+  ([useInternetStatusSource.ts](../../../src/app/hooks/useInternetStatusSource.ts)):
   the query reads once, and the pushes keep it current.
 - **Services timeline** and **network changed** carry nothing. They're nudges:
   the timeline invalidates its query

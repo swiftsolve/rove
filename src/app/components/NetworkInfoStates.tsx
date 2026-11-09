@@ -3,7 +3,7 @@ import type { JSX, ReactNode } from 'react'
 
 import { ErrorNotice } from '@/app/components/ErrorNotice'
 import { useNetwork } from '@/app/hooks/useNetwork'
-import type { NetworkError } from '@/features/connection/hooks/useNetworkInfoSource'
+import type { NetworkError } from '@/app/hooks/useNetworkInfoSource'
 import { useNow } from '@/hooks/useNow'
 import { AlertIcon, Banner, OfflineIcon, Spinner } from '@/ui'
 import { formatTimeAgo, TIME_AGO_RESOLUTION_MS } from '@/utils/format'

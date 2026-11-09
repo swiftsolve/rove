@@ -114,7 +114,7 @@ ENTRIES = [
      'Rove\u2019s wrapper around React Query\u2019s `useQuery`, with its rules for opening, polling and busy states.', 'Under the public IP, devices, usage and speed history reads.'),
     ('network-provider', 'Hooks and data', 'NetworkProvider', 'src/app/context/NetworkProvider.tsx', hooks['NETWORK_PROVIDER'],
      'Owns the app-wide network state and shares it through context.', 'Gives Home its network info, and starts the live traffic feed.'),
-    ('use-network-info-source', 'Hooks and data', 'useNetworkInfoSource', 'src/features/connection/hooks/useNetworkInfoSource.ts', hooks['USE_NETWORK_INFO_SOURCE'],
+    ('use-network-info-source', 'Hooks and data', 'useNetworkInfoSource', 'src/app/hooks/useNetworkInfoSource.ts', hooks['USE_NETWORK_INFO_SOURCE'],
      'Reads the network info with React Query, polling every 15 seconds.', 'The network card\u2019s data, through `useNetwork()`.'),
     ('use-network', 'Hooks and data', 'useNetwork', 'src/app/hooks/useNetwork.ts', hooks['USE_NETWORK'],
      'Reads the shared network state from context.', '`HomeView`, the network card, and several hooks.'),
