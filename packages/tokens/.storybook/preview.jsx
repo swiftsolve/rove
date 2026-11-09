@@ -30,7 +30,7 @@ const preview = {
   ],
   parameters: {
     layout: 'fullscreen',
-    // In the order of the Figma file's Foundations pages, one story each; Motion is code-only.
+    // In the order of the Figma file's Foundations pages, one story each; Motion shows the Motion variables, which no Foundations page does.
     options: {
       storySort: {
         order: ['Introduction', 'Colour', 'Typography', 'Space, shape & effects', 'Motion'],

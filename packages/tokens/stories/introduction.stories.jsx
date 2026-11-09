@@ -231,7 +231,7 @@ const PIPELINES = [
         column: 1,
         icons: ['figma'],
         items: [
-          { name: 'Variables', body: 'Colour, spacing, type and the rest, each in Dark and Light.' },
+          { name: 'Variables', body: 'Colour, spacing, type and motion; colours in Dark and Light.' },
           { name: 'Text styles', body: 'Headings, body, labels and numbers.' },
           { name: 'Shadows', body: '`Shadow/*` effect styles, coloured by variables.' },
         ],
