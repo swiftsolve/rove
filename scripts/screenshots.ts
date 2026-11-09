@@ -8,6 +8,10 @@
  *   CHROME_PATH=/usr/bin/chromium npm run screenshots    # no Google Chrome installed
  *   npm run screenshots -- --stable        # identical pixels run to run, to diff a refactor
  *   npm run screenshots -- --stable --storybook-url http://127.0.0.1:6006   # reuse a running Storybook
+ *   npm run screenshots -- --jobs 4        # pages shot at once (default: half the cores, up to 8)
+ *
+ * Each shot loads the app in a fresh page, so it doesn't depend on which shots
+ * ran before it, and several run at once.
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
  * (src/bridge/mock-network-api.ts), so the shots show the mock's network, not
@@ -27,6 +31,7 @@
  */
 import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
+import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -42,34 +47,30 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 // The shots are only useful at the size the window actually is.
 const { width, height } = await readWindowSize()
 
+/** One shot of the app: where it goes, and for a scene, what to do once the screen has settled. */
+type Shot = { name: string; location: AppLocation; act?: (page: Page) => Promise<void> }
+
 /** Every screen worth a shot: each tab, plus the subpages layered over one. */
-const SCREENS: [name: string, location: AppLocation][] = [
-  ['01-home', { tab: 'home' }],
-  ['02-speed', { tab: 'speed' }],
-  ['03-speed-details', { tab: 'speed', speedSub: { view: 'details', target: 'streaming-4k' } }],
-  ['04-speed-history', { tab: 'speed', speedSub: { view: 'history' } }],
-  ['05-interfaces', { tab: 'interfaces' }],
-  ['06-devices', { tab: 'devices' }],
-  ['07-events', { tab: 'events' }],
-  ['08-usage', { tab: 'usage' }],
-  ['09-apps', { tab: 'apps' }],
-  ['10-apps-hosts', { tab: 'apps', appsSub: { view: 'hosts' } }],
-  ['11-diagnostics', { tab: 'diagnostics' }],
-  ['12-services', { tab: 'services' }],
-  ['13-services-timeline', { tab: 'services', servicesSub: { view: 'timeline' } }],
-  ['14-settings', { tab: 'settings' }],
-  ['15-about', { tab: 'about' }],
+const SCREENS: Shot[] = [
+  { name: '01-home', location: { tab: 'home' } },
+  { name: '02-speed', location: { tab: 'speed' } },
+  { name: '03-speed-details', location: { tab: 'speed', speedSub: { view: 'details', target: 'streaming-4k' } } },
+  { name: '04-speed-history', location: { tab: 'speed', speedSub: { view: 'history' } } },
+  { name: '05-interfaces', location: { tab: 'interfaces' } },
+  { name: '06-devices', location: { tab: 'devices' } },
+  { name: '07-events', location: { tab: 'events' } },
+  { name: '08-usage', location: { tab: 'usage' } },
+  { name: '09-apps', location: { tab: 'apps' } },
+  { name: '10-apps-hosts', location: { tab: 'apps', appsSub: { view: 'hosts' } } },
+  { name: '11-diagnostics', location: { tab: 'diagnostics' } },
+  { name: '12-services', location: { tab: 'services' } },
+  { name: '13-services-timeline', location: { tab: 'services', servicesSub: { view: 'timeline' } } },
+  { name: '14-settings', location: { tab: 'settings' } },
+  { name: '15-about', location: { tab: 'about' } },
 ]
 
-/**
- * With --stable, states a still screen never shows: open menus and dialogs,
- * tooltips, a focus ring. Each is
- * [name, location, what to do once it has settled].
- */
-/** A state a still screen never shows, and how to reach it once the screen has settled. */
-type Scene = { name: string; location: AppLocation; act: (page: Page) => Promise<void> }
-
-const SCENES: Scene[] = [
+/** With --stable, states a still screen never shows: open menus and dialogs, tooltips, a focus ring. */
+const SCENES: Shot[] = [
   {
     name: '16-home-details',
     location: { tab: 'home' },
@@ -122,6 +123,24 @@ const existingStorybookUrl = flag('storybook-url')
 // shots then show a fixed moment, not a live app.
 const isStable = process.argv.includes('--stable')
 const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
+// Half the cores, up to 8: each page is a Chrome renderer, and one Vite server
+// and one Storybook serve them all, so more pages stop helping well before
+// every core is busy.
+const jobs = Number(flag('jobs') ?? Math.min(8, Math.max(1, Math.floor(availableParallelism() / 2))))
+
+/** Runs `work` on every item, `jobs` at a time. */
+async function runInParallel<T>(items: T[], work: (item: T) => Promise<void>): Promise<void> {
+  const queue = [...items]
+  async function runQueue() {
+    let item = queue.shift()
+    while (item !== undefined) {
+      await work(item)
+      item = queue.shift()
+    }
+  }
+  const runnerCount = Math.min(jobs, items.length)
+  await Promise.all(Array.from({ length: runnerCount }, runQueue))
+}
 
 /** Moves the app to `location` the way the tab bar does. */
 function navigateTo(page: Page, location: AppLocation): Promise<void> {
@@ -182,7 +201,11 @@ await mkdir(out, { recursive: true })
 const browser = await chromium.launch(
   process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
 )
-try {
+
+/** The app in a fresh page, settled on its first screen, and how to let it run on. */
+type AppPage = { page: Page; settle: (ms: number) => Promise<void> }
+
+async function openApp(): Promise<AppPage> {
   const page = await browser.newPage({
     viewport: { width, height },
     deviceScaleFactor: 2,
@@ -212,74 +235,72 @@ try {
 
   await page.goto(server.url, { waitUntil: 'networkidle' })
   await page.waitForSelector('[data-app-shell]')
-  if (isStable) {
-    // A first visit can make Vite pre-bundle a newly imported dependency and
-    // reload the page; let that happen before the shots start.
-    await page.waitForTimeout(2000)
-    await page.waitForSelector('[data-app-shell]')
-  }
   // The mock answers on a delay and the views fetch on mount; give the first
-  // screen room to settle before we start shooting.
+  // screen room to settle before moving on.
   await settle(3000)
+  return { page, settle }
+}
 
-  for (const [name, location] of SCREENS) {
-    await navigateTo(page, location)
+async function shootApp(shot: Shot): Promise<void> {
+  const { page, settle } = await openApp()
+  try {
+    await navigateTo(page, shot.location)
     await settle(2500)
+    if (shot.act) {
+      await shot.act(page)
+      await settle(600)
+    }
     // Favicons and app icons load over the network, in real time.
     if (isStable) await page.waitForFunction(() => [...document.images].every((image) => image.complete))
-    await page.screenshot({ path: `${out}/${name}.png`, ...(isStable && { animations: 'disabled' }) })
-    console.log(`  ${name}.png`)
+    await page.screenshot({ path: `${out}/${shot.name}.png`, ...(isStable && { animations: 'disabled' }) })
+    console.log(`  ${shot.name}.png`)
+  } finally {
+    await page.context().close()
   }
+}
+
+// The UI library, from Storybook: the states no screen shows. Without the fake
+// clock, which would stall Storybook's startup; paused animations and reduced
+// motion hold it still.
+async function shootStory(storybookUrl: string, story: IndexEntry): Promise<void> {
+  const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2, reducedMotion: 'reduce' })
+  try {
+    await page.goto(`${storybookUrl}/iframe.html?id=${story.id}&viewMode=story&globals=theme:${theme}`)
+    await page.waitForSelector('body.sb-show-main')
+    // Fonts, and a play function (a Tooltip story hovers its trigger): the
+    // story's render reaches 'finished' once its play function has run, then a
+    // moment for what it opened to place itself.
+    await page.evaluate(() => document.fonts.ready)
+    await page.waitForFunction(() => {
+      const { __STORYBOOK_PREVIEW__: preview } = window as { __STORYBOOK_PREVIEW__?: StorybookPreview }
+      return preview?.currentRender?.phase === 'finished'
+    })
+    await page.waitForTimeout(600)
+    await page.screenshot({ path: `${out}/25-library/${story.id}.png`, fullPage: true, animations: 'disabled' })
+  } finally {
+    await page.context().close()
+  }
+}
+
+try {
+  // A first visit can make Vite pre-bundle a newly imported dependency and
+  // reload the page: let that happen once, before pages load the app side by side.
+  const warmUp = await browser.newPage()
+  await warmUp.goto(server.url, { waitUntil: 'networkidle' })
+  await warmUp.waitForTimeout(2000)
+  await warmUp.waitForSelector('[data-app-shell]')
+  await warmUp.context().close()
+
+  await runInParallel(isStable ? [...SCREENS, ...SCENES] : SCREENS, shootApp)
 
   if (isStable) {
-    for (const { name, location, act } of SCENES) {
-      await navigateTo(page, location)
-      await settle(2500)
-      await act(page)
-      await settle(600)
-      await page.screenshot({ path: `${out}/${name}.png`, animations: 'disabled' })
-      console.log(`  ${name}.png`)
-      // Close whatever opened and move the pointer off it, for the next scene.
-      await page.keyboard.press('Escape')
-      await page.mouse.move(0, 0)
-      await settle(600)
-      // Leave animations are CSS, on the wall clock: let them end (and a closed
-      // dialog hand focus back) before the next scene moves focus.
-      await page.waitForTimeout(400)
-    }
-
-    // The UI library, from Storybook: the states no screen shows. Its own page,
-    // without the fake clock, which would stall Storybook's startup; paused
-    // animations and reduced motion hold it still.
     const storybook: RunningServer = existingStorybookUrl
       ? { url: existingStorybookUrl, stop: () => {} }
       : await startStorybook()
     try {
       const stories = await libraryStories(storybook.url)
       await mkdir(`${out}/25-library`, { recursive: true })
-      const libraryPage = await browser.newPage({
-        viewport: { width, height },
-        deviceScaleFactor: 2,
-        reducedMotion: 'reduce',
-      })
-      for (const story of stories) {
-        await libraryPage.goto(`${storybook.url}/iframe.html?id=${story.id}&viewMode=story&globals=theme:${theme}`)
-        await libraryPage.waitForSelector('body.sb-show-main')
-        // Fonts, and a play function (a Tooltip story hovers its trigger): the
-        // story's render reaches 'finished' once its play function has run,
-        // then a moment for what it opened to place itself.
-        await libraryPage.evaluate(() => document.fonts.ready)
-        await libraryPage.waitForFunction(() => {
-          const { __STORYBOOK_PREVIEW__: preview } = window as { __STORYBOOK_PREVIEW__?: StorybookPreview }
-          return preview?.currentRender?.phase === 'finished'
-        })
-        await libraryPage.waitForTimeout(600)
-        await libraryPage.screenshot({
-          path: `${out}/25-library/${story.id}.png`,
-          fullPage: true,
-          animations: 'disabled',
-        })
-      }
+      await runInParallel(stories, (story) => shootStory(storybook.url, story))
       libraryCount = stories.length
       console.log(`  25-library/ (${stories.length} stories)`)
     } finally {
@@ -292,5 +313,5 @@ try {
 }
 
 console.log(
-  `\n${SCREENS.length + (isStable ? SCENES.length + libraryCount : 0)} screens at ${width}x${height} (@2x) -> ${out}`,
+  `\n${SCREENS.length + (isStable ? SCENES.length + libraryCount : 0)} screens at ${width}x${height} (@2x), ${jobs} at a time -> ${out}`,
 )
