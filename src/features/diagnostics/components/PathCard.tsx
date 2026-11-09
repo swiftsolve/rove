@@ -32,19 +32,28 @@ import {
 } from '@/ui'
 import { formatBand, splitSpeedMbps } from '@/utils/format'
 
-// The accent marks what's yours: the three ends of the path, and a link that works.
-const NODE_COLOR = 'var(--accent-default)'
+// The two devices take their group's colour, as on the Devices tab; the
+// internet, which isn't a device, takes the accent.
+const COMPUTER_COLOR = 'var(--device-personal)'
+const ROUTER_COLOR = 'var(--device-network)'
+const INTERNET_COLOR = 'var(--accent-default)'
 
-// A link's line: the accent when it works, grey before it's known, red when
-// it's down. A change of state sweeps the new colour across from the computer.
+// A link's line says how it's doing: green when it works, the accent while a
+// test runs on it, grey before it's known, red when it's down. A change of
+// state sweeps the new colour across from the computer.
 const lineVariants = cva('h-px w-full overflow-visible', {
   variants: {
-    tone: { working: 'text-accent', unknown: 'text-line', down: 'text-status-negative' },
+    tone: {
+      working: 'text-status-positive',
+      testing: 'text-accent',
+      unknown: 'text-line',
+      down: 'text-status-negative',
+    },
     isSweeping: { true: 'animate-line-sweep' },
   },
 })
 
-type LineTone = 'working' | 'unknown' | 'down'
+type LineTone = 'working' | 'testing' | 'unknown' | 'down'
 
 // Above and below each line, a row as tall as the caption, so both lines sit
 // at the tiles' centre whatever the rows hold.
@@ -93,14 +102,14 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
         <p className="sr-only">{pathSummary(info, internetState, lastTest)}</p>
         <div className="flex flex-col gap-8" aria-hidden>
           <div className="flex items-center gap-2">
-            <IconTile size="lg" color={NODE_COLOR} icon={<ComputerIcon size={16} />} />
+            <IconTile size="lg" color={COMPUTER_COLOR} icon={<ComputerIcon size={16} />} />
             <PathLink
               tone={isConnected ? 'working' : 'down'}
               isDotted={info != null && isWifiNetwork(info)}
               above={isConnected ? info && formatLinkSpeed(info) : <span className="text-negative">Not connected</span>}
               below={info && isWifiNetwork(info) ? <WifiSignal info={info} /> : null}
             />
-            <IconTile size="lg" color={NODE_COLOR} icon={<RouterIcon size={16} />} />
+            <IconTile size="lg" color={ROUTER_COLOR} icon={<RouterIcon size={16} />} />
             {/* While a test runs, its dashes flow outward until the result lands. */}
             <PathLink
               tone={internetLineTone(isConnected, isTesting, internetState)}
@@ -113,7 +122,7 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
                 ) : null
               }
             />
-            <IconTile size="lg" color={NODE_COLOR} icon={<GlobeIcon size={16} />} />
+            <IconTile size="lg" color={INTERNET_COLOR} icon={<GlobeIcon size={16} />} />
           </div>
           <div className="flex items-start justify-between gap-8">
             <Node align="start" name="Computer" detail={selfVendor} />
@@ -210,7 +219,7 @@ function WifiSignal({ info }: { info: WifiNetworkInfo }) {
 // rather than doubling the red of the link that actually failed.
 function internetLineTone(isConnected: boolean, isTesting: boolean, state: InternetLinkState): LineTone {
   if (!isConnected) return 'unknown'
-  if (isTesting) return 'working'
+  if (isTesting) return 'testing'
   return INTERNET_LINE_TONES[state]
 }
 
