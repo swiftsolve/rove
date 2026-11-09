@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { formatLocation } from '@/features/diagnostics/utils/diagnostics-display'
+import { formatLocation } from '@/features/connection/utils/diagnostics-display'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import type { IspInfo, NetworkDiagnostics } from '@/types'
 import { Badge, Card, CardBody, CardHeader, DataList, DataRow, GlobeIcon } from '@/ui'

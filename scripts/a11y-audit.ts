@@ -103,7 +103,7 @@ const SCENARIOS: [name: string, location: AppLocation, buttonLabel?: string][] =
   ['apps', { tab: 'apps' }],
   ['apps: hosts', { tab: 'apps', appsSub: { view: 'hosts' } }],
   ['apps: traffic', { tab: 'apps', appsSub: { view: 'traffic' } }],
-  ['connection', { tab: 'diagnostics' }],
+  ['connection', { tab: 'connection' }],
   ['services', { tab: 'services' }],
   ['services: add dialog', { tab: 'services' }, 'Add service'],
   ['services: row menu', { tab: 'services' }, 'Options for'],

@@ -1,17 +1,17 @@
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { DnsCard } from '@/features/diagnostics/components/DnsCard'
-import { IspCard } from '@/features/diagnostics/components/IspCard'
-import { PathCard } from '@/features/diagnostics/components/PathCard'
-import { RouterCard } from '@/features/diagnostics/components/RouterCard'
-import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
-import { useFinishedCheckCount } from '@/features/diagnostics/hooks/useFinishedCheckCount'
-import { runStatusText } from '@/features/diagnostics/utils/diagnostics-display'
+import { DnsCard } from '@/features/connection/components/DnsCard'
+import { IspCard } from '@/features/connection/components/IspCard'
+import { PathCard } from '@/features/connection/components/PathCard'
+import { RouterCard } from '@/features/connection/components/RouterCard'
+import { useDiagnostics } from '@/features/connection/hooks/useDiagnostics'
+import { useFinishedCheckCount } from '@/features/connection/hooks/useFinishedCheckCount'
+import { runStatusText } from '@/features/connection/utils/diagnostics-display'
 import { Banner, ConnectionIcon, IconButton, LoadingState, PageHeader, RefreshIcon, ScreenReaderStatus } from '@/ui'
 
 const DIAGNOSTICS_HINT =
   'Latency pings your router, and some routers answer slowly on purpose. ISP details come from your public IP.'
 
-export function DiagnosticsView() {
+export function ConnectionView() {
   const { diagnostics, isRunning, error, run } = useDiagnostics()
   const isConnected = useNetwork().info?.isConnected ?? false
   const finishedCheckCount = useFinishedCheckCount(isRunning)

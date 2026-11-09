@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { formatPercent, isSameText, latencyStatus, lossStatus } from '@/features/diagnostics/utils/diagnostics-display'
+import { formatPercent, isSameText, latencyStatus, lossStatus } from '@/features/connection/utils/diagnostics-display'
 import type { NetworkDiagnostics, PingStats } from '@/types'
 import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import {

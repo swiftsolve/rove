@@ -2,7 +2,7 @@
 export const APP_TABS = [
   'home',
   'speed',
-  'diagnostics',
+  'connection',
   'devices',
   'services',
   'apps',

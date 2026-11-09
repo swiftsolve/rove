@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
-import { overlayLiveMetrics } from '@/features/diagnostics/utils/live-metrics'
+import { overlayLiveMetrics } from '@/features/connection/utils/live-metrics'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { LiveDiagnostics, NetworkDiagnostics } from '@/types'
 

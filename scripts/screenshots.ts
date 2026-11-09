@@ -62,7 +62,7 @@ const SCREENS: Shot[] = [
   { name: '08-usage', location: { tab: 'usage' } },
   { name: '09-apps', location: { tab: 'apps' } },
   { name: '10-apps-hosts', location: { tab: 'apps', appsSub: { view: 'hosts' } } },
-  { name: '11-diagnostics', location: { tab: 'diagnostics' } },
+  { name: '11-connection', location: { tab: 'connection' } },
   { name: '12-services', location: { tab: 'services' } },
   { name: '13-services-timeline', location: { tab: 'services', servicesSub: { view: 'timeline' } } },
   { name: '14-settings', location: { tab: 'settings' } },

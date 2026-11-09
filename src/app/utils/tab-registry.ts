@@ -6,8 +6,8 @@ import { AboutView } from '@/features/about/AboutView'
 import { AppUsageView } from '@/features/apps/AppUsageView'
 import { HostsView } from '@/features/apps/HostsView'
 import { TrafficView } from '@/features/apps/TrafficView'
+import { ConnectionView } from '@/features/connection/ConnectionView'
 import { DevicesView } from '@/features/devices/DevicesView'
-import { DiagnosticsView } from '@/features/diagnostics/DiagnosticsView'
 import { EventsView } from '@/features/events/EventsView'
 import { HomeView } from '@/features/home/HomeView'
 import { InterfacesView } from '@/features/interfaces/InterfacesView'
@@ -50,7 +50,7 @@ export type TabDefinition = {
 export const TABS: Record<AppTab, TabDefinition> = {
   home: { label: 'Home', Icon: HomeIcon, Screen: HomeView, rail: 'main', needsNetworkInfo: true },
   speed: { label: 'Speed', Icon: SpeedIcon, Screen: SpeedView, rail: 'main', needsNetworkInfo: true },
-  diagnostics: { label: 'Connection', Icon: ConnectionIcon, Screen: DiagnosticsView, rail: 'main' },
+  connection: { label: 'Connection', Icon: ConnectionIcon, Screen: ConnectionView, rail: 'main' },
   devices: { label: 'Devices', Icon: DevicesIcon, Screen: DevicesView, rail: 'main' },
   services: {
     label: 'Online services',
