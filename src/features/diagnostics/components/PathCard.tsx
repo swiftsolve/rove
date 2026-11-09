@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority'
-import { type ReactNode, useState } from 'react'
+import { type CSSProperties, Fragment, type ReactNode, useState } from 'react'
 
 import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useInternetStatus } from '@/app/hooks/useInternetStatus'
@@ -8,6 +8,8 @@ import { useNetwork } from '@/app/hooks/useNetwork'
 import { SignalMeter } from '@/features/connection/components/SignalMeter'
 import { formatLinkSpeed } from '@/features/connection/utils/connection-display'
 import { useDevices } from '@/features/devices/hooks/useDevices'
+import { useGlintCount } from '@/features/diagnostics/hooks/useGlintCount'
+import { GLINT_HIDDEN_POSITION, useLineGlint } from '@/features/diagnostics/hooks/useLineGlint'
 import { type InternetLinkState, internetLinkState, lastTestOnNetwork } from '@/features/diagnostics/utils/path'
 import { useElementWidth } from '@/features/live-throughput/hooks/useElementWidth'
 import { useSpeedHistory } from '@/features/speed/hooks/useSpeedHistory'
@@ -41,9 +43,9 @@ const ROUTER_COLOR = 'var(--device-network)'
 const INTERNET_COLOR = 'var(--accent-default)'
 
 // A link's line says how it's doing: green when it works, the accent while a
-// test runs on it, grey before it's known, red when it's down. A change of
-// state sweeps the new colour across from the computer.
-const lineVariants = cva('h-px w-full overflow-visible', {
+// test runs on it, grey before it's known, red when it's down. Its box sets
+// the colour, for the line and the glint over it.
+const lineBoxVariants = cva('relative flex w-full', {
   variants: {
     tone: {
       working: 'text-status-positive',
@@ -51,11 +53,36 @@ const lineVariants = cva('h-px w-full overflow-visible', {
       unknown: 'text-line',
       down: 'text-status-negative',
     },
-    isSweeping: { true: 'animate-line-sweep' },
   },
 })
 
 type LineTone = 'working' | 'testing' | 'unknown' | 'down'
+
+// A change of state sweeps the new colour across from the computer.
+const lineVariants = cva('h-px w-full overflow-visible', {
+  variants: {
+    isSweeping: { true: 'animate-line-sweep' },
+  },
+})
+
+// Every 15 seconds a soft highlight runs along the working lines, computer to
+// internet, to show the path is live. Only a green or testing line glints, so
+// a link that's down or unknown stays still.
+const GLINTING_TONES: ReadonlySet<LineTone> = new Set(['working', 'testing'])
+
+// The line's own colour, paled toward the text colour: a highlight that
+// stays the line's hue, with no glow.
+const GLINT_STYLE: CSSProperties = {
+  color: 'color-mix(in srgb, currentColor 50%, var(--text-primary))',
+  maskImage: 'linear-gradient(90deg, transparent, black, transparent)',
+  maskSize: '40% 100%',
+  maskRepeat: 'no-repeat',
+  maskPosition: GLINT_HIDDEN_POSITION,
+}
+
+// The second line's glint starts as the first one's head clears the router
+// tile, about 70% into the first line's run plus the tile's width.
+const GLINT_SECOND_LINE_DELAY_MS = 540
 
 // Above and below each line, a row as tall as the caption, so both lines sit
 // at the tiles' centre whatever the rows hold.
@@ -87,7 +114,17 @@ const INTERNET_LINE_TONES: Record<InternetLinkState, LineTone> = {
  * computer, the router, the internet. Wi‑Fi is a dotted line, a cable solid.
  * A link that's down turns red, and a link past it greys out.
  */
-export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | null }) {
+export function PathCard({
+  diagnostics,
+  isCheckFailing = false,
+  finishedCheckCount = 0,
+}: {
+  diagnostics: NetworkDiagnostics | null
+  /** The page's last check failed: the lines keep their colour but stop glinting. */
+  isCheckFailing?: boolean
+  /** The page's finished checks: each one runs a glint, so a Refresh shows the path answered. */
+  finishedCheckCount?: number
+}) {
   const { info } = useNetwork()
   const { entries } = useSpeedHistory()
   const isTesting = useSpeedTest((test) => test.isTesting)
@@ -96,6 +133,8 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
   // The app-wide heartbeat, the same verdict the title bar shows.
   const internetState = internetLinkState(useInternetStatus() ?? undefined, lastTest)
   const isConnected = info?.isConnected ?? false
+  // One clock for both lines, so the second line's glint follows the first's.
+  const glintCount = useGlintCount(finishedCheckCount)
 
   return (
     <Card>
@@ -108,6 +147,8 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
             <PathLink
               tone={isConnected ? 'working' : 'down'}
               isDotted={info != null && isWifiNetwork(info)}
+              glintCount={glintCount}
+              isGlintEnabled={!isCheckFailing}
               above={isConnected ? info && formatLinkSpeed(info) : <span className="text-negative">Not connected</span>}
               below={info && isWifiNetwork(info) ? <WifiSignal info={info} /> : null}
             />
@@ -116,6 +157,9 @@ export function PathCard({ diagnostics }: { diagnostics: NetworkDiagnostics | nu
             <PathLink
               tone={internetLineTone(isConnected, isTesting, internetState)}
               isFlowing={isConnected && isTesting}
+              glintCount={glintCount}
+              isGlintEnabled={!isCheckFailing}
+              glintDelayMs={GLINT_SECOND_LINE_DELAY_MS}
               captionKey={internetCaptionKey(isConnected, isTesting, internetState, lastTest)}
               above={isConnected ? internetLineCaption(isTesting, internetState, lastTest) : null}
               below={
@@ -148,6 +192,9 @@ function PathLink({
   isDotted = false,
   isFlowing = false,
   captionKey = null,
+  glintCount = 0,
+  isGlintEnabled = true,
+  glintDelayMs = 0,
   above,
   below,
 }: {
@@ -157,6 +204,11 @@ function PathLink({
   isFlowing?: boolean
   /** What the captions show; a change after mount fades them up. */
   captionKey?: string | null
+  /** Each rise runs one glint along a green or testing line. */
+  glintCount?: number
+  isGlintEnabled?: boolean
+  /** How long the glint waits, so the second line's follows the first's. */
+  glintDelayMs?: number
   above: ReactNode
   below: ReactNode
 }) {
@@ -168,7 +220,6 @@ function PathLink({
   const isEntering = captionChanges > 0
   const [lineElement, setLineElement] = useState<HTMLDivElement | null>(null)
   const lineWidth = useElementWidth(lineElement)
-  const isWifiDashes = isDotted && !isFlowing
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-6">
       <div className={CAPTION_ROW}>
@@ -176,23 +227,18 @@ function PathLink({
           {above}
         </span>
       </div>
-      <div ref={setLineElement} className="flex w-full">
-        <svg key={toneChanges} className={lineVariants({ tone, isSweeping: toneChanges > 0 })}>
-          {/* Square 3px dashes for Wi‑Fi (1px dots smear to grey at 1x), a
-            solid line for a cable, and 2px dashes, one period of the flow,
-            while it flows. */}
-          <line
-            x1={isWifiDashes ? 0 : 0.5}
-            y1="0.5"
-            x2="100%"
-            y2="0.5"
-            stroke="currentColor"
-            strokeWidth={1}
-            strokeLinecap={isWifiDashes ? 'butt' : 'round'}
-            strokeDasharray={lineDashes(isFlowing, isDotted, lineWidth)}
-            className={isFlowing ? 'animate-line-flow' : undefined}
-          />
-        </svg>
+      <div ref={setLineElement} className={lineBoxVariants({ tone })}>
+        {/* The glint remounts with the line, so their flowing dashes start together. */}
+        <Fragment key={toneChanges}>
+          <svg className={lineVariants({ isSweeping: toneChanges > 0 })}>
+            <LineStroke isFlowing={isFlowing} isDotted={isDotted} lineWidth={lineWidth} />
+          </svg>
+          {GLINTING_TONES.has(tone) && (
+            <GlintLine glintCount={glintCount} delayMs={glintDelayMs} isEnabled={isGlintEnabled}>
+              <LineStroke isFlowing={isFlowing} isDotted={isDotted} lineWidth={lineWidth} />
+            </GlintLine>
+          )}
+        </Fragment>
       </div>
       <div className={CAPTION_ROW}>
         <span key={captionChanges} className={captionVariants({ isEntering, isTrailing: isEntering })}>
@@ -200,6 +246,57 @@ function PathLink({
         </span>
       </div>
     </div>
+  )
+}
+
+/**
+ * The line drawn once: square 3px dashes for Wi‑Fi (1px dots smear to grey at
+ * 1x), a solid line for a cable, and 2px dashes, one period of the flow,
+ * while it flows.
+ */
+function LineStroke({
+  isFlowing,
+  isDotted,
+  lineWidth,
+}: {
+  isFlowing: boolean
+  isDotted: boolean
+  lineWidth: number | null
+}) {
+  const isWifiDashes = isDotted && !isFlowing
+  return (
+    <line
+      x1={isWifiDashes ? 0 : 0.5}
+      y1="0.5"
+      x2="100%"
+      y2="0.5"
+      stroke="currentColor"
+      strokeWidth={1}
+      strokeLinecap={isWifiDashes ? 'butt' : 'round'}
+      strokeDasharray={lineDashes(isFlowing, isDotted, lineWidth)}
+      className={isFlowing ? 'animate-line-flow' : undefined}
+    />
+  )
+}
+
+/** A copy of the line over it, shown only where the moving glint mask lets it through. */
+function GlintLine({
+  glintCount,
+  delayMs,
+  isEnabled,
+  children,
+}: {
+  glintCount: number
+  delayMs: number
+  isEnabled: boolean
+  children: ReactNode
+}) {
+  const [glintLine, setGlintLine] = useState<SVGSVGElement | null>(null)
+  useLineGlint({ glintLine, glintCount, delayMs, isEnabled })
+  return (
+    <svg ref={setGlintLine} className="absolute inset-0 h-px w-full overflow-visible" style={GLINT_STYLE}>
+      {children}
+    </svg>
   )
 }
 

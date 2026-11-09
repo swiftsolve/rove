@@ -4,6 +4,7 @@ import { IspCard } from '@/features/diagnostics/components/IspCard'
 import { PathCard } from '@/features/diagnostics/components/PathCard'
 import { RouterCard } from '@/features/diagnostics/components/RouterCard'
 import { useDiagnostics } from '@/features/diagnostics/hooks/useDiagnostics'
+import { useFinishedCheckCount } from '@/features/diagnostics/hooks/useFinishedCheckCount'
 import { runStatusText } from '@/features/diagnostics/utils/diagnostics-display'
 import { Banner, ConnectionIcon, IconButton, LoadingState, PageHeader, RefreshIcon, ScreenReaderStatus } from '@/ui'
 
@@ -13,6 +14,7 @@ const DIAGNOSTICS_HINT =
 export function DiagnosticsView() {
   const { diagnostics, isRunning, error, run } = useDiagnostics()
   const isConnected = useNetwork().info?.isConnected ?? false
+  const finishedCheckCount = useFinishedCheckCount(isRunning)
   const runDiagnostics = (): void => {
     void run()
   }
@@ -56,7 +58,13 @@ export function DiagnosticsView() {
 
       {/* Off a router, only the Path card shows: it says where the break is,
           and the router, ISP and DNS cards would be all dashes. */}
-      {!(isConnected && isFirstCheck) && <PathCard diagnostics={isConnected ? diagnostics : null} />}
+      {!(isConnected && isFirstCheck) && (
+        <PathCard
+          diagnostics={isConnected ? diagnostics : null}
+          isCheckFailing={error != null}
+          finishedCheckCount={finishedCheckCount}
+        />
+      )}
       {isConnected && !isFirstCheck && (
         <>
           <RouterCard diagnostics={diagnostics} />
