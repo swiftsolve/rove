@@ -28,19 +28,18 @@ const SECTIONS = [
     intro:
       'Base, surface and inset, plus chrome, popover, hover and the dialog scrim. Cards use bg/surface. Diagram at actual size.',
     names: ['bg.base', 'bg.chrome', 'bg.surface', 'bg.popover', 'bg.inset', 'bg.hover', 'bg.scrim'],
-    // Figma's page is white, so its export carries a white sheet and dark
-    // labels; the Dark theme shows a copy with the sheet clear and the labels
-    // light, the wireframes untouched.
+    // Figma's labels are dark ink for its white page, so the Dark theme shows
+    // a copy with the ink outside the wireframes turned light.
     diagram: (
       <>
         <img
           className="diagram diagram-for-dark"
           src={backgroundsDark}
           width={1280}
-          height={1470}
+          height={1471}
           alt={BACKGROUNDS_ALT}
         />
-        <img className="diagram diagram-for-light" src={backgrounds} width={1280} height={1470} alt={BACKGROUNDS_ALT} />
+        <img className="diagram diagram-for-light" src={backgrounds} width={1280} height={1471} alt={BACKGROUNDS_ALT} />
       </>
     ),
   },
