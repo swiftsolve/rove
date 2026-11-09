@@ -32,9 +32,10 @@ import {
 } from '@/ui'
 import { formatBand, splitSpeedMbps } from '@/utils/format'
 
-// The two devices take their group's colour, as on the Devices tab; the
-// internet, which isn't a device, takes the accent.
-const COMPUTER_COLOR = 'var(--device-personal)'
+// The two ends are the accent: the computer Rove runs on, as on the Devices
+// tab, and the internet it measures. The router between them takes the
+// network colour.
+const COMPUTER_COLOR = 'var(--accent-default)'
 const ROUTER_COLOR = 'var(--device-network)'
 const INTERNET_COLOR = 'var(--accent-default)'
 

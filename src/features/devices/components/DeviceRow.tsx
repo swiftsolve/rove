@@ -36,7 +36,8 @@ const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) p
  * A device's kind icon, in a tile coloured by its group so groups scan at a
  * glance. Device colours say what a device is, never how it's doing, so no
  * status colour here: the gateway takes the network colour whatever its kind,
- * and unknown devices stay neutral.
+ * and unknown devices stay neutral. This device, the one Rove runs on, takes
+ * the accent instead, as it does on the Path card.
  */
 const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
   router: 'var(--device-network)',
@@ -150,6 +151,12 @@ function DeviceMetaLine({
   )
 }
 
+function deviceTileColor(device: LanDevice): IconTileColor {
+  if (device.isSelf) return 'var(--accent-default)'
+  if (device.isGateway) return 'var(--device-network)'
+  return KIND_COLORS[device.kind]
+}
+
 export function DeviceRow({ device }: { device: LanDevice }) {
   const now = useNow(ROW_CLOCK_INTERVAL_MS)
   const nameParts = deviceNameParts(device)
@@ -159,10 +166,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
   return (
     <Card as="li">
       <div className={DEVICE_ROW}>
-        <IconTile
-          color={device.isGateway ? 'var(--device-network)' : KIND_COLORS[device.kind]}
-          icon={<KindIcon kind={device.kind} />}
-        />
+        <IconTile color={deviceTileColor(device)} icon={<KindIcon kind={device.kind} />} />
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           {/* mb-2 adds a touch more air below the larger name, on top of the
               column's 4px gap. */}
