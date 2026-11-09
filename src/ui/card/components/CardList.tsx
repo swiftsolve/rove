@@ -16,7 +16,7 @@ export function CardList({ label, className, ...props }: CardListProps) {
       // Safari drops a list's role when its markers are styled away.
       role="list"
       aria-label={label}
-      className={cn('divide-y divide-line overflow-hidden surface contain-content', className)}
+      className={cn('divide-y divide-line-subtle overflow-hidden surface contain-content', className)}
       {...props}
     />
   )

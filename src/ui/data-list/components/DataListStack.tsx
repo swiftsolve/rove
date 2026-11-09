@@ -20,7 +20,7 @@ export function DataListStack({
   return (
     <div
       className={cn(
-        'divide-y divide-line [&>dl]:px-(--card-body-padding)',
+        'divide-y divide-line-subtle [&>dl]:px-(--card-body-padding)',
         '[&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
         className,
       )}
