@@ -46,6 +46,10 @@ colors: # Keys: --<key>
   series-down: "#6f9bff" # Download
   series-up: "#b39dff" # Upload
   focus-ring: "#5b8cff" # Keyboard focus ring
+  device-network: "#2cc3d2" # Network devices: routers, NAS
+  device-personal: "#6f9bff" # Personal devices: computers, phones, tablets, watches
+  device-entertainment: "#b39dff" # Entertainment devices: TVs, consoles, speakers
+  device-smart-home: "#ec88c2" # Smart-home devices: cameras, printers, smart plugs
 typography: # Keys: the class, .type-<key>
   heading: # Heading: Card headings and empty states. Class .type-heading.
     fontFamily: "Urbanist"
@@ -192,6 +196,10 @@ light: # The Light theme (theme-light on the root): every token whose value diff
   status-negative: "#cf4134"
   series-down: "#3a69d5"
   series-up: "#7154e8"
+  device-network: "#007c87"
+  device-personal: "#3a69d5"
+  device-entertainment: "#7154e8"
+  device-smart-home: "#b2468a"
   shadow-panel: "0 1px 2px rgba(11, 11, 12, 0.07), 0 4px 12px rgba(11, 11, 12, 0.05)"
   shadow-raised: "0 12px 32px rgba(11, 11, 12, 0.1)"
   shadow-popover: "0 2px 6px rgba(11, 11, 12, 0.07), 0 6px 16px rgba(11, 11, 12, 0.1)"
@@ -219,7 +227,8 @@ Rove is a quiet, neutral interface: greys carry almost everything, with
 the accent (`--accent-*`), marks the brand and what you act on: the brand mark,
 the active nav item, solid buttons, links and the focus ring. It's the system's
 primary colour; it's named accent because `--text-primary` already means the
-main text. The other colours carry a meaning: status, and the chart series.
+main text. The other colours carry a meaning: status, the chart series, and
+device groups.
 
 ```css
 @import '@swiftsolve/rove-tokens/tokens.css';
@@ -291,6 +300,16 @@ Tokens are designed in Figma and only exported here: to change one, follow the
   tint of their hue (a badge). The `--status-*` shades are too light for text in
   Light mode. [✓ CHECKED by `checks/contrast.mjs`], for the tokens.
 - Download and upload in charts are `--series-down` and `--series-up`.
+
+### Devices
+
+- A device's icon tile takes its group's `--device-*` colour: network (routers,
+  NAS), personal (computers, phones, tablets, watches), entertainment (TVs,
+  consoles, speakers) or smart home (cameras, printers, smart plugs). An
+  unknown device stays neutral.
+- They say what a device is, never how it's doing, so a device tile never takes
+  a `--status-*` colour, and the device colours stay out of status. The hues
+  sit outside status's green to red.
 
 ### Tints and opacity
 

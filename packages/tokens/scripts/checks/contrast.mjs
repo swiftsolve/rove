@@ -85,6 +85,7 @@ const onTint = (name) => ({
 const solid = (name) => ({ [name]: (t) => colour(t, name) })
 
 const STATUSES = ['positive', 'good', 'warning', 'poor', 'negative']
+const DEVICE_GROUPS = ['network', 'personal', 'entertainment', 'smart-home']
 const PAIRS = [
   // Words. A hovered control turns its label --text-primary, so --text-tertiary
   // meets --bg-hover only as an icon, below.
@@ -116,6 +117,8 @@ const PAIRS = [
   // Graphics: icons, bars, dots, chart lines and the focus ring.
   ['text-tertiary', HOVER, GRAPHICS],
   ...STATUSES.map((s) => [`status-${s}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`status-${s}`) }, GRAPHICS]),
+  // Device icons, on their own tile's tint as well.
+  ...DEVICE_GROUPS.map((g) => [`device-${g}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`device-${g}`) }, GRAPHICS]),
   ...['accent-default', 'accent-hover', 'accent-press', 'series-down', 'series-up', 'focus-ring'].map((fg) => [
     fg,
     { ...BACKGROUNDS, ...HOVER },

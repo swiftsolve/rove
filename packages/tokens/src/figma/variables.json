@@ -1076,7 +1076,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-xs)",
-      "description": "Wide, faint washes: inline errors, the upload series\u2019 fill",
+      "description": "Wide, faint washes: inline errors, the upload series’ fill",
       "scopes": [
         "OPACITY"
       ],
@@ -1128,7 +1128,7 @@
       "collection": "Opacity",
       "type": "FLOAT",
       "code": "var(--opacity-tint-xl)",
-      "description": "The download series\u2019 fill",
+      "description": "The download series’ fill",
       "scopes": [
         "OPACITY"
       ],
@@ -1659,7 +1659,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Dark accent hover, download",
+      "description": "Dark accent hover, download, personal devices",
       "scopes": [],
       "values": {
         "Value": {
@@ -1707,7 +1707,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Light accent and download, Dark solid",
+      "description": "Light accent, download and personal devices, Dark solid",
       "scopes": [],
       "values": {
         "Value": {
@@ -1771,7 +1771,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Dark upload",
+      "description": "Dark upload, entertainment devices",
       "scopes": [],
       "values": {
         "Value": {
@@ -1787,7 +1787,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Light upload",
+      "description": "Light upload, entertainment devices",
       "scopes": [],
       "values": {
         "Value": {
@@ -2407,7 +2407,7 @@
       "collection": "Motion",
       "type": "FLOAT",
       "code": "var(--duration-spring)",
-      "description": "A spring\u2019s full run",
+      "description": "A spring’s full run",
       "scopes": [],
       "values": {
         "Value": 450
@@ -2495,6 +2495,154 @@
       ],
       "values": {
         "Value": "Urbanist"
+      }
+    },
+    {
+      "name": "cyan/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark network devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.17255,
+          "g": 0.76471,
+          "b": 0.82353,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "cyan/470",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light network devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0.48627,
+          "b": 0.52941,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "pink/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark smart-home devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.92549,
+          "g": 0.53333,
+          "b": 0.76078,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "pink/440",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light smart-home devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.69804,
+          "g": 0.27451,
+          "b": 0.54118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "device/network",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-network)",
+      "description": "Network devices: routers, NAS",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "cyan/250"
+        },
+        "Light": {
+          "alias": "cyan/470"
+        }
+      }
+    },
+    {
+      "name": "device/personal",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-personal)",
+      "description": "Personal devices: computers, phones, tablets, watches",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/300"
+        },
+        "Light": {
+          "alias": "blue/450"
+        }
+      }
+    },
+    {
+      "name": "device/entertainment",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-entertainment)",
+      "description": "Entertainment devices: TVs, consoles, speakers",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "violet/250"
+        },
+        "Light": {
+          "alias": "violet/440"
+        }
+      }
+    },
+    {
+      "name": "device/smart-home",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-smart-home)",
+      "description": "Smart-home devices: cameras, printers, smart plugs",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "pink/250"
+        },
+        "Light": {
+          "alias": "pink/440"
+        }
       }
     }
   ]
