@@ -1,4 +1,4 @@
-import { isWifiNetwork, type NetworkInfo, sanitizeRate, type SpeedHistoryEntry } from '@/types'
+import { sanitizeRate } from '@/types'
 
 const MIN_SCALE_MBPS = 10
 /** Room above the peak, so the trace never touches the top of the chart. */
@@ -8,8 +8,6 @@ const NICE_SCALE_STEPS_MBPS = [10, 25, 50, 100, 250, 500, 1000, 1500, 2500, 5000
 
 type ResolveChartScaleOptions = {
   linkCapacityMbps?: number | null
-  /** A floor while a speed test downloads: the last result on this network. */
-  testFloorMbps?: number | null
 }
 
 /** Snap scale to readable axis steps so labels do not flicker. */
@@ -30,19 +28,18 @@ function trafficPeak(download: readonly number[], upload: readonly number[]): nu
 
 /**
  * Y-axis max from the rates on the chart (`download` and `upload`, Mbps),
- * never jumping to full link speed on light traffic. While a test downloads,
- * the last result is a floor, so the axis doesn't jump as the test ramps up;
- * link speed is no guide, as Wi-Fi's runs far above what a test reaches.
+ * never jumping to full link speed on light traffic. A speed test gets no
+ * head start: the axis grows with its traffic, as for any other burst.
  */
 export function resolveChartScale(
   download: readonly number[],
   upload: readonly number[],
   options: ResolveChartScaleOptions = {},
 ): number {
-  const { linkCapacityMbps, testFloorMbps } = options
+  const { linkCapacityMbps } = options
   const hasLink = linkCapacityMbps != null && linkCapacityMbps > 0
   const linkScale = hasLink ? roundNiceScale(linkCapacityMbps) : null
-  const peak = Math.max(trafficPeak(download, upload), sanitizeRate(testFloorMbps ?? 0))
+  const peak = trafficPeak(download, upload)
 
   const trafficScale = roundNiceScale(Math.max(peak * HEADROOM, MIN_SCALE_MBPS))
 
@@ -51,14 +48,4 @@ export function resolveChartScale(
   }
 
   return trafficScale
-}
-
-/** The newest result on this network (`entries` newest first), or undefined. */
-export function lastResultOn(
-  entries: readonly SpeedHistoryEntry[] | undefined,
-  info: NetworkInfo | null,
-): SpeedHistoryEntry | undefined {
-  if (!info) return undefined
-  const networkName = isWifiNetwork(info) ? (info.ssid ?? null) : null
-  return entries?.find((entry) => entry.connectionType === info.connectionType && entry.networkName === networkName)
 }
