@@ -250,13 +250,45 @@
     }
   }
 
-  @keyframes status-pulse {
+  /* StatusDot's pulses, one shape each so they read apart side by side. */
+  /* Calm: a slow, shallow breath, for a steady state. */
+  @keyframes status-breathe {
     0%,
     100% {
       opacity: 1;
     }
     50% {
-      opacity: 0.4;
+      opacity: 0.6;
+    }
+  }
+
+  /* Live: a deeper breath, run once per update so the dot is at its brightest
+     as each new reading lands. */
+  @keyframes status-breathe-deep {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  /* Live, once the updates stop: the dot fades to dim and stays there. */
+  @keyframes status-stall {
+    to {
+      opacity: 0.35;
+    }
+  }
+
+  /* Busy: a deep, quick throb, for work under way. */
+  @keyframes status-throb {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
     }
   }
 

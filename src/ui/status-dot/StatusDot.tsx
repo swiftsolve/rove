@@ -27,9 +27,13 @@ type StatusDotProps = Omit<ComponentProps<'span'>, 'children'> & {
    */
   tone?: VariantOf<typeof dotVariants, 'tone'>
   /**
-   * A breathing pulse, at the pace of what it marks: `calm` for a steady
-   * state (connected), `live` for data streaming in, `busy` for work under way
-   * (a scan).
+   * A pulse whose shape says what it marks: `calm`, a slow shallow breath, for
+   * a steady state (connected); `busy`, a quick deep throb, for work under way
+   * (a scan); `live`, one quicker, deeper breath, for data streaming in. Live
+   * runs once: give the dot a new `key` on each update, as `LiveBadge` does,
+   * so it breathes in step with the numbers, and set `--live-elapsed` to the
+   * update's age so one that mounts between updates picks up in step. With no
+   * update for 3s it fades to dim, as the data has stalled.
    */
   pulse?: VariantOf<typeof dotVariants, 'pulse'>
   /** Its place in a line: a gap and alignment beside text (`mr-8 align-middle`). */

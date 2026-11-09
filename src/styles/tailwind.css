@@ -51,10 +51,19 @@
   --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
   /* A dropdown menu drops into place. */
   --animate-menu-in: menu-in var(--duration-fast) var(--ease-out);
-  /* StatusDot's pulses: calm, live data, work under way. */
-  --animate-pulse-calm: status-pulse 2.4s var(--ease-pulse) infinite;
-  --animate-pulse-live: status-pulse 2s var(--ease-pulse) infinite;
-  --animate-pulse-busy: status-pulse 1.6s var(--ease-pulse) infinite;
+  /* StatusDot's pulses: a slow breath for a steady state, a throb for work
+     under way, and for live data one deeper breath per update. Live runs once
+     and lasts the live feed's one-second sample interval; LiveBadge restarts
+     it on each sample, so the breath keeps time with the numbers. When no
+     sample has come for 3s, about three missed, the dot fades to dim and
+     holds there until the next one restarts it. `--live-elapsed`, the time
+     since the sample, starts both that far in, so a dot that mounts between
+     samples picks up in step rather than snapping bright at the next one. */
+  --animate-pulse-calm: status-breathe 3s var(--ease-pulse) infinite;
+  --animate-pulse-live:
+    status-breathe-deep 1s var(--ease-pulse) calc(-1 * var(--live-elapsed, 0ms)),
+    status-stall var(--duration-normal) var(--ease-pulse) calc(3s - var(--live-elapsed, 0ms)) forwards;
+  --animate-pulse-busy: status-throb 1.2s var(--ease-pulse) infinite;
   /* The Devices header's scan status and online tally trade places. */
   --animate-scan-slide-in: scan-slide-in var(--duration-normal) var(--ease-out) backwards;
   --animate-scan-slide-out: scan-slide-out var(--duration-normal) var(--ease-out) forwards;

@@ -52,7 +52,7 @@ A card is assembled from parts, each with its own props
 
 ```tsx
     <Card>
-      <CardHeader title="Traffic" icon={<ActivityIcon size={15} />} actions={<LiveBadge />} />
+      <CardHeader title="Traffic" icon={<ActivityIcon size={15} />} actions={<LiveBadge updatedAt={throughput.timestamp} />} />
       <CardBody>
 ```
 

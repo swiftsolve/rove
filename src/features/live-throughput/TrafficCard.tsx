@@ -11,12 +11,16 @@ import { ActivityIcon, Card, CardBody, CardHeader, LiveBadge } from '@/ui'
  * numbers and the dots there agree.
  */
 export function TrafficCard() {
-  const { history } = useLiveThroughput()
+  const { throughput, history } = useLiveThroughput()
   const scaleMaxMbps = useThroughputScale(history.download, history.upload)
 
   return (
     <Card>
-      <CardHeader title="Traffic" icon={<ActivityIcon size={15} />} actions={<LiveBadge />} />
+      <CardHeader
+        title="Traffic"
+        icon={<ActivityIcon size={15} />}
+        actions={<LiveBadge updatedAt={throughput.timestamp} />}
+      />
       <CardBody>
         <dl className="mb-12 grid grid-cols-2 gap-16">
           {/* Each counts to the rate the chart's dot is heading to, once a sample. */}

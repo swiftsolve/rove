@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
+import { useSecondTicks } from '../../../.storybook/use-second-ticks'
 import { Badge, LiveBadge } from './Badge'
+
+/** A LiveBadge whose data updates once a second, like the Traffic card's. */
+function TickingLiveBadge({ children }: { children?: string }) {
+  const tickedAt = useSecondTicks()
+  return <LiveBadge updatedAt={tickedAt}>{children}</LiveBadge>
+}
 
 const meta = {
   title: 'Status and feedback/Badge',
@@ -43,8 +50,8 @@ export const Warning: Story = { args: { tone: 'warning', children: 'Slow' } }
 
 export const Negative: Story = { args: { tone: 'negative', children: 'Down' } }
 
-/** The card's data is updating live. */
-export const Live: Story = { render: () => <LiveBadge /> }
+/** The card's data is updating live: the dot breathes once per update, here once a second. */
+export const Live: Story = { render: () => <TickingLiveBadge /> }
 
 /** Every tone, and the Live pill. */
 export const AllStates: Story = {
@@ -53,8 +60,8 @@ export const AllStates: Story = {
       <Badge tone="positive">VPN</Badge>
       <Badge tone="warning">Slow</Badge>
       <Badge tone="negative">Down</Badge>
-      <LiveBadge />
-      <LiveBadge>Streaming</LiveBadge>
+      <TickingLiveBadge />
+      <TickingLiveBadge>Streaming</TickingLiveBadge>
     </div>
   ),
 }

@@ -976,13 +976,21 @@
       "description": "A dark status pill with a pulsing dot: data on the card is updating live.",
       "figmaComponent": {
         "figmaName": "Live badge",
-        "figmaNodeId": "4:41"
+        "figmaNodeId": "4:41",
+        "propsNotInFigma": {
+          "updatedAt": "Times the dot's breath to each update: Figma draws the dot at rest."
+        }
       },
       "props": {
         "children": {
           "type": "ReactNode",
           "default": "Live",
           "description": "Its words."
+        },
+        "updatedAt": {
+          "type": "number",
+          "isRequired": true,
+          "description": "When the card's data last updated, in epoch milliseconds: the dot breathes once\non each new one, so it keeps time with the numbers, and dims when none\nhas come for 3s."
         }
       },
       "passesExtraPropsToElement": true,
@@ -1015,7 +1023,7 @@
             "live",
             "busy"
           ],
-          "description": "A breathing pulse, at the pace of what it marks: `calm` for a steady\nstate (connected), `live` for data streaming in, `busy` for work under way\n(a scan)."
+          "description": "A pulse whose shape says what it marks: `calm`, a slow shallow breath, for\na steady state (connected); `busy`, a quick deep throb, for work under way\n(a scan); `live`, one quicker, deeper breath, for data streaming in. Live\nruns once: give the dot a new `key` on each update, as `LiveBadge` does,\nso it breathes in step with the numbers, and set `--live-elapsed` to the\nupdate's age so one that mounts between updates picks up in step. With no\nupdate for 3s it fades to dim, as the data has stalled."
         },
         "tone": {
           "values": [

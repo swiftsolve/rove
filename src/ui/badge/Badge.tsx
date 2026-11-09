@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority'
-import type { ComponentProps, ReactNode } from 'react'
+import { type ComponentProps, type CSSProperties, type ReactNode, useState } from 'react'
 
 import { StatusDot } from '../status-dot/StatusDot'
 import { cn } from '../utils/cn'
@@ -31,12 +31,31 @@ export function Badge({ tone, className, children, ...props }: BadgeProps) {
   )
 }
 
+/**
+ * LiveBadge's dot, given a new key on each update so its breath restarts. It
+ * starts the breath as far in as the update is old, so a dot that mounts
+ * between two updates (coming back to Home) carries on in step instead of
+ * snapping bright when the next one lands.
+ */
+function LiveDot({ updatedAt }: { updatedAt: number }) {
+  const [msSinceUpdate] = useState(() => Math.max(0, Date.now() - updatedAt))
+  const breathStart = { '--live-elapsed': `${msSinceUpdate}ms` } as CSSProperties
+  return <StatusDot pulse="live" style={breathStart} />
+}
+
 /** A dark status pill with a pulsing dot: data on the card is updating live. */
 export function LiveBadge({
+  updatedAt,
   children = 'Live',
   className,
   ...props
 }: Omit<ComponentProps<'span'>, 'children'> & {
+  /**
+   * When the card's data last updated, in epoch milliseconds: the dot breathes once
+   * on each new one, so it keeps time with the numbers, and dims when none
+   * has come for 3s.
+   */
+  updatedAt: number
   /** Its words. */
   children?: ReactNode
 }) {
@@ -48,7 +67,7 @@ export function LiveBadge({
       )}
       {...props}
     >
-      <StatusDot pulse="live" />
+      <LiveDot key={updatedAt} updatedAt={updatedAt} />
       {children}
     </span>
   )

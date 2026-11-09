@@ -82,7 +82,10 @@
     },
     "LiveBadge": {
       "figmaName": "Live badge",
-      "figmaNodeId": "4:41"
+      "figmaNodeId": "4:41",
+      "propsNotInFigma": {
+        "updatedAt": "Times the dot's breath to each update: Figma draws the dot at rest."
+      }
     },
     "StatusDot": {
       "figmaName": "Status dot",
