@@ -11,7 +11,17 @@ import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capabilit
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
-import { ButtonSpinner, Card, CardBody, CardHeader, IconTile, ListRow, NoValue, ZapIcon } from '@/ui'
+import {
+  ButtonSpinner,
+  Card,
+  CardBody,
+  CardHeader,
+  IconTile,
+  ListRow,
+  moveFocusBetweenRows,
+  NoValue,
+  ZapIcon,
+} from '@/ui'
 
 // A few headline use-cases previewed before any test runs.
 const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
@@ -114,7 +124,9 @@ export function CapabilityList() {
       {/* Rows carry their own vertical padding, like Settings' rows. */}
       <CardBody layout="rows">
         {hasRunTest ? (
-          <ul role="list" className={LIST}>
+          // Up and Down step through the rows, on top of Tab.
+          // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions -- handles its rows' arrow keys; the list itself never takes focus
+          <ul role="list" className={LIST} onKeyDown={moveFocusBetweenRows}>
             {capabilities.map((capability) => (
               <CapabilityRow
                 key={capability.id}

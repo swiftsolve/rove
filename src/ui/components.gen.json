@@ -2206,7 +2206,7 @@
     "CardList": {
       "libraryGroup": "Containers",
       "sourceFile": "src/ui/card/components/CardList.tsx",
-      "description": "A list that is one card, with a hairline between its rows.",
+      "description": "A list that is one card, with a hairline between its rows. Up and Down move\nfocus between the rows' controls, and Home and End to the ends; Tab still\nstops on each.",
       "figmaComponent": {
         "figmaName": "Card list",
         "figmaNodeId": "555:132"
@@ -2855,6 +2855,7 @@
     "STATUS_TEXT": "The status text colours (green, amber, red), keyed as recipes name their\nstatus axis: `status: STATUS_TEXT`, or `{ positive: STATUS_TEXT.positive, … }`\nfor a subset.",
     "cn": "Join class names, skipping falsy ones, and let later Tailwind utilities win\nover earlier ones that set the same thing: `cn('px-12', className)` with\n`className=\"px-8\"` gives `px-8`. Use it wherever a component merges its own\nclasses with a `className` from outside; plain joins can use `cx`.",
     "focusCardLink": "Moves focus to the link of the openable card holding `element`: for a\ncontrol in it that's about to unmount, so focus stays in the card instead\nof falling back to the page.",
+    "moveFocusBetweenRows": "A list's `onKeyDown`: Up and Down move focus to the next or previous row's\ncontrol, and Home and End to the first or last. Each row stays its own Tab\nstop, so the arrows are a shortcut on top of Tab. Not `useRovingFocus`: a\nroving tabindex suits a toolbar or the nav rail, and would hide all but one\nrow of a plain list from Tab and from a screen reader's list.",
     "useCountUp": "Eases a displayed number toward `target` each animation frame, so the value\nvisibly counts up or down instead of snapping. It snaps under reduced motion\n(the global rule stops only CSS animations, not this one), and to or from a\nvalue that isn't finite, which no ease could reach.",
     "useLatestRef": "A ref that always holds the latest `value`, for callbacks that must read\nfresh props without re-subscribing. Read only from an effect? Use React's\n`useEffectEvent` instead; this is for code that runs outside effects too.\n\nThe ref is written in a layout effect rather than during render, so a render\nReact throws away never leaks into it. Read it only outside render.",
     "usePresence": "Whether an element that animates out should still be mounted.\n\nRendering `{isActive && <X />}` drops the element the moment `isActive` turns\nfalse, so a leave animation never gets to play. Render `<X />` while this\nreturns true instead, and style it as leaving while `isActive` is false: it\nmounts as soon as `isActive` turns true and unmounts `exitMs` after it turns\nfalse, which should match the length of the leave animation. Turning active\nagain before then cancels the unmount.",
