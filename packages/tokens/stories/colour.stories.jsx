@@ -54,6 +54,7 @@ const SECTIONS = [
       'overlay.selection',
       'overlay.faint',
       'overlay.subtle',
+      'overlay.hover',
     ],
   },
   {
@@ -96,6 +97,11 @@ const SECTIONS = [
     title: 'Data series',
     intro: 'Chart colours: blue for download, violet for upload.',
     names: ['series.down', 'series.up'],
+  },
+  {
+    title: 'Devices',
+    intro: 'Device tiles, one hue per group of device kinds.',
+    names: ['device.network', 'device.personal', 'device.entertainment', 'device.smart-home'],
   },
   {
     title: 'Focus',
