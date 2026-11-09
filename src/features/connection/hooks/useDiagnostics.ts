@@ -1,5 +1,4 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
-import { useCallback } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
@@ -57,18 +56,19 @@ export function useDiagnostics(): UseDiagnosticsResult {
     refetchOnWindowFocus: 'always',
   })
 
-  const { reload: reloadSnapshot } = snapshotQuery
-  const { refetch: refetchLive } = liveQuery
-  // Re-runs both so stale live metrics don't sit over a fresh snapshot. Not run on
+  // The full run alone: it measures the gateway latency and internet verdict
+  // too, and being newer it shows over the last live poll (`overlayLiveMetrics`),
+  // so re-polling live would only measure them twice. Not run on
   // `network-changed` nudges: macOS emits them for routing churn (a probe storm).
-  const run = useCallback(async (): Promise<void> => {
-    await Promise.all([reloadSnapshot(), api ? refetchLive() : undefined])
-  }, [api, reloadSnapshot, refetchLive])
+  const { reload: run } = snapshotQuery
 
   // Hidden while the first snapshot loads, like the snapshot's own error. A
   // rerun keeps it until it lands, so the banner can show its Retry running.
   const isFirstLoad = snapshotQuery.isBusy && snapshotQuery.data === undefined
-  const liveError = isFirstLoad ? null : errorText(liveQuery.error)
+  // A full run that landed after a failed poll measured the same things, so the
+  // poll's error is out of date.
+  const isLiveErrorSuperseded = liveQuery.errorUpdatedAt <= snapshotQuery.dataUpdatedAt
+  const liveError = isFirstLoad || isLiveErrorSuperseded ? null : errorText(liveQuery.error)
 
   return {
     diagnostics: overlayLiveMetrics(
