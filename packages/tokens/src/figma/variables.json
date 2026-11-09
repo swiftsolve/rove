@@ -1659,7 +1659,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Dark accent hover, download, personal devices",
+      "description": "Dark accent hover, download",
       "scopes": [],
       "values": {
         "Value": {
@@ -1707,7 +1707,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Light accent, download and personal devices, Dark solid",
+      "description": "Light accent and download, Dark solid",
       "scopes": [],
       "values": {
         "Value": {
@@ -1771,7 +1771,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Dark upload, entertainment devices",
+      "description": "Dark upload",
       "scopes": [],
       "values": {
         "Value": {
@@ -1787,7 +1787,7 @@
       "collection": "Palette",
       "type": "COLOR",
       "code": null,
-      "description": "Light upload, entertainment devices",
+      "description": "Light upload",
       "scopes": [],
       "values": {
         "Value": {
@@ -2596,10 +2596,10 @@
       ],
       "values": {
         "Dark": {
-          "alias": "blue/300"
+          "alias": "indigo/340"
         },
         "Light": {
-          "alias": "blue/450"
+          "alias": "indigo/490"
         }
       }
     },
@@ -2617,10 +2617,10 @@
       ],
       "values": {
         "Dark": {
-          "alias": "violet/250"
+          "alias": "purple/250"
         },
         "Light": {
-          "alias": "violet/440"
+          "alias": "purple/440"
         }
       }
     },
@@ -2642,6 +2642,70 @@
         },
         "Light": {
           "alias": "pink/440"
+        }
+      }
+    },
+    {
+      "name": "indigo/340",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark personal devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.48627,
+          "g": 0.51373,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "indigo/490",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light personal devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.2902,
+          "g": 0.3098,
+          "b": 0.84706,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "purple/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark entertainment devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.81569,
+          "g": 0.54902,
+          "b": 0.94118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "purple/440",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light entertainment devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.61176,
+          "g": 0.24706,
+          "b": 0.81176,
+          "a": 1
         }
       }
     }

@@ -47,8 +47,8 @@ colors: # Keys: --<key>
   series-up: "#b39dff" # Upload
   focus-ring: "#5b8cff" # Keyboard focus ring
   device-network: "#2cc3d2" # Network devices: routers, NAS
-  device-personal: "#6f9bff" # Personal devices: computers, phones, tablets, watches
-  device-entertainment: "#b39dff" # Entertainment devices: TVs, consoles, speakers
+  device-personal: "#7c83ff" # Personal devices: computers, phones, tablets, watches
+  device-entertainment: "#d08cf0" # Entertainment devices: TVs, consoles, speakers
   device-smart-home: "#ec88c2" # Smart-home devices: cameras, printers, smart plugs
 typography: # Keys: the class, .type-<key>
   heading: # Heading: Card headings and empty states. Class .type-heading.
@@ -197,8 +197,8 @@ light: # The Light theme (theme-light on the root): every token whose value diff
   series-down: "#3a69d5"
   series-up: "#7154e8"
   device-network: "#007c87"
-  device-personal: "#3a69d5"
-  device-entertainment: "#7154e8"
+  device-personal: "#4a4fd8"
+  device-entertainment: "#9c3fcf"
   device-smart-home: "#b2468a"
   shadow-panel: "0 1px 2px rgba(11, 11, 12, 0.07), 0 4px 12px rgba(11, 11, 12, 0.05)"
   shadow-raised: "0 12px 32px rgba(11, 11, 12, 0.1)"
