@@ -17,12 +17,12 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 [![WCAG](https://img.shields.io/badge/WCAG_2.2-AA-5b8cff?labelColor=17181b)](#contrast)
 [![Themes](https://img.shields.io/badge/themes-Dark_·_Light-5b8cff?labelColor=17181b)](#use)
 
-[🎨 Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
-[📐 DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
-[💡 Rationale](docs/rationale.md)
+🎨 [Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
+📐 [DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
+💡 [Rationale](docs/rationale.md)
 
-[📖 Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
-[🧱 Components Storybook](https://rove.swiftsolve.net/storybook/)
+📖 [Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
+🧱 [Components Storybook](https://rove.swiftsolve.net/storybook/)
 
 </div>
 
