@@ -1,6 +1,6 @@
 import { cva, cx } from 'class-variance-authority'
 
-import { isWeakSecurity, normalizeSecurity, shortSecurityLabel } from '@/features/connection/utils/wifi-security'
+import { isWeakSecurity, normalizeSecurity, shortSecurityLabel } from '@/features/current-network/utils/wifi-security'
 import { DotSeparator, LockIcon, Tooltip, UnlockIcon } from '@/ui'
 import { isSecuredWifi } from '@/utils/format'
 import { spokenText } from '@/utils/spoken'

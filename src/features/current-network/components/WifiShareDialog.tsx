@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
 import { ErrorNotice } from '@/app/components/ErrorNotice'
-import { WifiQrCode } from '@/features/connection/components/WifiQrCode'
-import { useWifiShare } from '@/features/connection/hooks/useWifiShare'
-import { type ShareNotice, shareNotice } from '@/features/connection/utils/wifi-share-notice'
+import { WifiQrCode } from '@/features/current-network/components/WifiQrCode'
+import { useWifiShare } from '@/features/current-network/hooks/useWifiShare'
+import { type ShareNotice, shareNotice } from '@/features/current-network/utils/wifi-share-notice'
 import type { WifiShare } from '@/types'
 import { AlertIcon, Dialog, LockIcon, Spinner, WifiOffIcon } from '@/ui'
 

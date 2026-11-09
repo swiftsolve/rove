@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { CapabilitiesCard } from '@/features/capabilities/CapabilitiesCard'
-import { ConnectionCard } from '@/features/connection/ConnectionCard'
+import { ConnectionCard } from '@/features/current-network/ConnectionCard'
 import { DevicesCard } from '@/features/home/components/DevicesCard'
 import { UsageCard } from '@/features/home/components/UsageCard'
 import { TrafficCard } from '@/features/live-throughput/TrafficCard'

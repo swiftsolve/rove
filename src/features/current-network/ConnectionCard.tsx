@@ -1,9 +1,9 @@
 import { useId } from 'react'
 
-import { ConnectionDetailsPanel } from '@/features/connection/components/ConnectionDetailsPanel'
-import { ConnectionStrip } from '@/features/connection/components/ConnectionStrip'
-import { useDetailsExpanded } from '@/features/connection/hooks/useDetailsExpanded'
-import { usePublicIp } from '@/features/connection/hooks/usePublicIp'
+import { ConnectionDetailsPanel } from '@/features/current-network/components/ConnectionDetailsPanel'
+import { ConnectionStrip } from '@/features/current-network/components/ConnectionStrip'
+import { useDetailsExpanded } from '@/features/current-network/hooks/useDetailsExpanded'
+import { usePublicIp } from '@/features/current-network/hooks/usePublicIp'
 import type { NetworkInfo } from '@/types'
 import { isConnectedNetwork } from '@/types'
 import { Card, Collapsible, CollapsiblePanel } from '@/ui'

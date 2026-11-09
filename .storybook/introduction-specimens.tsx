@@ -1,10 +1,10 @@
 import { type JSX, type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 
 import { mockQrSvg } from '../src/bridge/mock-network-api'
-import { ConnectionDetailsPanel } from '../src/features/connection/components/ConnectionDetailsPanel'
-import { ConnectionStrip } from '../src/features/connection/components/ConnectionStrip'
-import { ShareWifiButton } from '../src/features/connection/components/ShareWifiButton'
-import { WifiQrCode } from '../src/features/connection/components/WifiQrCode'
+import { ConnectionDetailsPanel } from '../src/features/current-network/components/ConnectionDetailsPanel'
+import { ConnectionStrip } from '../src/features/current-network/components/ConnectionStrip'
+import { ShareWifiButton } from '../src/features/current-network/components/ShareWifiButton'
+import { WifiQrCode } from '../src/features/current-network/components/WifiQrCode'
 import type { WifiNetworkInfo } from '../src/types'
 import {
   AppsIcon,

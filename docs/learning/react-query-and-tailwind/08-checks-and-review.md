@@ -52,7 +52,7 @@ written down, beside the exception
 
 ```js
   // A scanner needs dark modules on white in both themes.
-  { file: 'src/features/connection/components/WifiShareDialog.tsx', value: '#ffffff' },
+  { file: 'src/features/current-network/components/WifiShareDialog.tsx', value: '#ffffff' },
 ```
 
 Why bother: an exception is fine, an unexplained one is how a design system

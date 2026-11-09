@@ -1,14 +1,14 @@
 import { cva, cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-import { SecurityBadge } from '@/features/connection/components/SecurityBadge'
-import { ShareWifiButton } from '@/features/connection/components/ShareWifiButton'
-import { SignalMeter } from '@/features/connection/components/SignalMeter'
+import { SecurityBadge } from '@/features/current-network/components/SecurityBadge'
+import { ShareWifiButton } from '@/features/current-network/components/ShareWifiButton'
+import { SignalMeter } from '@/features/current-network/components/SignalMeter'
 import {
   type ConnectionDisplayVariant,
   formatLinkSpeed,
   getConnectionDisplay,
-} from '@/features/connection/utils/connection-display'
+} from '@/features/current-network/utils/connection-display'
 import type { NetworkInfo } from '@/types'
 import { isWifiNetwork } from '@/types'
 import {

@@ -1,6 +1,6 @@
 import { cva, cx } from 'class-variance-authority'
 
-import { signalBarCount, signalLevel, signalWord } from '@/features/connection/utils/wifi-signal'
+import { signalBarCount, signalLevel, signalWord } from '@/features/current-network/utils/wifi-signal'
 import { BarMeter } from '@/ui'
 
 const signalMeterVariants = cva('signal-meter flex items-center', {

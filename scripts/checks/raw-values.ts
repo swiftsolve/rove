@@ -41,7 +41,7 @@ type AllowedEntry = { file: string; value: string }
 /** Raw values that stay, by file and the exact text flagged. */
 const ALLOWED: AllowedEntry[] = [
   // A scanner needs dark modules on white in both themes, and the mark's tile is that white.
-  { file: 'src/features/connection/components/WifiQrCode.tsx', value: '#ffffff' },
+  { file: 'src/features/current-network/components/WifiQrCode.tsx', value: '#ffffff' },
   // The brand icon's gradient, the same as the app icon's.
   { file: 'src/ui/icons/BrandIcon.tsx', value: '#7aa4ff' },
   { file: 'src/ui/icons/BrandIcon.tsx', value: '#5484f5' },
