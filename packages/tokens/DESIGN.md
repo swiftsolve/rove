@@ -162,7 +162,7 @@ motion: # Durations and easing curves. Keys: --<key>
   ease-out: "cubic-bezier(0.16, 1, 0.3, 1)" # Entrances and moves
   ease-in-out: "cubic-bezier(0.4, 0, 0.2, 1)" # Colour changes, exits
   ease-pulse: "cubic-bezier(0.42, 0, 0.58, 1)" # Looping pulses
-  ease-spring: "linear(0, 0.1896, 0.4943, 0.7351, 0.8834, 0.9602, 0.9936, 1.0046, 1.0062, 1.0047, 1.0028, 1.0014, 1.0006, 1, 1)" # Panels resizing to fit
+  ease-spring: "linear(0, 0.1931, 0.5009, 0.7419, 0.8884, 0.9631, 0.9949, 1.005, 1.0061, 1.0045, 1.0026, 1.0013, 1.0005, 1.0002, 1)" # Panels resizing to fit
 light: # The Light theme (theme-light on the root): every token whose value differs from the Dark one above. Keys: --<key>
   bg-base: "#eeeeef"
   bg-surface: "#ffffff"

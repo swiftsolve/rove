@@ -70,25 +70,62 @@ function figmaToken(v, mode, figmaOverride) {
     if (!v.name.startsWith('font-family/')) throw new Error(`DTCG: no type for the string variable ${v.name}`)
     return { $type: 'fontFamily', $value: override ? fontStack(override) : value, ...descriptionAndExtensions }
   }
-  if (v.type === 'EASING' && value.spring) return springToken(v, value.spring, override, descriptionAndExtensions)
+  if (v.type === 'EASING' && value.spring) return springToken(v, value.spring, descriptionAndExtensions)
   const type = dtcgType(v)
   if (value.alias) return { $type: type, $value: reference(value.alias), ...descriptionAndExtensions }
   return { $type: type, $value: dtcgValue(type, value), ...descriptionAndExtensions }
 }
 
 /**
- * A spring easing. DTCG has no spring and CSS no spring curve, so its CSS is
- * the `linear()` curve code-tokens.json's `figma` gives it, untyped, and its
- * bounce rides in an extension.
+ * A spring easing. DTCG has no spring type and CSS no spring curve, so its CSS
+ * is the spring drawn as a `linear()` curve, untyped, and the bounce rides in
+ * an extension.
  */
-function springToken(v, spring, css, descriptionAndExtensions) {
-  if (!css)
-    throw new Error(`${v.name} is a spring, which CSS can't draw: give its linear() curve in code-tokens.json's figma`)
+function springToken(v, spring, descriptionAndExtensions) {
   return {
-    $value: css,
+    $value: springCurve(v.name, spring.bounce),
     ...descriptionAndExtensions,
     $extensions: { ...descriptionAndExtensions.$extensions, [EXTENSION]: { spring } },
   }
+}
+
+/** Where the spring counts as settled: this close to its end, as a share of the travel. */
+const SPRING_SETTLED = 0.0001
+/** Points along the curve; at a 450ms run, one every 32ms. */
+const SPRING_STOPS = 15
+
+/**
+ * A Figma spring as a CSS `linear()` curve over the token's whole duration.
+ *
+ * Figma's bounce is 1 minus the damping ratio (its physicalSpringToNormalized
+ * gives 0.15 for a ratio of 0.85). Figma doesn't say how fast the spring moves
+ * within a duration, so it runs the whole duration and settles at its end:
+ * its swing shrinks to SPRING_SETTLED of the travel by the last stop.
+ */
+function springCurve(name, bounce) {
+  // A bounce of 1 is an undamped spring, which never settles.
+  if (!(bounce >= 0 && bounce < 1))
+    throw new Error(`${name}: a spring's bounce must be from 0 to below 1, not ${bounce}`)
+  const dampingRatio = 1 - bounce
+  // The swing shrinks as e^(-dampingRatio × naturalFrequency × time), with time
+  // from 0 to 1 over the duration, so this frequency brings it to SPRING_SETTLED at 1.
+  const naturalFrequency = Math.log(1 / SPRING_SETTLED) / dampingRatio
+  const decayRate = dampingRatio * naturalFrequency
+
+  /** How far along the spring is at `time` (0 to 1): 0 at the start, settling on 1. */
+  const progressAt = (time) => {
+    const decay = Math.exp(-decayRate * time)
+    if (dampingRatio === 1) return 1 - decay * (1 + naturalFrequency * time)
+    const swingFrequency = naturalFrequency * Math.sqrt(1 - dampingRatio ** 2)
+    const swing = Math.cos(swingFrequency * time) + (decayRate / swingFrequency) * Math.sin(swingFrequency * time)
+    return 1 - decay * swing
+  }
+
+  const stops = []
+  for (let i = 0; i < SPRING_STOPS; i++) stops.push(round(progressAt(i / (SPRING_STOPS - 1))))
+  // It ends exactly at rest.
+  stops[SPRING_STOPS - 1] = 1
+  return `linear(${stops.join(', ')})`
 }
 
 /**
