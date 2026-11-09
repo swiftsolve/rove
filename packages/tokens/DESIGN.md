@@ -14,6 +14,7 @@ colors: # Keys: --<key>
   bg-popover: "#1d1e20" # Tooltips and menus
   bg-chrome: "#101012" # Title bar and rail
   border-default: "rgba(255, 255, 255, 0.07)" # Hairlines
+  border-subtle: "rgba(255, 255, 255, 0.05)" # Dividers between rows in a card
   overlay-default: "rgba(255, 255, 255, 0.07)" # Menu highlights, placeholder shapes, dimmed meter bars
   overlay-subtle: "rgba(255, 255, 255, 0.05)" # Header chips, rail and segment hovers
   overlay-faint: "rgba(255, 255, 255, 0.03)" # Faintest wash, a hovered card
@@ -170,6 +171,7 @@ light: # The Light theme (theme-light on the root): every token whose value diff
   bg-popover: "#ffffff"
   bg-chrome: "#f6f7f7"
   border-default: "rgba(11, 11, 12, 0.1)"
+  border-subtle: "rgba(11, 11, 12, 0.07)"
   overlay-default: "rgba(11, 11, 12, 0.07)"
   overlay-subtle: "rgba(11, 11, 12, 0.05)"
   overlay-faint: "rgba(11, 11, 12, 0.03)"
@@ -375,8 +377,9 @@ should stay nearly solid, like a chart line behind another.
 - Cards get depth from `--shadow-panel`, not hard outlines. Tooltips and menus
   use `--shadow-popover` on `--bg-popover`; dialogs and hovered cards use
   `--shadow-raised`.
-- Every line is `--border-default`: hairlines, and the edges of menus, tooltips
-  and dialogs.
+- Lines are `--border-default`: hairlines, and the edges of menus, tooltips
+  and dialogs. Dividers between rows inside a card take the softer
+  `--border-subtle`, so a list reads as one card, not a stack of boxes.
 
 ## Shapes
 

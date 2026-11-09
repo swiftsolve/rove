@@ -2708,6 +2708,26 @@
           "a": 1
         }
       }
+    },
+    {
+      "name": "border/subtle",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--border-subtle)",
+      "description": "Dividers between rows in a card",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a5"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
     }
   ]
 }
