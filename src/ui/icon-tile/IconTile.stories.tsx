@@ -16,6 +16,10 @@ const COLORS = [
   'var(--status-negative)',
   'var(--series-down)',
   'var(--series-up)',
+  'var(--device-network)',
+  'var(--device-personal)',
+  'var(--device-entertainment)',
+  'var(--device-smart-home)',
   'neutral',
 ]
 
@@ -31,7 +35,7 @@ const ICONS = Object.fromEntries(
 const meta = {
   title: 'Data display/IconTile',
   component: IconTile,
-  args: { color: 'var(--status-positive)', icon: 'RouterIcon' },
+  args: { color: 'var(--device-network)', icon: 'RouterIcon' },
   argTypes: {
     size: { control: 'inline-radio', options: SIZES },
     color: { control: 'text' },
@@ -158,7 +162,7 @@ export const AllStates: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
       {/* A grid, so each colour's column lines up across sizes. */}
-      <div className="grid grid-cols-[repeat(8,max-content)] items-center gap-12">
+      <div className="grid grid-cols-[repeat(12,max-content)] items-center gap-12">
         {SIZES.map((size) =>
           COLORS.map((color) => (
             <IconTile key={`${size}-${color}`} size={size} color={color} icon={<DeviceIcon size={16} />} />

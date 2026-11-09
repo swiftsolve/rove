@@ -33,23 +33,24 @@ import { formatMac } from '@/utils/format'
 const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')
 
 /**
- * A device's kind icon, in a tile coloured by category so categories scan at a
- * glance. The gateway is green whatever its kind; watches and unknown devices
- * stay neutral.
+ * A device's kind icon, in a tile coloured by its group so groups scan at a
+ * glance. Device colours say what a device is, never how it's doing, so no
+ * status colour here: the gateway takes the network colour whatever its kind,
+ * and unknown devices stay neutral.
  */
 const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
-  router: 'var(--status-positive)',
-  nas: 'var(--series-down)',
-  computer: 'var(--series-down)',
-  tablet: 'var(--series-down)',
-  phone: 'var(--series-down)',
-  watch: 'neutral',
-  console: 'var(--series-up)',
-  tv: 'var(--series-up)',
-  printer: 'var(--series-up)',
-  camera: 'var(--status-warning)',
-  speaker: 'var(--status-warning)',
-  iot: 'var(--status-warning)',
+  router: 'var(--device-network)',
+  nas: 'var(--device-network)',
+  computer: 'var(--device-personal)',
+  tablet: 'var(--device-personal)',
+  phone: 'var(--device-personal)',
+  watch: 'var(--device-personal)',
+  console: 'var(--device-entertainment)',
+  tv: 'var(--device-entertainment)',
+  speaker: 'var(--device-entertainment)',
+  camera: 'var(--device-smart-home)',
+  printer: 'var(--device-smart-home)',
+  iot: 'var(--device-smart-home)',
   unknown: 'neutral',
 }
 
@@ -158,7 +159,7 @@ export function DeviceRow({ device }: { device: LanDevice }) {
     <Card as="li">
       <div className={DEVICE_ROW}>
         <IconTile
-          color={device.isGateway ? 'var(--status-positive)' : KIND_COLORS[device.kind]}
+          color={device.isGateway ? 'var(--device-network)' : KIND_COLORS[device.kind]}
           icon={<KindIcon kind={device.kind} />}
         />
         <div className="flex min-w-0 flex-1 flex-col gap-4">

@@ -75,7 +75,11 @@
       "status-negative-solid-hover",
       "series-down",
       "series-up",
-      "focus-ring"
+      "focus-ring",
+      "device-network",
+      "device-personal",
+      "device-entertainment",
+      "device-smart-home"
     ],
     "leading": [
       "title",
