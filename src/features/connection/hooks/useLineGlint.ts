@@ -44,7 +44,32 @@ export function useLineGlint({
   })
   useEffect(() => {
     if (!glintLine || glintCount === skippedGlintCount) return
-    const glint = startGlint(glintLine)
-    return () => glint?.cancel()
+    let isCancelled = false
+    let glint: Animation | null = null
+    // A glint over a card still fading in runs ahead of the card itself.
+    void waitForEntrance(glintLine).then(() => {
+      if (!isCancelled) glint = startGlint(glintLine)
+    })
+    return () => {
+      isCancelled = true
+      glint?.cancel()
+    }
   }, [glintLine, glintCount, skippedGlintCount])
+}
+
+/**
+ * Resolves once every finite animation on `element`'s ancestors is over: the
+ * page's staggered fade-up that brings its card in, on opening. At once when
+ * none is running.
+ */
+async function waitForEntrance(element: Element): Promise<void> {
+  const entrances: Promise<unknown>[] = []
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    for (const animation of ancestor.getAnimations()) {
+      const isFinite = animation.effect?.getComputedTiming().endTime !== Infinity
+      // A cancelled entrance rejects `finished`; the wait ends all the same.
+      if (isFinite) entrances.push(animation.finished.catch(() => undefined))
+    }
+  }
+  await Promise.all(entrances)
 }
