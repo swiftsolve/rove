@@ -2,6 +2,7 @@ import './colour.css'
 
 import figmaVariables from '../src/figma/variables.json'
 import backgrounds from './assets/backgrounds.png'
+import backgroundsDark from './assets/backgrounds-dark.png'
 import { Code, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import {
   colorDark,
@@ -17,6 +18,9 @@ import {
 
 export default { title: 'Colour' }
 
+const BACKGROUNDS_ALT =
+  'A window wireframe in Dark and Light, alone and under the dialog scrim, each background labelled'
+
 // The Figma page's sections, in its order, each with the tokens it lists.
 const SECTIONS = [
   {
@@ -24,14 +28,20 @@ const SECTIONS = [
     intro:
       'Base, surface and inset, plus chrome, popover, hover and the dialog scrim. Cards use bg/surface. Diagram at actual size.',
     names: ['bg.base', 'bg.chrome', 'bg.surface', 'bg.popover', 'bg.inset', 'bg.hover', 'bg.scrim'],
+    // Figma's page is white, so its export carries a white sheet and dark
+    // labels; the Dark theme shows a copy with the sheet clear and the labels
+    // light, the wireframes untouched.
     diagram: (
-      <img
-        className="diagram"
-        src={backgrounds}
-        width={1280}
-        height={1470}
-        alt="A window wireframe in Dark and Light, alone and under the dialog scrim, each background labelled"
-      />
+      <>
+        <img
+          className="diagram diagram-for-dark"
+          src={backgroundsDark}
+          width={1280}
+          height={1470}
+          alt={BACKGROUNDS_ALT}
+        />
+        <img className="diagram diagram-for-light" src={backgrounds} width={1280} height={1470} alt={BACKGROUNDS_ALT} />
+      </>
     ),
   },
   {
@@ -39,6 +49,7 @@ const SECTIONS = [
     intro: 'Thin borders and see-through overlays.',
     names: [
       'border.default',
+      'border.subtle',
       'overlay.default',
       'overlay.strong',
       'overlay.selection',

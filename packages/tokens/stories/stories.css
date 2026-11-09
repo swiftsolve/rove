@@ -109,6 +109,16 @@
   margin: 0 auto 24px;
 }
 
+/* A diagram drawn on Figma's white page has a copy for each theme. */
+.diagram-for-light,
+:root.theme-light .diagram-for-dark {
+  display: none;
+}
+
+:root.theme-light .diagram-for-light {
+  display: block;
+}
+
 /* Text */
 
 .mono,
