@@ -216,7 +216,7 @@ const CHECKS: Card[] = [
   {
     icon: 'figma',
     name: 'Figma check',
-    body: 'Fails when a Figma variant and its prop disagree, or a guide has no twin in Figma.',
+    body: 'Fails when a component’s props or usage guide in code don’t match its Figma component.',
   },
   {
     icon: 'storybook',
