@@ -171,7 +171,7 @@ export function PathCard({
               above={isConnected ? internetLineCaption(isTesting, internetState, lastTest) : null}
               below={
                 isConnected && !isTesting && internetState === 'healthy' && lastTest ? (
-                  <Rate series="up" mbps={lastTest.uploadMbps} />
+                  <Rate series="up" mbps={lastTest.uploadMbps} pairedMbps={lastTest.downloadMbps} />
                 ) : null
               }
             />
@@ -380,17 +380,30 @@ function internetLineCaption(
   if (isTesting) return <span className="text-tertiary">Testing…</span>
   if (state === 'offline') return <span className="text-negative">No internet</span>
   if (state === 'notTested' || !lastTest) return <span className="text-tertiary">Not tested</span>
-  return <Rate series="down" mbps={lastTest.downloadMbps} />
+  return <Rate series="down" mbps={lastTest.downloadMbps} pairedMbps={lastTest.uploadMbps} />
 }
 
-function Rate({ series, mbps }: { series: SpeedSeries; mbps: number }) {
-  const { value, unit } = splitSpeedMbps(mbps)
+/**
+ * A test's rate in one direction, with its arrow. The text holds the width of
+ * the wider of it and `pairedMbps`, the other direction's rate, so the down
+ * and up rows centre alike: their arrows line up on the left, their units on
+ * the right.
+ */
+function Rate({ series, mbps, pairedMbps }: { series: SpeedSeries; mbps: number; pairedMbps: number }) {
   return (
     <>
       <DirectionIcon series={series} size={13} />
-      {value} {unit}
+      <span className="grid text-right num">
+        <span className="col-start-1 row-start-1">{rateText(mbps)}</span>
+        <span className="invisible col-start-1 row-start-1">{rateText(pairedMbps)}</span>
+      </span>
     </>
   )
+}
+
+function rateText(mbps: number): string {
+  const { value, unit } = splitSpeedMbps(mbps)
+  return `${value} ${unit}`
 }
 
 function Node({ align, name, detail }: { align: 'start' | 'center' | 'end'; name: string; detail: string | null }) {
