@@ -18,7 +18,7 @@ The reasons behind the token values. The values themselves live in Figma (and in
 - **Hairlines** separate content inside a surface; the surfaces themselves are lifted by shadow.
 - **Overlays flip with the theme:** white-on-dark in dark mode, near-black-on-light in light mode, so hovers, chips and tracks darken pale surfaces rather than disappearing on them.
 - **Both overlay families share one set of strengths** (3, 5, 7, 16%), so a dark-mode token and its light-mode partner sit on the same steps. Light-mode hairlines take ink at 10%. The light-mode ink is `neutral/850`, so its overlays tint like the ramp, not navy. Light-mode shadows use the same ink; dark-mode shadows use black, since ink would be lighter than the backdrop.
-- **Shadows give depth** instead of hard outlines; panels get a soft two-layer lift, menus and tooltips a deeper one.
+- **Shadows give depth** instead of hard outlines. Panels have no border, so their shadow has two layers: a thin contact layer that draws the edge and a soft ambient one that lifts the card. Menus and tooltips have a border, so one deeper layer is enough.
 
 ## Text
 

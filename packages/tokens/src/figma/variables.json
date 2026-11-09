@@ -926,11 +926,11 @@
       }
     },
     {
-      "name": "shadow-color/panel-1",
+      "name": "shadow-color/panel-contact",
       "collection": "Color",
       "type": "COLOR",
       "code": null,
-      "description": "Shadow/Panel, close layer",
+      "description": "Shadow/Panel, contact layer",
       "scopes": [
         "EFFECT_COLOR"
       ],
@@ -944,11 +944,11 @@
       }
     },
     {
-      "name": "shadow-color/panel-2",
+      "name": "shadow-color/panel-ambient",
       "collection": "Color",
       "type": "COLOR",
       "code": null,
-      "description": "Shadow/Panel, wide layer",
+      "description": "Shadow/Panel, ambient layer",
       "scopes": [
         "EFFECT_COLOR"
       ],
@@ -2125,29 +2125,11 @@
       }
     },
     {
-      "name": "shadow-color/popover-1",
+      "name": "shadow-color/popover",
       "collection": "Color",
       "type": "COLOR",
       "code": null,
-      "description": "Shadow/Popover, close layer",
-      "scopes": [
-        "EFFECT_COLOR"
-      ],
-      "values": {
-        "Dark": {
-          "alias": "neutral/1000-a22"
-        },
-        "Light": {
-          "alias": "neutral/850-a7"
-        }
-      }
-    },
-    {
-      "name": "shadow-color/popover-2",
-      "collection": "Color",
-      "type": "COLOR",
-      "code": null,
-      "description": "Shadow/Popover, wide layer",
+      "description": "Shadow/Popover",
       "scopes": [
         "EFFECT_COLOR"
       ],

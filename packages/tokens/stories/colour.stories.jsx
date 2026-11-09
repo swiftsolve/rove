@@ -111,13 +111,7 @@ const SECTIONS = [
   {
     title: 'Shadow colours',
     intro: 'The colours inside the shadow tokens, softer in Light. They aren’t CSS variables: use the shadow.',
-    names: [
-      'shadow-color.panel-1',
-      'shadow-color.panel-2',
-      'shadow-color.raised',
-      'shadow-color.popover-1',
-      'shadow-color.popover-2',
-    ],
+    names: ['shadow-color.panel-contact', 'shadow-color.panel-ambient', 'shadow-color.raised', 'shadow-color.popover'],
   },
 ]
 
@@ -168,8 +162,8 @@ function ModeCell({ theme, path }) {
 }
 
 // The shadow colours aren't CSS variables; each lives inside a shadow token, which is what code uses.
-// A layer's number comes off: shadow-color/panel-1 is in var(--shadow-panel).
-const shadowCodeFor = (path) => `var(--shadow-${path[1].replace(/-\d$/, '')})`
+// A layer's name comes off: shadow-color/panel-contact is in var(--shadow-panel).
+const shadowCodeFor = (path) => `var(--shadow-${path[1].split('-')[0]})`
 
 function ColourTable({ names }) {
   const tokens = flatten(colorDark)

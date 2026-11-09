@@ -149,7 +149,7 @@ layout: # Fixed sizes and insets of the shell and cards. Keys: --<key>
 shadows: # Box shadows; Light has its own (light group). Keys: --<key>
   shadow-panel: "0 1px 2px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.1)" # Resting cards
   shadow-raised: "0 12px 32px rgba(0, 0, 0, 0.22)" # Hover, dialogs
-  shadow-popover: "0 2px 6px rgba(0, 0, 0, 0.22), 0 6px 16px rgba(0, 0, 0, 0.22)" # Tooltips, menus
+  shadow-popover: "0 6px 16px rgba(0, 0, 0, 0.22)" # Tooltips, menus
 focus: # The keyboard focus ring. Keys: --<key>
   focus-offset: "2px" # Focus ring offset
   focus-ring-width: "1px" # Focus ring stroke
@@ -204,7 +204,7 @@ light: # The Light theme (theme-light on the root): every token whose value diff
   device-smart-home: "#b2468a"
   shadow-panel: "0 1px 2px rgba(11, 11, 12, 0.07), 0 4px 12px rgba(11, 11, 12, 0.05)"
   shadow-raised: "0 12px 32px rgba(11, 11, 12, 0.1)"
-  shadow-popover: "0 2px 6px rgba(11, 11, 12, 0.07), 0 6px 16px rgba(11, 11, 12, 0.1)"
+  shadow-popover: "0 6px 16px rgba(11, 11, 12, 0.1)"
 ---
 
 # Rove design

@@ -13,14 +13,14 @@
           "y": 1,
           "blur": 2,
           "spread": 0,
-          "color": "shadow-color/panel-1"
+          "color": "shadow-color/panel-contact"
         },
         {
           "x": 0,
           "y": 4,
           "blur": 12,
           "spread": 0,
-          "color": "shadow-color/panel-2"
+          "color": "shadow-color/panel-ambient"
         }
       ]
     },
@@ -43,17 +43,10 @@
       "layers": [
         {
           "x": 0,
-          "y": 2,
-          "blur": 6,
-          "spread": 0,
-          "color": "shadow-color/popover-1"
-        },
-        {
-          "x": 0,
           "y": 6,
           "blur": 16,
           "spread": 0,
-          "color": "shadow-color/popover-2"
+          "color": "shadow-color/popover"
         }
       ]
     }
