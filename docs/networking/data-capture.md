@@ -14,7 +14,7 @@ consolidated into one place: `crates/rove-core/src/platform/`, one file per OS.
 ## 1. The core strategy: shell out, then parse
 
 Rove's central technique is **shelling out to the OS's own networking tools and
-parsing their text output.** It does *not* re-implement `ip`/`netsh`/`ifconfig`;
+parsing their text output.** It does *not* re-implement `ip`/`ifconfig`/PowerShell;
 it runs them and reads what they print. Two reasons:
 
 - Those tools already have privileged, correct, battle-tested access to the
@@ -51,7 +51,7 @@ Three things to notice, each a deliberate design choice:
   Windows probes are PowerShell, not `cmd`.
 
 There's also a Windows-only detail: `hide_window` sets the `CREATE_NO_WINDOW`
-flag (`0x0800_0000`) so spawning `powershell`/`netsh` doesn't flash a black
+flag (`0x0800_0000`) so spawning `powershell` doesn't flash a black
 console window on screen (`CREATE_NO_WINDOW` in `util/shell.rs`). No-op on Unix.
 
 ---
@@ -146,7 +146,7 @@ actual command run on each OS.
 | **Default interface** | `ip route show default` (`dev` field) | same ranking → `.InterfaceAlias` | `netstat -rn -f inet`, then `route -n get default` |
 | **DNS servers** | `/etc/resolv.conf` (`nameserver` lines) | `Get-DnsClientServerAddress` | `/etc/resolv.conf` |
 | **Interface list** | `ip -j addr` (JSON) + `/sys/class/net/*/speed` | `Get-NetAdapter` + `Get-NetIPAddress` | `sysinfo` + `ifconfig -a` states |
-| **Wi‑Fi details** | `nmcli`, then `iw dev link`/`info`, then `iwgetid` | `netsh wlan show interfaces` | CoreWLAN (in-process) + `system_profiler` |
+| **Wi‑Fi details** | `nmcli`, then `iw dev link`/`info`, then `iwgetid` | Native Wi-Fi API (`wlanapi.dll`, in-process) | CoreWLAN (in-process) + `system_profiler` |
 | **Ethernet details** | `ethtool`, then `/sys/.../speed`, then `nmcli` | `Get-NetAdapter` (LinkSpeed/Duplex) | `ifconfig <if>` (`media:` line) |
 | **Link speed** | `/sys/class/net/<if>/speed` | `Get-NetAdapter.LinkSpeed` | CoreWLAN transmit rate (Wi-Fi), `ifconfig` media (Ethernet) |
 | **Subnet / CIDR** | `ip -j addr show <if>` | `Get-NetIPAddress` | (subnet module) |
@@ -196,24 +196,31 @@ one `ConnectionDetails` struct:
 
 - **Linux** (`wifi_details` in `platform/linux.rs`) layers *three* tools because no single one
   is complete: `nmcli` (SSID, signal %, frequency, channel, security), then
-  `iw dev link`/`info` (signal in dBm, tx bitrate, channel), then `iwgetid` as a
-  last-ditch SSID source. Each fills only the gaps the previous left (`d.frequency
-  = d.frequency.or(...)`).
-- **Windows** (`parse_netsh_wifi` in `platform/windows.rs`): parses `netsh wlan show interfaces`.
-  This has a genuinely tricky bug baked into the fix: Wi-Fi 6E/7 access points
-  print a "Colocated APs" block whose `Channel:`/`Band:` values appear *before*
-  the real connection's, so a naive first-match grabs the wrong channel. The
-  parser keys off whole-line `Key : Value` labels to avoid it (there's a unit test
-  for exactly this, `parses_connected_radio_not_colocated_aps` in `windows.rs`).
-  netsh doesn't report centre frequency, so Rove derives it from band + channel
-  using the 802.11 channel plan (`channel_to_frequency` in `platform.rs`).
+  `iw dev link`/`info` (signal in dBm, tx bitrate, channel and its width), then
+  `iwgetid` as a last-ditch SSID source. Each fills only the gaps the previous
+  left (`d.frequency = d.frequency.or(...)`).
+- **Windows** (`wifi_details` in `platform/windows.rs`, `platform/windows/wlan.rs`):
+  the one place Rove doesn't shell out. `netsh wlan show interfaces` prints its
+  labels in the display language ("Kanal" on a German Windows), so a parser keyed
+  on English labels reads nothing there. The Native Wi-Fi API gives the same facts
+  as numbers and codes: the connection (SSID, signal %, 802.11 generation,
+  security), the RSSI and channel, and the access point's entry in the scan list
+  (centre frequency, beacon). Rove labels the codes itself, "802.11ax" and
+  "WPA3-Personal" as the other platforms say them. The saved passphrase comes
+  from the profile's XML (`WlanGetProfile`), in plain text only to an elevated
+  administrator.
+  Windows reports no channel width, so Rove reads the one the access point
+  advertises from its beacon's HT, VHT, HE and EHT Operation elements
+  (`platform/windows/beacon.rs`). That's the access point's width, not the one
+  the link agreed: an 80 MHz-only adapter on a 160 MHz access point reads 160.
+  The link's 802.11 generation narrows it where it can.
 - **macOS** (`wifi_details` in `platform/macos.rs`, `platform/mac_native.rs`): Apple gutted the
   private `airport -I` tool on macOS 14.4+ (it prints only a deprecation notice)
   and every shell tool now returns `<redacted>` for the SSID. So Rove reads Wi-Fi
   *in-process* via **CoreWLAN**: the SSID (gated behind Location Services, which
   Rove requests once at startup through CoreLocation) and the transmit rate.
   CoreWLAN is the only remaining source of Wi-Fi link speed. `system_profiler`
-  fills in RSSI/channel/security (cached off the hot path since it takes seconds),
+  fills in RSSI/channel and its width/security (cached off the hot path since it takes seconds),
   with `networksetup` kept only as a legacy SSID fallback.
 
 A shared post-step, `finalize_wifi` (in `platform.rs`), converts a dBm RSSI

@@ -12,8 +12,11 @@ pub struct ConnectionDetails {
     pub ssid: Option<String>,
     pub signal_strength: Option<i64>,
     pub signal_dbm: Option<i64>,
+    /// The channel's centre frequency in MHz, which the band label comes from.
     pub frequency: Option<i64>,
     pub channel: Option<i64>,
+    /// How wide the channel is, in MHz: 20, 40, 80, 160 or 320.
+    pub channel_width_mhz: Option<i64>,
     pub security: Option<String>,
     pub wifi_standard: Option<String>,
     pub link_speed_mbps: Option<i64>,
@@ -200,8 +203,8 @@ pub async fn network_info() -> NetworkInfo {
         details.link_speed_mbps = platform::linux::sysfs_link_speed(&iface);
     }
 
-    // Wi-Fi on Windows has no link speed from netsh; fall back to the adapter's
-    // negotiated rate so the card, speed test and interface list agree.
+    // Wi-Fi on Windows takes the adapter's negotiated rate, the figure the
+    // interface list shows, so the card, speed test and interface list agree.
     if details.link_speed_mbps.is_none() && cfg!(target_os = "windows") {
         details.link_speed_mbps = platform::windows::link_speed(&iface).await;
     }

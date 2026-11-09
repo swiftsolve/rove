@@ -132,6 +132,8 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
   signalDbm: -47,
   channel: 149,
   frequency: MOCK_FREQUENCY,
+  // 80 MHz with two streams is the 1.2 Gbps link rate above.
+  channelWidthMhz: 80,
   security: 'WPA3',
   wifiStandard: 'Wi-Fi 6 (802.11ax)',
   linkSpeedMbps: MOCK_LINK_CAPACITY_MBPS,

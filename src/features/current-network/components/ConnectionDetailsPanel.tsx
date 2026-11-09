@@ -8,7 +8,7 @@ import { signalWord } from '@/features/current-network/utils/wifi-signal'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isEthernetNetwork, isWifiNetwork } from '@/types'
 import { DataList, DataListStack, DataRow, InlineMeta, NoValue } from '@/ui'
-import { formatBand, formatChannel, formatDisplayValue, formatDuplex, formatWifiStandard } from '@/utils/format'
+import { formatBand, formatDisplayValue, formatDuplex, formatWifiStandard } from '@/utils/format'
 
 type ConnectionDetailsPanelProps = {
   info: NetworkInfo
@@ -52,7 +52,7 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
       </DataRow>
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Band" value={formatBand(info.frequency)} />
-      <DataRow label="Channel">{speakable(formatChannel(info.channel, info.frequency))}</DataRow>
+      <DataRow label="Channel">{formatChannelDetail(info)}</DataRow>
       <DataRow label="Standard">{speakable(formatWifiStandard(info.wifiStandard))}</DataRow>
       {info.security != null ? (
         <DataRow label="Security" align="center">
@@ -101,6 +101,14 @@ function formatSignalDetail(info: WifiNetworkInfo): ReactNode {
   }
   if (signalDbm != null && Number.isFinite(signalDbm)) return `${signalDbm} dBm`
   return <NoValue />
+}
+
+/** The channel number and, when known, its width: "101 • 160 MHz". Null leaves the row out. */
+function formatChannelDetail(info: WifiNetworkInfo): ReactNode {
+  const { channel, channelWidthMhz } = info
+  if (channel == null || !Number.isFinite(channel)) return null
+  const widthText = channelWidthMhz != null && Number.isFinite(channelWidthMhz) ? `${channelWidthMhz} MHz` : null
+  return <InlineMeta items={[String(channel), widthText]} />
 }
 
 /** A value a screen reader says without its brackets, or null to leave the row out. */

@@ -17,7 +17,10 @@ export type WifiNetworkInfo = {
   signalStrength: number | null
   signalDbm: number | null
   channel: number | null
+  /** The channel's centre frequency in MHz, which the band label comes from. */
   frequency: number | null
+  /** How wide the channel is, in MHz: 20, 40, 80, 160 or 320. */
+  channelWidthMhz: number | null
   security: string | null
   wifiStandard: string | null
   linkSpeedMbps: number | null

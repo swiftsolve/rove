@@ -79,6 +79,7 @@ struct WifiSignal {
     signal_dbm: Option<i64>,
     channel: Option<i64>,
     frequency: Option<i64>,
+    channel_width_mhz: Option<i64>,
     security: Option<String>,
     wifi_standard: Option<String>,
     link_speed_mbps: Option<i64>,
@@ -105,6 +106,7 @@ fn apply_cached_signal(d: &mut ConnectionDetails) {
         d.signal_dbm = d.signal_dbm.or(s.signal_dbm);
         d.channel = d.channel.or(s.channel);
         d.frequency = d.frequency.or(s.frequency);
+        d.channel_width_mhz = d.channel_width_mhz.or(s.channel_width_mhz);
         d.security = d.security.take().or(s.security);
         d.wifi_standard = d.wifi_standard.take().or(s.wifi_standard);
         d.link_speed_mbps = d.link_speed_mbps.or(s.link_speed_mbps);
@@ -141,6 +143,7 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
         signal_dbm: None,
         channel: None,
         frequency: None,
+        channel_width_mhz: None,
         security: None,
         wifi_standard: None,
         link_speed_mbps: None,
@@ -171,10 +174,11 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
                     reading.signal_dbm = value.split_whitespace().next().and_then(|v| v.parse().ok());
                 }
                 // "Channel: 44 (5GHz, 80MHz)" → 44, plus the centre frequency
-                // the frontend labels the band from.
+                // the frontend labels the band from, and the 80 MHz width.
                 "Channel" => {
                     reading.channel = value.split_whitespace().next().and_then(|v| v.parse().ok());
                     reading.frequency = reading.channel.and_then(|ch| channel_to_frequency(ch, value));
+                    reading.channel_width_mhz = channel_width_from_hint(value);
                 }
                 // "PHY Mode: 802.11ax" → the frontend maps this to "Wi‑Fi 6".
                 "PHY Mode" => reading.wifi_standard = Some(value.to_string()),
@@ -188,6 +192,15 @@ fn parse_wifi_signal(out: &str) -> Option<WifiSignal> {
     // Without a signal the reading is worthless, even with an SSID.
     reading.signal_dbm?;
     Some(reading)
+}
+
+/// The channel width from `system_profiler`'s hint, "44 (5GHz, 80MHz)" → 80:
+/// the one part that ends in "MHz".
+fn channel_width_from_hint(channel_value: &str) -> Option<i64> {
+    channel_value
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .find_map(|part| part.strip_suffix("MHz"))
+        .and_then(|number| number.parse().ok())
 }
 
 /// Wi-Fi channel to centre frequency (MHz). Channel numbers repeat across
@@ -381,6 +394,14 @@ fn parse_media_duplex(media: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn channel_width_comes_from_the_band_hint() {
+        assert_eq!(channel_width_from_hint("44 (5GHz, 80MHz)"), Some(80));
+        assert_eq!(channel_width_from_hint("37 (6GHz, 160MHz)"), Some(160));
+        assert_eq!(channel_width_from_hint("6 (2GHz, 20MHz)"), Some(20));
+        assert_eq!(channel_width_from_hint("44"), None);
+    }
 
     #[test]
     fn media_speed_and_duplex() {

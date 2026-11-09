@@ -25,11 +25,6 @@ export function splitSpeedMbps(mbps: number): ValueWithUnit {
   return { value: Number(gbps.toFixed(2)) < 10 ? gbps.toFixed(2) : gbps.toFixed(1), unit: 'Gbps' }
 }
 
-export function formatChannel(channel: number | null, frequency: number | null): string | null {
-  if (channel == null || !Number.isFinite(channel)) return null
-  return frequency != null && Number.isFinite(frequency) ? `${channel} (${frequency} MHz)` : `${channel}`
-}
-
 /** Wi‑Fi band derived from the channel's centre frequency (MHz). */
 export function formatBand(frequency: number | null): string | null {
   if (frequency == null || !Number.isFinite(frequency)) return null

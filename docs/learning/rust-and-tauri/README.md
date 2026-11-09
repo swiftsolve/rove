@@ -9,7 +9,7 @@ click through in your editor.
 >   diagrams: the bridge's two implementations, pull vs push, and the anatomy of
 >   one `invoke`.
 > - [How Rove Captures Network Data (per OS)](../../networking/data-capture.md): a
->   deep dive into the per-OS probes (`ip`/`netsh`/CoreWLAN, byte counters) that
+>   deep dive into the per-OS probes (`ip`/PowerShell/CoreWLAN, byte counters) that
 >   feed everything below.
 > - [How Rove Discovers & Identifies LAN Devices](../../networking/device-discovery.md): the
 >   full device-scan pipeline: the ARP-table trick, TCP/mDNS probing, OUI vendor

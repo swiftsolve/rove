@@ -1,10 +1,18 @@
 //! Windows host/network probes: PowerShell (`Get-NetAdapter`, `Get-NetRoute`,
-//! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and `netsh wlan`.
+//! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and the Native Wi-Fi API.
+// Only Windows reads these, and the tests check them on every platform.
+#[cfg(any(windows, test))]
+mod beacon;
+#[cfg(any(windows, test))]
+mod wifi_codes;
+#[cfg(windows)]
+mod wlan;
+
 use crate::connection::infer_connection_type;
 use crate::connection::ConnectionDetails;
 use crate::interfaces::InterfaceSummary;
 use crate::utils::net::is_virtual_interface;
-use crate::utils::shell::{trimmed_non_empty, try_run, try_run_powershell};
+use crate::utils::shell::{trimmed_non_empty, try_run_powershell};
 use std::net::Ipv4Addr;
 
 /// The default route Windows forwards through, ranked so a VPN tunnel never
@@ -115,73 +123,48 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
     result
 }
 
+/// The connected Wi-Fi network, from the Native Wi-Fi API (see [`wlan`]).
 pub async fn wifi_details() -> ConnectionDetails {
-    let Some(out) = try_run("netsh wlan show interfaces").await else {
-        return ConnectionDetails::default();
-    };
-    parse_netsh_wifi(&out)
+    #[cfg(windows)]
+    {
+        let network = tokio::task::spawn_blocking(wlan::connected_network).await.ok().flatten();
+        let Some(network) = network else {
+            return ConnectionDetails::default();
+        };
+        let generation = wifi_codes::phy_generation(network.phy_type);
+        let details = ConnectionDetails {
+            ssid: network.ssid,
+            signal_strength: Some(i64::from(network.signal_quality.min(100))),
+            signal_dbm: network.rssi_dbm.map(i64::from),
+            channel: network.channel.map(i64::from),
+            frequency: network.centre_frequency_khz.map(|khz| i64::from(khz / 1000)),
+            channel_width_mhz: generation
+                .and_then(|generation| beacon::channel_width_mhz(&network.information_elements, generation)),
+            security: Some(wifi_codes::security_label(network.is_security_enabled, network.auth_algorithm)),
+            wifi_standard: wifi_codes::wifi_standard(network.phy_type).map(String::from),
+            ..Default::default()
+        };
+        super::finalize_wifi(details)
+    }
+    #[cfg(not(windows))]
+    ConnectionDetails::default()
 }
 
-fn parse_netsh_wifi(out: &str) -> ConnectionDetails {
-    let mut d = ConnectionDetails::default();
-    let mut band_ghz: Option<f64> = None;
-    // Match whole-line "Key : Value" labels only. For Wi-Fi 6E/7 APs netsh
-    // prints a "Colocated APs" block whose inline "Band:"/"Channel:" values
-    // come before the real ones, so a first match would take a colocated
-    // radio's "Channel: 1" over the connected "Channel : 101".
-    for line in out.lines() {
-        let Some((key, value)) = line.split_once(':') else { continue };
-        let (key, value) = (key.trim(), value.trim());
-        match key {
-            "SSID" => d.ssid = trimmed_non_empty(value),
-            "Signal" => d.signal_strength = value.trim_end_matches('%').trim().parse().ok(),
-            "Rssi" => d.signal_dbm = value.parse().ok(),
-            "Channel" => d.channel = value.parse().ok(),
-            "Band" => band_ghz = value.split_whitespace().next().and_then(|n| n.parse().ok()),
-            "Authentication" => d.security = trimmed_non_empty(value),
-            "Radio type" => d.wifi_standard = trimmed_non_empty(value),
-            _ => {}
-        }
-    }
-
-    // netsh gives band and channel but no frequency, which the UI's band and
-    // channel labels are built from on every platform; derive it.
-    if let (Some(band), Some(channel)) = (band_ghz, d.channel) {
-        d.frequency = channel_to_frequency(band, channel);
-    }
-    super::finalize_wifi(d)
-}
-
-/// The saved passphrase for the `ssid` profile via `netsh wlan show profile …
-/// key=clear`. netsh only prints "Key Content" to an elevated caller, so
-/// without admin this returns `None`.
-///
-/// A double quote can't be escaped inside a `cmd` argument, so any in the
-/// SSID is stripped (real SSIDs rarely have one).
+/// The saved passphrase for `ssid`, from its Wi-Fi profile. Windows gives the
+/// key in plain text only to an elevated administrator, so without admin this
+/// returns `None`.
 pub async fn wifi_password(ssid: &str) -> Option<String> {
-    let safe = ssid.replace('"', "");
-    let out = try_run(&format!("netsh wlan show profile name=\"{safe}\" key=clear")).await?;
-    out.lines()
-        .find_map(|line| line.trim().strip_prefix("Key Content"))
-        .and_then(|rest| rest.split_once(':'))
-        .map(|(_, value)| value.trim().to_string())
-        .filter(|value| !value.is_empty())
-}
-
-/// Centre frequency (MHz) for `channel` in a band given in GHz; `None` for an
-/// unknown band.
-fn channel_to_frequency(band_ghz: f64, channel: i64) -> Option<i64> {
-    use super::WifiBand;
-    let band = if band_ghz >= 5.9 {
-        WifiBand::Six
-    } else if band_ghz >= 4.9 {
-        WifiBand::Five
-    } else if band_ghz >= 2.4 {
-        WifiBand::TwoFour
-    } else {
-        return None;
-    };
-    Some(super::channel_to_frequency(band, channel))
+    #[cfg(windows)]
+    {
+        let ssid = ssid.to_string();
+        let xml = tokio::task::spawn_blocking(move || wlan::profile_xml(&ssid)).await.ok().flatten()?;
+        wifi_codes::plain_text_key(&xml)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = ssid;
+        None
+    }
 }
 
 pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
@@ -208,9 +191,8 @@ pub async fn ethernet_details(iface: &str) -> ConnectionDetails {
     d
 }
 
-/// Negotiated link rate (Mbps) from `Get-NetAdapter`. Used for Wi-Fi, where
-/// `netsh` has no single figure, so the connection card and speed-test footer
-/// match the interface list.
+/// Negotiated link rate (Mbps) from `Get-NetAdapter`. Used for Wi-Fi too, so
+/// the connection card and speed-test footer match the interface list.
 pub async fn link_speed(iface: &str) -> Option<i64> {
     if !crate::utils::net::is_shell_safe_iface(iface) {
         return None;
@@ -274,53 +256,4 @@ pub fn utc_offset_secs() -> Option<i64> {
         .and_then(|o| String::from_utf8(o.stdout).ok())
         .and_then(|s| s.trim().parse::<f64>().ok())
         .map(|minutes| (minutes * 60.0) as i64)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // A Wi-Fi 6E connection whose AP advertises colocated 2.4/5 GHz radios,
-    // listed with "Channel: 1" and "Channel: 60" before the real
-    // "Channel : 101". The parser must pick neither.
-
-    const NETSH_6E: &str = "\
-    Name                   : Wi-Fi
-    Description            : Intel(R) Wi-Fi 6E AX210 160MHz
-    SSID                   : Bangla
-    AP BSSID               : bc:d5:ed:f7:5c:c8
-         Colocated APs:    : 2
-            BSSID: bc:d5:ed:f7:5c:cb,  Band: 2.4 GHz,  Channel: 1
-            BSSID: be:d5:ed:f7:5c:cd,  Band: 5 GHz,  Channel: 60
-    Band                   : 6 GHz
-    Channel                : 101
-    Radio type             : 802.11ax
-    Authentication         : WPA3-Personal  (H2E)
-    Receive rate (Mbps)    : 2402
-    Signal                 : 87%
-    Rssi                   : -51
-";
-
-    #[test]
-    fn parses_connected_radio_not_colocated_aps() {
-        let d = parse_netsh_wifi(NETSH_6E);
-        assert_eq!(d.ssid.as_deref(), Some("Bangla"));
-        assert_eq!(d.channel, Some(101)); // not the colocated "Channel: 1"
-        assert_eq!(d.signal_strength, Some(87));
-        assert_eq!(d.signal_dbm, Some(-51));
-        assert_eq!(d.wifi_standard.as_deref(), Some("802.11ax"));
-        assert_eq!(d.security.as_deref(), Some("WPA3-Personal  (H2E)"));
-        // 6 GHz channel 101 → 5950 + 101*5 = 6455 MHz, which the UI maps to "6 GHz".
-        assert_eq!(d.frequency, Some(6455));
-    }
-
-    #[test]
-    fn channel_frequency_bands_disambiguate_by_band() {
-        assert_eq!(channel_to_frequency(2.4, 1), Some(2412));
-        // 2.4 GHz channel 14 is the plan's outlier at 2484 MHz, not 2477.
-        assert_eq!(channel_to_frequency(2.4, 14), Some(2484));
-        assert_eq!(channel_to_frequency(5.0, 60), Some(5300));
-        assert_eq!(channel_to_frequency(6.0, 101), Some(6455));
-        assert_eq!(channel_to_frequency(0.0, 1), None);
-    }
 }

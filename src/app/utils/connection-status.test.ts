@@ -14,6 +14,7 @@ const WIFI = {
   signalDbm: null,
   channel: null,
   frequency: null,
+  channelWidthMhz: null,
   security: null,
   wifiStandard: null,
   linkSpeedMbps: null,

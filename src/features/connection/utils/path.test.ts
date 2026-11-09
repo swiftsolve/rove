@@ -15,6 +15,7 @@ const wifi = (ssid: string): NetworkInfo => ({
   signalDbm: -47,
   channel: 149,
   frequency: 5745,
+  channelWidthMhz: 80,
   security: 'WPA3',
   wifiStandard: null,
   linkSpeedMbps: 1200,

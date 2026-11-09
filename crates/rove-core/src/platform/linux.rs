@@ -49,6 +49,8 @@ static_regex!(IW_FREQ, r"freq:\s*(\d+)");
 static_regex!(IW_TX_BITRATE, r"tx bitrate:\s*([\d.]+)\s*MBit/s");
 static_regex!(IW_CHANNEL, r"channel\s+(\d+)");
 static_regex!(IW_CHANNEL_FREQ, r"channel\s+\d+\s+\((\d+)");
+// "channel 36 (5180 MHz), width: 80 MHz, center1: 5210 MHz"
+static_regex!(IW_CHANNEL_WIDTH, r"width:\s*(\d+)\s*MHz");
 static_regex!(ETHTOOL_SPEED, r"Speed:\s*(\d+)");
 static_regex!(ETHTOOL_DUPLEX, r"Duplex:\s*(\w+)");
 
@@ -149,6 +151,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
     if let Some(out) = try_run(&format!("iw dev {iface} info 2>/dev/null")).await {
         d.channel = d.channel.or(first_int(&out, &IW_CHANNEL));
         d.frequency = d.frequency.or(first_int(&out, &IW_CHANNEL_FREQ));
+        d.channel_width_mhz = first_int(&out, &IW_CHANNEL_WIDTH);
     }
 
     if d.ssid.is_none() {
@@ -274,4 +277,28 @@ pub fn boot_totals() -> Option<(u64, u64)> {
         tx += read("tx_bytes");
     }
     Some((rx, tx))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn iw_info_gives_the_channel_width() {
+        let out = "\
+Interface wlp2s0
+	ifindex 3
+	type managed
+	channel 36 (5180 MHz), width: 80 MHz, center1: 5210 MHz
+	txpower 22.00 dBm";
+        assert_eq!(first_int(out, &IW_CHANNEL), Some(36));
+        assert_eq!(first_int(out, &IW_CHANNEL_FREQ), Some(5180));
+        assert_eq!(first_int(out, &IW_CHANNEL_WIDTH), Some(80));
+    }
+
+    #[test]
+    fn iw_info_reads_a_legacy_20_mhz_channel() {
+        let out = "\tchannel 6 (2437 MHz), width: 20 MHz (no HT), center1: 2437 MHz";
+        assert_eq!(first_int(out, &IW_CHANNEL_WIDTH), Some(20));
+    }
 }

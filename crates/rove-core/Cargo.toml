@@ -62,6 +62,8 @@ windows = { version = "0.61", features = [
     "Win32_System_Diagnostics_ToolHelp",
     "Win32_Graphics_Gdi",
     "Win32_UI_Shell",
+    # The Wi-Fi details and saved passphrase, see platform/windows/wlan.rs.
+    "Win32_NetworkManagement_WiFi",
 ] }
 # Encodes the extracted icon bitmap as a PNG the frontend drops into an <img> as
 # a data: URI.

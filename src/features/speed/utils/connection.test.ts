@@ -22,6 +22,7 @@ const WIFI: NetworkInfo = {
   signalDbm: null,
   channel: null,
   frequency: 5180,
+  channelWidthMhz: null,
   security: null,
   wifiStandard: null,
   linkSpeedMbps: null,

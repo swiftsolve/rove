@@ -31,7 +31,7 @@
   <rect x="258.5" y="218.5" width="194" height="106" rx="13" fill="#1c1c24" stroke="rgba(196,181,253,0.28)"></rect>
   <text x="276" y="246" font-family="Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#c4b5fd">platform::windows</text>
   <text x="276" y="272" font-size="12.5" fill="#9a9aa8">PowerShell cmdlets</text>
-  <text x="276" y="292" font-size="12.5" fill="#9a9aa8">netsh · Get-NetAdapter</text>
+  <text x="276" y="292" font-size="12.5" fill="#9a9aa8">wlanapi · Get-NetAdapter</text>
   <text x="276" y="312" font-size="12.5" fill="#9a9aa8">Find-NetRoute · arp</text>
   <!-- macos -->
   <rect x="468.5" y="218.5" width="194" height="106" rx="13" fill="#1c1c24" stroke="rgba(96,165,250,0.28)"></rect>

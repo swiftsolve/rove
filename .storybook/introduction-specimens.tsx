@@ -436,6 +436,7 @@ const NETWORK: WifiNetworkInfo = {
   signalDbm: -47,
   channel: 149,
   frequency: 5745,
+  channelWidthMhz: 80,
   security: 'WPA3',
   wifiStandard: 'Wi-Fi 6 (802.11ax)',
   linkSpeedMbps: 1200,

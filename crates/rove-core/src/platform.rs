@@ -3,7 +3,8 @@
 //! different tools, one file each:
 //!
 //!   * [`linux`]: `ip`, `iw`, `ethtool`, `nmcli`, `/sys`
-//!   * [`windows`]: PowerShell (`Get-NetAdapter`, `Get-NetRoute`), `netsh`
+//!   * [`windows`]: PowerShell (`Get-NetAdapter`, `Get-NetRoute`), the Native
+//!     Wi-Fi API
 //!   * [`macos`]: `ifconfig`, `netstat`, `networksetup`, `system_profiler`,
 //!     and CoreWLAN via [`mac_native`]
 //!   * [`app_icon`]: each OS's native app icons

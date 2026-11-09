@@ -86,7 +86,7 @@ for the job and degrades gracefully (a missing value shows as a short bar):
 | | Linux | macOS | Windows |
 |---|---|---|---|
 | Default route / interface | `ip route` | `route -n get` | `Get-NetRoute` |
-| Wi-Fi details | `nmcli`, `iw` | CoreWLAN, `system_profiler` | `netsh wlan` |
+| Wi-Fi details | `nmcli`, `iw` | CoreWLAN, `system_profiler` | Native Wi-Fi API |
 | Link speed | `ethtool`, sysfs | CoreWLAN (Wi-Fi) | `Get-NetAdapter` |
 | DNS servers | `resolv.conf` | `resolv.conf` | `Get-DnsClientServerAddress` |
 | Neighbor table | `ip neigh` | `arp -a` | `arp -a` |
@@ -95,8 +95,9 @@ for the job and degrades gracefully (a missing value shows as a short bar):
 | App icons | `.desktop` entries, icon theme | AppKit | Shell (`.exe` icon) |
 | mDNS, sweep, speed test, throughput, usage | pure Rust everywhere | ✓ | ✓ |
 
-Platform branches are runtime `cfg!()` checks, so every path typechecks on
-every OS; CI (`.github/workflows/build.yml`) builds all three bundles for
+Platform branches are runtime `cfg!()` checks, so they typecheck on every OS.
+The in-process OS APIs (CoreWLAN, the Windows Native Wi-Fi API, app icons)
+compile only on their own OS; CI (`.github/workflows/build.yml`) builds all three bundles for
 each release tag. The
 instant network-change monitor (`ip monitor route`) is Linux-only; macOS and
 Windows fall back to the 15 s poll.
