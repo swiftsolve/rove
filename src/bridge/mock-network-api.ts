@@ -721,7 +721,7 @@ function seedNetworkEvents(): NetworkEvent[] {
     {
       ago: 30 * HOUR_MS,
       type: 'gateway_changed',
-      severity: 'critical',
+      severity: 'warning',
       mac: '24:5a:4c:11:b2:03',
       ip: '192.168.1.1',
       name: 'Router',

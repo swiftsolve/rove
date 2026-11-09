@@ -13,6 +13,7 @@ import {
 import { EventHeading } from '@/features/timeline/components/EventHeading'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import {
+  AlertIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   EthernetIcon,
@@ -24,7 +25,6 @@ import {
   RefreshIcon,
   RouterIcon,
   SearchIcon,
-  ShieldAlertIcon,
   TimelineNode,
   type TimelineNodeColor,
   Tooltip,
@@ -48,9 +48,9 @@ const TONE_COLORS = {
   leave: 'neutral',
   /** The baseline snapshot. */
   baseline: 'var(--accent-default)',
-  /** Cautionary: a new access point appeared (warning severity). */
+  /** Cautionary: a new access point appeared, or the gateway changed (warning severity). */
   alert: 'var(--status-warning)',
-  /** Alarming: the gateway changed (critical severity). */
+  /** Alarming: this computer's connection or internet dropped. */
   danger: 'var(--status-negative)',
 } as const satisfies Record<string, TimelineNodeColor>
 
@@ -71,7 +71,7 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   ap_appeared: { icon: RouterIcon, tone: 'alert' },
   device_offline: { icon: ArrowLeftIcon, tone: 'leave' },
   device_online: { icon: RefreshIcon, tone: 'arrival' },
-  gateway_changed: { icon: ShieldAlertIcon, tone: 'danger' },
+  gateway_changed: { icon: AlertIcon, tone: 'alert' },
   wifi_connected: { icon: WifiIcon, tone: 'join' },
   ethernet_connected: { icon: EthernetIcon, tone: 'join' },
   connection_lost: { icon: OfflineIcon, tone: 'danger' },
