@@ -19,6 +19,9 @@ const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body
 export function CapabilitiesCard() {
   const capabilities = useSpeedTest((test) => test.capabilities)
   const hasResults = capabilities.length > 0
+  // A test replaces the ratings, so while one runs the tiles go back to placeholders.
+  const isTesting = useSpeedTest((test) => test.isTesting)
+  const isShowingRatings = hasResults && !isTesting
   // The rated tiles are one Tab stop: the arrow keys move between them.
   const rowRef = useRef<HTMLUListElement>(null)
   useRovingFocus(rowRef, { itemSelector: 'button', orientation: 'horizontal' })
@@ -27,10 +30,11 @@ export function CapabilitiesCard() {
     <Card>
       <CardHeader title="Capabilities" icon={<ZapIcon size={15} />} actions={<RunTestButton />} />
       <CardBody>
-        {/* Before the first test the tiles are faded placeholders with no rating
-            to read, so screen readers skip them. */}
-        <ul ref={rowRef} role="list" className={CAPABILITY_ROW} aria-hidden={!hasResults || undefined}>
-          {hasResults
+        {/* Before the first test and during one the tiles are faded placeholders
+            with no rating to read, so Tab and screen readers skip them; the
+            test's progress is read out below. */}
+        <ul ref={rowRef} role="list" className={CAPABILITY_ROW} aria-hidden={!isShowingRatings || undefined}>
+          {isShowingRatings
             ? capabilities.map((capability) => <RatedCapability key={capability.id} capability={capability} />)
             : CAPABILITY_DEFINITIONS.map((capability) => (
                 <UnratedCapability key={capability.id} capability={capability} />
