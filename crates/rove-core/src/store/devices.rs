@@ -44,8 +44,9 @@ const OFFLINE_RECENCY_MS: i64 = 15 * 60 * 1000;
 /// Its roster row stays in the database.
 pub const OFFLINE_LIST_KEEP_MS: i64 = 24 * 60 * 60 * 1000;
 
-/// `meta` key for the gateway's MAC as last seen, the baseline
-/// `detect_gateway_change` diffs against.
+/// `meta` key prefix for each network's gateway MAC as last seen, the
+/// baseline `detect_gateway_change` diffs against. Keyed by network, so
+/// moving to another network's router isn't a change.
 const META_GATEWAY_MAC: &str = "gateway_mac";
 
 /// The `known_devices` columns in the order `known_device_from_row` reads them.
@@ -199,9 +200,8 @@ impl Store {
         // every peer stops answering at once; that's our link dropping, not the
         // LAN emptying. Never polled reads as connected, so real departures
         // aren't suppressed.
-        let host_connected = Self::read_meta(&tx, META_CONNECTION_IDENTITY)?
-            .map(|identity| is_connected_identity(&identity))
-            .unwrap_or(true);
+        let connection_identity = Self::read_meta(&tx, META_CONNECTION_IDENTITY)?;
+        let host_connected = connection_identity.as_deref().is_none_or(is_connected_identity);
 
         // Departures, unless this machine itself dropped off: an empty `live`
         // set (the scan failed) or a disconnected host (macOS still lists self
@@ -211,9 +211,10 @@ impl Store {
             Self::emit_departures(&tx, &prior, &live, &last_event, now_ms)?;
         }
 
-        // A gateway MAC changing under us is the classic rogue-gateway or
-        // ARP-spoof signal. With no stored baseline it only records one.
-        Self::detect_gateway_change(&tx, devices, now_ms)?;
+        // A gateway MAC changing on the same network is the classic
+        // rogue-gateway or ARP-spoof signal. With no stored baseline for this
+        // network it only records one.
+        Self::detect_gateway_change(&tx, devices, connection_identity.as_deref(), now_ms)?;
 
         if is_seeding_feed {
             Self::seed_feed(&tx, devices, now_ms)?;
@@ -326,22 +327,30 @@ impl Store {
         Self::record_device_event(conn, ts, device, NewEvent::new(event_type, severity))
     }
 
-    fn detect_gateway_change(conn: &Connection, devices: &[LanDevice], ts: i64) -> rusqlite::Result<()> {
+    /// Usually a replaced router or a mesh node taking over, rarely an attack,
+    /// so a warning: worth a look, not an alarm.
+    fn detect_gateway_change(
+        conn: &Connection,
+        devices: &[LanDevice],
+        network: Option<&str>,
+        ts: i64,
+    ) -> rusqlite::Result<()> {
         let Some(gateway) = devices.iter().find(|d| d.is_gateway && !d.mac.is_empty()) else {
             return Ok(());
         };
-        let prev = Self::read_meta(conn, META_GATEWAY_MAC)?;
+        let key = format!("{META_GATEWAY_MAC}|{}", network.unwrap_or(""));
+        let prev = Self::read_meta(conn, &key)?;
         if let Some(old) = prev.as_deref() {
             if old != gateway.mac {
                 let event = NewEvent {
                     old_value: Some(old),
                     new_value: Some(&gateway.mac),
-                    ..NewEvent::new(EVENT_GATEWAY_CHANGED, Severity::Critical)
+                    ..NewEvent::new(EVENT_GATEWAY_CHANGED, Severity::Warning)
                 };
                 Self::record_device_event(conn, ts, gateway, event)?;
             }
         }
-        Self::write_meta(conn, META_GATEWAY_MAC, &gateway.mac)
+        Self::write_meta(conn, &key, &gateway.mac)
     }
 
     /// Every device we've ever recorded, most-recently-seen first.

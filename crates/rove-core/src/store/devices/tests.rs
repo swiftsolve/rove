@@ -156,13 +156,43 @@ fn derives_join_change_offline_and_gateway_events() {
     store.record_devices(&[gw.clone(), phone.clone(), moved.clone()], 5_000).unwrap();
     assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_online");
 
-    // The gateway's MAC changes under us → a critical gateway_changed.
+    // The gateway's MAC changes under us → a gateway_changed warning.
     let mut gw2 = gw.clone();
     gw2.mac = "00:00:00:00:00:02".into();
     store.record_devices(&[gw2, phone.clone(), moved.clone()], 6_000).unwrap();
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "gateway_changed");
-    assert_eq!(latest.severity, Severity::Critical);
+    assert_eq!(latest.severity, Severity::Warning);
+}
+
+#[test]
+fn moving_to_another_network_is_not_a_gateway_change() {
+    let store = Store::open_in_memory().unwrap();
+    let mut home_router = device("00:00:00:00:00:01", "192.168.1.1", DeviceKind::Router);
+    home_router.is_gateway = true;
+    let mut office_router = device("00:00:00:00:00:09", "192.168.1.1", DeviceKind::Router);
+    office_router.is_gateway = true;
+    let gateway_changes =
+        |store: &Store| store.network_events(100).unwrap().iter().filter(|e| e.event_type == "gateway_changed").count();
+
+    store.record_connection("wifi", Some("Home"), None, None, None, 500).unwrap();
+    store.record_devices(std::slice::from_ref(&home_router), 1_000).unwrap();
+
+    // Another network has another router: a different gateway MAC, no event.
+    store.record_connection("wifi", Some("Office"), None, None, None, 1_500).unwrap();
+    store.record_devices(std::slice::from_ref(&office_router), 2_000).unwrap();
+    assert_eq!(gateway_changes(&store), 0, "a new network's router is not a change");
+
+    // Back home, the same router as before: still nothing.
+    store.record_connection("wifi", Some("Home"), None, None, None, 2_500).unwrap();
+    store.record_devices(std::slice::from_ref(&home_router), 3_000).unwrap();
+    assert_eq!(gateway_changes(&store), 0, "each network keeps its own gateway");
+
+    // Home's gateway answering from a new MAC is the change worth flagging.
+    let mut spoofed = home_router.clone();
+    spoofed.mac = "00:00:00:00:00:66".into();
+    store.record_devices(std::slice::from_ref(&spoofed), 4_000).unwrap();
+    assert_eq!(gateway_changes(&store), 1);
 }
 
 #[test]
