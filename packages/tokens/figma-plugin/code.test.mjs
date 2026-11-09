@@ -62,12 +62,17 @@ function fakeFigma() {
     return variable
   })
   const alias = (v) => ({ type: 'VARIABLE_ALIAS', id: v.id })
+  /** An exported value as the Plugin API holds it: an easing's curve or spring under Figma's own keys. */
+  const figmaValue = (value) => {
+    if (value?.alias) return alias(byName[value.alias])
+    if (value?.cubicBezier) return { type: value.type, easingFunctionCubicBezier: value.cubicBezier }
+    if (value?.spring) return { type: value.type, easingFunctionSpring: value.spring }
+    return value
+  }
   for (const v of repo.variables.variables) {
     const variable = byName[v.name]
-    for (const mode of collections.find((c) => c.id === variable.variableCollectionId).modes) {
-      const value = v.values[mode.name]
-      variable.valuesByMode[mode.modeId] = value?.alias ? alias(byName[value.alias]) : value
-    }
+    for (const mode of collections.find((c) => c.id === variable.variableCollectionId).modes)
+      variable.valuesByMode[mode.modeId] = figmaValue(v.values[mode.name])
   }
   const textStyles = repo.textStyles.styles.map((s) => ({
     name: s.name,
@@ -153,6 +158,15 @@ test('Check finds one planted difference of each kind', async () => {
   figma.textStyles[0].fontSize += 1
   figma.effectStyles[0].effects[0] = { ...figma.effectStyles[0].effects[0], radius: 99 }
   figma.effectStyles[1].description = 'changed in Figma'
+  // A timing and an easing, which Figma holds as a number and an object.
+  const timing = repo.variables.variables.find((v) => v.type === 'TIMING')
+  const easing = repo.variables.variables.find((v) => v.type === 'EASING')
+  const setOnlyValue = (name, value) => {
+    const planted = figma.byName[name]
+    for (const mode of Object.keys(planted.valuesByMode)) planted.valuesByMode[mode] = value
+  }
+  setOnlyValue(timing.name, 0.3)
+  setOnlyValue(easing.name, { type: 'CUSTOM_SPRING', easingFunctionSpring: { bounce: 0.5 } })
   const { diff } = await plugin.checkTokens(repo)
   assert.deepEqual(
     diff.map((d) => `${d.kind} ${d.name} ${d.field}`).sort(),
@@ -161,6 +175,8 @@ test('Check finds one planted difference of each kind', async () => {
       `effect style ${figma.effectStyles[1].name} description`,
       `text style ${figma.textStyles[0].name} size`,
       `variable ${variable.name} description`,
+      `variable ${timing.name} value in Value`,
+      `variable ${easing.name} value in Value`,
     ].sort(),
   )
 })

@@ -20,9 +20,31 @@ const fileInfo = () => ({ name: figma.root.name, ...(figma.fileKey && { key: fig
 
 const exportColor = (c) => ({ r: round(c.r, 5), g: round(c.g, 5), b: round(c.b, 5), a: round(c.a, 4) })
 
-/** A variable's value in one mode as the export writes it. */
-function exportValue(value, byId) {
+// Figma keeps numbers as 32-bit floats, so 0.14 reads back as 0.1400000006.
+// Four places is finer than any motion value needs.
+const exportEasing = (easing) => {
+  const bezier = easing.easingFunctionCubicBezier
+  const spring = easing.easingFunctionSpring
+  return {
+    type: easing.type,
+    ...(bezier && {
+      cubicBezier: {
+        x1: round(bezier.x1, 4),
+        y1: round(bezier.y1, 4),
+        x2: round(bezier.x2, 4),
+        y2: round(bezier.y2, 4),
+      },
+    }),
+    ...(spring && { spring: { bounce: round(spring.bounce, 4) } }),
+  }
+}
+
+/** A variable's value in one mode as the export writes it; `type` is the variable's resolvedType. */
+function exportValue(value, byId, type) {
   if (value && value.type === 'VARIABLE_ALIAS') return { alias: byId[value.id].name }
+  if (type === 'EASING') return exportEasing(value)
+  // A duration in seconds.
+  if (type === 'TIMING') return round(value, 4)
   if (typeof value === 'object') return exportColor(value)
   return value
 }
@@ -42,7 +64,8 @@ async function exportVariables() {
     variables: ordered.map((v) => {
       const collection = collections.find((c) => c.id === v.variableCollectionId)
       const values = {}
-      for (const mode of collection.modes) values[mode.name] = exportValue(v.valuesByMode[mode.modeId], byId)
+      for (const mode of collection.modes)
+        values[mode.name] = exportValue(v.valuesByMode[mode.modeId], byId, v.resolvedType)
       return {
         name: v.name,
         collection: collection.name,
@@ -275,7 +298,7 @@ async function diffTokens(repo) {
       if (!(mode.name in repoVariable.values)) continue
       addIfDiffers(
         `value in ${mode.name}`,
-        exportValue(liveVariable.valuesByMode[mode.modeId], byId),
+        exportValue(liveVariable.valuesByMode[mode.modeId], byId, liveVariable.resolvedType),
         repoVariable.values[mode.name],
       )
     }

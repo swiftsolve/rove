@@ -70,20 +70,37 @@ function figmaToken(v, mode, figmaOverride) {
     if (!v.name.startsWith('font-family/')) throw new Error(`DTCG: no type for the string variable ${v.name}`)
     return { $type: 'fontFamily', $value: override ? fontStack(override) : value, ...descriptionAndExtensions }
   }
+  if (v.type === 'EASING' && value.spring) return springToken(v, value.spring, override, descriptionAndExtensions)
   const type = dtcgType(v)
   if (value.alias) return { $type: type, $value: reference(value.alias), ...descriptionAndExtensions }
   return { $type: type, $value: dtcgValue(type, value), ...descriptionAndExtensions }
 }
 
 /**
- * The DTCG type of a colour or number variable. Figma numbers carry no unit,
- * so the collection or name says what they measure.
+ * A spring easing. DTCG has no spring and CSS no spring curve, so its CSS is
+ * the `linear()` curve code-tokens.json's `figma` gives it, untyped, and its
+ * bounce rides in an extension.
+ */
+function springToken(v, spring, css, descriptionAndExtensions) {
+  if (!css)
+    throw new Error(`${v.name} is a spring, which CSS can't draw: give its linear() curve in code-tokens.json's figma`)
+  return {
+    $value: css,
+    ...descriptionAndExtensions,
+    $extensions: { ...descriptionAndExtensions.$extensions, [EXTENSION]: { spring } },
+  }
+}
+
+/**
+ * The DTCG type of a variable. Figma numbers carry no unit, so the collection
+ * or name says what they measure.
  */
 function dtcgType(v) {
   if (v.type === 'COLOR') return 'color'
+  if (v.type === 'TIMING') return 'duration'
+  if (v.type === 'EASING') return 'cubicBezier'
   // A percentage in Figma. opacity/disabled is in Layout, with the other semantic tokens.
   if (v.collection === 'Opacity' || v.name.startsWith('opacity/')) return 'number'
-  if (v.collection === 'Motion') return 'duration' // in ms
   if (v.name.startsWith('weight/')) return 'fontWeight'
   return 'dimension' // in px
 }
@@ -95,8 +112,13 @@ function dtcgValue(type, value) {
       return dtcgColor(value)
     case 'number':
       return value / 100
+    // Figma times in seconds; CSS and Rove's code in ms.
     case 'duration':
-      return { value, unit: 'ms' }
+      return { value: Math.round(value * 1000), unit: 'ms' }
+    case 'cubicBezier': {
+      const { x1, y1, x2, y2 } = value.cubicBezier
+      return [x1, y1, x2, y2]
+    }
     case 'fontWeight':
       return value
     default:

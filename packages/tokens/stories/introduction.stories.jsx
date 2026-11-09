@@ -246,7 +246,7 @@ const PIPELINES = [
           },
           {
             name: '`src/code-tokens.json`',
-            body: "Only what Figma can't hold: easing curves, the focus outline, font fallbacks.",
+            body: "Only what Figma can't hold: the spring's CSS curve, the focus outline, font fallbacks.",
           },
         ],
       },

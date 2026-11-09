@@ -3,7 +3,7 @@ import './motion.css'
 import { useEffect, useState } from 'react'
 
 import { Code, Name, Page, Section, Table, TableRow } from './blocks'
-import { code, cssVariableName, flatten, motion } from './tokens'
+import { cssVariableName, flatten, motion } from './tokens'
 
 export default { title: 'Motion' }
 
@@ -25,7 +25,7 @@ function Curve({ points: [x1, y1, x2, y2] }) {
 }
 
 // A `linear()` curve, such as the spring's, on the same square: its stops are
-// evenly spaced in time. DTCG has no type for it, so it's read from tokens.css.
+// evenly spaced in time. DTCG has no spring, so it's read from tokens.css.
 function LinearCurve({ name }) {
   const easingValue = getComputedStyle(document.documentElement).getPropertyValue(name)
   const stopList = /linear\(([^)]*)\)/.exec(easingValue)?.[1] ?? ''
@@ -84,7 +84,7 @@ function MotionPage() {
     if (!isPlaying) setIsAtEnd((wasAtEnd) => !wasAtEnd)
     setIsPlaying(!isPlaying)
   }
-  const tokens = [...flatten(code), ...flatten(motion)]
+  const tokens = flatten(motion)
   const easings = tokens.filter((token) => token.$type === 'cubicBezier')
   const durations = tokens.filter((token) => token.$type === 'duration')
   return (

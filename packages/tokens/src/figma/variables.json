@@ -2381,39 +2381,6 @@
       }
     },
     {
-      "name": "duration/fast",
-      "collection": "Motion",
-      "type": "FLOAT",
-      "code": "var(--duration-fast)",
-      "description": "Hovers, small changes",
-      "scopes": [],
-      "values": {
-        "Value": 140
-      }
-    },
-    {
-      "name": "duration/normal",
-      "collection": "Motion",
-      "type": "FLOAT",
-      "code": "var(--duration-normal)",
-      "description": "Panels, page changes",
-      "scopes": [],
-      "values": {
-        "Value": 220
-      }
-    },
-    {
-      "name": "duration/spring",
-      "collection": "Motion",
-      "type": "FLOAT",
-      "code": "var(--duration-spring)",
-      "description": "A spring’s full run",
-      "scopes": [],
-      "values": {
-        "Value": 450
-      }
-    },
-    {
       "name": "focus/offset",
       "collection": "Layout",
       "type": "FLOAT",
@@ -2726,6 +2693,126 @@
         },
         "Light": {
           "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "duration/fast",
+      "collection": "Motion",
+      "type": "TIMING",
+      "code": "var(--duration-fast)",
+      "description": "Hovers, small changes",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": 0.14
+      }
+    },
+    {
+      "name": "duration/normal",
+      "collection": "Motion",
+      "type": "TIMING",
+      "code": "var(--duration-normal)",
+      "description": "Panels, page changes",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": 0.22
+      }
+    },
+    {
+      "name": "duration/spring",
+      "collection": "Motion",
+      "type": "TIMING",
+      "code": "var(--duration-spring)",
+      "description": "A spring’s full run",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": 0.45
+      }
+    },
+    {
+      "name": "ease/out",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-out)",
+      "description": "Entrances and moves",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_CUBIC_BEZIER",
+          "cubicBezier": {
+            "x1": 0.16,
+            "y1": 1,
+            "x2": 0.3,
+            "y2": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "ease/in-out",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-in-out)",
+      "description": "Colour changes, exits",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_CUBIC_BEZIER",
+          "cubicBezier": {
+            "x1": 0.4,
+            "y1": 0,
+            "x2": 0.2,
+            "y2": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "ease/pulse",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-pulse)",
+      "description": "Looping pulses",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_CUBIC_BEZIER",
+          "cubicBezier": {
+            "x1": 0.42,
+            "y1": 0,
+            "x2": 0.58,
+            "y2": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "ease/spring",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-spring)",
+      "description": "Panels resizing to fit",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_SPRING",
+          "spring": {
+            "bounce": 0.15
+          }
         }
       }
     }

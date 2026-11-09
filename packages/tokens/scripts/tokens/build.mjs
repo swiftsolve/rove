@@ -144,7 +144,6 @@ const tailwind = await writeTailwindTheme({
   textStyles: textStyles.styles,
   slugOf: slug,
   shadows: Object.keys(shadows),
-  code: codeTokens,
 })
 console.log(`dist/tailwind-theme.css: ${tailwind.count} theme variables`)
 

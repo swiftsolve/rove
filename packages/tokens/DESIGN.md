@@ -159,10 +159,10 @@ motion: # Durations and easing curves. Keys: --<key>
   duration-fast: "140ms" # Hovers, small changes
   duration-normal: "220ms" # Panels, page changes
   duration-spring: "450ms" # A spring’s full run
-  ease-out: "cubic-bezier(0.16, 1, 0.3, 1)"
-  ease-in-out: "cubic-bezier(0.4, 0, 0.2, 1)"
-  ease-pulse: "cubic-bezier(0.42, 0, 0.58, 1)"
-  ease-spring: "linear(0, 0.1896, 0.4943, 0.7351, 0.8834, 0.9602, 0.9936, 1.0046, 1.0062, 1.0047, 1.0028, 1.0014, 1.0006, 1, 1)"
+  ease-out: "cubic-bezier(0.16, 1, 0.3, 1)" # Entrances and moves
+  ease-in-out: "cubic-bezier(0.4, 0, 0.2, 1)" # Colour changes, exits
+  ease-pulse: "cubic-bezier(0.42, 0, 0.58, 1)" # Looping pulses
+  ease-spring: "linear(0, 0.1896, 0.4943, 0.7351, 0.8834, 0.9602, 0.9936, 1.0046, 1.0062, 1.0047, 1.0028, 1.0014, 1.0006, 1, 1)" # Panels resizing to fit
 light: # The Light theme (theme-light on the root): every token whose value differs from the Dark one above. Keys: --<key>
   bg-base: "#eeeeef"
   bg-surface: "#ffffff"

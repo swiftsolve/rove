@@ -38,7 +38,7 @@ const SCALES = [
   ['Corners (rounded-*)', 'radius', (n) => `--radius-${n}`],
 ]
 
-export async function writeTailwindTheme({ path, header, variables, textStyles, slugOf, shadows, code }) {
+export async function writeTailwindTheme({ path, header, variables, textStyles, slugOf, shadows }) {
   const cssVariableName = (v) => `--${v.name.replace(/\//g, '-')}`
   const cssVariables = variables.filter((v) => v.code)
   const lines = []
@@ -79,8 +79,8 @@ export async function writeTailwindTheme({ path, header, variables, textStyles, 
 
   startSection('Shadows (shadow-*) and easing curves (ease-*)')
   for (const name of shadows) addThemeVariable(name, `var(${name})`)
-  for (const name of Object.keys(code.tokens).filter((n) => n.startsWith('--ease-')))
-    addThemeVariable(name, `var(${name})`)
+  for (const v of cssVariables.filter((v) => v.name.startsWith('ease/')))
+    addThemeVariable(cssVariableName(v), `var(${cssVariableName(v)})`)
 
   const css = `${header}
 

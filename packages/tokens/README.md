@@ -81,7 +81,7 @@ Each utility uses the token itself (`padding: var(--spacing-12)`), so the theme 
 | `color.dark.tokens.json`, `color.light.tokens.json` | The Color tokens in each theme, pointing at the palette (`{neutral.850}`) |
 | `spacing.tokens.json`, `typography.tokens.json`, `opacity.tokens.json`, `layout.tokens.json`, `motion.tokens.json` | The other Figma collections |
 | `text-styles.tokens.json` | Each text style as a `typography` token |
-| `code.tokens.json` | The code-only tokens (shadows, easing curves, the focus outline) |
+| `code.tokens.json` | The code-only tokens (shadows, the focus outline) |
 
 A theme is every file plus one of the two color files. Paths follow the Figma names (`bg/base` is `bg.base`). Tokens that other tokens point at but that aren't CSS variables (the palette, the shadow colours) are marked `"$extensions": { "net.swiftsolve.rove-tokens": { "css": false } }`. CSS-only expressions (`--focus-inset`, a `calc()`) aren't in them.
 
@@ -117,7 +117,7 @@ Every change starts in Figma. It ships once it's exported, built, committed and 
 4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited directly (undo it, and make the change in Figma).
 5. Commit the change.
 
-**Only what Figma can't hold** (font stacks, easing curves, the focus expressions) is edited here, in `src/code-tokens.json`; then check and commit. `src/figma/*.json` changes only by export, since the next export undoes a direct edit.
+**Only what Figma can't hold** (font stacks, the spring's CSS curve, the focus expressions) is edited here, in `src/code-tokens.json`; then check and commit. `src/figma/*.json` changes only by export, since the next export undoes a direct edit.
 
 ## Release
 
@@ -156,7 +156,7 @@ Changes collect on `main` and go out together, when Rove needs them.
 | `src/figma/variables.json` | Raw Figma export. Every variable with a Web code syntax becomes that CSS variable. |
 | `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
 | `src/figma/effect-styles.json` | Raw export of the `Shadow/*` effect styles: each layer's offset, blur, spread and the colour variable bound to it. Each style becomes a `--shadow-*` token. |
-| `src/code-tokens.json` | What Figma can't hold: font stacks for the font-family variables, easing curves and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
+| `src/code-tokens.json` | What Figma can't hold: font stacks for the font-family variables, `ease/spring`'s `linear()` curve (CSS has no spring) and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
 | `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the three exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), every local text style with the variables bound to it, and the `Shadow/*` effect styles. **Check** compares the file with the three files you choose from a checkout and lists every difference. It never writes to the file, and needs no network access. |
 | `scripts/figma/use-figma.mjs` | `npm run figma:export` and `figma:check`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
 
