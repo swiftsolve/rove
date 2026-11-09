@@ -209,28 +209,16 @@ const WIFI_GAP_PX = 3
 
 /**
  * Wi‑Fi's dashes, spaced so the first and last touch the line's two ends, as
- * the solid line does: the pixels left past the last whole dash go one each
- * into the gaps, spread along the line. A repeating 3 3 pattern stops at
- * whatever point the width leaves it, short of the router by up to 6px.
- * Whole pixels, from x 0, keep each dash crisp at 1x.
+ * the solid line does: the width left past the last whole dash is shared
+ * equally between the gaps. A plain 3 3 pattern stops wherever the width
+ * leaves it, up to 6px short of the router; giving some gaps a whole extra
+ * pixel instead shows as uneven spacing on a scaled display.
  */
 function wifiDashes(lineWidth: number | null): string {
   if (lineWidth == null) return `${WIFI_DASH_PX} ${WIFI_GAP_PX}`
-  const lineLength = Math.round(lineWidth)
-  const dashCount = Math.max(2, Math.floor((lineLength + WIFI_GAP_PX) / (WIFI_DASH_PX + WIFI_GAP_PX)))
-  const gapCount = dashCount - 1
-  const spareGapPixels = lineLength - dashCount * WIFI_DASH_PX - gapCount * WIFI_GAP_PX
-  const pattern: number[] = []
-  for (let gapIndex = 0; gapIndex < gapCount; gapIndex++) {
-    // Bresenham-style: this gap takes an extra pixel when the running share
-    // of the spare pixels crosses a whole number.
-    const sparePixelsSoFar = Math.floor(((gapIndex + 1) * spareGapPixels) / gapCount)
-    const sparePixelsBefore = Math.floor((gapIndex * spareGapPixels) / gapCount)
-    pattern.push(WIFI_DASH_PX, WIFI_GAP_PX + sparePixelsSoFar - sparePixelsBefore)
-  }
-  // The last dash, then a gap long enough that the pattern never repeats.
-  pattern.push(WIFI_DASH_PX, lineLength)
-  return pattern.join(' ')
+  const dashCount = Math.max(2, Math.floor((lineWidth + WIFI_GAP_PX) / (WIFI_DASH_PX + WIFI_GAP_PX)))
+  const gapWidth = (lineWidth - dashCount * WIFI_DASH_PX) / (dashCount - 1)
+  return `${WIFI_DASH_PX} ${gapWidth}`
 }
 
 function lineDashes(isFlowing: boolean, isDotted: boolean, lineWidth: number | null): string | undefined {
