@@ -1,8 +1,8 @@
 // One set of thresholds for the bars, their colour and the word, so a signal
 // with three green bars never reads "Fair".
 
-/** How a Wi‑Fi signal reads at a glance, which sets the meter's colour. */
-export type SignalLevel = 'good' | 'fair' | 'poor'
+/** How a Wi‑Fi signal reads at a glance, one per bar count, which sets the meter's colour. */
+export type SignalLevel = 'weak' | 'fair' | 'good' | 'excellent'
 
 /** How many of the meter's four bars a 0–100 signal strength fills. */
 export function signalBarCount(strength: number): number {
@@ -12,11 +12,10 @@ export function signalBarCount(strength: number): number {
   return 1
 }
 
+const SIGNAL_LEVELS: readonly SignalLevel[] = ['weak', 'fair', 'good', 'excellent']
+
 export function signalLevel(strength: number): SignalLevel {
-  const bars = signalBarCount(strength)
-  if (bars >= 3) return 'good'
-  if (bars === 2) return 'fair'
-  return 'poor'
+  return SIGNAL_LEVELS[signalBarCount(strength) - 1] ?? 'weak'
 }
 
 const SIGNAL_WORDS = ['Weak', 'Fair', 'Good', 'Excellent'] as const

@@ -15,12 +15,15 @@ describe('signalBarCount', () => {
 })
 
 describe('signalLevel', () => {
-  it('is good from 55, fair from 35 and poor below', () => {
-    expect(signalLevel(100)).toBe('good')
+  it('is excellent from 80, good from 55, fair from 35 and weak below', () => {
+    expect(signalLevel(100)).toBe('excellent')
+    expect(signalLevel(80)).toBe('excellent')
+    expect(signalLevel(79)).toBe('good')
     expect(signalLevel(55)).toBe('good')
     expect(signalLevel(54)).toBe('fair')
     expect(signalLevel(35)).toBe('fair')
-    expect(signalLevel(34)).toBe('poor')
+    expect(signalLevel(34)).toBe('weak')
+    expect(signalLevel(Number.NaN)).toBe('weak')
   })
 })
 

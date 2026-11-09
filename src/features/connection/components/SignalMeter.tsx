@@ -5,7 +5,12 @@ import { BarMeter } from '@/ui'
 
 const signalMeterVariants = cva('signal-meter flex items-center', {
   variants: {
-    level: { good: 'text-status-positive', fair: 'text-status-warning', poor: 'text-status-negative' },
+    level: {
+      excellent: 'text-status-positive',
+      good: 'text-status-good',
+      fair: 'text-status-warning',
+      weak: 'text-status-negative',
+    },
   },
 })
 
@@ -18,8 +23,10 @@ type SignalMeterProps = {
 }
 
 /**
- * The Wi‑Fi signal as four bars, coloured by how good it is. As tall as the
- * text's capitals, on the strip's meta line and in the Signal row.
+ * The Wi‑Fi signal as four bars, coloured by how good it is: a step of the
+ * rating scale per bar count, Excellent green, Good lime, Fair amber, Weak
+ * red. As tall as the text's capitals, on the strip's meta line and in the
+ * Signal row.
  */
 export function SignalMeter({ strength, shouldAnnounce = true, className }: SignalMeterProps) {
   const meterClassName = cx(signalMeterVariants({ level: signalLevel(strength) }), className)
