@@ -1,10 +1,12 @@
 import './colour.css'
 
+import effectStyles from '../src/figma/effect-styles.json'
 import figmaVariables from '../src/figma/variables.json'
 import backgrounds from './assets/backgrounds.png'
 import backgroundsDark from './assets/backgrounds-dark.png'
 import { Code, Group, Joined, Name, Page, Section, Table, TableRow } from './blocks'
 import {
+  code,
   colorDark,
   colorIn,
   cssVariableName,
@@ -13,6 +15,7 @@ import {
   palette,
   paletteColor,
   shadeOf,
+  shadowIn,
   targetFigmaName,
 } from './tokens'
 
@@ -110,8 +113,8 @@ const SECTIONS = [
   },
   {
     title: 'Shadow colours',
-    intro: 'The colours inside the shadow tokens, softer in Light. They aren’t CSS variables: use the shadow.',
-    names: ['shadow-color.panel-contact', 'shadow-color.panel-ambient', 'shadow-color.raised', 'shadow-color.popover'],
+    intro: 'Each shadow on a card, with its colours. Softer in Light mode.',
+    shadows: ['panel', 'raised', 'popover'],
   },
 ]
 
@@ -161,9 +164,68 @@ function ModeCell({ theme, path }) {
   )
 }
 
-// The shadow colours aren't CSS variables; each lives inside a shadow token, which is what code uses.
-// A layer's name comes off: shadow-color/panel-contact is in var(--shadow-panel).
-const shadowCodeFor = (path) => `var(--shadow-${path[1].split('-')[0]})`
+// A shadow in one theme: a card on the theme's backdrop, drawn with the
+// shadow, then each layer's colour. A shadow of two layers names them by the
+// end of their colour's name: shadow-color/panel-contact is Contact.
+function ShadowModeCell({ theme, name }) {
+  const layers = [code[`shadow-${name}`].$value].flat()
+  const layerLabel = (color) => {
+    const end = color.slice(1, -1).split('.')[1].split('-')[1]
+    return end[0].toUpperCase() + end.slice(1)
+  }
+  return (
+    <span className="mode">
+      <span
+        className="mode-frame mode-frame-shadow"
+        style={{ background: colorIn(theme, 'bg.base'), borderColor: colorIn(theme, 'border.default') }}
+      >
+        <span
+          className="mode-swatch"
+          style={{ background: colorIn(theme, 'bg.surface'), boxShadow: shadowIn(theme, `shadow-${name}`) }}
+        />
+      </span>
+      <span className="mode-value">
+        {layers.map(({ color }) => {
+          const shade = shadeOf(theme, color)
+          const alpha = Math.round((shade.alpha ?? 1) * 100)
+          const parts = [formatHex(shade), `${alpha}%`]
+          return (
+            <span key={color} className="mode-layer">
+              <Joined parts={layers.length > 1 ? [layerLabel(color), ...parts] : parts} />
+              <span className="mode-ref">→ {targetFigmaName(theme, color.slice(1, -1).split('.'))}</span>
+            </span>
+          )
+        })}
+      </span>
+    </span>
+  )
+}
+
+/** A shadow style's name and its Figma description, without the full stop. */
+function shadowStyle(name) {
+  const styleName = `Shadow/${name[0].toUpperCase()}${name.slice(1)}`
+  const style = effectStyles.styles.find((candidate) => candidate.name === styleName)
+  return { styleName, description: style.description.replace(/\.$/, '') }
+}
+
+// One row per shadow, as the Figma page has it.
+function ShadowTable({ shadows }) {
+  return (
+    <Table columns={COLUMNS}>
+      {shadows.map((name) => {
+        const { styleName, description } = shadowStyle(name)
+        return (
+          <TableRow key={name}>
+            <Name name={styleName} description={description} />
+            <ShadowModeCell theme="dark" name={name} />
+            <ShadowModeCell theme="light" name={name} />
+            <Code>var(--shadow-{name})</Code>
+          </TableRow>
+        )
+      })}
+    </Table>
+  )
+}
 
 function ColourTable({ names }) {
   const tokens = flatten(colorDark)
@@ -177,7 +239,7 @@ function ColourTable({ names }) {
             <Name name={path.join('/')} description={token?.$description} />
             <ModeCell theme="dark" path={path} />
             <ModeCell theme="light" path={path} />
-            <Code>{path[0] === 'shadow-color' ? shadowCodeFor(path) : `var(${cssVariableName(path)})`}</Code>
+            <Code>var({cssVariableName(path)})</Code>
           </TableRow>
         )
       })}
@@ -347,10 +409,10 @@ export const Colour = {
         </Section>
       </Group>
       <Group title="Semantic tokens" intro="What you use, each named for its job.">
-        {SECTIONS.map(({ title, intro, names, diagram }) => (
+        {SECTIONS.map(({ title, intro, names, shadows, diagram }) => (
           <Section key={title} title={title} intro={intro}>
             {diagram}
-            <ColourTable names={names} />
+            {shadows ? <ShadowTable shadows={shadows} /> : <ColourTable names={names} />}
           </Section>
         ))}
         <Section title="Icon tone" intro="Set the mode on the icon’s parent frame, so swapped icons keep the colour.">

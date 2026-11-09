@@ -49,6 +49,35 @@
   white-space: nowrap;
 }
 
+/* A shadow in one theme: a card on the theme's backdrop, centred in the
+   plate, as the Figma page's Shadow colours table draws it. */
+.mode-frame-shadow {
+  width: auto;
+  height: auto;
+  padding: 14px 16px;
+  overflow: hidden;
+}
+
+.mode-frame-shadow .mode-swatch {
+  flex: none;
+  width: 64px;
+  height: 36px;
+  border-radius: 7px;
+}
+
+/* A shadow layer's colour, then its palette shade. */
+.mode-layer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* One line per layer, as in Figma, like the shade under it. */
+.mode-layer .joined {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
 /* Palette: the Figma page's sizes and gaps. Its text is auto line height, so
    these are line-height: normal. */
 
