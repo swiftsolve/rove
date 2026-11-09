@@ -61,6 +61,7 @@ export function ConnectionView() {
       {!(isConnected && isFirstCheck) && (
         <PathCard
           diagnostics={isConnected ? diagnostics : null}
+          isCheckRunning={isRunning}
           isCheckFailing={error != null}
           finishedCheckCount={finishedCheckCount}
         />

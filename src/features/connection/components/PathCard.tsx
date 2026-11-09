@@ -5,7 +5,6 @@ import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useInternetStatus } from '@/app/hooks/useInternetStatus'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
-import { useGlintCount } from '@/features/connection/hooks/useGlintCount'
 import { GLINT_HIDDEN_POSITION, useLineGlint } from '@/features/connection/hooks/useLineGlint'
 import { type InternetLinkState, internetLinkState, lastTestOnNetwork } from '@/features/connection/utils/path'
 import { SignalMeter } from '@/features/current-network/components/SignalMeter'
@@ -65,10 +64,10 @@ const lineVariants = cva('h-px w-full overflow-visible', {
   },
 })
 
-// Every 15 seconds a soft highlight runs along the working lines, computer to
-// internet, to show the path is live. Only a green or testing line glints, so
-// a link that's down or unknown stays still.
-const GLINTING_TONES: ReadonlySet<LineTone> = new Set(['working', 'testing'])
+// When the card opens and when a check finishes, a soft highlight runs along
+// the working lines, computer to internet, to show the path answered. Only a
+// green line glints, so a link that's down, unknown or under test stays still.
+const GLINTING_TONES: ReadonlySet<LineTone> = new Set(['working'])
 
 // The line's own colour, paled toward the text colour: a highlight that
 // stays the line's hue, with no glow.
@@ -116,10 +115,13 @@ const INTERNET_LINE_TONES: Record<InternetLinkState, LineTone> = {
  */
 export function PathCard({
   diagnostics,
+  isCheckRunning = false,
   isCheckFailing = false,
   finishedCheckCount = 0,
 }: {
   diagnostics: NetworkDiagnostics | null
+  /** A check is under way: opening on one, the card glints when it finishes instead. */
+  isCheckRunning?: boolean
   /** The page's last check failed: the lines keep their colour but stop glinting. */
   isCheckFailing?: boolean
   /** The page's finished checks: each one runs a glint, so a Refresh shows the path answered. */
@@ -133,8 +135,11 @@ export function PathCard({
   // The app-wide heartbeat, the same verdict the title bar shows.
   const internetState = internetLinkState(useInternetStatus() ?? undefined, lastTest)
   const isConnected = info?.isConnected ?? false
-  // One clock for both lines, so the second line's glint follows the first's.
-  const glintCount = useGlintCount(finishedCheckCount)
+  // Opening with a check under way would glint twice in a moment: on open,
+  // then as the check lands. The check's glint alone shows the path answered.
+  const [shouldGlintOnOpen] = useState(!isCheckRunning)
+  // A speed test has its own flowing dashes, so the path holds still under it.
+  const isGlintEnabled = !isCheckFailing && !isTesting
 
   return (
     <Card>
@@ -147,8 +152,9 @@ export function PathCard({
             <PathLink
               tone={isConnected ? 'working' : 'down'}
               isDotted={info != null && isWifiNetwork(info)}
-              glintCount={glintCount}
-              isGlintEnabled={!isCheckFailing}
+              glintCount={finishedCheckCount}
+              shouldGlintOnOpen={shouldGlintOnOpen}
+              isGlintEnabled={isGlintEnabled}
               above={isConnected ? info && formatLinkSpeed(info) : <span className="text-negative">Not connected</span>}
               below={info && isWifiNetwork(info) ? <WifiSignal info={info} /> : null}
             />
@@ -157,8 +163,9 @@ export function PathCard({
             <PathLink
               tone={internetLineTone(isConnected, isTesting, internetState)}
               isFlowing={isConnected && isTesting}
-              glintCount={glintCount}
-              isGlintEnabled={!isCheckFailing}
+              glintCount={finishedCheckCount}
+              shouldGlintOnOpen={shouldGlintOnOpen}
+              isGlintEnabled={isGlintEnabled}
               glintDelayMs={GLINT_SECOND_LINE_DELAY_MS}
               captionKey={internetCaptionKey(isConnected, isTesting, internetState, lastTest)}
               above={isConnected ? internetLineCaption(isTesting, internetState, lastTest) : null}
@@ -193,6 +200,7 @@ function PathLink({
   isFlowing = false,
   captionKey = null,
   glintCount = 0,
+  shouldGlintOnOpen = false,
   isGlintEnabled = true,
   glintDelayMs = 0,
   above,
@@ -204,8 +212,10 @@ function PathLink({
   isFlowing?: boolean
   /** What the captions show; a change after mount fades them up. */
   captionKey?: string | null
-  /** Each rise runs one glint along a green or testing line. */
+  /** Each rise runs one glint along a green line. */
   glintCount?: number
+  /** A green line glints as the card opens, too. */
+  shouldGlintOnOpen?: boolean
   isGlintEnabled?: boolean
   /** How long the glint waits, so the second line's follows the first's. */
   glintDelayMs?: number
@@ -234,7 +244,13 @@ function PathLink({
             <LineStroke isFlowing={isFlowing} isDotted={isDotted} lineWidth={lineWidth} />
           </svg>
           {GLINTING_TONES.has(tone) && (
-            <GlintLine glintCount={glintCount} delayMs={glintDelayMs} isEnabled={isGlintEnabled}>
+            <GlintLine
+              glintCount={glintCount}
+              delayMs={glintDelayMs}
+              // A line that turned green on its own waits for the next check.
+              shouldGlintOnMount={shouldGlintOnOpen && toneChanges === 0}
+              isEnabled={isGlintEnabled}
+            >
               <LineStroke isFlowing={isFlowing} isDotted={isDotted} lineWidth={lineWidth} />
             </GlintLine>
           )}
@@ -283,16 +299,18 @@ function LineStroke({
 function GlintLine({
   glintCount,
   delayMs,
+  shouldGlintOnMount,
   isEnabled,
   children,
 }: {
   glintCount: number
   delayMs: number
+  shouldGlintOnMount: boolean
   isEnabled: boolean
   children: ReactNode
 }) {
   const [glintLine, setGlintLine] = useState<SVGSVGElement | null>(null)
-  useLineGlint({ glintLine, glintCount, delayMs, isEnabled })
+  useLineGlint({ glintLine, glintCount, delayMs, shouldGlintOnMount, isEnabled })
   return (
     <svg ref={setGlintLine} className="absolute inset-0 h-px w-full overflow-visible" style={GLINT_STYLE}>
       {children}
