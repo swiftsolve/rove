@@ -1,10 +1,16 @@
+import { cx } from 'class-variance-authority'
+
 import type { Transfer } from '@/features/apps/utils/transfer'
 import { cn, DirectionIcon, MetricValue, type SpeedSeries } from '@/ui'
 import { formatBytes } from '@/utils/format'
 
 const FIGURE = 'inline-flex items-center gap-[5px] type-caption text-tertiary'
-// Fixed width, so the down and up columns line up across rows.
-const FIGURE_VALUE = 'min-w-[46px] text-right'
+// The widest a figure can read: `formatBytes` shows three significant digits,
+// so at most three digits, a point and a two-letter unit. The value takes this
+// width and starts by its arrow, so every arrow sits as close to its number,
+// and the down and up columns line up across rows with no more room than that.
+const WIDEST_FIGURE = '88.8 MB'
+const FIGURE_CELL = 'col-start-1 row-start-1'
 
 const SERIES_LABEL: Record<SpeedSeries, string> = { down: 'Down', up: 'Up' }
 
@@ -21,7 +27,12 @@ function TransferFigure({
     <span className={FIGURE}>
       <DirectionIcon series={series} size={11} />
       {!isDecorative && <span className="sr-only">{SERIES_LABEL[series]}</span>}
-      <MetricValue value={bytes} className={FIGURE_VALUE} format={formatBytes} />
+      <span className="grid">
+        <MetricValue value={bytes} className={FIGURE_CELL} format={formatBytes} />
+        <span className={cx('invisible num', FIGURE_CELL)} aria-hidden>
+          {WIDEST_FIGURE}
+        </span>
+      </span>
     </span>
   )
 }
