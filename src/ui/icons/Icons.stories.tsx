@@ -61,7 +61,7 @@ export const Catalogue: Story = {
   // Centred, the list shrinks to one column; padded, it fills the width.
   parameters: { layout: 'padded' },
   render: ({ size }) => (
-    <div className="gap-24 flex flex-col">
+    <div className="flex flex-col gap-20">
       {GROUPS.map(({ title, icons }) => (
         <section key={title} className="flex flex-col gap-12">
           <h2 className="type-heading text-primary">{title}</h2>
