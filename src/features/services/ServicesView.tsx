@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
 import { useNavigation } from '@/app/hooks/useNavigation'
@@ -99,6 +99,9 @@ export function ServicesView() {
 
   // Until the stored list loads, show the probed services so the page isn't blank.
   const listedServices: ServiceDefinition[] = services ?? (reachability ?? []).map(({ name, host }) => ({ name, host }))
+  // Neither has landed yet. The stored list is a quick local read, so the list
+  // area waits empty for it, with no spinner to flicker.
+  const isListLoading = services === null && listedServices.length === 0 && !error
 
   // Persist a confirmed add or edit. Re-adding the same host updates its label;
   // an edit keeps the row's place in the list, even when it changed the host.
@@ -112,6 +115,35 @@ export function ServicesView() {
 
   const removeService = (host: string): void => {
     void remove(host).then(refreshServices)
+  }
+
+  let serviceList: ReactNode = null
+  if (listedServices.length > 0) {
+    serviceList = (
+      // Rows are separated by the same hairline the data cards use, running edge
+      // to edge: the rows, not the list, carry the horizontal padding.
+      <CardList label="Tracked services">
+        {listedServices.map((service) => (
+          <ServiceRow
+            key={service.host}
+            service={service}
+            probe={probeByHost.get(service.host)}
+            seededLatencyMs={seededLatency.get(service.host)}
+            samples={latencyHistory[service.host] ?? []}
+            isInternetUnreachable={isInternetUnreachable}
+            menu={
+              <RowMenu
+                service={service}
+                onEdit={() => openDialog({ mode: 'edit', service })}
+                onRemove={() => removeService(service.host)}
+              />
+            }
+          />
+        ))}
+      </CardList>
+    )
+  } else if (!isListLoading) {
+    serviceList = <EmptyState title="No services yet" description="Add a site or server to watch its uptime." />
   }
 
   return (
@@ -155,31 +187,7 @@ export function ServicesView() {
         )}
       </DialogRoot>
 
-      {listedServices.length > 0 ? (
-        // Rows are separated by the same hairline the data cards use, running edge
-        // to edge: the rows, not the list, carry the horizontal padding.
-        <CardList label="Tracked services">
-          {listedServices.map((service) => (
-            <ServiceRow
-              key={service.host}
-              service={service}
-              probe={probeByHost.get(service.host)}
-              seededLatencyMs={seededLatency.get(service.host)}
-              samples={latencyHistory[service.host] ?? []}
-              isInternetUnreachable={isInternetUnreachable}
-              menu={
-                <RowMenu
-                  service={service}
-                  onEdit={() => openDialog({ mode: 'edit', service })}
-                  onRemove={() => removeService(service.host)}
-                />
-              }
-            />
-          ))}
-        </CardList>
-      ) : (
-        <EmptyState title="No services yet" description="Add a site or server to watch its uptime." />
-      )}
+      {serviceList}
     </div>
   )
 }
