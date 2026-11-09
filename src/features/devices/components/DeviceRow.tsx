@@ -98,10 +98,11 @@ function KindIcon({ kind }: { kind: LanDeviceKind }) {
 }
 
 /**
- * The line under a device's name. The gateway shows its green "Gateway" role
- * beside the resolved product (or a bare "Gateway" when nothing resolved);
- * other devices show their kind/vendor/OS/model and, when offline, how long
- * ago they were last seen.
+ * The line under a device's name. The gateway shows its "Gateway" role beside
+ * the resolved product (or a bare "Gateway" when nothing resolved), a shade
+ * brighter than the meta but not green: it's a role, not a status. Other
+ * devices show their kind/vendor/OS/model and, when offline, how long ago they
+ * were last seen.
  */
 function DeviceMetaLine({
   device,
@@ -118,7 +119,7 @@ function DeviceMetaLine({
       <div className={DEVICE_META}>
         <InlineMeta
           items={[
-            <span key="role" className="text-positive">
+            <span key="role" className="text-secondary">
               Gateway
             </span>,
             ...(product ? [product] : []),
