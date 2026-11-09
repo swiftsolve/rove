@@ -92,6 +92,21 @@ pub async fn default_interface() -> Option<String> {
     trimmed_non_empty(&out)
 }
 
+/// The current network's identity, `interface|ip`, built like the UI's
+/// `useNetworkKey`, so a cached result can be matched to the network it was
+/// measured on. None while there's no default route.
+pub async fn network_key() -> Option<String> {
+    let interface = default_interface().await?;
+    let (ip, _) = crate::interfaces::address_of(&interface).await;
+    Some(format_network_key(&interface, ip.as_deref()))
+}
+
+/// `interface|ip`, with an empty IP when the interface has none, as the UI
+/// writes it.
+pub fn format_network_key(interface: &str, ip: Option<&str>) -> String {
+    format!("{interface}|{}", ip.unwrap_or(""))
+}
+
 pub async fn dns_servers() -> Vec<String> {
     if cfg!(target_os = "windows") {
         return platform::windows::dns_servers().await;
@@ -208,5 +223,16 @@ pub async fn network_info() -> NetworkInfo {
         mac_address: mac,
         dns,
         details,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn network_key_matches_the_ui_format() {
+        assert_eq!(format_network_key("wlan0", Some("192.168.1.20")), "wlan0|192.168.1.20");
+        assert_eq!(format_network_key("wlan0", None), "wlan0|");
     }
 }

@@ -1,3 +1,4 @@
+import { cx } from 'class-variance-authority'
 import { type ReactNode, useMemo, useState } from 'react'
 
 import { useConnectionStatus } from '@/app/hooks/useConnectionStatus'
@@ -60,7 +61,7 @@ function AddServiceButton({ isOffline, onClick }: { isOffline: boolean; onClick:
  */
 export function ServicesView() {
   const { navigate } = useNavigation()
-  const { report, reprobe } = useServiceReachability()
+  const { report, isReadingLastReport, reprobe } = useServiceReachability()
   const reachability = report?.services
   // Measured in the same batch as `reachability`. While it isn't online, a failed
   // probe means we couldn't check, so those rows read as unknown, not "Down".
@@ -78,8 +79,9 @@ export function ServicesView() {
 
   const isInternetUnreachable = isInternetDown(internet)
   const isOfflineNow = isInternetDown(liveInternet)
-  // Null until the first probes land, so the timeline link stands alone until then.
-  const tally = serviceTally(reachability, liveInternet)
+  // Until the first probes land, "Checking…" holds the tally's place, so the
+  // timeline link doesn't jump right when the counts arrive.
+  const tally = serviceTally(reachability, liveInternet) ?? <span role="status">Checking…</span>
   // The dialog's content outlives its closing, so it can play its leave animation.
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -155,14 +157,15 @@ export function ServicesView() {
         // line when the two can't share one, so a narrow window breaks between
         // them rather than inside either.
         description={
-          <span className="inline-flex flex-wrap items-center gap-x-6 gap-y-4">
-            {/* Fades in when the first checks land, ahead of the link. */}
-            {tally && (
-              <span className="inline-flex animate-fade-in items-center gap-x-6">
-                {tally}
-                <DotSeparator />
-              </span>
-            )}
+          // Hidden, keeping its height, for the moment the backend's last
+          // results take to read, so "Checking…" doesn't flash before them.
+          <span
+            className={cx('inline-flex flex-wrap items-center gap-x-6 gap-y-4', isReadingLastReport && 'invisible')}
+          >
+            <span className="inline-flex items-center gap-x-6">
+              {tally}
+              <DotSeparator />
+            </span>
             <Link icon={EventsIcon} onClick={openTimeline}>
               View timeline
             </Link>

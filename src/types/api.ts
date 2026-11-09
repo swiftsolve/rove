@@ -61,6 +61,12 @@ export type NetworkAPI = {
    */
   runServices(): Promise<ServicesReport>
   /**
+   * The last services probe batch, the heartbeat's or the view's, or null when
+   * none was measured on the network with this key (`useNetworkKey`). A cached
+   * read that never probes.
+   */
+  getLastServicesReport(networkKey: string): Promise<ServicesReport | null>
+  /**
    * The background heartbeat's last internet verdict, or null before its first
    * probe. A cached read that never probes.
    */

@@ -11,8 +11,13 @@ import type { NetworkAPI, ServicesReport } from '@/types'
 const SERVICE_POLL_INTERVAL_MS = 15_000
 
 type UseServiceReachabilityResult = {
-  /** The latest probe set, or null before the first read lands. */
+  /**
+   * The latest probe set: the backend's last batch until this view's own probe
+   * lands, or null when there's neither.
+   */
   report: ServicesReport | null
+  /** The backend's last batch is still being read, so a null `report` may not stay null. */
+  isReadingLastReport: boolean
   error: string | null
   /** Re-probe now, ahead of the poll, so a just-changed row's latency lands at once. */
   reprobe: () => Promise<void>
@@ -52,6 +57,16 @@ export function useServiceReachability(): UseServiceReachabilityResult {
     pollIntervalMs: SERVICE_POLL_INTERVAL_MS,
   })
 
+  // The backend's last batch for this network, the heartbeat's or an earlier
+  // view's, so a first open shows the rows' numbers and the tally at once
+  // instead of waiting out the probe. Never recorded as latency: it was already.
+  const { data: lastReport, isBusy: isLastReportBusy } = useBackendQuery({
+    queryKey: ['services', 'last-report', networkKey],
+    queryFn: api && networkKey ? () => api.getLastServicesReport(networkKey) : undefined,
+    isEnabled,
+    errorMessage: 'Service check failed',
+  })
+
   // Re-probe when the live internet status flips, so the rows catch up with the
   // title bar instead of showing the last batch's verdict. The first verdict
   // after launch isn't a flip: the tab's own fetch covers it.
@@ -62,5 +77,6 @@ export function useServiceReachability(): UseServiceReachabilityResult {
     if (isEnabled && previous !== null && previous !== internet) void reprobe()
   }, [internet, isEnabled, reprobe])
 
-  return { report: data ?? null, error, reprobe }
+  const report = data ?? lastReport ?? null
+  return { report, isReadingLastReport: report === null && isLastReportBusy, error, reprobe }
 }

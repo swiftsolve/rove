@@ -10,7 +10,9 @@ mod tray;
 use rove_core::apps::hosts::HostUsageTracker;
 use rove_core::apps::AppUsageTracker;
 use rove_core::diagnostics::InternetStatus;
+use rove_core::services::{LastServicesReport, ServicesReport};
 use rove_core::usage::UsageTracker;
+use rove_core::utils::net::lock;
 use scanner::DeviceScanner;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -50,6 +52,9 @@ struct AppState {
     /// The heartbeat's latest internet status, or None before its first probe,
     /// so `get_internet_status` answers without probing.
     internet: Mutex<Option<InternetStatus>>,
+    /// The latest services probe batch, the heartbeat's or the view's, so the
+    /// Services view opens on it instead of waiting out a fresh probe.
+    last_services_report: Mutex<Option<LastServicesReport>>,
 }
 
 pub fn run() {
@@ -76,6 +81,7 @@ pub fn run() {
             commands::run_diagnostics,
             commands::run_diagnostics_live,
             commands::run_services,
+            commands::get_last_services_report,
             commands::get_service_history,
             commands::clear_service_history,
             commands::get_internet_status,
@@ -125,6 +131,15 @@ impl AppState {
             is_throughput_subscribed: AtomicBool::new(false),
             has_tray: AtomicBool::new(false),
             internet: Mutex::new(None),
+            last_services_report: Mutex::new(None),
+        }
+    }
+
+    /// Keep a probe batch for `get_last_services_report`. A batch with no
+    /// network to tie it to isn't kept, so it can't show on the next network.
+    fn remember_services_report(&self, network_key: Option<String>, report: &ServicesReport) {
+        if let Some(network_key) = network_key {
+            *lock(&self.last_services_report) = Some(LastServicesReport::new(network_key, report.clone()));
         }
     }
 }

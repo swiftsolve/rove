@@ -1263,6 +1263,11 @@ function createMockNetworkApi(): NetworkAPI {
         })),
       }
     },
+    // As if the heartbeat had already probed, so the view opens on numbers.
+    getLastServicesReport: async (): Promise<ServicesReport> => {
+      await delay(20)
+      return { internet: 'online', services: mockServiceReachability() }
+    },
     testService: async (host: string) => {
       // The same verdict as the services list, so a host that shows Down there
       // also fails the test-before-add check.

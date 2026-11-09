@@ -8,6 +8,7 @@ use rove_core::{
         hosts::{HostUsageSummary, TrafficUsageSummary},
         AppUsageSummary,
     },
+    connection::network_key,
     connection::NetworkInfo,
     devices::LanDeviceScan,
     diagnostics::{InternetStatus, LiveDiagnostics, NetworkDiagnostics},
@@ -111,9 +112,13 @@ pub async fn run_diagnostics_live(store: tauri::State<'_, Arc<Store>>) -> Result
 /// Probe the user's service list, with the internet verdict from the same batch
 /// (see `ServicesReport`).
 #[tauri::command]
-pub async fn run_services(store: tauri::State<'_, Arc<Store>>) -> Result<ServicesReport, String> {
+pub async fn run_services(
+    store: tauri::State<'_, Arc<Store>>,
+    state: tauri::State<'_, AppState>,
+) -> Result<ServicesReport, String> {
     let services = store.services().unwrap_or_else(|_| rove_core::services::default_service_list());
-    let report = rove_core::services::run_services(&services).await;
+    let (report, network_key) = tokio::join!(rove_core::services::run_services(&services), network_key());
+    state.remember_services_report(network_key, &report);
     let now = rove_core::utils::net::now_ms() as i64;
     let _ = store.record_internet(report.internet, now);
     // The heartbeat keeps the log complete but ticks only each minute; folding
@@ -122,6 +127,14 @@ pub async fn run_services(store: tauri::State<'_, Arc<Store>>) -> Result<Service
     // the two writers can't double-log one.
     let _ = store.record_services(&report, now);
     Ok(report)
+}
+
+/// The last services probe batch, the heartbeat's or the view's, when it was
+/// measured on `network_key`, so the Services view opens on it while its own
+/// probe runs. A cached read that never probes, so it's sync.
+#[tauri::command]
+pub fn get_last_services_report(state: tauri::State<'_, AppState>, network_key: String) -> Option<ServicesReport> {
+    lock(&state.last_services_report).as_ref().and_then(|last| last.report_on(&network_key)).cloned()
 }
 
 /// The services outage timeline, newest first. The always-on heartbeat records

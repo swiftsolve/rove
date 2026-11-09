@@ -251,7 +251,9 @@ pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
                 store.services().unwrap_or_else(|_| rove_core::services::default_service_list())
             };
             if !services.is_empty() {
-                let report = rove_core::services::run_services(&services).await;
+                let (report, network_key) =
+                    tokio::join!(rove_core::services::run_services(&services), rove_core::connection::network_key());
+                handle.state::<AppState>().remember_services_report(network_key, &report);
                 let now = rove_core::utils::net::now_ms() as i64;
                 let store = handle.state::<Arc<Store>>();
                 match store.record_services(&report, now) {

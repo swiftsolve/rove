@@ -73,6 +73,8 @@ const tauriNetworkApi: NetworkAPI = {
   runDiagnostics: () => invokeCommand<NetworkDiagnostics>('run_diagnostics'),
   runDiagnosticsLive: () => invokeCommand<LiveDiagnostics>('run_diagnostics_live'),
   runServices: () => invokeCommand<ServicesReport>('run_services'),
+  getLastServicesReport: (networkKey: string) =>
+    invokeCommand<ServicesReport | null>('get_last_services_report', { networkKey }),
   getInternetStatus: () => invokeCommand<InternetStatus | null>('get_internet_status'),
   testService: (host: string) => invokeCommand<number | null>('test_service', { host }),
   listServices: () => invokeCommand<ServiceDefinition[]>('list_services'),

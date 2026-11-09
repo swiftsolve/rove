@@ -5,6 +5,26 @@ use crate::utils::tls::handshake_latency;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
+/// The latest probe batch and the network it was measured on, so the Services
+/// view can open on it while its own probe runs, and never on another
+/// network's results.
+#[derive(Debug, Clone)]
+pub struct LastServicesReport {
+    network_key: String,
+    report: ServicesReport,
+}
+
+impl LastServicesReport {
+    pub fn new(network_key: String, report: ServicesReport) -> Self {
+        Self { network_key, report }
+    }
+
+    /// The report, if it was measured on the network with this key.
+    pub fn report_on(&self, network_key: &str) -> Option<&ServicesReport> {
+        (self.network_key == network_key).then_some(&self.report)
+    }
+}
+
 /// One service in the user's reachability list: the stored definition, without a
 /// measurement. Mirrors `ServiceDefinition` in `src/types/diagnostics.ts`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -169,4 +189,20 @@ pub async fn run_services(service_list: &[ServiceDef]) -> ServicesReport {
     let gateway = crate::connection::default_gateway().await;
     let (internet, services) = tokio::join!(diagnostics::internet_reachable(), service_reachability(service_list));
     ServicesReport { internet: diagnostics::classify_internet(internet, gateway.as_deref()), services }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn report() -> ServicesReport {
+        ServicesReport { internet: InternetStatus::Online, services: vec![] }
+    }
+
+    #[test]
+    fn last_report_answers_only_for_its_own_network() {
+        let last = LastServicesReport::new("wlan0|192.168.1.20".into(), report());
+        assert!(last.report_on("wlan0|192.168.1.20").is_some());
+        assert!(last.report_on("eth0|10.0.0.5").is_none());
+    }
 }
