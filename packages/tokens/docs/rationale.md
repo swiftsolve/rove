@@ -4,10 +4,25 @@ The reasons behind the token values. The values themselves live in Figma (and in
 
 ## Structure
 
-- **Every colour lives once, in the Palette.** Color tokens point at Palette shades, and each shade is named by hue and darkness: `hue/N` has OKLCH lightness of about 100 − N/10, so `blue/450` is 55 (higher is darker).
+- **Every colour lives once, in the Palette.** Color tokens point at Palette shades, and each shade is named by hue and darkness.
+- **Darkness = number ÷ 10.** `blue/450` is 45% dark; higher is darker.
+  - In OKLCH that's about 55% lightness (100 − darkness).
 - **Neutral is one even ramp.** Neutrals sit on 5-steps of OKLCH lightness, and the number says which: `neutral/N` has lightness 100 − N/10, so `neutral/850` is 15, white is `neutral/0` and black would be `neutral/1000`. The one exception is inset, which takes the half step between base and surface (`neutral/25`, `neutral/825`). They share one hue and one chroma curve, so the ramp reads as one family. The chroma stays under 0.007, so the grays read neutral with a hint of cool, not blue; dark shades show a tint most, so they carry the least. Only the steps a token uses are in the Palette. The hues keep their own shades, each tuned for its job.
-- **A see-through shade sits with its base shade.** It takes the base's name plus `-a` and its opacity: `neutral/850-a10` is `neutral/850` at 10%, `blue/340-a14` is `blue/340` at 14%. Black only appears see-through (`neutral/1000-a22`), for dark-mode shadows and the scrim.
-- **Solid shades are layers; see-through shades sit on one.** Backgrounds and text are solid, so they look the same whatever is behind them. Overlays, borders, shadows, the scrim and the accent's tints are see-through, so one value reads right on base, surface and popover alike; a solid grey would match only one of them. Light mode tints with `neutral/850` and Dark with white (`neutral/0`), which is why the Palette's second neutral row holds both.
+- **`-a` adds opacity.** `neutral/850-a10` is `neutral/850` at 10%.
+  - A see-through shade keeps its base's name, so it sits with its base shade: `blue/340-a14` is `blue/340` at 14%.
+  - Black only appears see-through (`neutral/1000-a22`), for dark-mode shadows and the scrim.
+- **Solid shades are what layers are painted with.**
+  - Backgrounds (base, surface, inset, popover) and text.
+  - A solid shade covers what's behind it, so it looks the same wherever it is.
+- **See-through shades are drawn on top of a layer.**
+  - Overlays, borders, shadows, the scrim and the accent's tints.
+  - They have no colour of their own: they make whatever is underneath a little lighter or darker.
+- **See-through, so one value works on every layer.**
+  - Take a border in Dark. A solid grey tuned to show on base all but disappears on a popover, which is nearly the same grey, so each layer would need its own border.
+  - `border/default` is white at 7%, always a touch lighter than what it sits on, so it reads the same on base, surface and popover.
+- **Light darkens, Dark lightens.**
+  - Light mode's overlays are `neutral/850` at low opacity; Dark's are white (`neutral/0`).
+  - That's why the Palette's second neutral row holds both.
 - **CSS names follow Figma names.** `bg/base` is `--bg-base`, `border/default` is `--border-default`; the build refuses a code syntax that doesn't match.
 - **Typography comes from the text styles, not variables.** Line heights and letter spacings live only in the styles; copying them into variables would give the type scale two sources that could drift apart.
 
