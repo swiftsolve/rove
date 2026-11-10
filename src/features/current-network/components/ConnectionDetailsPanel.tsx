@@ -7,30 +7,25 @@ import { formatLinkSpeed } from '@/features/current-network/utils/connection-dis
 import { signalWord } from '@/features/current-network/utils/wifi-signal'
 import type { EthernetNetworkInfo, NetworkInfo, WifiNetworkInfo } from '@/types'
 import { isEthernetNetwork, isWifiNetwork } from '@/types'
-import { DataList, DataListStack, DataRow, InlineMeta, NoValue } from '@/ui'
-import { formatBand, formatDisplayValue, formatDuplex, formatWifiStandard } from '@/utils/format'
+import { DataList, DataRow, InlineMeta, NoValue } from '@/ui'
+import { formatBand, formatConnectionType, formatDisplayValue, formatDuplex, formatWifiStandard } from '@/utils/format'
 
 type ConnectionDetailsPanelProps = {
   info: NetworkInfo
-  publicIp: string | null
-  isPublicIpLoading: boolean
 }
 
 /**
- * The expanded details, grouped by topic: the link itself, then the addresses
- * from the device outward.
+ * The expanded details of the link itself. Its addresses are elsewhere: the
+ * IP address on Interfaces, the gateway and public IP on Connection.
  */
-export function ConnectionDetailsPanel({ info, publicIp, isPublicIpLoading }: ConnectionDetailsPanelProps) {
+export function ConnectionDetailsPanel({ info }: ConnectionDetailsPanelProps) {
   return (
     // Keeps its padding when closed, so the rows hold their inset through the
-    // height animation; the wrapper does the clipping. 12px, the air around
-    // each divider, so the edges match the gaps between groups.
-    <div className="bg-inset py-12">
-      <DataListStack>
-        {isWifiNetwork(info) && <WifiLinkRows info={info} />}
-        {isEthernetNetwork(info) && <EthernetLinkRows info={info} />}
-        <AddressRows info={info} publicIp={publicIp} isPublicIpLoading={isPublicIpLoading} />
-      </DataListStack>
+    // height animation; the wrapper does the clipping. The sides take the
+    // card's own inset, so the rows line up with the strip above.
+    <div className="bg-inset px-(--card-body-padding) py-12">
+      {isWifiNetwork(info) && <WifiLinkRows info={info} />}
+      {isEthernetNetwork(info) && <EthernetLinkRows info={info} />}
     </div>
   )
 }
@@ -41,6 +36,8 @@ function WifiLinkRows({ info }: { info: WifiNetworkInfo }) {
     <DataList density="compact">
       {/* The OS can withhold the name (e.g. without location permission). */}
       <DataRow label="Network name" value={info.ssid || null} />
+      {/* Which kind of link this is, as the title bar says only whether you're online. */}
+      <DataRow label="Connection" value={formatConnectionType(info.connectionType)} />
       <DataRow label="Signal" align="center">
         {/* Block flex: inline-flex adds strut height that misaligns the bars. With
             no text, the bars sit on the baseline and at 9px reach cap height. */}
@@ -74,20 +71,9 @@ function EthernetLinkRows({ info }: { info: EthernetNetworkInfo }) {
       {/* First, like Wi-Fi's network name: what this link is. The interface name
           and MAC are on the Interfaces screen. */}
       <DataRow label="Adapter">{formatDisplayValue(info.product) ?? <NoValue />}</DataRow>
+      <DataRow label="Connection" value={formatConnectionType(info.connectionType)} />
       {linkSpeed && <DataRow label="Link speed" value={linkSpeed} />}
       <DataRow label="Duplex">{formatDisplayValue(formatDuplex(info.duplex)) ?? <NoValue />}</DataRow>
-    </DataList>
-  )
-}
-
-type AddressRowsProps = Pick<ConnectionDetailsPanelProps, 'info' | 'publicIp' | 'isPublicIpLoading'>
-
-function AddressRows({ info, publicIp, isPublicIpLoading }: AddressRowsProps) {
-  return (
-    <DataList density="compact">
-      <DataRow label="IP address">{formatDisplayValue(info.ipAddress) ?? <NoValue />}</DataRow>
-      <DataRow label="Gateway">{formatDisplayValue(info.gateway) ?? <NoValue />}</DataRow>
-      <DataRow label="Public IP" value={publicIp ?? (isPublicIpLoading ? 'Checking…' : null)} />
     </DataList>
   )
 }

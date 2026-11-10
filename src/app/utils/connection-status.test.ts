@@ -35,7 +35,7 @@ describe('describeConnectionStatus', () => {
   })
 
   it('names the link once it reaches the internet, and before the first check lands', () => {
-    expect(describeConnectionStatus(WIFI, 'online')).toMatchObject({ tone: 'positive', label: 'Wi‑Fi' })
+    expect(describeConnectionStatus(WIFI, 'online')).toMatchObject({ tone: 'positive', label: 'Online' })
     expect(describeConnectionStatus(WIFI, null)).toMatchObject({ tone: 'positive', internet: 'online' })
   })
 })

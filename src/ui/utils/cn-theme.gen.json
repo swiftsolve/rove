@@ -128,6 +128,7 @@
       "overlay-out",
       "dialog-out",
       "fade-in",
+      "status-flip",
       "menu-in",
       "pulse-calm",
       "pulse-live",

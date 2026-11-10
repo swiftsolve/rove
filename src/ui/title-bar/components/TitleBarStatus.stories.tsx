@@ -5,7 +5,7 @@ import { TitleBarStatus } from './TitleBarStatus'
 const meta = {
   title: 'App frame/TitleBar/TitleBarStatus',
   component: TitleBarStatus,
-  args: { tone: 'positive', children: 'Wi‑Fi' },
+  args: { tone: 'positive', children: 'Online' },
   argTypes: { tone: { control: 'inline-radio', options: ['positive', 'negative', 'neutral'] } },
 } satisfies Meta<typeof TitleBarStatus>
 

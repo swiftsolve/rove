@@ -27,7 +27,7 @@ const meta = {
   title: 'App frame/TitleBar/TitleBar',
   component: TitleBar,
   subcomponents: { TitleBarStatus, WindowButton },
-  args: { brand, status: <TitleBarStatus tone="positive">Wi‑Fi</TitleBarStatus>, controls },
+  args: { brand, status: <TitleBarStatus tone="positive">Online</TitleBarStatus>, controls },
   argTypes: {
     brand: { control: false },
     status: { control: false },
@@ -106,7 +106,7 @@ export const AllStates: Story = {
   },
   render: () => (
     <div className="flex flex-col">
-      <TitleBar brand={brand} status={<TitleBarStatus tone="positive">Wi‑Fi</TitleBarStatus>} controls={controls} />
+      <TitleBar brand={brand} status={<TitleBarStatus tone="positive">Online</TitleBarStatus>} controls={controls} />
       <TitleBar
         brand={brand}
         status={<TitleBarStatus tone="negative">No internet</TitleBarStatus>}

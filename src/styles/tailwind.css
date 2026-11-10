@@ -49,6 +49,8 @@
   --animate-dialog-out: dialog-out var(--duration-fast) var(--ease-in-out) forwards;
   /* A view, a header subtitle or a status message fades in. */
   --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
+  /* The title bar's status words rise into place as they change. */
+  --animate-status-flip: status-flip var(--duration-normal) var(--ease-out);
   /* A dropdown menu drops into place. */
   --animate-menu-in: menu-in var(--duration-fast) var(--ease-out);
   /* StatusDot's pulses: a slow breath for a steady state, a throb for work

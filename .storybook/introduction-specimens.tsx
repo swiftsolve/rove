@@ -104,19 +104,19 @@ const TABS: { label: string; icon: IconComponent }[] = [
 
 // The title bar's verdicts, in the words of src/app/utils/connection-status.ts.
 const CONNECTING = { tone: 'neutral', label: 'Connecting…' } as const
-const WIFI = { tone: 'positive', label: 'Wi‑Fi' } as const
+const ONLINE = { tone: 'positive', label: 'Online' } as const
 const NO_INTERNET = { tone: 'negative', label: 'No internet' } as const
 
 // One change a beat, the rail's tab or the title bar's status, never both, and back to the start.
 const FRAME_BEATS = [
   { tab: 0, verdict: CONNECTING },
-  { tab: 0, verdict: WIFI },
-  { tab: 1, verdict: WIFI },
-  { tab: 2, verdict: WIFI },
+  { tab: 0, verdict: ONLINE },
+  { tab: 1, verdict: ONLINE },
+  { tab: 2, verdict: ONLINE },
   { tab: 2, verdict: NO_INTERNET },
-  { tab: 2, verdict: WIFI },
-  { tab: 3, verdict: WIFI },
-  { tab: 0, verdict: WIFI },
+  { tab: 2, verdict: ONLINE },
+  { tab: 3, verdict: ONLINE },
+  { tab: 0, verdict: ONLINE },
 ]
 
 /**
@@ -454,7 +454,7 @@ function ContainersScene(): JSX.Element {
       <Collapsible isOpen={isExpanded} onOpenChange={noop} hasFocusFrame className="rounded-[inherit]">
         <ConnectionStrip info={NETWORK} titleId={titleId} isExpanded={isExpanded} />
         <CollapsiblePanel>
-          <ConnectionDetailsPanel info={NETWORK} publicIp="203.0.113.57" isPublicIpLoading={false} />
+          <ConnectionDetailsPanel info={NETWORK} />
         </CollapsiblePanel>
       </Collapsible>
     </Card>

@@ -2464,9 +2464,9 @@
       },
       "props": {
         "children": {
-          "type": "ReactNode",
+          "type": "string",
           "isRequired": true,
-          "description": "The status in words: \"Connected\"."
+          "description": "The status in a word or two: \"Online\", \"No internet\", \"Offline\", \"Connecting…\". It rises into place each time it changes."
         },
         "tone": {
           "values": [

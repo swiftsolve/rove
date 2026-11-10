@@ -312,6 +312,14 @@
     }
   }
 
+  /* TitleBarStatus's words, rising a few pixels into place as they change. */
+  @keyframes status-flip {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
   @keyframes dialog-in {
     from {
       opacity: 0;
