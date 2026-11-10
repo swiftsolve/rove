@@ -25,6 +25,8 @@ export type NetworkDiagnostics = {
   gatewayPing: PingStats | null
   /** Public-internet reachability, so Services can tell an outage apart from this machine being offline. */
   internet: InternetStatus
+  /** This computer's make from its own adapter's MAC OUI, or null when unknown. */
+  selfVendor: string | null
   /** Router make from the gateway's MAC OUI, or null when unknown. */
   gatewayVendor: string | null
   /** Router model from the gateway's SNMP sysDescr (or UPnP modelName), or null when unavailable. */

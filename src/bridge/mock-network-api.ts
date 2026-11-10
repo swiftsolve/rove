@@ -903,6 +903,7 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   // Over the same contended 5 GHz channel as the speed test's jitter.
   gatewayPing: { avgMs: 3.8, jitterMs: 2.9, packetLoss: 0 },
   internet: 'online',
+  selfVendor: 'Apple',
   gatewayVendor: 'Ubiquiti',
   gatewayModel: 'UniFi Dream Router',
   gatewayName: 'UniFi Dream Router',

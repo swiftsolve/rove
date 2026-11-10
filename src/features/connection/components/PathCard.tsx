@@ -69,10 +69,12 @@ const lineVariants = cva('h-px w-full overflow-visible', {
 // green line glints, so a link that's down, unknown or under test stays still.
 const GLINTING_TONES: ReadonlySet<LineTone> = new Set(['working'])
 
-// The line's own colour, paled toward the text colour: a highlight that
-// stays the line's hue, with no glow.
+// The line's own green, brighter: lighter and a touch more saturated in OKLCH,
+// so the highlight stays green rather than washing toward white, with no glow.
+// A webview without relative colours drops the rule, and the glint takes the
+// line's colour: the sweep goes unseen, nothing else changes.
 const GLINT_STYLE: CSSProperties = {
-  color: 'color-mix(in srgb, currentColor 50%, var(--text-primary))',
+  color: 'oklch(from currentColor calc(l + 0.12) calc(c + 0.04) h)',
   maskImage: 'linear-gradient(90deg, transparent, black, transparent)',
   maskSize: '40% 100%',
   maskRepeat: 'no-repeat',
@@ -130,7 +132,10 @@ export function PathCard({
   const { info } = useNetwork()
   const { entries } = useSpeedHistory()
   const isTesting = useSpeedTest((test) => test.isTesting)
-  const selfVendor = useDevices().lastScan?.devices.find((device) => device.isSelf)?.vendor ?? null
+  // The Connection check names this computer's maker itself; a device scan
+  // from Home or Devices fills in while that check is still running.
+  const scannedSelfVendor = useDevices().lastScan?.devices.find((device) => device.isSelf)?.vendor ?? null
+  const selfVendor = diagnostics?.selfVendor ?? scannedSelfVendor
   const lastTest = lastTestOnNetwork(entries, info)
   // The app-wide heartbeat, the same verdict the title bar shows.
   const internetState = internetLinkState(useInternetStatus() ?? undefined, lastTest)

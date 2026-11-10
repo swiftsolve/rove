@@ -53,6 +53,9 @@ const ALLOWED: AllowedEntry[] = [
   { file: 'src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
   { file: 'src/ui/empty-state/EmptyState.tsx', value: '#000' },
+  // The Path card's glint is its line's own token colour, brightened in
+  // OKLCH: derived from whichever token the line holds, with no fixed value.
+  { file: 'src/features/connection/components/PathCard.tsx', value: 'oklch(' },
 
   // Spacing off the scale. Set by an icon's ink, not its box: Lucide's arrows
   // leave ~2px empty each side at 11px, ~3px at 13px.

@@ -50,8 +50,16 @@ export type TabDefinition = {
 export const TABS: Record<AppTab, TabDefinition> = {
   home: { label: 'Home', Icon: HomeIcon, Screen: HomeView, rail: 'main', needsNetworkInfo: true },
   speed: { label: 'Speed', Icon: SpeedIcon, Screen: SpeedView, rail: 'main', needsNetworkInfo: true },
-  connection: { label: 'Connection', Icon: ConnectionIcon, Screen: ConnectionView, rail: 'main' },
-  devices: { label: 'Devices', Icon: DevicesIcon, Screen: DevicesView, rail: 'main' },
+  // Both show a Not connected state, so they wait for network info rather
+  // than flash it on a reload while the first reading is on its way.
+  connection: {
+    label: 'Connection',
+    Icon: ConnectionIcon,
+    Screen: ConnectionView,
+    rail: 'main',
+    needsNetworkInfo: true,
+  },
+  devices: { label: 'Devices', Icon: DevicesIcon, Screen: DevicesView, rail: 'main', needsNetworkInfo: true },
   services: {
     label: 'Online services',
     Icon: CloudIcon,

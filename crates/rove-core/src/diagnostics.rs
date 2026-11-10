@@ -48,6 +48,10 @@ pub struct NetworkDiagnostics {
     pub gateway_ping: Option<PingStats>,
     /// Public-internet reachability. See [`InternetStatus`].
     pub internet: InternetStatus,
+    /// This computer's make from its own adapter's MAC OUI, or None when
+    /// unknown or randomized. The Path card names its Computer node with it, so
+    /// it needn't wait on a device scan.
+    pub self_vendor: Option<String>,
     /// Router make from the gateway's MAC OUI, or None when unknown or
     /// randomized.
     pub gateway_vendor: Option<String>,
@@ -307,12 +311,15 @@ pub async fn check_internet() -> InternetStatus {
 pub async fn run() -> NetworkDiagnostics {
     let (gateway, iface, dns) = tokio::join!(default_gateway(), default_interface(), dns_servers());
 
-    // The Router card is named from the gateway's OUI and SNMP, since this view
-    // never runs a device scan.
-    let local_ipv4 = match &iface {
-        Some(name) => crate::interfaces::address_of(name).await.0.and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok()),
-        None => None,
+    // The Router card is named from the gateway's OUI and SNMP, and the Path
+    // card's Computer from our own adapter's OUI, since this view never runs a
+    // device scan.
+    let (local_ip, local_mac) = match &iface {
+        Some(name) => crate::interfaces::address_of(name).await,
+        None => (None, None),
     };
+    let local_ipv4 = local_ip.and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok());
+    let self_vendor = local_mac.as_deref().and_then(crate::devices::oui::lookup_vendor);
 
     // All concurrent. The identity lookup needn't wait out ten pings: SNMP
     // addresses the gateway directly, and its neighbour entry is almost always
@@ -330,6 +337,7 @@ pub async fn run() -> NetworkDiagnostics {
         dns_servers: dns,
         gateway_ping,
         internet: classify_internet(internet, gateway.as_deref()),
+        self_vendor,
         gateway_vendor: identity.vendor,
         gateway_model: identity.model,
         gateway_name: identity.name,
