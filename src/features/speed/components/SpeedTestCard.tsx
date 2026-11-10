@@ -1,4 +1,4 @@
-import { cva, cx } from 'class-variance-authority'
+import { cx } from 'class-variance-authority'
 import { memo, type ReactNode } from 'react'
 
 import { useNetwork } from '@/app/hooks/useNetwork'
@@ -29,24 +29,43 @@ import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/utils/format
 /** The connection the footer names, its icon tinted by medium. */
 const CONNECTION_LABEL = 'inline-flex items-center gap-6 font-medium text-secondary'
 
-/**
- * A hero speed's digits; a NoValue bar, muted by its own colour, before any
- * test has run, so the labels lead and the cell reads as empty, not zeroed.
- */
+/** A hero speed's digits. */
 const SPEED_VALUE = 'type-display metric-value'
 
-const substatValueVariants = cva('type-body num leading-body', {
-  variants: {
-    isEmpty: { true: 'text-tertiary', false: 'text-primary' },
-  },
-  defaultVariants: { isEmpty: false },
-})
+const SUBSTAT_VALUE = 'type-body num leading-body text-primary'
 
 const INSET_PANEL = cx('-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)', 'bg-inset p-(--card-body-padding)')
 
-/** A substat's value: the measured one, else a NoValue bar. */
-function substatValue(measured: string | null, isEmpty: boolean): ReactNode {
-  return measured ?? <NoValue label={isEmpty ? 'Not tested yet' : 'Not measured'} />
+/**
+ * A substat's value: the measured one; before any test, a dimmed zero; else
+ * a NoValue bar, as the test couldn't measure it.
+ */
+function substatValue(measured: string | null, untestedZero: string, isEmpty: boolean): ReactNode {
+  if (isEmpty) return <UntestedValue>{untestedZero}</UntestedValue>
+  return measured ?? <NoValue label="Not measured" />
+}
+
+/**
+ * A value before any test has run: a zero and its unit, dimmed, so the card
+ * has the shape of a result without claiming one. Screen readers hear "Not
+ * tested yet", not a zero.
+ */
+function UntestedValue({ className, children }: { className?: string; children: ReactNode }) {
+  return (
+    <>
+      {/* Tertiary throughout, the digits and unit included, then faded: big
+          digits carry more ink than a label, so the plain fade alone left them
+          brighter than the capability rows below. */}
+      <span
+        className={cx('text-tertiary opacity-(--opacity-disabled) **:text-tertiary', className)}
+        aria-hidden="true"
+        data-faded-preview
+      >
+        {children}
+      </span>
+      <span className="sr-only">Not tested yet</span>
+    </>
+  )
 }
 
 function ConnectionTag({ connection }: { connection: SpeedTestConnection }) {
@@ -63,10 +82,16 @@ function SpeedCell({ mbps, isPlaceholder = false }: { mbps: number | null; isPla
   const animatedMbps = useCountUp(mbps ?? 0)
   const { value, unit } = splitSpeedMbps(animatedMbps)
 
+  const digitsAndUnit = (
+    <>
+      <span className={SPEED_VALUE}>{value}</span>
+      <span className="type-body metric-unit">{unit}</span>
+    </>
+  )
   return (
     <dd className="metric">
-      <span className={SPEED_VALUE}>{isPlaceholder ? <NoValue label="Not tested yet" /> : value}</span>
-      {!isPlaceholder && <span className="type-body metric-unit">{unit}</span>}
+      {/* Faded as one, the digits and unit keep their gap and shared baseline. */}
+      {isPlaceholder ? <UntestedValue className="metric">{digitsAndUnit}</UntestedValue> : digitsAndUnit}
     </dd>
   )
 }
@@ -126,11 +151,11 @@ function HeroCell({
   )
 }
 
-function Substat({ label, value, isEmpty }: { label: string; value: ReactNode; isEmpty: boolean }) {
+function Substat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-4">
       <dt className="type-body-medium text-tertiary">{label}</dt>
-      <dd className={substatValueVariants({ isEmpty })}>{value}</dd>
+      <dd className={SUBSTAT_VALUE}>{value}</dd>
     </div>
   )
 }
@@ -205,7 +230,7 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
       <CardHeader
         title="Speed test"
         icon={<SpeedIcon size={15} />}
-        actions={isEmpty && canTest ? <span className="type-caption text-tertiary">No tests yet</span> : undefined}
+        actions={isEmpty && canTest ? <span className="type-caption text-tertiary">Not tested yet</span> : undefined}
       />
       <CardBody>
         {error && (
@@ -221,9 +246,9 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
 
         {!isTesting && (
           <dl className="mt-16 grid grid-cols-3 gap-16">
-            <Substat label="Ping" value={substatValue(measuredPing, isEmpty)} isEmpty={isEmpty} />
-            <Substat label="Jitter" value={substatValue(measuredJitter, isEmpty)} isEmpty={isEmpty} />
-            <Substat label="Loss" value={substatValue(measuredLoss, isEmpty)} isEmpty={isEmpty} />
+            <Substat label="Ping" value={substatValue(measuredPing, '0 ms', isEmpty)} />
+            <Substat label="Jitter" value={substatValue(measuredJitter, '0 ms', isEmpty)} />
+            <Substat label="Loss" value={substatValue(measuredLoss, '0%', isEmpty)} />
           </dl>
         )}
 

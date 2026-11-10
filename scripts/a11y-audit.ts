@@ -53,9 +53,10 @@ function isPortalledMenu(ruleId: string, node: FlaggedNode): boolean {
 }
 
 /**
- * Speed's capability rows before any test are faded like disabled controls, on
- * purpose: they only preview what a test will rate, and a screen reader still
- * reads them. Only `color-contrast` is waived inside `[data-faded-preview]`.
+ * Speed's capability rows and its speed test's zeros, before any test, are
+ * faded on purpose: they only preview what a test will fill in, and a screen
+ * reader still reads them (the zeros as "Not tested yet"). Only
+ * `color-contrast` is waived inside `[data-faded-preview]`.
  */
 function isFadedPreview(ruleId: string, node: FlaggedNode): boolean {
   return ruleId === 'color-contrast' && node.isInFadedPreview
