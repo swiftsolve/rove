@@ -966,7 +966,9 @@ function wobble(base: number, spread: number): number {
   return Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
 }
 
-// How far back the usage views claim tracking started.
+// How far back the usage views claim tracking started. The megabyte figures in
+// the usage rows are what each row had moved by then; from there they keep
+// climbing at the same average rate (see usageBytesSoFar).
 const MOCK_TRACKING_SINCE_AGO_MS = 42 * MINUTE_MS
 // Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store/speed.rs.
 const MOCK_SPEED_HISTORY_LIMIT = 50
@@ -990,6 +992,24 @@ function createMockNetworkApi(): NetworkAPI {
   let liveTimer: ReturnType<typeof setInterval> | null = null
   let idleTick = 0
   let testTraffic: { downloadMbps: number; uploadMbps: number } | null = null
+
+  // Fixed when the mock starts, so the usage views' "tracking since" stays put
+  // and their totals grow with the time since, like the real sampler's.
+  const trackingSince = Date.now() - MOCK_TRACKING_SINCE_AGO_MS
+
+  /** A usage row's bytes now, given the megabytes it had moved after the first 42 minutes. */
+  const usageBytesSoFar = (megabytesAtStart: number): number => {
+    const trackedMs = Date.now() - trackingSince
+    const growth = trackedMs / MOCK_TRACKING_SINCE_AGO_MS
+    return Math.round(megabytesAtStart * MB * growth)
+  }
+
+  // What the apps have moved since the mock started, which the daily usage
+  // adds to today and to the boot totals, so every usage view climbs together.
+  const appsDownloadMb = MOCK_APP_ROWS.reduce((sum, [, downMb]) => sum + downMb, 0)
+  const appsUploadMb = MOCK_APP_ROWS.reduce((sum, [, , upMb]) => sum + upMb, 0)
+  const bytesSinceMockStarted = (megabytesAtStart: number): number =>
+    usageBytesSoFar(megabytesAtStart) - megabytesAtStart * MB
 
   const emitLive = (downloadMbps: number, uploadMbps: number): void => {
     const sample: LiveThroughput = {
@@ -1094,19 +1114,23 @@ function createMockNetworkApi(): NetworkAPI {
         [16.4, 2.3],
         [4.9, 0.6],
       ]
+      const downloadSinceStart = bytesSinceMockStarted(appsDownloadMb)
+      const uploadSinceStart = bytesSinceMockStarted(appsUploadMb)
+      const todayIndex = byDay.length - 1
       const days = byDay.map(([down, up], i) => {
         const day = new Date(Date.now() - (6 - i) * DAY_MS)
         const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+        const isToday = i === todayIndex
         return {
           date: dateKey,
-          rxBytes: Math.round(down * GB),
-          txBytes: Math.round(up * GB),
+          rxBytes: Math.round(down * GB) + (isToday ? downloadSinceStart : 0),
+          txBytes: Math.round(up * GB) + (isToday ? uploadSinceStart : 0),
         }
       })
       return {
         days,
-        bootRxBytes: 23_400_000_000,
-        bootTxBytes: 3_100_000_000,
+        bootRxBytes: 23_400_000_000 + downloadSinceStart,
+        bootTxBytes: 3_100_000_000 + uploadSinceStart,
         trackingSince: Date.now() - 6 * DAY_MS,
       }
     },
@@ -1114,12 +1138,12 @@ function createMockNetworkApi(): NetworkAPI {
       await delay(200)
       const apps = MOCK_APP_ROWS.map(([name, down, up]) => ({
         name,
-        rxBytes: Math.round(down * MB),
-        txBytes: Math.round(up * MB),
+        rxBytes: usageBytesSoFar(down),
+        txBytes: usageBytesSoFar(up),
         // The mock has no real OS icons; rows fall back to favicon/monogram.
         icon: null,
       }))
-      return { apps, support: 'supported', trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS }
+      return { apps, support: 'supported', trackingSince }
     },
     getHostUsage: async (): Promise<HostUsageSummary> => {
       await delay(200)
@@ -1185,8 +1209,8 @@ function createMockNetworkApi(): NetworkAPI {
             ip: ip ?? host ?? '',
             host,
             countryCode,
-            rxBytes: Math.round(down * MB),
-            txBytes: Math.round(up * MB),
+            rxBytes: usageBytesSoFar(down),
+            txBytes: usageBytesSoFar(up),
           }))
           return {
             name,
@@ -1197,7 +1221,7 @@ function createMockNetworkApi(): NetworkAPI {
           }
         }),
         support: 'supported',
-        trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS,
+        trackingSince,
       }
     },
     // The mock's per-app usage is always supported, so there's no reason to
@@ -1228,11 +1252,11 @@ function createMockNetworkApi(): NetworkAPI {
         .map(([id, label, down, up]) => ({
           id,
           label,
-          rxBytes: Math.round(down * MB),
-          txBytes: Math.round(up * MB),
+          rxBytes: usageBytesSoFar(down),
+          txBytes: usageBytesSoFar(up),
         }))
         .sort((a, b) => b.rxBytes + b.txBytes - (a.rxBytes + a.txBytes))
-      return { types, support: 'supported', trackingSince: Date.now() - MOCK_TRACKING_SINCE_AGO_MS }
+      return { types, support: 'supported', trackingSince }
     },
     runDiagnostics: async () => {
       await delay(700)
