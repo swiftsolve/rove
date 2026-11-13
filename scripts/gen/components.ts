@@ -11,6 +11,8 @@
  *   - its usage guide (when to use it, when not, accessibility), from its
  *     stories' `guidance` parameter, as its Docs page shows it, or for a part
  *     on its family's page, the family's `partGuidance`;
+ *   - its usage guide as Figma words it (`figmaGuidance`), from
+ *     `src/ui/figma-guides.json`, which `npm run figma:export-guides` writes;
  *   - for a part, the family it belongs to (`partOf`).
  *
  * Icons, hooks and helpers follow, by name and doc comment.
@@ -22,7 +24,9 @@
  * own props has no doc comment, or a component has no entry in figma-components.json (`{ whyNoFigmaComponent }` says why it has no Figma counterpart), or a
  * component has no usage guide: on its own Docs page (`Actions/Button`,
  * `Containers/Card/CardHeader`), or for a part shown on its family's page
- * (MenuItem on `Actions/Menu`), in that page's `partGuidance`.
+ * (MenuItem on `Actions/Menu`), in that page's `partGuidance`; or a usage
+ * guide and its Figma one in figma-guides.json fall out of step (line counts,
+ * named alternatives), or Figma draws a guided component with no guide.
  *
  * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
  * its stories have none that drives it (a `play` function, tagged
@@ -42,6 +46,7 @@ import type {
   ComponentEntry,
   ComponentListJson,
   FigmaComponentsJson,
+  FigmaGuidesJson,
   Guidance,
   PropEntry,
 } from '../lib/library-json-types.ts'
@@ -51,9 +56,11 @@ const UI_DIR = join(ROOT, 'src/ui')
 const UI_INDEX = join(UI_DIR, 'index.ts')
 const COMPONENT_LIST = join(UI_DIR, 'components.gen.json')
 const FIGMA_COMPONENTS_JSON = join(UI_DIR, 'figma-components.json')
+const FIGMA_GUIDES_JSON = join(UI_DIR, 'figma-guides.json')
 // Each file's schema says what every key means; both files are held to theirs.
 const COMPONENT_LIST_SCHEMA = join(ROOT, 'schemas/components.schema.json')
 const FIGMA_COMPONENTS_SCHEMA = join(ROOT, 'schemas/figma-components.schema.json')
+const FIGMA_GUIDES_SCHEMA = join(ROOT, 'schemas/figma-guides.schema.json')
 const isCheck = process.argv.includes('--check')
 
 /** A component the index exports, under its group's comment, and the file it comes from. */
@@ -233,6 +240,46 @@ function hasInteractionStory(file: string, text: string): boolean {
   })
 }
 
+/** Lowercase letters and digits only, so `IconButton` and "Icon button" compare. */
+const comparisonKey = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+/**
+ * How a component's Figma guide falls out of step with its code guide: as
+ * many When to use and When not to use lines, and every alternative the code
+ * names (`use \`EmptyState\``) named in Figma too ("Empty state"). Figma words
+ * its lines, and its Accessibility, for designers, so wording is left to review.
+ */
+function guideMismatches(
+  name: string,
+  guidance: Guidance,
+  figmaGuidance: Guidance,
+  figmaNameOf: (component: string) => string,
+): string[] {
+  const mismatches: string[] = []
+  const lists = [
+    { label: 'When to use', lines: guidance.whenToUse, figmaLines: figmaGuidance.whenToUse },
+    { label: 'When not to use', lines: guidance.whenNotToUse, figmaLines: figmaGuidance.whenNotToUse },
+  ]
+  for (const { label, lines, figmaLines } of lists) {
+    if (lines.length !== figmaLines.length) {
+      mismatches.push(
+        `${name}'s usage guide has ${lines.length} ${label} lines in code, ${figmaLines.length} in Figma: bring the side that's behind up to date`,
+      )
+    }
+  }
+  const figmaInsteadText = comparisonKey(figmaGuidance.whenNotToUse.join(' '))
+  const namedAlternatives = new Set(
+    guidance.whenNotToUse.flatMap((line) =>
+      [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, alternative = '']) => alternative),
+    ),
+  )
+  for (const alternative of namedAlternatives) {
+    if (figmaInsteadText.includes(comparisonKey(figmaNameOf(alternative)))) continue
+    mismatches.push(`${name}'s usage guide names ${alternative} under When not to use; Figma's doesn't`)
+  }
+  return mismatches
+}
+
 // Every other export of the index, with its doc comment, through the compiler.
 function readOtherExports(componentNames: Set<string>): Pick<ComponentListJson, 'iconNames' | 'otherExports'> {
   const program = ts.createProgram([UI_INDEX], {
@@ -262,6 +309,16 @@ const components = await readIndex()
 const { docs, elementProps } = readProps(components)
 const figmaMap = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8')) as FigmaComponentsJson
 problems.push(...(await schemaProblems(FIGMA_COMPONENTS_SCHEMA, figmaMap, relativeToRoot(FIGMA_COMPONENTS_JSON))))
+const figmaGuidesFile = JSON.parse(await readFile(FIGMA_GUIDES_JSON, 'utf8')) as FigmaGuidesJson
+problems.push(...(await schemaProblems(FIGMA_GUIDES_SCHEMA, figmaGuidesFile, relativeToRoot(FIGMA_GUIDES_JSON))))
+const figmaGuides = figmaGuidesFile.guides
+// An alternative is named in Figma by its Figma name, or its own for one Figma lacks.
+const figmaNameOf = (component: string) => {
+  const entry = figmaMap.components[component]
+  return entry && 'figmaName' in entry ? entry.figmaName : component
+}
+const hasFigmaComponent = (component: string | undefined) =>
+  component !== undefined && 'figmaNodeId' in (figmaMap.components[component] ?? {})
 const storiesByName = new Map<string, StoriesInfo>()
 for (const { name, source } of components) storiesByName.set(name, await readStories(source, name))
 
@@ -292,6 +349,16 @@ for (const { name, group, source } of components) {
     }
   }
   const stories = storiesByName.get(name) ?? { ids: [], file: null }
+  // Figma has a guide wherever it draws the component or, for a part, its family.
+  const figmaGuidance = figmaGuides[name]
+  const isGuidedInFigma = hasFigmaComponent(name) || hasFigmaComponent(stories.partOf)
+  if (stories.guidance && isGuidedInFigma && !figmaGuidance) {
+    problems.push(
+      `${relativeToRoot(FIGMA_GUIDES_JSON)}: ${name} has no Figma usage guide: add one to its docs section (a part: its family's Parts block), then npm run figma:export-guides`,
+    )
+  }
+  if (stories.guidance && figmaGuidance)
+    problems.push(...guideMismatches(name, stories.guidance, figmaGuidance, figmaNameOf))
   const handlerProp = Object.keys(doc.props).find((prop) => /^on[A-Z]/.test(prop))
   if (handlerProp && stories.file && !stories.hasInteraction) {
     problems.push(
@@ -313,7 +380,12 @@ for (const { name, group, source } of components) {
     storyIds: stories.ids,
     ...(stories.partOf && { partOf: stories.partOf }),
     ...(stories.guidance && { guidance: stories.guidance }),
+    ...(figmaGuidance && { figmaGuidance }),
   }
+}
+for (const name of Object.keys(figmaGuides)) {
+  if (!(name in componentEntries))
+    problems.push(`${relativeToRoot(FIGMA_GUIDES_JSON)}: ${name} isn't a component in src/ui/index.ts: export again`)
 }
 for (const name of Object.keys(figmaMap.components)) {
   if (!components.some((component) => component.name === name)) {

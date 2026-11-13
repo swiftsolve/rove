@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Figma usage guides",
+  "description": "Each library component's usage guide as the Rove Design System Figma file words it, by component. Exported from Figma by npm run figma:export-guides, never edited by hand; checks/figma-library.ts fails when Figma has changed since, and npm run gen merges each guide into components.gen.json as figmaGuidance.",
+  "type": "object",
+  "required": ["$schema", "$comment", "guides"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "$comment": {
+      "type": "string"
+    },
+    "guides": {
+      "description": "Each guide by the component's export name: its own docs section's Guidance block, or for a part with no Figma component of its own, the one in its family's Parts block.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "components.schema.json#/definitions/guidance"
+      }
+    }
+  }
+}

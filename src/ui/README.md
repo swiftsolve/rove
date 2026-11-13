@@ -79,16 +79,20 @@ library imports only itself (by relative path) and packages, never app code.
   A rule that isn't a situation goes in the doc comment instead, and what the
   stories and props table already show (each state, each variant) stays out.
 - `components.gen.json` is the library's API in one file: each component's
-  group, doc comment, props, Figma component, story ids and usage guide, and
-  for a part, its family (`partOf`).
-  `npm run gen` writes it from the code and `figma-components.json`, so a
-  change goes in those and the file is regenerated. Every component and prop
-  of its own has a doc comment, and every component an entry in
-  `figma-components.json`. [✓ CHECKED by `gen/components.ts`]
+  group, doc comment, props, Figma component, story ids and usage guide, its
+  usage guide as Figma words it (`figmaGuidance`), and for a part, its family
+  (`partOf`). `npm run gen` writes it from the code, `figma-components.json`
+  and `figma-guides.json`, so a change goes in those and the file is
+  regenerated. Every component and prop of its own has a doc comment, and
+  every component an entry in `figma-components.json`; each Figma guide has
+  as many When to use and When not to use lines as the code's, and names the
+  same alternatives. [✓ CHECKED by `gen/components.ts`]
+- `figma-guides.json` is the Figma file's usage guides, exported by
+  `npm run figma:export-guides`; never edit it by hand. After changing a guide
+  in Figma, export again, then `npm run gen`.
 - Figma matches the library: each entry's node and name, every variant
-  property and its values, and the usage guide's When to use and When not to
-  use, line for line. [✓ CHECKED by `checks/figma-library.ts`, skipped
-  without `FIGMA_TOKEN`]
+  property and its values, and every usage guide matches `figma-guides.json`.
+  [✓ CHECKED by `checks/figma-library.ts`, skipped without `FIGMA_TOKEN`]
 
 ### Every component
 

@@ -1,0 +1,974 @@
+{
+  "$schema": "../../schemas/figma-guides.schema.json",
+  "$comment": "Exported from the Figma file by `npm run figma:export-guides`; change a guide in Figma, then export again and run `npm run gen`.",
+  "guides": {
+    "Button": {
+      "whenToUse": [
+        "The page’s main action, Solid: “Run test”.",
+        "Stopping that action, Solid Negative: “Stop”.",
+        "Every other action, Soft: “Scan again”, “Check now”.",
+        "An action on a red surface, Soft Negative: an error Banner’s Dismiss."
+      ],
+      "whenNotToUse": [
+        "Opening another view or an address: use Link.",
+        "An icon with no words: use Icon button.",
+        "Checking a field’s value, like Test: use the Text field’s action."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "A focus ring, drawn as the Focus state.",
+          "Disabled and loading stay reachable by keyboard, so a tooltip can say why.",
+          "The icon and spinner are decoration: only the words are read."
+        ],
+        "toHandle": [
+          "A label that says what happens, like “Run test”.",
+          "On a disabled button, a tooltip that says why."
+        ]
+      }
+    },
+    "IconButton": {
+      "whenToUse": [
+        "An action an icon says on its own, like Refresh.",
+        "A help button, with the hint in its tooltip.",
+        "An action where a chip is too heavy, Ghost: a Dialog’s close."
+      ],
+      "whenNotToUse": [
+        "An action that needs words: use Button.",
+        "Several actions behind one icon: use Menu.",
+        "An item’s tile that opens it: use Icon tile."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Its label shows as a tooltip on hover and keyboard focus.",
+          "The icon is decoration: the label is what’s read.",
+          "Disabled and loading stay reachable by keyboard."
+        ],
+        "toHandle": [
+          "A label that says what happens, like “Close”: it’s also the tooltip.",
+          "An icon that means that action at a glance.",
+          "On a disabled button, a tooltip that says why."
+        ]
+      }
+    },
+    "Link": {
+      "whenToUse": [
+        "Opening another view from a header or a line of text: “All hosts”.",
+        "An address outside the app: About’s Source link."
+      ],
+      "whenNotToUse": [
+        "An action that changes something: use Button.",
+        "A whole row that opens a view: use List row or a Stretched link.",
+        "A whole card that opens a view: use a Card that opens."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Focus looks like hover, accent and underline, so no ring is drawn.",
+          "An address outside the app gets an arrow and is announced as opening a new window."
+        ],
+        "toHandle": [
+          "Words that name where it goes, like “All hosts”.",
+          "Where the words can’t say it, the fuller words for screen readers, noted on the design."
+        ]
+      }
+    },
+    "Menu": {
+      "whenToUse": [
+        "A few secondary actions on a row, like a service’s Edit and Remove.",
+        "A destructive action kept out of the way, its item Negative: Clear history."
+      ],
+      "whenNotToUse": [
+        "The page’s main action: use Button.",
+        "One frequent action: use Icon button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Enter opens it, the arrows move through it and Escape closes it.",
+          "Focus returns to the kebab when it closes."
+        ],
+        "toHandle": [
+          "A kebab label that names its subject: “Options for Google”.",
+          "Item labels that say what happens: Edit, Remove."
+        ]
+      }
+    },
+    "MenuContent": {
+      "whenToUse": [
+        "The list the kebab opens, holding its Menu items."
+      ],
+      "whenNotToUse": [
+        "A list that stays on the page: use Card list."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Lines up under the kebab’s right edge.",
+          "Takes focus when it opens."
+        ],
+        "toHandle": [
+          "Only Menu items, the most used first."
+        ]
+      }
+    },
+    "MenuItem": {
+      "whenToUse": [
+        "One action in the menu: Edit, Remove.",
+        "A destructive action, Tone Negative: Clear history."
+      ],
+      "whenNotToUse": [
+        "A setting that stays on or off: use Toggle."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Selecting it runs the action and closes the menu.",
+          "Its icon is decorative."
+        ],
+        "toHandle": [
+          "A label that says what happens: Remove, not OK."
+        ]
+      }
+    },
+    "MenuTrigger": {
+      "whenToUse": [
+        "The kebab that opens a row’s or card’s menu."
+      ],
+      "whenNotToUse": [
+        "One action on its own: use Icon button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Says whether its menu is open.",
+          "Enter or Space opens the menu on its first item."
+        ],
+        "toHandle": [
+          "A name for what it acts on: “Options for Google”."
+        ]
+      }
+    },
+    "TextField": {
+      "whenToUse": [
+        "A short value to type, in a form so Enter submits it: a service’s Address or Name.",
+        "A value to check in place, with an action inside: Test."
+      ],
+      "whenNotToUse": [
+        "Picking one of a few known options: use Segmented control.",
+        "A value to read, not edit: use Data row.",
+        "Submitting the form: use a Button outside the field."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Its visible label is what’s read: no hidden name to write.",
+          "The feedback line is read with the field, and again when it changes.",
+          "Invalid is announced, not only shown in red."
+        ],
+        "toHandle": [
+          "A visible label that names the value, like “Address”.",
+          "Sample input as the placeholder, never the only hint.",
+          "An error in words in the feedback line, so red isn’t the only cue."
+        ]
+      }
+    },
+    "TextFieldAction": {
+      "whenToUse": [
+        "Checking the field’s value in place: Test."
+      ],
+      "whenNotToUse": [
+        "Submitting the form: use a Button outside the field."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "A real button inside the field’s border.",
+          "Loading, it stays focusable and keeps its name."
+        ],
+        "toHandle": [
+          "A one-word label for what it does to the value: Test."
+        ]
+      }
+    },
+    "Toggle": {
+      "whenToUse": [
+        "A setting that’s on or off, beside its title in a setting row: “Check for updates automatically”.",
+        "A change that applies at once, with no save."
+      ],
+      "whenNotToUse": [
+        "Picking one of a few options: use Segmented control.",
+        "An action that runs once, like “Check now”: use Button.",
+        "A status the user can’t change: use Badge or Status dot."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "On and off differ in the thumb’s position, not colour alone.",
+          "Screen readers hear its label and whether it’s on.",
+          "Disabled stays reachable by keyboard, so a tooltip can say why."
+        ],
+        "toHandle": [
+          "A label that repeats the setting’s title.",
+          "A description under the title, read with the switch.",
+          "On a disabled switch, a tooltip that says why."
+        ]
+      }
+    },
+    "SegmentedControl": {
+      "whenToUse": [
+        "Picking one of a few exclusive options, like Settings’ Theme.",
+        "A choice whose options all fit in view, each a word or two.",
+        "A choice that applies at once, with no save."
+      ],
+      "whenNotToUse": [
+        "Turning one setting on or off: use Toggle.",
+        "Running an action: use Button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The thumb marks the chosen segment, not colour alone.",
+          "One Tab stop; the arrow keys choose.",
+          "Each segment is read by its label."
+        ],
+        "toHandle": [
+          "A title for the group, on screen or noted on the design.",
+          "Labels of a word or two that make sense alone: Light, Dark, System."
+        ]
+      }
+    },
+    "Dialog": {
+      "whenToUse": [
+        "A short task before going on: Add a service.",
+        "One thing up close: the Share Wi‑Fi QR code.",
+        "A prompt the user can put off: Update available."
+      ],
+      "whenNotToUse": [
+        "A hint on hover or focus: use Tooltip.",
+        "A failure on the page: use Banner.",
+        "A few actions on one item: use Menu."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Focus moves in, stays inside, and returns to what opened it.",
+          "Escape, the close button and Cancel all close it.",
+          "The page behind is dimmed and silent to screen readers.",
+          "Typed input survives a click on the backdrop, so a stray click loses nothing."
+        ],
+        "toHandle": [
+          "A title that names the task: “Add a service”.",
+          "Where focus starts, when it’s a form: its first field.",
+          "A body that changes while open, marked to be read out: Share Wi‑Fi’s code.",
+          "Whether it can close while something runs: not when closing would abandon it."
+        ]
+      }
+    },
+    "DialogRoot": {
+      "whenToUse": [
+        "Around every Dialog: it opens and closes it."
+      ],
+      "whenNotToUse": [
+        "More detail on the page itself: use Collapsible."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Draws nothing: the Dialog carries its role and focus."
+        ],
+        "toHandle": [
+          "Nothing to draw: it has no layer in a design."
+        ]
+      }
+    },
+    "Tooltip": {
+      "whenToUse": [
+        "Why a control is off: “Connect to a network first”.",
+        "What a mark means: “Privacy-randomized MAC address”.",
+        "Detail that would crowd a row, like a host’s full name and IP."
+      ],
+      "whenNotToUse": [
+        "Naming an icon-only button: use Icon button; its label is the tooltip.",
+        "A message the user must see: use Banner.",
+        "Anything to click: use Menu or Dialog.",
+        "A value that may be stale, like a rating while a new test runs: leave it off."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Opens on keyboard focus as well as hover.",
+          "Its text is read as a description of what it points at.",
+          "Placed centred on its trigger, with no positioning by hand."
+        ],
+        "toHandle": [
+          "A trigger that takes focus, like a button or icon, not plain text.",
+          "Over plain text, the hint also noted as screen-reader text.",
+          "A hint short enough for one line where possible.",
+          "Which side it opens on, clear of what it explains, noted on the design."
+        ]
+      }
+    },
+    "Badge": {
+      "whenToUse": [
+        "A word or two flagging a title: the ISP card’s VPN.",
+        "A card whose data updates live, Live badge in its header: Traffic."
+      ],
+      "whenNotToUse": [
+        "A status beside its own words: use Status dot.",
+        "A failure the user should act on: use Banner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Capitals come from the style, so the words are read as typed.",
+          "Live badge’s dot is decoration."
+        ],
+        "toHandle": [
+          "Words that carry the meaning without the colour."
+        ]
+      }
+    },
+    "LiveBadge": {
+      "whenToUse": [
+        "A card whose numbers update live, in its header: Traffic."
+      ],
+      "whenNotToUse": [
+        "A word or two flagging a title: use Badge.",
+        "A connection status: use Status dot."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The pulsing dot is decorative."
+        ],
+        "toHandle": [
+          "Words that say it’s live without the dot: Live."
+        ]
+      }
+    },
+    "StatusDot": {
+      "whenToUse": [
+        "A status in the words beside it: a device’s Online or Offline.",
+        "A live or busy state, pulsing: the title bar, a running scan."
+      ],
+      "whenNotToUse": [
+        "A flag beside a title: use Badge.",
+        "Live data in a card header: use Live badge."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Decoration: screen readers skip it.",
+          "Pulses in the app; drawn still here."
+        ],
+        "toHandle": [
+          "Words beside it that say the status on their own.",
+          "Its pulse, noted on the design: Calm when steady, Live when streaming, Busy for work under way."
+        ]
+      }
+    },
+    "Spinner": {
+      "whenToUse": [
+        "A wait inside a dialog: “Generating QR code…”.",
+        "A wait with more than one line: “Looking for your network…”."
+      ],
+      "whenNotToUse": [
+        "A page’s first load: use Loading state.",
+        "A button’s wait: set Button or Icon button to loading.",
+        "A wait inside a button: use Button spinner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Silent: screen readers skip it.",
+          "Animates in the app; drawn still here."
+        ],
+        "toHandle": [
+          "Words for the wait beside it, read out as they appear: “Generating QR code…”."
+        ]
+      }
+    },
+    "ButtonSpinner": {
+      "whenToUse": [
+        "A small wait in a card header: the speed test running.",
+        "A small wait in a card body: the home Devices card’s scan."
+      ],
+      "whenNotToUse": [
+        "A button’s wait: set Button or Icon button to loading.",
+        "A page’s first load: use Loading state.",
+        "A wait in a dialog or page area: use Spinner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Decoration: screen readers skip it.",
+          "In its button’s text colour, so it suits any button.",
+          "Spins in the app; drawn still here."
+        ],
+        "toHandle": [
+          "Outside a button, a name for the wait, noted on the design: “Running speed test”."
+        ]
+      }
+    },
+    "LoadingState": {
+      "whenToUse": [
+        "A page’s first load, in place of its content, under the header and any Banner."
+      ],
+      "whenNotToUse": [
+        "A page loaded with nothing to show: use Empty state.",
+        "A load that failed: use Banner.",
+        "A wait inside a dialog: use Spinner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Its line is read out as it appears.",
+          "The spinner is decoration; the line speaks for it."
+        ],
+        "toHandle": [
+          "A line naming what’s loading: “Scanning your network…”."
+        ]
+      }
+    },
+    "Banner": {
+      "whenToUse": [
+        "A failure above a page: a load, scan or action that didn’t work.",
+        "A line on what’s on screen now: “Showing the last scan.”"
+      ],
+      "whenNotToUse": [
+        "A page loaded with nothing to show: use Empty state.",
+        "A choice to make before going on: use Dialog."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Read out as soon as it appears.",
+          "Dismiss and Retry are buttons, with their focus and busy states.",
+          "The icon is decoration; the title carries the message."
+        ],
+        "toHandle": [
+          "A title that says what failed: “Couldn’t scan for devices”.",
+          "A line under it that says what to try."
+        ]
+      }
+    },
+    "EmptyState": {
+      "whenToUse": [
+        "A page with nothing to show yet: “No services yet”.",
+        "A page the user can fill, with an action for the step: Scan again.",
+        "A page waiting on the user, Locked: “Administrator access needed”."
+      ],
+      "whenNotToUse": [
+        "A page still loading: use Loading state.",
+        "A load that failed: use Banner.",
+        "One missing value in a row: use No value."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The title is a heading, so screen readers can jump to it.",
+          "The placeholder rows and lock are decoration."
+        ],
+        "toHandle": [
+          "A title naming what’s empty: “No devices found”.",
+          "A note an action adds, marked to be read out: “Scan started”."
+        ]
+      }
+    },
+    "EmptyStateDescription": {
+      "whenToUse": [
+        "A line under the title on why it’s empty or what to do.",
+        "A note an action adds, under the actions."
+      ],
+      "whenNotToUse": [
+        "A failure to load: use Banner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Read straight after the title."
+        ],
+        "toHandle": [
+          "A note that appears after an action, marked to be announced."
+        ]
+      }
+    },
+    "DataList": {
+      "whenToUse": [
+        "Labelled facts in a card: “Gateway”, “Band”, “Link speed”.",
+        "Facts on several topics in one card: a list each, stacked with hairlines.",
+        "A fact with no value that keeps its row: No value in its place."
+      ],
+      "whenNotToUse": [
+        "A card’s headline figure: use Readout.",
+        "Rows that open something: use List row."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Each label and value is read as a pair.",
+          "A row with no value isn’t shown, so no label sits alone."
+        ],
+        "toHandle": [
+          "Words for a value that isn’t text, like a meter’s rating, noted on the design."
+        ]
+      }
+    },
+    "DataListStack": {
+      "whenToUse": [
+        "Facts on several topics in one card, a list each.",
+        "Flush to the card’s sides, so its hairlines run edge to edge."
+      ],
+      "whenNotToUse": [
+        "Facts on one topic: use one list of Data rows."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The hairlines are decorative."
+        ],
+        "toHandle": [
+          "Groups whose first rows say their topic."
+        ]
+      }
+    },
+    "DataRow": {
+      "whenToUse": [
+        "One labelled fact in a list: Gateway.",
+        "A value that isn’t text: signal bars."
+      ],
+      "whenNotToUse": [
+        "A row that opens something: use List row.",
+        "A card’s headline figure: use Readout."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Label and value are read as a pair.",
+          "A row with no value isn’t shown, so no label is read alone."
+        ],
+        "toHandle": [
+          "Words for a value that isn’t text, like signal bars."
+        ]
+      }
+    },
+    "NoValue": {
+      "whenToUse": [
+        "Where a value would be but there’s none, in place of a dash or “N/A”: not measured, unknown.",
+        "A value the app can’t format."
+      ],
+      "whenNotToUse": [
+        "A field that may not apply: use Data row, leaving it out.",
+        "A section with nothing to show: use Empty state.",
+        "A page still loading: use Loading state."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Read as its label, like “Not measured”, never as a dash."
+        ],
+        "toHandle": [
+          "A label that says why: “Not measured”, “Unknown”.",
+          "A label nearby, like a row’s, that says what’s missing."
+        ]
+      }
+    },
+    "Readout": {
+      "whenToUse": [
+        "A headline figure and its unit: live speed, data used.",
+        "Labelled pairs side by side, sharing the row equally: Traffic’s “Download” and “Upload”.",
+        "A Home stat card’s figure, Compact and unlabelled."
+      ],
+      "whenNotToUse": [
+        "A value in a list of facts: use Data row.",
+        "A number inside a line of text, easing each poll: use Metric value."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The label and figure are read as a pair.",
+          "While the figure counts up, the digits can be silenced and the settled value read once."
+        ],
+        "toHandle": [
+          "Figures side by side as one group, each with a label.",
+          "Without a label, a title nearby that says what the figure is.",
+          "The settled value to read while it counts, noted on the design: “182 Mbps”."
+        ]
+      }
+    },
+    "MetricValue": {
+      "whenToUse": [
+        "A number that changes each poll: latency, packet loss.",
+        "A value with a healthy range, in its status colour: latency.",
+        "A number inside text that sets its size: a data row’s value."
+      ],
+      "whenNotToUse": [
+        "A headline figure with its unit and label: use Readout.",
+        "A value that never changes: use Data row’s plain value."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Snaps to each new value when reduced motion is on.",
+          "The number shown is the number read.",
+          "A missing value shows No value, read as “None”."
+        ],
+        "toHandle": [
+          "A label beside it that says what it measures.",
+          "The status in words where it matters, not only colour.",
+          "Which changes are worth reading out, noted on the design."
+        ]
+      }
+    },
+    "BarMeter": {
+      "whenToUse": [
+        "Signal strength or a rating, at a glance.",
+        "A level in its status colour, taken from the text around it.",
+        "A rating not measured yet: every bar unlit."
+      ],
+      "whenNotToUse": [
+        "An exact figure: use Metric value or Readout.",
+        "Comparing traffic between rows: use Split bar."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The bars take the colour of the text around them.",
+          "Unlit bars are a faint tint of the lit colour, not another hue.",
+          "A picture only: screen readers skip it."
+        ],
+        "toHandle": [
+          "The rating in words, shown beside it or noted for screen readers: “Excellent”.",
+          "A colour with 3:1 contrast against the surface."
+        ]
+      }
+    },
+    "SplitBar": {
+      "whenToUse": [
+        "Download and upload in proportion, in a usage row.",
+        "Rows compared with each other, every bar scaled to the busiest row."
+      ],
+      "whenNotToUse": [
+        "A rating or signal: use Bar meter.",
+        "A single headline amount: use Readout."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Read as one image, named by its label."
+        ],
+        "toHandle": [
+          "A label that says both amounts, down then up.",
+          "Figures beside it: colour alone doesn’t say which segment is which."
+        ]
+      }
+    },
+    "ListRow": {
+      "whenToUse": [
+        "A card’s row that opens a view, an Icon tile first if the item has one: a capability, “About Rove”."
+      ],
+      "whenNotToUse": [
+        "A label and value that open nothing: use Data row.",
+        "A whole card that opens: use a linked Card.",
+        "A row holding a bar or other block content: use Stretched link."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The whole row is one button, read by its text.",
+          "The chevron is decoration.",
+          "Disabled, it stays reachable and is announced as unavailable."
+        ],
+        "toHandle": [
+          "Rows that belong together grouped as one list.",
+          "A rating in words, not colour alone: “Excellent”, in its level’s colour."
+        ]
+      }
+    },
+    "IconTile": {
+      "whenToUse": [
+        "The icon that starts an item’s row: a device, a capability.",
+        "A tile that opens something on its own, as the button version: Home’s capability strip."
+      ],
+      "whenNotToUse": [
+        "An icon-only action: use Icon button.",
+        "A whole row that opens something: use List row, the tile inside.",
+        "An event on a timeline: use Timeline node."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The plain tile is decoration: its icon isn’t read.",
+          "The button version is read by its label, and stays reachable when disabled."
+        ],
+        "toHandle": [
+          "Words beside a plain tile that say what the item is.",
+          "A label for the button version with the item and its state: “Video calls: Good”."
+        ]
+      }
+    },
+    "IconTileButton": {
+      "whenToUse": [
+        "A tile that opens something on its own: Home’s capability strip."
+      ],
+      "whenNotToUse": [
+        "A whole row that opens something: use List row, the Icon tile inside.",
+        "An icon-only action: use Icon button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "A real button, with hover and focus states.",
+          "Disabled, it stays focusable but ignores presses."
+        ],
+        "toHandle": [
+          "A name with the item and its state: “Video calls: Good”."
+        ]
+      }
+    },
+    "TimelineNode": {
+      "whenToUse": [
+        "One event in a timeline: “Device left the network”, “Service went down”.",
+        "A day’s events in a feed, one node each under its heading."
+      ],
+      "whenNotToUse": [
+        "An item that isn’t an event: use Icon tile in its row.",
+        "A message about the whole page: use Banner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Nodes are read as a list, so screen readers count them.",
+          "The marker is decoration; the lines carry the event."
+        ],
+        "toHandle": [
+          "Lines that say what happened, not only colour or icon.",
+          "When it happened, in its lines.",
+          "A day’s nodes under that day’s heading."
+        ]
+      }
+    },
+    "Card": {
+      "whenToUse": [
+        "Related facts or settings under one title, like DNS or Updates.",
+        "A Home summary that opens its page: Usage.",
+        "A list that is one card, as a Card list: the tracked services."
+      ],
+      "whenNotToUse": [
+        "An error about the whole page: use Banner.",
+        "Nothing to list yet: use Empty state.",
+        "A row in a card that opens a page: use List row."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "A card with a header is a region named by its title.",
+          "An openable card is one link, first in Tab order.",
+          "A card list is read as a list."
+        ],
+        "toHandle": [
+          "A header on each card, so it has a name.",
+          "For an openable card whose title doesn’t say what it shows, a link label noted on the design."
+        ]
+      }
+    },
+    "CardBody": {
+      "whenToUse": [
+        "A card’s content, under its Card header.",
+        "Settings or list rows, Body layout Rows: Updates.",
+        "A Data list stack, Body layout Flush, so its hairlines run edge to edge."
+      ],
+      "whenNotToUse": [
+        "A footnote or status under the content: use the Card footer."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Adds nothing for screen readers to read."
+        ],
+        "toHandle": [
+          "Headings and lists inside it where the content has them."
+        ]
+      }
+    },
+    "CardFooter": {
+      "whenToUse": [
+        "A footnote under the body: the Router card’s packet-loss note.",
+        "The result of an action in the card: Settings’ update check."
+      ],
+      "whenNotToUse": [
+        "Actions on the card: put them in the Card header.",
+        "A failure on the page: use Banner."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Read last, after the body."
+        ],
+        "toHandle": [
+          "A footer that appears after an action, marked to be announced."
+        ]
+      }
+    },
+    "CardHeader": {
+      "whenToUse": [
+        "The title row on top of a card: an icon, the title and its actions.",
+        "A badge or control at the row’s end: Live badge."
+      ],
+      "whenNotToUse": [
+        "A page’s title and actions: use Page header."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Its title names the card for screen readers.",
+          "Its icon is decorative."
+        ],
+        "toHandle": [
+          "A short title that names the card: DNS."
+        ]
+      }
+    },
+    "CardList": {
+      "whenToUse": [
+        "A list that is one card: the tracked services."
+      ],
+      "whenNotToUse": [
+        "Rows under a card’s title: use a Card with Body layout Rows.",
+        "Labelled facts: use Data rows."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Read as a list, with a name.",
+          "Arrow keys move between the rows."
+        ],
+        "toHandle": [
+          "A name for the list: Tracked services.",
+          "Rows that each stand alone."
+        ]
+      }
+    },
+    "DotSeparator": {
+      "whenToUse": [
+        "Short facts on one line, like a device’s vendor and model, in place of a typed dot.",
+        "Facts that may be empty: they drop out with their dots.",
+        "Parts laid out by hand, a lone dot between them: the Services header."
+      ],
+      "whenNotToUse": [
+        "Labels with their values: use Data row.",
+        "A status beside its words: use Status dot.",
+        "A missing value that should show: use No value."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The dot is decoration: screen readers skip it.",
+          "A truncated item is still read in full."
+        ],
+        "toHandle": [
+          "Items that read well in a row, without the dots.",
+          "The full value elsewhere when truncation can cut it off."
+        ]
+      }
+    },
+    "InlineMeta": {
+      "whenToUse": [
+        "Short facts on one line that may be empty: a device’s vendor and model."
+      ],
+      "whenNotToUse": [
+        "Parts you lay out yourself: use a bare Dot separator between them."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Empty items drop out with their dots.",
+          "The dots are decorative."
+        ],
+        "toHandle": [
+          "Items that read well in a row, without the dots."
+        ]
+      }
+    },
+    "TitleBar": {
+      "whenToUse": [
+        "The window’s top edge, once per window.",
+        "The connection in words, in the Title bar status: “Offline”, “No internet”.",
+        "A frameless window, with Window buttons."
+      ],
+      "whenNotToUse": [
+        "A page’s title and actions: use Page header.",
+        "A status anywhere else: use a Status dot beside its words."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The window buttons are named “Minimize” and “Close”.",
+          "The status is read out when it changes."
+        ],
+        "toHandle": [
+          "The brand’s name as text, with the mark as decoration.",
+          "Status words that make sense heard alone: “No internet”."
+        ]
+      }
+    },
+    "TitleBarStatus": {
+      "whenToUse": [
+        "The connection in a word or two, beside the brand: Online, No internet."
+      ],
+      "whenNotToUse": [
+        "A status anywhere else: use a Status dot beside its words."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "A change is read out.",
+          "The dot is decorative."
+        ],
+        "toHandle": [
+          "Words that make sense heard alone: No internet."
+        ]
+      }
+    },
+    "WindowButton": {
+      "whenToUse": [
+        "Minimise and close, at the end of a frameless window’s title bar."
+      ],
+      "whenNotToUse": [
+        "An icon action anywhere else: use Icon button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Named Minimize or Close.",
+          "Skipped by Tab, like a native title bar’s."
+        ],
+        "toHandle": [
+          "Nothing: the name comes with the action."
+        ]
+      }
+    },
+    "NavItem": {
+      "whenToUse": [
+        "A page in the rail: Home, Devices.",
+        "An action at the rail’s foot: the theme switch."
+      ],
+      "whenNotToUse": [
+        "An icon action outside the rail: use Icon button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Its name is also its tooltip.",
+          "The current page’s item is announced as current."
+        ],
+        "toHandle": [
+          "One active item: the current page’s.",
+          "An action named for what it does: Switch to light mode."
+        ]
+      }
+    },
+    "NavRail": {
+      "whenToUse": [
+        "The app’s pages, down the window’s left side, once.",
+        "Settings and the theme switch, at the bottom."
+      ],
+      "whenNotToUse": [
+        "A page’s own actions: use Page header’s actions.",
+        "An icon action anywhere else: use Icon button."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "Each item’s label is its tooltip and what’s read.",
+          "The current page’s item is announced as current.",
+          "One Tab stop, on the current page’s item. Arrow keys move between items."
+        ],
+        "toHandle": [
+          "A name for the rail: “Main navigation”.",
+          "Only the current page’s item active.",
+          "The theme item’s icon and label show where it switches: a sun and “Switch to light mode” in Dark."
+        ]
+      }
+    },
+    "PageHeader": {
+      "whenToUse": [
+        "The top of each tab’s page, like Devices or Usage.",
+        "A page over a tab, a back button in place of the icon: Hosts.",
+        "Something running on the page, in the status line: “Checking…”.",
+        "A page’s hint, in the info button: before the actions’ divider, never after it."
+      ],
+      "whenNotToUse": [
+        "A card’s title: use Card header.",
+        "An error about the page: use Banner below it."
+      ],
+      "accessibility": {
+        "builtIn": [
+          "The title is the page’s main heading.",
+          "A new status line is read out.",
+          "The back button is named “Back”, with a matching tooltip.",
+          "The info button is named, its hint in a tooltip."
+        ],
+        "toHandle": [
+          "Labels and tooltips on the actions you add.",
+          "Status words that make sense heard alone."
+        ]
+      }
+    }
+  }
+}

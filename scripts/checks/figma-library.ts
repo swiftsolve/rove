@@ -9,17 +9,13 @@
  *     `true`/`false` variant is a boolean prop (`Disabled` is `isDisabled`), and
  *     a part's prop takes its part's name (`Body layout` is CardBody's `layout`);
  *   - every prop with a fixed set of values has a Figma variant property;
- *   - every usage guide in the stories (`guidance`, and `partGuidance` for a
- *     part on its family's page) has its twin in the component's Figma docs
+ *   - every usage guide in Figma matches src/ui/figma-guides.json, the copy
+ *     `npm run gen` merges into components.gen.json and compares with the
+ *     code's guides. A guide is the Guidance block in the component's docs
  *     section, or for a part with no Figma component of its own (CardBody,
- *     DialogRoot), under its name in the Parts block at the end of its
- *     family's section: When to use and When not to use, as many
- *     lines in each, and every alternative the code names under When not to
- *     use (`use `EmptyState``) named there too ("Empty state"). Figma words
- *     its lines for designers, so the wording itself is left to review.
- *     Accessibility isn't compared: Storybook's is for whoever builds with the
- *     component, Figma's for whoever designs with it, so each says what its
- *     reader handles.
+ *     DialogRoot), the one under its name in the Parts block at the end of its
+ *     family's section. `npm run figma:export-guides` (`--export-guides`)
+ *     writes the file from Figma.
  *
  * `State` (Hover, Focus) is how it looks under the pointer, not a prop, so it
  * isn't matched. A deliberate difference is written in the component's
@@ -39,17 +35,24 @@
  * the repository secret of the same name.
  *
  * An agent without a token can read the same data through the Figma MCP
- * (`use_figma`) and pass it in as `{ nodes, docs }`: `nodes` is each mapped
- * node's name, type and componentPropertyDefinitions by id, and `docs` each
- * docs section's text, in order and outside component instances, by its name:
+ * (`use_figma`) and pass it in as `{ nodes, sections }`: `nodes` is each mapped
+ * node's name, type and componentPropertyDefinitions by id, and `sections`
+ * each docs section's tree (name, type, characters, children) by its name:
  *
- *   node scripts/checks/figma-library.ts [--from figma-data.json]
+ *   node scripts/checks/figma-library.ts [--export-guides] [--from figma-data.json]
  */
-import { readFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import type { ComponentListJson, FigmaComponent, FigmaComponentsJson, PropEntry } from '../lib/library-json-types.ts'
+import type {
+  ComponentListJson,
+  FigmaComponent,
+  FigmaComponentsJson,
+  FigmaGuidesJson,
+  Guidance,
+  PropEntry,
+} from '../lib/library-json-types.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const FIGMA_COMPONENTS_JSON = join(ROOT, 'src/ui/figma-components.json')
@@ -66,14 +69,9 @@ const UNSET_OPTION = 'none'
 const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
 // Text inside these is a live component, not the docs around it.
 const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
-// A docs section's guide headings, as Storybook's Docs page has them (.storybook/docs-page.tsx).
-const GUIDE_LABELS = {
-  whenToUse: 'When to use',
-  whenNotToUse: 'When not to use',
-  accessibility: 'Accessibility',
-}
-// The block at the end of a family's docs section that holds its parts' guides.
-const PARTS_LABEL = 'Parts'
+// The guides as last exported, which `npm run gen` merges into components.gen.json.
+const FIGMA_GUIDES_JSON = join(ROOT, 'src/ui/figma-guides.json')
+const isExport = process.argv.includes('--export-guides')
 
 /** The part of a Figma node this check reads, from the REST API or `use_figma`. */
 type FigmaNode = {
@@ -92,10 +90,8 @@ type FigmaNodesAnswer = { nodes: Record<string, NodeAnswer> }
 type FigmaFileAnswer = { document: FigmaNode }
 /** Figma nodes by id: undefined where the file has no such node. */
 type FigmaNodesById = Record<string, FigmaNode | undefined>
-/** The mapped nodes by id, and each docs section's text by its name (none from a file that has only nodes). */
-type FigmaData = { nodes: FigmaNodesById; docs?: Record<string, string[]> }
-/** A guide's lines per section. */
-type GuideLines = { whenToUse: string[]; whenNotToUse: string[] }
+/** The mapped nodes by id, and the docs sections by name (none from a file that has only nodes). */
+type FigmaData = { nodes: FigmaNodesById; sections?: Record<string, FigmaNode> }
 
 /** Lowercase letters and digits only, so `Body layout`, `bodyLayout` and `Down only` compare. */
 const comparisonKey = (text: string | number) =>
@@ -150,7 +146,7 @@ function textsOf(node: FigmaNode): string[] {
   return (node.children ?? []).flatMap(textsOf)
 }
 
-/** The mapped nodes and the docs sections' text, from a file (`--from`) or the REST API. */
+/** The mapped nodes and the docs sections, from a file (`--from`) or the REST API. */
 async function readFigma(fileKey: string, nodeIds: string[], sectionNames: Set<string>): Promise<FigmaData> {
   const fromIndex = process.argv.indexOf('--from')
   if (fromIndex !== -1) {
@@ -159,7 +155,7 @@ async function readFigma(fileKey: string, nodeIds: string[], sectionNames: Set<s
       console.error('--from takes the path of a JSON file')
       process.exit(1)
     }
-    // A file from `use_figma` holds `{ nodes, docs }`, or the nodes alone.
+    // A file from `use_figma` holds `{ nodes, sections }`, or the nodes alone.
     const figmaData = JSON.parse(await readFile(resolve(fromPath), 'utf8')) as FigmaData | FigmaNodesById
     return 'nodes' in figmaData ? (figmaData as FigmaData) : { nodes: figmaData }
   }
@@ -181,30 +177,60 @@ async function readFigma(fileKey: string, nodeIds: string[], sectionNames: Set<s
     .flatMap((frame) => frame.children ?? [])
     .filter((section) => sectionNames.has(section.name))
     .map((section) => section.id)
-  const sections =
+  const sectionAnswers =
     sectionIds.length > 0
       ? (await fetchFigmaJson<FigmaNodesAnswer>(token, `/files/${fileKey}/nodes?ids=${sectionIds.join(',')}`)).nodes
       : {}
-  const docs: Record<string, string[]> = {}
-  for (const answer of Object.values(sections)) {
-    if (!answer) continue
-    const texts = textsOf(answer.document)
-    if (texts.includes(GUIDE_LABELS.whenToUse)) docs[answer.document.name] = texts
+  // Other pages reuse a component's name for a frame (a Card on a screen), so
+  // only a frame holding a Guidance block is its docs section.
+  const sections: Record<string, FigmaNode> = {}
+  for (const answer of Object.values(sectionAnswers)) {
+    if (answer?.document.children?.some(({ name }) => name === 'Guidance'))
+      sections[answer.document.name] = answer.document
   }
-  return { nodes: Object.fromEntries(Object.entries(nodes).map(([id, answer]) => [id, answer?.document])), docs }
+  return { nodes: Object.fromEntries(Object.entries(nodes).map(([id, answer]) => [id, answer?.document])), sections }
 }
 
-/** A Figma guide's lines per section, read off its docs section's text. */
-function figmaGuide(texts: string[]): GuideLines | null {
-  const at = (label: string, from: number) => texts.indexOf(label, from)
-  const whenToUse = at(GUIDE_LABELS.whenToUse, 0)
-  const whenNotToUse = at(GUIDE_LABELS.whenNotToUse, whenToUse)
-  const accessibility = at(GUIDE_LABELS.accessibility, whenNotToUse)
-  if ([whenToUse, whenNotToUse, accessibility].includes(-1)) return null
-  return {
-    whenToUse: texts.slice(whenToUse + 1, whenNotToUse),
-    whenNotToUse: texts.slice(whenNotToUse + 1, accessibility),
+/** A node's direct child of that name. */
+const childNamed = (node: FigmaNode | undefined, name: string) => node?.children?.find((child) => child.name === name)
+
+/** A node's first descendant of that name, outer before inner (the "When to use" frame before its heading). */
+function descendantNamed(node: FigmaNode | undefined, name: string): FigmaNode | undefined {
+  for (const child of node?.children ?? []) {
+    if (child.name === name) return child
+    const found = descendantNamed(child, name)
+    if (found) return found
   }
+  return undefined
+}
+
+/** The lines of a list in a Guidance block: each `Item` frame's text. */
+const itemLines = (list: FigmaNode | undefined) =>
+  (list?.children ?? []).filter(({ name }) => name === 'Item').map((item) => textsOf(item).join(''))
+
+/** A Guidance block's guide, read by its layers (Row › When to use › Body › Items › Item). */
+function guideOf(block: FigmaNode): Guidance {
+  const accessibilityBody = childNamed(descendantNamed(block, 'Accessibility'), 'Body')
+  return {
+    whenToUse: itemLines(descendantNamed(descendantNamed(block, 'When to use'), 'Items')),
+    whenNotToUse: itemLines(descendantNamed(descendantNamed(block, 'When not to use'), 'Items')),
+    accessibility: {
+      builtIn: itemLines(childNamed(accessibilityBody, 'Built in')),
+      toHandle: itemLines(childNamed(accessibilityBody, 'To handle')),
+    },
+  }
+}
+
+/**
+ * A component's Guidance block: its own docs section's, else, for a part, the
+ * one under its heading in the Parts block at the end of its family's section.
+ */
+function guidanceBlockOf(location: GuideLocation, sections: Record<string, FigmaNode>): FigmaNode | undefined {
+  const { ownSection, familySection, partHeading } = location
+  const ownBlock = ownSection === undefined ? undefined : childNamed(sections[ownSection], 'Guidance')
+  if (ownBlock) return ownBlock
+  const familyParts = familySection === undefined ? undefined : childNamed(sections[familySection], 'Parts')
+  return childNamed(childNamed(familyParts, partHeading), 'Guidance')
 }
 
 /** A Figma node's variant properties, `{ Tone: ['Accent', …] }`, without the interaction state. */
@@ -266,13 +292,6 @@ function guideLocationsOf(): GuideLocation[] {
   return locations
 }
 
-/** A part's lines from its family section's text: after the Parts label, from its heading on. */
-function partTexts(texts: string[], partHeading: string): string[] | null {
-  const partsAt = texts.lastIndexOf(PARTS_LABEL)
-  const headingAt = partsAt === -1 ? -1 : texts.indexOf(partHeading, partsAt)
-  return headingAt === -1 ? null : texts.slice(headingAt)
-}
-
 const isDefined = <Value>(value: Value | undefined): value is Value => value !== undefined
 
 const isSameSet = (a: string[], b: string[]) => a.length === b.length && a.every((value) => b.includes(value))
@@ -302,7 +321,7 @@ for (const [component, entry] of mappedEntries)
 // with no Figma component of its own (CardBody shares Card's; DialogRoot has
 // none), under its name in the Parts block of its family's section.
 const guideLocations = guideLocationsOf()
-const { nodes, docs } = await readFigma(
+const { nodes, sections } = await readFigma(
   fileKey,
   [...componentsByNode.keys()],
   new Set(guideLocations.flatMap(({ ownSection, familySection }) => [ownSection, familySection].filter(isDefined))),
@@ -410,48 +429,32 @@ for (const [nodeId, components] of componentsByNode) {
   }
 }
 
-// The usage guides. A component the code names is looked for by its Figma
-// name, or its own for one Figma lacks; spaces and case don't count, so
-// StretchedLink is found as "Stretched link".
-const figmaNameOf = (component: string) => mappedComponents.get(component)?.figmaName ?? component
-for (const { component, ownSection, familySection, partHeading } of docs ? guideLocations : []) {
-  const guide = componentList[component]?.guidance
-  if (!guide) continue
-  const { whenToUse: whenToUseLines, whenNotToUse: whenNotToUseLines } = guide
-  // Its own section when it has one with a guide, else its family's Parts block.
-  const ownTexts = ownSection === undefined ? undefined : docs?.[ownSection]
-  const familyTexts = familySection === undefined ? undefined : docs?.[familySection]
-  const texts = ownTexts ?? (familyTexts && partTexts(familyTexts, partHeading))
-  const figmaGuideLines = texts && figmaGuide(texts)
-  const figmaName = ownTexts ? ownSection : `${String(familySection)}" Parts block's "${partHeading}`
-  if (!figmaGuideLines) {
-    const places = [
-      ownSection && `Figma's "${ownSection}" docs section`,
-      familySection && `"${partHeading}" in the Parts block of Figma's "${familySection}" section`,
-    ].filter(Boolean)
-    problems.push(`${component} has a usage guide, but none is in ${places.join(' or ')}: add it there`)
-    continue
+// The usage guides: read off Figma, then written to figma-guides.json
+// (--export-guides) or compared with it, so the exported copy that
+// `npm run gen` merges and checks against the code stays Figma's.
+const figmaGuides: Record<string, Guidance> = {}
+for (const location of sections ? guideLocations : []) {
+  const block = guidanceBlockOf(location, sections ?? {})
+  if (block) figmaGuides[location.component] = guideOf(block)
+}
+if (sections && isExport) {
+  const guidesJson: FigmaGuidesJson = {
+    $schema: '../../schemas/figma-guides.schema.json',
+    $comment:
+      'Exported from the Figma file by `npm run figma:export-guides`; change a guide in Figma, then export again and run `npm run gen`.',
+    guides: figmaGuides,
   }
-  const sections = [
-    { label: GUIDE_LABELS.whenToUse, lines: whenToUseLines, figmaLines: figmaGuideLines.whenToUse },
-    { label: GUIDE_LABELS.whenNotToUse, lines: whenNotToUseLines, figmaLines: figmaGuideLines.whenNotToUse },
-  ]
-  for (const { label, lines, figmaLines } of sections) {
-    if (lines.length !== figmaLines.length) {
-      problems.push(
-        `${component}'s usage guide has ${lines.length} ${label} lines in code, ${figmaLines.length} in Figma's "${figmaName}": ` +
-          `bring the side that's behind up to date`,
-      )
-    }
-  }
-  const insteadText = comparisonKey(figmaGuideLines.whenNotToUse.join(' '))
-  const namedAlternatives = new Set(
-    whenNotToUseLines.flatMap((line) => [...line.matchAll(/`([A-Z]\w+)`/g)].map(([, alternative = '']) => alternative)),
+  await writeFile(FIGMA_GUIDES_JSON, `${JSON.stringify(guidesJson, null, 2)}\n`)
+  console.log(`figma-guides.json written (${Object.keys(figmaGuides).length} guides): run npm run gen`)
+} else if (sections) {
+  const { guides: exportedGuides } = JSON.parse(await readFile(FIGMA_GUIDES_JSON, 'utf8')) as FigmaGuidesJson
+  const components = new Set([...Object.keys(figmaGuides), ...Object.keys(exportedGuides)])
+  const changed = [...components].filter(
+    (component) => JSON.stringify(figmaGuides[component]) !== JSON.stringify(exportedGuides[component]),
   )
-  for (const alternative of namedAlternatives) {
-    if (!(alternative in componentList) || insteadText.includes(comparisonKey(figmaNameOf(alternative)))) continue
+  if (changed.length > 0) {
     problems.push(
-      `${component}'s usage guide names ${alternative} under ${GUIDE_LABELS.whenNotToUse}; Figma's "${figmaName}" doesn't`,
+      `Figma's usage guides for ${changed.join(', ')} differ from figma-guides.json: run npm run figma:export-guides, then npm run gen`,
     )
   }
 }
@@ -460,5 +463,5 @@ if (problems.length > 0) {
   console.error(`The library and Figma are out of step:\n  ${problems.join('\n  ')}`)
   process.exit(1)
 }
-const guides = docs ? `, and ${guideLocations.length} usage guides` : ''
+const guides = sections ? `, and ${Object.keys(figmaGuides).length} usage guides` : ''
 console.log(`Figma OK (${componentsByNode.size} nodes, their names and variants${guides})`)
