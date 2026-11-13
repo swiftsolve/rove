@@ -97,6 +97,27 @@ const meta = {
         ],
       },
     } satisfies Guidance,
+    partGuidance: {
+      CollapsibleTrigger: {
+        whenToUse: ['The control that opens and closes the panel: a card’s header, a group’s row.'],
+        whenNotToUse: ['Going to another page: use `Link`.'],
+        accessibility: {
+          builtIn: ['A native `<button>` with `aria-expanded`, tied to the panel it controls.'],
+          toHandle: [
+            'A name that says what it shows: “Connection details”.',
+            'Its look: hover, focus and any chevron.',
+          ],
+        },
+      },
+      CollapsiblePanel: {
+        whenToUse: ['What the trigger shows and hides, right after it.'],
+        whenNotToUse: ['Content everyone needs: show it in the `Card`.'],
+        accessibility: {
+          builtIn: ['Closed, it leaves the page and the accessibility tree.'],
+          toHandle: ['Content that makes sense read straight after the trigger.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
   // Keyed, so changing isOpen in the controls starts it afresh.
   render: (args) => <ControlledCollapsible key={String(args.isOpen)} {...args} />,

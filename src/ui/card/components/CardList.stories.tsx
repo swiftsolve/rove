@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../../.storybook/docs-page'
 import { CardList } from './CardList'
 
 const meta = {
@@ -18,6 +19,23 @@ const meta = {
       </CardList>
     </div>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      whenToUse: ['A list that is one card: the tracked services.'],
+      whenNotToUse: [
+        'Rows under a card’s title: use `CardBody` with `layout="rows"`.',
+        'Labelled facts: use `DataList`.',
+      ],
+      accessibility: {
+        builtIn: [
+          'A list named by `label`.',
+          'Up and Down move between the rows’ controls, and Home and End to the ends.',
+        ],
+        toHandle: ['A `label` that names the list: “Tracked services”.', 'Each row as an `<li>`.'],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof CardList>
 
 export default meta

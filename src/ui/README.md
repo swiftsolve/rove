@@ -61,8 +61,12 @@ library imports only itself (by relative path) and packages, never app code.
   label and icon."), shown under its name above the doc comment.
 - Its usage guide is the stories' `guidance` parameter (`Guidance` in
   `.storybook/docs-page.tsx`), with `docs: { toc: GUIDANCE_TOC }` beside it.
-  Every component has one, written for its whole family (Card's covers
-  CardHeader and the rest). [✓ CHECKED by `gen/components.ts`]
+  Every component has one, parts too: a part with its own Docs page
+  (`Containers/Card/CardBody`) sets its own `guidance`, and a part shown on
+  its family's page (MenuItem on `Actions/Menu`) has its guide in that page's
+  `partGuidance`, by name, shown at the end of the page. The family's guide
+  covers how the parts fit together; a part's, when to reach for that part.
+  [✓ CHECKED by `gen/components.ts`]
 
   It has three parts, a few words a line:
   - When to use: a situation, then how if it needs saying, then an example
@@ -75,7 +79,8 @@ library imports only itself (by relative path) and packages, never app code.
   A rule that isn't a situation goes in the doc comment instead, and what the
   stories and props table already show (each state, each variant) stays out.
 - `components.gen.json` is the library's API in one file: each component's
-  group, doc comment, props, Figma component, story ids and usage guide.
+  group, doc comment, props, Figma component, story ids and usage guide, and
+  for a part, its family (`partOf`).
   `npm run gen` writes it from the code and `figma-components.json`, so a
   change goes in those and the file is regenerated. Every component and prop
   of its own has a doc comment, and every component an entry in

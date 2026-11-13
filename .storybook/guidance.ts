@@ -1,6 +1,8 @@
 /**
  * A component's usage guide, set as its stories' `guidance` parameter and shown
  * on its Docs page above the stories. Each line is a few words, with `code` in backticks.
+ * A part shown on its family's page (MenuItem on Menu's) has its guide in that
+ * page's `partGuidance` parameter, by name, shown at the end of the page.
  */
 export type Guidance = {
   /**

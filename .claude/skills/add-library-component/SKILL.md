@@ -30,7 +30,8 @@ The library's rules (stories, docs pages, what every component does) are in
 3. An export from `src/ui/index.ts`, under its group's comment.
 4. Stories beside it (`Name.stories.tsx`), titled by its group
    (`Data display/Name`), with an `AllStates` story when it has several states,
-   a usage guide, and a `play` story if it takes a handler.
+   a usage guide, and a `play` story if it takes a handler. A part shown on its
+   family's page instead gets its guide in that page's `partGuidance`.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
 6. `npm run gen`.
 
@@ -85,6 +86,10 @@ Without the server, stop after the code side and say the Figma side is left.
      or note (To handle).
    - No Guidelines block: a rule about one property goes in its row's
      Description, as the prop's description holds it in code.
+   - A part with no docs section of its own (CardBody shares Card's
+     component; MenuItem has none) has its guide in a Parts block at the end
+     of its family's section: a "Parts" title, then per part its name, its
+     code chip and a Guidance block.
 3. Its entry in `src/ui/figma-components.json`: the `map-figma-component` skill
    (`.claude/skills/map-figma-component/SKILL.md`). For a changed one too when
    a prop or value is renamed or removed: the check reads only the entry's

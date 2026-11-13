@@ -55,6 +55,35 @@ const meta = {
         ],
       },
     } satisfies Guidance,
+    partGuidance: {
+      MenuTrigger: {
+        whenToUse: ['The kebab that opens a row’s or card’s menu.'],
+        whenNotToUse: ['One action on its own: use `IconButton`.'],
+        accessibility: {
+          builtIn: ['A button that says whether its menu is open.', 'Enter or Space opens the menu on its first item.'],
+          toHandle: ['A `label` that names its subject: “Options for Google”.'],
+        },
+      },
+      MenuContent: {
+        whenToUse: ['The list the kebab opens, holding its `MenuItem`s.'],
+        whenNotToUse: ['A list that stays on the page: use `CardList`.'],
+        accessibility: {
+          builtIn: ['A `menu`, lined up under the kebab’s right edge.', 'It takes focus when it opens.'],
+          toHandle: ['Only `MenuItem`s, the most used first.'],
+        },
+      },
+      MenuItem: {
+        whenToUse: ['One action in the menu: Edit, Remove.', 'A destructive action, `tone="negative"`: Clear history.'],
+        whenNotToUse: ['A setting that stays on or off: use `Toggle`.'],
+        accessibility: {
+          builtIn: [
+            'A `menuitem`: Enter or a click runs it and closes the menu.',
+            'Its icon is hidden from screen readers.',
+          ],
+          toHandle: ['A label that says what happens: “Remove”, not “OK”.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
   // The menu lines up with the kebab's right edge, so it needs room to its
   // left, and room below to open into.

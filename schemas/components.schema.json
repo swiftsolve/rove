@@ -83,6 +83,10 @@
             "type": "string"
           }
         },
+        "partOf": {
+          "description": "For a part, the family it belongs to (Card for CardBody): its Figma guide is in that family's docs section when the part has no Figma component of its own.",
+          "type": "string"
+        },
         "guidance": {
           "$ref": "#/definitions/guidance"
         }
@@ -120,7 +124,7 @@
       }
     },
     "guidance": {
-      "description": "When to use it, when not, and accessibility, from its stories' guidance parameter, as its Docs page shows them.",
+      "description": "When to use it, when not, and accessibility, from its stories' guidance parameter (a part on its family's page: the family's partGuidance), as its Docs page shows them.",
       "type": "object",
       "additionalProperties": false,
       "properties": {

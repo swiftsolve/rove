@@ -42,6 +42,19 @@ const meta = {
         ],
       },
     } satisfies Guidance,
+    partGuidance: {
+      TextFieldAction: {
+        whenToUse: ['Checking the field’s value in place: Test.'],
+        whenNotToUse: ['Submitting the form: use a `Button` outside the field.'],
+        accessibility: {
+          builtIn: [
+            'A native `<button>` inside the field’s border.',
+            'Loading, it stays focusable, named by `loadingLabel`.',
+          ],
+          toHandle: ['A one-word label for what it does to the value: Test.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
   render: (args) => <ControlledTextField {...args} />,
   decorators: [

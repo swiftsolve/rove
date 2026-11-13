@@ -65,6 +65,19 @@ const meta = {
         ],
       },
     } satisfies Guidance,
+    partGuidance: {
+      IconTileButton: {
+        whenToUse: ['A tile that opens something on its own: Home’s capability strip.'],
+        whenNotToUse: [
+          'A whole row that opens something: use `ListRow`, an `IconTile` inside.',
+          'An icon-only action: use `IconButton`.',
+        ],
+        accessibility: {
+          builtIn: ['A native `<button>` named by `label`.', 'Disabled, it stays focusable but ignores presses.'],
+          toHandle: ['A `label` with the item and its state: “Video calls: Good”.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
 } satisfies Meta<typeof IconTile>
 

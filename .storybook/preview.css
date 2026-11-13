@@ -101,6 +101,47 @@ body {
   color: var(--text-primary);
 }
 
+.guidance h4 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+/* Parts: each part's guide under its name, after the stories. */
+.parts {
+  margin: 56px 0 0;
+}
+
+.parts > h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-family-display);
+  font-size: 20px;
+  font-weight: var(--type-title-weight);
+  line-height: 28px;
+  color: var(--text-primary);
+}
+
+.parts h3 {
+  margin: 32px 0 0;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.parts h3 code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-inset);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.parts .guidance {
+  margin: 16px 0 0;
+}
+
 /* The contents list (GUIDANCE_TOC) nests the sections under the title; keep
    them level with it, on the one line. Doubled classes outrank Storybook's. */
 .toc-wrapper .toc-list-item.toc-list-item > .toc-list.toc-list {

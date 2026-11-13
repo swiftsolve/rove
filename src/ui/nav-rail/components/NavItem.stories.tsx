@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../../.storybook/docs-page'
 import { iconArg, iconComponentControl } from '../../icons/icon-options'
 import { NavItem } from './NavItem'
 
@@ -17,6 +18,23 @@ const meta = {
       </div>
     ),
   ],
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      whenToUse: ['A page in the rail: Home, Devices.', 'An action in the rail’s `footer`: the theme switch.'],
+      whenNotToUse: ['An icon action outside the rail: use `IconButton`.'],
+      accessibility: {
+        builtIn: [
+          'A native `<button>` named by `label`, also its tooltip.',
+          'The current page’s item has `aria-current="page"`.',
+        ],
+        toHandle: [
+          '`isActive` on the current page’s item, and only that one.',
+          'An action’s `label` says what it does: “Switch to light mode”.',
+        ],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof NavItem>
 
 export default meta

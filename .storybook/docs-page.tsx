@@ -41,9 +41,9 @@ function Lines({ label, lines }: { label?: string; lines: string[] }): JSX.Eleme
 // As in Figma's Guidance block: When to use and When not to use side by side,
 // then Accessibility across both, its two lists in the same columns. Sections
 // sit under hairlines. `sb-unstyled` keeps Storybook's prose styles off it
-// (preview.css styles it); the headings stay `<h2>`s, with ids, for the page's
-// contents.
-function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
+// (preview.css styles it). The page's own guide has `<h2>`s, with ids, for the
+// page's contents; a part's guide has `<h4>`s, which the contents leave out.
+function GuidanceSections({ guidance, isPart = false }: { guidance: Guidance; isPart?: boolean }): JSX.Element {
   const { whenToUse, whenNotToUse, accessibility } = guidance
   const sections: { title: string; groups: { label?: string; lines: string[] }[] }[] = [
     { title: 'When to use', groups: [{ lines: whenToUse }] },
@@ -60,13 +60,31 @@ function GuidanceSections({ guidance }: { guidance: Guidance }): JSX.Element {
     <div className="guidance sb-unstyled">
       {sections.map(({ title, groups }) => (
         <section key={title}>
-          <h2 id={title.toLowerCase().replaceAll(' ', '-')}>{title}</h2>
+          {isPart ? <h4>{title}</h4> : <h2 id={title.toLowerCase().replaceAll(' ', '-')}>{title}</h2>}
           <div className="guidance-groups">
             {groups.map((group) => (
               <Lines key={group.label ?? title} {...group} />
             ))}
           </div>
         </section>
+      ))}
+    </div>
+  )
+}
+
+// The guides of the parts shown on this page (MenuItem on Menu's), each under
+// its name, as Figma's Parts block has them at the end of the family's section.
+function PartsSections({ partGuidance }: { partGuidance: Record<string, Guidance> }): JSX.Element {
+  return (
+    <div className="parts sb-unstyled">
+      <h2 id="parts">Parts</h2>
+      {Object.entries(partGuidance).map(([partName, guidance]) => (
+        <div key={partName} className="part">
+          <h3 id={`part-${partName.toLowerCase()}`}>
+            <code>{partName}</code>
+          </h3>
+          <GuidanceSections guidance={guidance} isPart />
+        </div>
       ))}
     </div>
   )
@@ -84,10 +102,11 @@ function PageTitle(): JSX.Element {
   )
 }
 
-/** Every component's Docs page: Storybook's own, plus the guide when the stories set one. */
+/** Every component's Docs page: Storybook's own, plus the guide when the stories set one, and its parts' guides last. */
 export function DocsPage(): JSX.Element {
   const { preparedMeta } = useOf('meta', ['meta'])
   const guidance = preparedMeta.parameters.guidance as Guidance | undefined
+  const partGuidance = preparedMeta.parameters.partGuidance as Record<string, Guidance> | undefined
   return (
     <>
       <PageTitle />
@@ -97,6 +116,7 @@ export function DocsPage(): JSX.Element {
       <Primary />
       <Controls />
       <Stories />
+      {partGuidance && <PartsSections partGuidance={partGuidance} />}
     </>
   )
 }

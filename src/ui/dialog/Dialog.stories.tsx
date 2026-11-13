@@ -60,6 +60,16 @@ const meta = {
         ],
       },
     } satisfies Guidance,
+    partGuidance: {
+      DialogRoot: {
+        whenToUse: ['Around every `Dialog`, opening it with `isOpen`.'],
+        whenNotToUse: ['More detail on the page itself: use `Collapsible`.'],
+        accessibility: {
+          builtIn: ['Draws nothing: the `Dialog` inside carries its role and focus.'],
+          toHandle: ['`isOpen` turned false from the Dialog’s `onClose`, so Escape closes it.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
 } satisfies Meta<typeof Dialog>
 

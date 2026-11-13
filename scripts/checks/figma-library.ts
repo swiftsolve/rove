@@ -9,8 +9,11 @@
  *     `true`/`false` variant is a boolean prop (`Disabled` is `isDisabled`), and
  *     a part's prop takes its part's name (`Body layout` is CardBody's `layout`);
  *   - every prop with a fixed set of values has a Figma variant property;
- *   - every usage guide in the stories (`guidance`) has its twin in the
- *     component's Figma docs section: When to use and When not to use, as many
+ *   - every usage guide in the stories (`guidance`, and `partGuidance` for a
+ *     part on its family's page) has its twin in the component's Figma docs
+ *     section, or for a part with no Figma component of its own (CardBody,
+ *     DialogRoot), under its name in the Parts block at the end of its
+ *     family's section: When to use and When not to use, as many
  *     lines in each, and every alternative the code names under When not to
  *     use (`use `EmptyState``) named there too ("Empty state"). Figma words
  *     its lines for designers, so the wording itself is left to review.
@@ -69,6 +72,8 @@ const GUIDE_LABELS = {
   whenNotToUse: 'When not to use',
   accessibility: 'Accessibility',
 }
+// The block at the end of a family's docs section that holds its parts' guides.
+const PARTS_LABEL = 'Parts'
 
 /** The part of a Figma node this check reads, from the REST API or `use_figma`. */
 type FigmaNode = {
@@ -232,6 +237,44 @@ function keysFor(component: string, wholeComponent: string, propName: string): S
   ])
 }
 
+/**
+ * Where a usage guide may sit in Figma: a docs section of its own, and for a
+ * part, the Parts block of its family's section, under its heading there.
+ */
+type GuideLocation = { component: string; ownSection?: string; familySection?: string; partHeading: string }
+
+/** A code name in Figma's sentence case: `CardBody` is "Card body". */
+const sentenceCase = (name: string) =>
+  name.replace(/(?<=[a-z])(?=[A-Z])/g, ' ').replace(/ [A-Z]/g, (letter) => letter.toLowerCase())
+
+/**
+ * Each guided component's places in Figma. A part's own section counts only
+ * when its Figma component is its own (CardBody shares Card's). One with
+ * neither, like Collapsible's parts, has none and isn't compared.
+ */
+function guideLocationsOf(): GuideLocation[] {
+  const locations: GuideLocation[] = []
+  for (const [component, { guidance, partOf }] of Object.entries(componentList)) {
+    if (!guidance) continue
+    const ownEntry = mappedComponents.get(component)
+    const isSharedNode = ownEntry !== undefined && (componentsByNode.get(ownEntry.figmaNodeId)?.length ?? 0) > 1
+    const ownSection = ownEntry && !(partOf && isSharedNode) ? ownEntry.figmaName : undefined
+    const familySection = partOf === undefined ? undefined : mappedComponents.get(partOf)?.figmaName
+    if (ownSection || familySection)
+      locations.push({ component, ownSection, familySection, partHeading: sentenceCase(component) })
+  }
+  return locations
+}
+
+/** A part's lines from its family section's text: after the Parts label, from its heading on. */
+function partTexts(texts: string[], partHeading: string): string[] | null {
+  const partsAt = texts.lastIndexOf(PARTS_LABEL)
+  const headingAt = partsAt === -1 ? -1 : texts.indexOf(partHeading, partsAt)
+  return headingAt === -1 ? null : texts.slice(headingAt)
+}
+
+const isDefined = <Value>(value: Value | undefined): value is Value => value !== undefined
+
 const isSameSet = (a: string[], b: string[]) => a.length === b.length && a.every((value) => b.includes(value))
 
 const { figmaFileUrl, components: mapping } = JSON.parse(
@@ -255,11 +298,14 @@ const componentsByNode = new Map<string, string[]>()
 for (const [component, entry] of mappedEntries)
   componentsByNode.set(entry.figmaNodeId, [...(componentsByNode.get(entry.figmaNodeId) ?? []), component])
 
-const guidedEntries = mappedEntries.filter(([component]) => componentList[component]?.guidance)
+// Where each usage guide sits in Figma: its own docs section, or for a part
+// with no Figma component of its own (CardBody shares Card's; DialogRoot has
+// none), under its name in the Parts block of its family's section.
+const guideLocations = guideLocationsOf()
 const { nodes, docs } = await readFigma(
   fileKey,
   [...componentsByNode.keys()],
-  new Set(guidedEntries.map(([, { figmaName }]) => figmaName)),
+  new Set(guideLocations.flatMap(({ ownSection, familySection }) => [ownSection, familySection].filter(isDefined))),
 )
 const problems: string[] = []
 
@@ -368,14 +414,22 @@ for (const [nodeId, components] of componentsByNode) {
 // name, or its own for one Figma lacks; spaces and case don't count, so
 // StretchedLink is found as "Stretched link".
 const figmaNameOf = (component: string) => mappedComponents.get(component)?.figmaName ?? component
-for (const [component, { figmaName }] of docs ? guidedEntries : []) {
+for (const { component, ownSection, familySection, partHeading } of docs ? guideLocations : []) {
   const guide = componentList[component]?.guidance
   if (!guide) continue
   const { whenToUse: whenToUseLines, whenNotToUse: whenNotToUseLines } = guide
-  const texts = docs?.[figmaName]
+  // Its own section when it has one with a guide, else its family's Parts block.
+  const ownTexts = ownSection === undefined ? undefined : docs?.[ownSection]
+  const familyTexts = familySection === undefined ? undefined : docs?.[familySection]
+  const texts = ownTexts ?? (familyTexts && partTexts(familyTexts, partHeading))
   const figmaGuideLines = texts && figmaGuide(texts)
+  const figmaName = ownTexts ? ownSection : `${String(familySection)}" Parts block's "${partHeading}`
   if (!figmaGuideLines) {
-    problems.push(`${component} has a usage guide, but Figma's "${figmaName}" docs section has none: add it there`)
+    const places = [
+      ownSection && `Figma's "${ownSection}" docs section`,
+      familySection && `"${partHeading}" in the Parts block of Figma's "${familySection}" section`,
+    ].filter(Boolean)
+    problems.push(`${component} has a usage guide, but none is in ${places.join(' or ')}: add it there`)
     continue
   }
   const sections = [
@@ -406,5 +460,5 @@ if (problems.length > 0) {
   console.error(`The library and Figma are out of step:\n  ${problems.join('\n  ')}`)
   process.exit(1)
 }
-const guides = docs ? `, and ${guidedEntries.length} usage guides` : ''
+const guides = docs ? `, and ${guideLocations.length} usage guides` : ''
 console.log(`Figma OK (${componentsByNode.size} nodes, their names and variants${guides})`)

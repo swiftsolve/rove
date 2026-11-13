@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../.storybook/docs-page'
 import { InlineMeta } from './DotSeparator'
 
 const meta = {
@@ -13,6 +14,17 @@ const meta = {
       <InlineMeta {...args} />
     </span>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      whenToUse: ['Short facts on one line that may be empty: a device’s vendor and model.'],
+      whenNotToUse: ['Parts you lay out yourself: use a bare `DotSeparator` between them.'],
+      accessibility: {
+        builtIn: ['Empty items drop out with their dots.', 'The dots are hidden from screen readers.'],
+        toHandle: ['Items that read well in a row, without the dots.'],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof InlineMeta>
 
 export default meta

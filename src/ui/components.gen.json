@@ -399,7 +399,25 @@
         "actions-menu--single-action",
         "actions-menu--keyboard",
         "actions-menu--choosing-an-item"
-      ]
+      ],
+      "partOf": "Menu",
+      "guidance": {
+        "whenToUse": [
+          "The list the kebab opens, holding its `MenuItem`s."
+        ],
+        "whenNotToUse": [
+          "A list that stays on the page: use `CardList`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `menu`, lined up under the kebab’s right edge.",
+            "It takes focus when it opens."
+          ],
+          "toHandle": [
+            "Only `MenuItem`s, the most used first."
+          ]
+        }
+      }
     },
     "MenuItem": {
       "libraryGroup": "Actions",
@@ -440,7 +458,26 @@
         "actions-menu--single-action",
         "actions-menu--keyboard",
         "actions-menu--choosing-an-item"
-      ]
+      ],
+      "partOf": "Menu",
+      "guidance": {
+        "whenToUse": [
+          "One action in the menu: Edit, Remove.",
+          "A destructive action, `tone=\"negative\"`: Clear history."
+        ],
+        "whenNotToUse": [
+          "A setting that stays on or off: use `Toggle`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `menuitem`: Enter or a click runs it and closes the menu.",
+            "Its icon is hidden from screen readers."
+          ],
+          "toHandle": [
+            "A label that says what happens: “Remove”, not “OK”."
+          ]
+        }
+      }
     },
     "MenuTrigger": {
       "libraryGroup": "Actions",
@@ -464,7 +501,25 @@
         "actions-menu--single-action",
         "actions-menu--keyboard",
         "actions-menu--choosing-an-item"
-      ]
+      ],
+      "partOf": "Menu",
+      "guidance": {
+        "whenToUse": [
+          "The kebab that opens a row’s or card’s menu."
+        ],
+        "whenNotToUse": [
+          "One action on its own: use `IconButton`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A button that says whether its menu is open.",
+            "Enter or Space opens the menu on its first item."
+          ],
+          "toHandle": [
+            "A `label` that names its subject: “Options for Google”."
+          ]
+        }
+      }
     },
     "TextField": {
       "libraryGroup": "Inputs",
@@ -599,7 +654,25 @@
         "inputs-textfield--typing-turns-on-test",
         "inputs-textfield--action-loading",
         "inputs-textfield--all-states"
-      ]
+      ],
+      "partOf": "TextField",
+      "guidance": {
+        "whenToUse": [
+          "Checking the field’s value in place: Test."
+        ],
+        "whenNotToUse": [
+          "Submitting the form: use a `Button` outside the field."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>` inside the field’s border.",
+            "Loading, it stays focusable, named by `loadingLabel`."
+          ],
+          "toHandle": [
+            "A one-word label for what it does to the value: Test."
+          ]
+        }
+      }
     },
     "Toggle": {
       "libraryGroup": "Inputs",
@@ -830,7 +903,24 @@
         "overlays-dialog--busy",
         "overlays-dialog--with-trigger",
         "overlays-dialog--escape-closes"
-      ]
+      ],
+      "partOf": "Dialog",
+      "guidance": {
+        "whenToUse": [
+          "Around every `Dialog`, opening it with `isOpen`."
+        ],
+        "whenNotToUse": [
+          "More detail on the page itself: use `Collapsible`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Draws nothing: the `Dialog` inside carries its role and focus."
+          ],
+          "toHandle": [
+            "`isOpen` turned false from the Dialog’s `onClose`, so Escape closes it."
+          ]
+        }
+      }
     },
     "Tooltip": {
       "libraryGroup": "Overlays",
@@ -1000,7 +1090,25 @@
         "status-and-feedback-badge--negative",
         "status-and-feedback-badge--live",
         "status-and-feedback-badge--all-states"
-      ]
+      ],
+      "partOf": "Badge",
+      "guidance": {
+        "whenToUse": [
+          "A card whose numbers update live, in its header: Traffic."
+        ],
+        "whenNotToUse": [
+          "A word or two flagging a title: use `Badge`.",
+          "A connection status: use `StatusDot`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Its dot is hidden from screen readers."
+          ],
+          "toHandle": [
+            "Words that say it’s live without the dot: “Live”."
+          ]
+        }
+      }
     },
     "StatusDot": {
       "libraryGroup": "Status and feedback",
@@ -1329,7 +1437,25 @@
         "status-and-feedback-emptystate--locked",
         "status-and-feedback-emptystate--with-note",
         "status-and-feedback-emptystate--all-states"
-      ]
+      ],
+      "partOf": "EmptyState",
+      "guidance": {
+        "whenToUse": [
+          "A line under the title on why it’s empty or what to do.",
+          "A note an action adds, under the actions."
+        ],
+        "whenNotToUse": [
+          "A failure to load: use `Banner`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Plain text, read after the title."
+          ],
+          "toHandle": [
+            "`role=\"status\"` on a note that appears after an action, so it’s announced."
+          ]
+        }
+      }
     },
     "DataList": {
       "libraryGroup": "Data display",
@@ -1413,7 +1539,25 @@
         "data-display-datalist--missing-value",
         "data-display-datalist--stack",
         "data-display-datalist--all-states"
-      ]
+      ],
+      "partOf": "DataList",
+      "guidance": {
+        "whenToUse": [
+          "Facts on several topics in one card, a `DataList` each.",
+          "In a `CardBody` with `layout=\"flush\"`, so its hairlines run edge to edge."
+        ],
+        "whenNotToUse": [
+          "Facts on one topic: use a single `DataList`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "The hairlines are borders, so nothing extra is read."
+          ],
+          "toHandle": [
+            "Groups whose first rows say their topic, as no heading names them."
+          ]
+        }
+      }
     },
     "DataRow": {
       "libraryGroup": "Data display",
@@ -1455,7 +1599,27 @@
         "data-display-datalist--missing-value",
         "data-display-datalist--stack",
         "data-display-datalist--all-states"
-      ]
+      ],
+      "partOf": "DataList",
+      "guidance": {
+        "whenToUse": [
+          "One labelled fact in a `DataList`: Gateway.",
+          "A value that isn’t text, as `children`: signal bars."
+        ],
+        "whenNotToUse": [
+          "A row that opens something: use `ListRow`.",
+          "A card’s headline figure: use `Readout`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A `<dt>` label and a `<dd>` value.",
+            "A row with no value isn’t drawn, so no label is read alone."
+          ],
+          "toHandle": [
+            "Words for a value that isn’t text, like a meter’s `aria-label`."
+          ]
+        }
+      }
     },
     "NoValue": {
       "libraryGroup": "Data display",
@@ -1978,7 +2142,26 @@
         "data-display-icontile--button-opening",
         "data-display-icontile--button-disabled-stays-inert",
         "data-display-icontile--all-states"
-      ]
+      ],
+      "partOf": "IconTile",
+      "guidance": {
+        "whenToUse": [
+          "A tile that opens something on its own: Home’s capability strip."
+        ],
+        "whenNotToUse": [
+          "A whole row that opens something: use `ListRow`, an `IconTile` inside.",
+          "An icon-only action: use `IconButton`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>` named by `label`.",
+            "Disabled, it stays focusable but ignores presses."
+          ],
+          "toHandle": [
+            "A `label` with the item and its state: “Video calls: Good”."
+          ]
+        }
+      }
     },
     "TimelineNode": {
       "libraryGroup": "Data display",
@@ -2151,7 +2334,26 @@
         "containers-card-cardbody--default",
         "containers-card-cardbody--rows",
         "containers-card-cardbody--flush"
-      ]
+      ],
+      "partOf": "Card",
+      "guidance": {
+        "whenToUse": [
+          "A card’s content, under its `CardHeader`.",
+          "Settings or list rows, `layout=\"rows\"`: Updates.",
+          "A `DataListStack`, `layout=\"flush\"`, so its hairlines run edge to edge."
+        ],
+        "whenNotToUse": [
+          "A footnote or status under the content: use `CardFooter`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A plain `<div>`: it adds nothing for screen readers to read."
+          ],
+          "toHandle": [
+            "Headings and lists inside it where the content has them."
+          ]
+        }
+      }
     },
     "CardFooter": {
       "libraryGroup": "Containers",
@@ -2171,7 +2373,26 @@
       "passesExtraPropsToElement": true,
       "storyIds": [
         "containers-card-cardfooter--default"
-      ]
+      ],
+      "partOf": "Card",
+      "guidance": {
+        "whenToUse": [
+          "A footnote under the body: the Router card’s packet-loss note.",
+          "The result of an action in the card: Settings’ update check."
+        ],
+        "whenNotToUse": [
+          "Actions on the card: use `CardHeader`’s `actions`.",
+          "A failure on the page: use `Banner`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A plain `<div>` after the body, read last."
+          ],
+          "toHandle": [
+            "`role=\"status\"` on a footer that appears after an action, so it’s announced."
+          ]
+        }
+      }
     },
     "CardHeader": {
       "libraryGroup": "Containers",
@@ -2201,7 +2422,26 @@
         "containers-card-cardheader--default",
         "containers-card-cardheader--with-badge",
         "containers-card-cardheader--with-button"
-      ]
+      ],
+      "partOf": "Card",
+      "guidance": {
+        "whenToUse": [
+          "The title row on top of a card: an icon, the title and its actions.",
+          "A badge or control at the row’s end, in `actions`: `LiveBadge`."
+        ],
+        "whenNotToUse": [
+          "A page’s title and actions: use `PageHeader`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Its title is an `<h2>` that names a `section` card.",
+            "Its icon is hidden from screen readers."
+          ],
+          "toHandle": [
+            "A short `title` that names the card: “DNS”."
+          ]
+        }
+      }
     },
     "CardList": {
       "libraryGroup": "Containers",
@@ -2225,7 +2465,27 @@
       "passesExtraPropsToElement": true,
       "storyIds": [
         "containers-card-cardlist--default"
-      ]
+      ],
+      "partOf": "Card",
+      "guidance": {
+        "whenToUse": [
+          "A list that is one card: the tracked services."
+        ],
+        "whenNotToUse": [
+          "Rows under a card’s title: use `CardBody` with `layout=\"rows\"`.",
+          "Labelled facts: use `DataList`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A list named by `label`.",
+            "Up and Down move between the rows’ controls, and Home and End to the ends."
+          ],
+          "toHandle": [
+            "A `label` that names the list: “Tracked services”.",
+            "Each row as an `<li>`."
+          ]
+        }
+      }
     },
     "Collapsible": {
       "libraryGroup": "Containers",
@@ -2316,7 +2576,24 @@
         "containers-collapsible--focus-frame",
         "containers-collapsible--toggling",
         "containers-collapsible--all-states"
-      ]
+      ],
+      "partOf": "Collapsible",
+      "guidance": {
+        "whenToUse": [
+          "What the trigger shows and hides, right after it."
+        ],
+        "whenNotToUse": [
+          "Content everyone needs: show it in the `Card`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Closed, it leaves the page and the accessibility tree."
+          ],
+          "toHandle": [
+            "Content that makes sense read straight after the trigger."
+          ]
+        }
+      }
     },
     "CollapsibleTrigger": {
       "libraryGroup": "Containers",
@@ -2333,7 +2610,25 @@
         "containers-collapsible--focus-frame",
         "containers-collapsible--toggling",
         "containers-collapsible--all-states"
-      ]
+      ],
+      "partOf": "Collapsible",
+      "guidance": {
+        "whenToUse": [
+          "The control that opens and closes the panel: a card’s header, a group’s row."
+        ],
+        "whenNotToUse": [
+          "Going to another page: use `Link`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>` with `aria-expanded`, tied to the panel it controls."
+          ],
+          "toHandle": [
+            "A name that says what it shows: “Connection details”.",
+            "Its look: hover, focus and any chevron."
+          ]
+        }
+      }
     },
     "DotSeparator": {
       "libraryGroup": "Containers",
@@ -2398,7 +2693,25 @@
       "storyIds": [
         "containers-dotseparator-inlinemeta--default",
         "containers-dotseparator-inlinemeta--truncated"
-      ]
+      ],
+      "partOf": "DotSeparator",
+      "guidance": {
+        "whenToUse": [
+          "Short facts on one line that may be empty: a device’s vendor and model."
+        ],
+        "whenNotToUse": [
+          "Parts you lay out yourself: use a bare `DotSeparator` between them."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Empty items drop out with their dots.",
+            "The dots are hidden from screen readers."
+          ],
+          "toHandle": [
+            "Items that read well in a row, without the dots."
+          ]
+        }
+      }
     },
     "TitleBar": {
       "libraryGroup": "App frame",
@@ -2482,7 +2795,25 @@
         "app-frame-titlebar-titlebarstatus--positive",
         "app-frame-titlebar-titlebarstatus--negative",
         "app-frame-titlebar-titlebarstatus--neutral"
-      ]
+      ],
+      "partOf": "TitleBar",
+      "guidance": {
+        "whenToUse": [
+          "The connection in a word or two, beside the brand: “Online”, “No internet”."
+        ],
+        "whenNotToUse": [
+          "A status anywhere else: use a `StatusDot` beside its words."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "`role=\"status\"`, so a change is read out.",
+            "The dot is hidden from screen readers."
+          ],
+          "toHandle": [
+            "Words that make sense heard alone: “No internet”."
+          ]
+        }
+      }
     },
     "WindowButton": {
       "libraryGroup": "App frame",
@@ -2511,7 +2842,25 @@
         "app-frame-titlebar-windowbutton--minimize",
         "app-frame-titlebar-windowbutton--close",
         "app-frame-titlebar-windowbutton--pressing"
-      ]
+      ],
+      "partOf": "TitleBar",
+      "guidance": {
+        "whenToUse": [
+          "Minimise and close, at the end of a frameless window’s title bar."
+        ],
+        "whenNotToUse": [
+          "An icon action anywhere else: use `IconButton`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "Named “Minimize” or “Close” by its `action`.",
+            "Out of the Tab order, like a native title bar’s."
+          ],
+          "toHandle": [
+            "Nothing beyond `action`: it sets the name and icon."
+          ]
+        }
+      }
     },
     "NavItem": {
       "libraryGroup": "App frame",
@@ -2548,7 +2897,27 @@
         "app-frame-navrail-navitem--default",
         "app-frame-navrail-navitem--active",
         "app-frame-navrail-navitem--activating"
-      ]
+      ],
+      "partOf": "NavRail",
+      "guidance": {
+        "whenToUse": [
+          "A page in the rail: Home, Devices.",
+          "An action in the rail’s `footer`: the theme switch."
+        ],
+        "whenNotToUse": [
+          "An icon action outside the rail: use `IconButton`."
+        ],
+        "accessibility": {
+          "builtIn": [
+            "A native `<button>` named by `label`, also its tooltip.",
+            "The current page’s item has `aria-current=\"page\"`."
+          ],
+          "toHandle": [
+            "`isActive` on the current page’s item, and only that one.",
+            "An action’s `label` says what it does: “Switch to light mode”."
+          ]
+        }
+      }
     },
     "NavRail": {
       "libraryGroup": "App frame",

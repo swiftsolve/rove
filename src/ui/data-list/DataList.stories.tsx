@@ -55,6 +55,33 @@ const meta = {
         toHandle: ['Words for a value that isn’t text, like a meter’s `aria-label`.'],
       },
     } satisfies Guidance,
+    partGuidance: {
+      DataRow: {
+        whenToUse: [
+          'One labelled fact in a `DataList`: Gateway.',
+          'A value that isn’t text, as `children`: signal bars.',
+        ],
+        whenNotToUse: ['A row that opens something: use `ListRow`.', 'A card’s headline figure: use `Readout`.'],
+        accessibility: {
+          builtIn: [
+            'A `<dt>` label and a `<dd>` value.',
+            'A row with no value isn’t drawn, so no label is read alone.',
+          ],
+          toHandle: ['Words for a value that isn’t text, like a meter’s `aria-label`.'],
+        },
+      },
+      DataListStack: {
+        whenToUse: [
+          'Facts on several topics in one card, a `DataList` each.',
+          'In a `CardBody` with `layout="flush"`, so its hairlines run edge to edge.',
+        ],
+        whenNotToUse: ['Facts on one topic: use a single `DataList`.'],
+        accessibility: {
+          builtIn: ['The hairlines are borders, so nothing extra is read.'],
+          toHandle: ['Groups whose first rows say their topic, as no heading names them.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
 } satisfies Meta<typeof DataList>
 

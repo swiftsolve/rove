@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../../.storybook/docs-page'
 import { DataListStack } from '../../data-list/components/DataListStack'
 import { DataRow } from '../../data-list/components/DataRow'
 import { DataList } from '../../data-list/DataList'
@@ -64,6 +65,21 @@ const meta = {
       </Card>
     </div>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      whenToUse: [
+        'A card’s content, under its `CardHeader`.',
+        'Settings or list rows, `layout="rows"`: Updates.',
+        'A `DataListStack`, `layout="flush"`, so its hairlines run edge to edge.',
+      ],
+      whenNotToUse: ['A footnote or status under the content: use `CardFooter`.'],
+      accessibility: {
+        builtIn: ['A plain `<div>`: it adds nothing for screen readers to read.'],
+        toHandle: ['Headings and lists inside it where the content has them.'],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof CardBody>
 
 export default meta

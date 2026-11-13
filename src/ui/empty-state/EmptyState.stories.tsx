@@ -39,6 +39,19 @@ const meta = {
         ],
       },
     } satisfies Guidance,
+    partGuidance: {
+      EmptyStateDescription: {
+        whenToUse: [
+          'A line under the title on why it’s empty or what to do.',
+          'A note an action adds, under the actions.',
+        ],
+        whenNotToUse: ['A failure to load: use `Banner`.'],
+        accessibility: {
+          builtIn: ['Plain text, read after the title.'],
+          toHandle: ['`role="status"` on a note that appears after an action, so it’s announced.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
   argTypes: { actions: { control: false } },
   // It fills the page's content area, so it gets a box to centre in.

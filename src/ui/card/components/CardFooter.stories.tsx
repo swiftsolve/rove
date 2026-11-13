@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { type Guidance, GUIDANCE_TOC } from '../../../../.storybook/docs-page'
 import { DataRow } from '../../data-list/components/DataRow'
 import { DataList } from '../../data-list/DataList'
 import { Card } from '../Card'
@@ -27,6 +28,20 @@ const meta = {
       </Card>
     </div>
   ),
+  parameters: {
+    docs: { toc: GUIDANCE_TOC },
+    guidance: {
+      whenToUse: [
+        'A footnote under the body: the Router card’s packet-loss note.',
+        'The result of an action in the card: Settings’ update check.',
+      ],
+      whenNotToUse: ['Actions on the card: use `CardHeader`’s `actions`.', 'A failure on the page: use `Banner`.'],
+      accessibility: {
+        builtIn: ['A plain `<div>` after the body, read last.'],
+        toHandle: ['`role="status"` on a footer that appears after an action, so it’s announced.'],
+      },
+    } satisfies Guidance,
+  },
 } satisfies Meta<typeof CardFooter>
 
 export default meta

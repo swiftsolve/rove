@@ -48,6 +48,8 @@ export type ComponentEntry = {
   // eslint-disable-next-line @typescript-eslint/naming-convention -- a key components.gen.json already publishes; renaming it is its own change
   passesExtraPropsToElement?: boolean
   storyIds: string[]
+  /** For a part, the family it belongs to: Card for CardBody. */
+  partOf?: string
   guidance?: Guidance
 }
 

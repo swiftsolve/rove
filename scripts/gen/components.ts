@@ -9,7 +9,9 @@
  *   - its Figma component, from `src/ui/figma-components.json`;
  *   - its stories' ids, for `localhost:6006/?path=/story/<id>`;
  *   - its usage guide (when to use it, when not, accessibility), from its
- *     stories' `guidance` parameter, as its Docs page shows it.
+ *     stories' `guidance` parameter, as its Docs page shows it, or for a part
+ *     on its family's page, the family's `partGuidance`;
+ *   - for a part, the family it belongs to (`partOf`).
  *
  * Icons, hooks and helpers follow, by name and doc comment.
  *
@@ -18,8 +20,9 @@
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
  * own props has no doc comment, or a component has no entry in figma-components.json (`{ whyNoFigmaComponent }` says why it has no Figma counterpart), or a
- * component with a Docs page of its own (`Actions/Button`, `Containers/Card/Card`, not a part's
- * `Containers/Card/CardHeader`) has no usage guide.
+ * component has no usage guide: on its own Docs page (`Actions/Button`,
+ * `Containers/Card/CardHeader`), or for a part shown on its family's page
+ * (MenuItem on `Actions/Menu`), in that page's `partGuidance`.
  *
  * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
  * its stories have none that drives it (a `play` function, tagged
@@ -56,7 +59,14 @@ const isCheck = process.argv.includes('--check')
 /** A component the index exports, under its group's comment, and the file it comes from. */
 type LibraryComponent = { name: string; group: string; source: string }
 /** What a component's stories file gives: its story ids, and whether it drives the component and has a guide. */
-type StoriesInfo = { ids: string[]; file: string | null; hasInteraction?: boolean; guidance?: Guidance | null }
+type StoriesInfo = {
+  ids: string[]
+  file: string | null
+  hasInteraction?: boolean
+  guidance?: Guidance | null
+  /** The family a part belongs to, whose Docs page or Figma section holds it: Card for CardBody. */
+  partOf?: string
+}
 /** A `guidance` literal as plain data. */
 type GuidanceData = string | GuidanceData[] | { [key: string]: GuidanceData }
 
@@ -119,9 +129,10 @@ function describeProp(prop: PropItem): PropEntry {
   return { ...entry, description: prop.description }
 }
 
-// The `guidance` object literal in a stories file, as plain data: its string
-// arrays and nested objects. Null when the file sets none.
-function readGuidance(file: string, text: string): Guidance | null {
+// An object literal property in a stories file, as plain data: its string
+// arrays and nested objects. Null when the file sets none. `guidance` is the
+// page's own guide; `partGuidance` holds its parts' guides by name.
+function readGuideProperty(file: string, text: string, key: 'guidance' | 'partGuidance'): GuidanceData | null {
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   const toData = (node: ts.Expression): GuidanceData => {
     if (ts.isSatisfiesExpression(node) || ts.isAsExpression(node)) return toData(node.expression)
@@ -137,14 +148,14 @@ function readGuidance(file: string, text: string): Guidance | null {
     }
     throw notPlainData()
   }
-  const notPlainData = () => new Error(`${relativeToRoot(file)}: guidance holds only strings, arrays and objects`)
-  const findGuidance = (node: ts.Node): ts.Expression | undefined => {
-    if (ts.isPropertyAssignment(node) && node.name.getText() === 'guidance') return node.initializer
-    return ts.forEachChild(node, findGuidance)
+  const notPlainData = () => new Error(`${relativeToRoot(file)}: ${key} holds only strings, arrays and objects`)
+  const findProperty = (node: ts.Node): ts.Expression | undefined => {
+    if (ts.isPropertyAssignment(node) && node.name.getText() === key) return node.initializer
+    return ts.forEachChild(node, findProperty)
   }
-  const guidance = findGuidance(sourceFile)
+  const property = findProperty(sourceFile)
   // The schema check below holds the data to Guidance's shape.
-  return guidance ? (toData(guidance) as Guidance) : null
+  return property ? toData(property) : null
 }
 
 function ownStoriesFile(source: string, name: string): string {
@@ -165,12 +176,10 @@ function familyStoriesFile(source: string): string | null {
   return join(familyFolder, `${familyName}.stories.tsx`)
 }
 
-// Story ids, from a component's own stories file beside its module
-// (card/components/CardBody.stories.tsx), or else the module's (Badge.tsx ↔
-// Badge.stories.tsx), or else, for a part in its family's folder, the family's
-// (menu/components/MenuItem.tsx ↔ menu/Menu.stories.tsx).
-// A component whose Docs page it is (the title ends in its name, and isn't a
-// part's under its parent) also takes the file's usage guide.
+// Story ids, from a component's own stories file (CardBody.stories.tsx), or
+// else its module's (Badge.stories.tsx), or else its family's (Menu.stories.tsx
+// for MenuItem). The usage guide is the file's `guidance` when the page is the
+// component's own (the title ends in its name), else its `partGuidance` entry.
 async function readStories(source: string, name: string): Promise<StoriesInfo> {
   const candidates = [ownStoriesFile(source, name), source.replace(/\.tsx$/, '.stories.tsx'), familyStoriesFile(source)]
   const file = candidates.find((candidate): candidate is string => candidate !== null && existsSync(candidate))
@@ -183,12 +192,21 @@ async function readStories(source: string, name: string): Promise<StoriesInfo> {
   )
   const hasInteraction = hasInteractionStory(file, text)
   const titleParts = title.split('/')
-  const hasOwnPage = titleParts.at(-1) === name && (titleParts.length === 2 || titleParts.at(-2) === name)
-  if (!hasOwnPage) return { ids, file, hasInteraction }
-  const guidance = readGuidance(file, text)
+  const pageName = titleParts.at(-1)
+  // A part's own page sits under its family's (Containers/Card/CardBody).
+  const familyOfOwnPage = titleParts.length > 2 && titleParts.at(-2) !== name ? titleParts.at(-2) : undefined
+  if (pageName === name) {
+    const guidance = readGuideProperty(file, text, 'guidance') as Guidance | null
+    if (!guidance)
+      problems.push(`${relativeToRoot(file)}: ${name}'s Docs page needs a usage guide (a \`guidance\` parameter)`)
+    return { ids, file, hasInteraction, guidance, partOf: familyOfOwnPage }
+  }
+  // A part shown on its family's page has its guide there, in `partGuidance`.
+  const partGuidance = readGuideProperty(file, text, 'partGuidance') as Record<string, Guidance> | null
+  const guidance = partGuidance?.[name] ?? null
   if (!guidance)
-    problems.push(`${relativeToRoot(file)}: ${name}'s Docs page needs a usage guide (a \`guidance\` parameter)`)
-  return { ids, file, hasInteraction, guidance }
+    problems.push(`${relativeToRoot(file)}: ${name} needs a usage guide in the page's \`partGuidance\` parameter`)
+  return { ids, file, hasInteraction, guidance, partOf: pageName }
 }
 
 // Whether a stories file has a story that drives the component: an exported
@@ -293,6 +311,7 @@ for (const { name, group, source } of components) {
     ),
     ...(elementProps.has(name) && { passesExtraPropsToElement: true }),
     storyIds: stories.ids,
+    ...(stories.partOf && { partOf: stories.partOf }),
     ...(stories.guidance && { guidance: stories.guidance }),
   }
 }

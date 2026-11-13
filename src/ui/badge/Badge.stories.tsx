@@ -33,6 +33,16 @@ const meta = {
         toHandle: ['Words that carry the meaning without the colour.'],
       },
     } satisfies Guidance,
+    partGuidance: {
+      LiveBadge: {
+        whenToUse: ['A card whose numbers update live, in its header: Traffic.'],
+        whenNotToUse: ['A word or two flagging a title: use `Badge`.', 'A connection status: use `StatusDot`.'],
+        accessibility: {
+          builtIn: ['Its dot is hidden from screen readers.'],
+          toHandle: ['Words that say it’s live without the dot: “Live”.'],
+        },
+      },
+    } satisfies Record<string, Guidance>,
   },
   argTypes: {
     tone: { control: 'inline-radio', options: ['positive', 'warning', 'negative'] },
