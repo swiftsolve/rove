@@ -1,13 +1,14 @@
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useNetwork } from '@/app/hooks/useNetwork'
 import { useNetworkKey } from '@/app/hooks/useNetworkKey'
+import { isTauri } from '@/bridge/tauri-network-api'
 import { refreshNetworkEvents } from '@/features/events/hooks/useNetworkEvents'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { LanDeviceScan, NetworkAPI } from '@/types'
 import { IS_MAC } from '@/utils/platform'
 
 type UseDevicesResult = {
-  /** Home scans on its own here; when it doesn't (macOS), its card offers Discover instead. */
+  /** Home scans on its own here; when it doesn't (the macOS app), its card offers Discover instead. */
   canHomeAutoScan: boolean
   lastScan: LanDeviceScan | null
   isScanning: boolean
@@ -35,9 +36,11 @@ export function useDevices(): UseDevicesResult {
   // Off a network there's nothing to scan.
   const isConnected = useNetwork().info?.isConnected ?? false
 
-  // Home never auto-scans on macOS: discovery prompts for the Local Network
-  // permission, which should follow the user opening Devices or tapping Discover.
-  const canHomeAutoScan = !IS_MAC
+  // Home never auto-scans in the macOS app: discovery prompts for the Local
+  // Network permission, which should follow the user opening Devices or
+  // tapping Discover. Outside the app (the demo on the sites) there's no
+  // prompt, so it scans, and a Mac or iPhone visitor sees the devices too.
+  const canHomeAutoScan = !IS_MAC || !isTauri()
   const shouldScanOnOpen = location.tab === 'devices' || (location.tab === 'home' && canHomeAutoScan)
 
   // No poll: a LAN scan (ARP/SSDP/ping sweeps) is too heavy to repeat in the
