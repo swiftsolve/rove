@@ -1,12 +1,27 @@
 /**
- * Turns catalog entries into the plain text the rove-ui CLI prints: short
- * enough for an agent to read in one go, laid out for a person in a terminal.
+ * Turns catalog entries into the text the rove-ui CLI prints: short enough for
+ * an agent to read in one go, laid out for a person in a terminal. Headings and
+ * names take colour only on a terminal that shows it: `styleText` drops it
+ * when stdout is piped, as an agent reads it, or NO_COLOR is set.
  */
+import { styleText } from 'node:util'
+
 import type { Guidance, PropEntry } from '../../../scripts/lib/library-json-types.ts'
 import type { ComponentListJson, NamedComponent } from './catalog.ts'
 import { partsOf } from './catalog.ts'
+import { figmaNodeUrl, storybookDocsUrl } from './links.ts'
 
 const INDENT = '  '
+
+/** A section's title: "Props", "When to use". */
+function headingText(text: string): string {
+  return styleText(['bold', 'blueBright'], text)
+}
+
+/** Text that supports what's beside it: a type, a default, a link. */
+function quietText(text: string): string {
+  return styleText('gray', text)
+}
 
 /** A doc comment on one line, its wrapped lines joined. */
 function oneLine(text: string): string {
@@ -23,13 +38,14 @@ function propTypeText(prop: PropEntry): string {
 
 /** One prop: its name, type, default or required, then its description beneath. */
 function propText(name: string, prop: PropEntry): string {
-  let heading = `${INDENT}${name}: ${propTypeText(prop)}`
+  let typeAndDefault = propTypeText(prop)
   if (prop.isRequired) {
-    heading += ' (required)'
+    typeAndDefault += ' (required)'
   }
   if (prop.default !== undefined) {
-    heading += ` = ${prop.default}`
+    typeAndDefault += ` = ${prop.default}`
   }
+  const heading = `${INDENT}${styleText('bold', name)}: ${quietText(typeAndDefault)}`
   return `${heading}\n${INDENT}${INDENT}${oneLine(prop.description)}`
 }
 
@@ -38,7 +54,7 @@ function listSection(title: string, lines: string[]): string[] {
   if (lines.length === 0) {
     return []
   }
-  return [title, ...lines.map((line) => `${INDENT}- ${line}`)]
+  return [headingText(title), ...lines.map((line) => `${INDENT}- ${line}`)]
 }
 
 /** The usage guide's sections, in the order its Docs page shows them. */
@@ -51,23 +67,17 @@ function guidanceText(guidance: Guidance): string[] {
   ]
 }
 
-/** A Figma node's address in the design file: `42:189` becomes `?node-id=42-189`. */
-function figmaNodeUrl(figmaFileUrl: string, figmaNodeId: string): string {
-  return `${figmaFileUrl}?node-id=${figmaNodeId.replace(':', '-')}`
-}
-
 /** The component's Figma component and the ways it differs on purpose, or why it has none. */
 function figmaText(catalog: ComponentListJson, component: NamedComponent): string[] {
   const figmaComponent = component.figmaComponent
   if (figmaComponent === null) {
-    return ['Figma: none']
+    return [`${headingText('Figma:')} none`]
   }
   if ('whyNoFigmaComponent' in figmaComponent) {
-    return [`Figma: none. ${figmaComponent.whyNoFigmaComponent}`]
+    return [`${headingText('Figma:')} none. ${figmaComponent.whyNoFigmaComponent}`]
   }
-  const lines = [
-    `Figma: ${figmaComponent.figmaName}, ${figmaNodeUrl(catalog.figmaFileUrl, figmaComponent.figmaNodeId)}`,
-  ]
+  const figmaUrl = figmaNodeUrl(catalog.figmaFileUrl, figmaComponent.figmaNodeId)
+  const lines = [`${headingText('Figma:')} ${figmaComponent.figmaName}, ${quietText(figmaUrl)}`]
   const propsNotInFigma = Object.entries(figmaComponent.propsNotInFigma ?? {})
   const variantPropertiesNotInCode = Object.entries(figmaComponent.figmaVariantPropertiesNotInCode ?? {})
   const propsWithDifferentValues = Object.entries(figmaComponent.propsWithDifferentValuesInFigma ?? {})
@@ -101,14 +111,19 @@ export function componentListText(components: NamedComponent[]): string {
 
 /** Everything the catalog knows about one component, section by section. */
 export function componentDetailsText(catalog: ComponentListJson, component: NamedComponent): string {
-  const header = [`${component.name} (${component.libraryGroup})`, oneLine(component.description)]
+  const title = `${styleText(['bold', 'blueBright'], component.name)} ${quietText(`(${component.libraryGroup})`)}`
+  const header = [title, oneLine(component.description)]
   if (component.partOf) {
     header.push(`Part of ${component.partOf}: \`rove-ui show ${component.partOf}\``)
   }
-  header.push(`Source: ${component.sourceFile}`)
+  header.push(`Source: ${quietText(component.sourceFile)}`)
+  const docsUrl = storybookDocsUrl(component)
+  if (docsUrl !== null) {
+    header.push(`Docs: ${quietText(docsUrl)}`)
+  }
 
   const propLines = Object.entries(component.props).map(([name, prop]) => propText(name, prop))
-  const props = propLines.length > 0 ? ['Props', ...propLines] : ['Props: none']
+  const props = propLines.length > 0 ? [headingText('Props'), ...propLines] : [`${headingText('Props:')} none`]
   if (component.passesExtraPropsToElement) {
     props.push(`${INDENT}Other props pass straight to its element.`)
   }

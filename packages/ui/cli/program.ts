@@ -8,6 +8,7 @@ import { Command } from 'commander'
 import type { ComponentListJson, NamedComponent } from './catalog.ts'
 import { findComponent, namedComponents, searchComponents, similarComponentNames } from './catalog.ts'
 import { componentDetailsText, componentListText } from './format.ts'
+import { figmaComponentUrl, importLine, storybookDocsUrl } from './links.ts'
 
 /** Where the CLI prints its answers and asks its questions. */
 export type CliTerminal = {
@@ -17,8 +18,38 @@ export type CliTerminal = {
   writeError: (text: string) => void
   /** Whether a person is at a terminal to answer a prompt: stdin and stdout are both one. */
   isInteractive: boolean
-  /** Asks which component to show, for `pick`; null when the person cancels. */
-  askForComponentName: (components: NamedComponent[]) => Promise<string | null>
+  /** Asks which component to pick, with the banner the first time; null when the person cancels. */
+  askForComponentName: (components: NamedComponent[], isFirstPick: boolean) => Promise<string | null>
+  /** Asks what to do with the picked component; null when the person is done. */
+  askForAction: (componentName: string, actions: PickAction[]) => Promise<PickActionId | null>
+  /** Puts text on the clipboard; false when the system has no clipboard tool. */
+  copyToClipboard: (text: string) => Promise<boolean>
+  /** Opens an address in the default browser. */
+  openInBrowser: (url: string) => void
+  /** Says what an action did, in line with the prompts. */
+  writeNote: (text: string) => void
+}
+
+/** What `pick` can do with the component picked. */
+export type PickActionId = 'show' | 'copyImport' | 'openDocs' | 'openFigma' | 'pickAnother'
+
+/** One choice in the menu after a pick, with a hint beside it when it helps. */
+export type PickAction = { id: PickActionId; label: string; hint?: string }
+
+/** The menu after picking a component: what it offers depends on where the component lives. */
+export function pickActions(catalog: ComponentListJson, component: NamedComponent): PickAction[] {
+  const actions: PickAction[] = [
+    { id: 'show', label: 'Show its props and usage guide', hint: `rove-ui show ${component.name}` },
+    { id: 'copyImport', label: 'Copy its import', hint: importLine(component) },
+  ]
+  if (storybookDocsUrl(component) !== null) {
+    actions.push({ id: 'openDocs', label: 'Open its Docs page in Storybook' })
+  }
+  if (figmaComponentUrl(catalog, component) !== null) {
+    actions.push({ id: 'openFigma', label: 'Open it in Figma' })
+  }
+  actions.push({ id: 'pickAnother', label: 'Pick another component' })
+  return actions
 }
 
 /** Commander's options shared by every command. */
@@ -82,22 +113,60 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
       writeComponent(component)
     })
 
+  /** Opens an address and says so, or says the component has none. */
+  function openAndSay(url: string | null): void {
+    if (url === null) {
+      return
+    }
+    terminal.openInBrowser(url)
+    terminal.writeNote(`Opening ${url}`)
+  }
+
+  /** Does what the person chose; true when they want to pick another component. */
+  async function runPickAction(actionId: PickActionId, component: NamedComponent): Promise<boolean> {
+    if (actionId === 'show') {
+      writeComponent(component)
+    } else if (actionId === 'copyImport') {
+      const line = importLine(component)
+      const isCopied = await terminal.copyToClipboard(line)
+      const note = isCopied ? `Copied: ${line}` : `No clipboard tool found (wl-copy, xclip). Copy it from here: ${line}`
+      terminal.writeNote(note)
+    } else if (actionId === 'openDocs') {
+      openAndSay(storybookDocsUrl(component))
+    } else if (actionId === 'openFigma') {
+      openAndSay(figmaComponentUrl(catalog, component))
+    }
+    return actionId === 'pickAnother'
+  }
+
   program
     .command('pick')
-    .description('type to narrow a list of components, then show the one you choose (needs a terminal)')
+    .description('type to narrow a list of components, pick one, then show, copy or open it (needs a terminal)')
     .action(async () => {
       if (!terminal.isInteractive) {
         program.error('`rove-ui pick` needs a terminal to type in. Use `rove-ui list`, then `rove-ui show <name>`.')
       }
-      const name = await terminal.askForComponentName(namedComponents(catalog))
-      if (name === null) {
-        return
+      let isFirstPick = true
+      // Each pass picks a component, then offers actions on it until the person picks another or is done.
+      for (;;) {
+        const name = await terminal.askForComponentName(namedComponents(catalog), isFirstPick)
+        isFirstPick = false
+        if (name === null) {
+          return
+        }
+        const component = findComponent(catalog, name)
+        if (component === null) {
+          program.error(`No component named "${name}".`)
+        }
+        let shouldPickAnother = false
+        while (!shouldPickAnother) {
+          const actionId = await terminal.askForAction(component.name, pickActions(catalog, component))
+          if (actionId === null) {
+            return
+          }
+          shouldPickAnother = await runPickAction(actionId, component)
+        }
       }
-      const component = findComponent(catalog, name)
-      if (component === null) {
-        program.error(`No component named "${name}".`)
-      }
-      writeComponent(component)
     })
 
   program

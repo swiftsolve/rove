@@ -5,10 +5,11 @@
  */
 import { styleText } from 'node:util'
 
-import { autocomplete, cancel, intro, isCancel, outro } from '@clack/prompts'
+import { autocomplete, cancel, intro, isCancel, log, outro, select } from '@clack/prompts'
 
 import { bannerText } from './banner.ts'
 import type { NamedComponent } from './catalog.ts'
+import type { PickAction, PickActionId } from './program.ts'
 
 /** Colour depth `getColorDepth` reports for a 24-bit terminal. */
 const TRUE_COLOR_DEPTH = 24
@@ -31,17 +32,35 @@ function fitToWidth(text: string, width: number): string {
   return `${text.slice(0, Math.max(0, width - 1)).trimEnd()}…`
 }
 
-/** Whether a component matches what was typed, by its name, group or first sentence. */
+/** Whether every letter typed appears in the name, in order: "crdhdr" finds CardHeader. */
+function hasLettersInOrder(typedText: string, name: string): boolean {
+  let nameIndex = 0
+  for (const letter of typedText) {
+    nameIndex = name.indexOf(letter, nameIndex)
+    if (nameIndex === -1) {
+      return false
+    }
+    nameIndex += 1
+  }
+  return true
+}
+
+/** Whether a component matches what was typed: its name loosely, or its group or first sentence. */
 function isMatch(typedText: string, component: NamedComponent): boolean {
-  const wantedText = typedText.toLowerCase()
-  const searchedText = [component.name, component.libraryGroup, firstSentence(component.description)]
+  const wantedText = typedText.toLowerCase().trim()
+  if (hasLettersInOrder(wantedText.replaceAll(' ', ''), component.name.toLowerCase())) {
+    return true
+  }
+  const searchedText = [component.libraryGroup, firstSentence(component.description)]
   return searchedText.some((text) => text.toLowerCase().includes(wantedText))
 }
 
-/** Asks which component to show; null when the person cancels with Escape or Ctrl+C. */
-export async function askForComponentName(components: NamedComponent[]): Promise<string | null> {
-  const hasTrueColor = process.stdout.getColorDepth() >= TRUE_COLOR_DEPTH
-  process.stdout.write(bannerText(hasTrueColor))
+/** Asks which component to pick, after the banner the first time; null when the person cancels. */
+export async function askForComponentName(components: NamedComponent[], isFirstPick: boolean): Promise<string | null> {
+  if (isFirstPick) {
+    const hasTrueColor = process.stdout.getColorDepth() >= TRUE_COLOR_DEPTH
+    process.stdout.write(bannerText(hasTrueColor))
+  }
   intro(styleText(['bgBlue', 'white', 'bold'], ' rove-ui pick '))
 
   // Each row says what the component is in a column after its name, cut to the terminal's width.
@@ -64,6 +83,23 @@ export async function askForComponentName(components: NamedComponent[]): Promise
     cancel('Nothing picked.')
     return null
   }
-  outro(`${choice}. Next time, ${styleText('cyan', `rove-ui show ${choice}`)} goes straight to it.`)
   return choice
+}
+
+/** Asks what to do with the picked component; null when the person is done (Escape or Ctrl+C). */
+export async function askForAction(componentName: string, actions: PickAction[]): Promise<PickActionId | null> {
+  const actionId = await select({
+    message: `${styleText('bold', componentName)}: what next?`,
+    options: actions.map((action) => ({ value: action.id, label: action.label, hint: action.hint })),
+  })
+  if (isCancel(actionId)) {
+    outro('Done.')
+    return null
+  }
+  return actionId
+}
+
+/** Says what an action did, on the prompts' guide line. */
+export function writeNote(text: string): void {
+  log.success(text)
 }

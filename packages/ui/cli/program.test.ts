@@ -3,35 +3,67 @@ import { describe, expect, it } from 'vitest'
 
 import type { ComponentEntry } from './catalog.ts'
 import { readCatalog, similarComponentNames } from './catalog.ts'
+import type { PickActionId } from './program.ts'
 import { createProgram } from './program.ts'
 
 const catalog = readCatalog()
 
-/** What a run printed, and the exit code Commander gave a failed one. */
-type RunResult = { printed: string; errors: string; exitCode: number }
+/** What a run printed, did and noted, and the exit code Commander gave a failed one. */
+type RunResult = {
+  printed: string
+  errors: string
+  exitCode: number
+  notes: string[]
+  copiedTexts: string[]
+  openedUrls: string[]
+}
 
-/** How a run's terminal behaves: whether a person is there, and what they pick. */
-type TerminalStandIn = { isInteractive?: boolean; pickedName?: string | null }
+/**
+ * How a run's terminal behaves: whether a person is there, the components
+ * they pick and the actions they choose, in order (null cancels), and whether
+ * the system has a clipboard.
+ */
+type TerminalStandIn = {
+  isInteractive?: boolean
+  pickedNames?: (string | null)[]
+  chosenActions?: (PickActionId | null)[]
+  hasClipboard?: boolean
+}
 
 /** Runs rove-ui with these arguments against the real catalog. */
 async function runCli(args: string[], terminal: TerminalStandIn = {}): Promise<RunResult> {
   let printed = ''
   let errors = ''
+  const notes: string[] = []
+  const copiedTexts: string[] = []
+  const openedUrls: string[] = []
+  const pickedNames = [...(terminal.pickedNames ?? [])]
+  const chosenActions = [...(terminal.chosenActions ?? [])]
   const program = createProgram(catalog, {
     write: (text) => (printed += text),
     writeError: (text) => (errors += text),
     isInteractive: terminal.isInteractive ?? false,
-    askForComponentName: () => Promise.resolve(terminal.pickedName ?? null),
+    askForComponentName: () => Promise.resolve(pickedNames.shift() ?? null),
+    askForAction: () => Promise.resolve(chosenActions.shift() ?? null),
+    copyToClipboard: (text) => {
+      if (terminal.hasClipboard) {
+        copiedTexts.push(text)
+      }
+      return Promise.resolve(terminal.hasClipboard === true)
+    },
+    openInBrowser: (url) => openedUrls.push(url),
+    writeNote: (text) => notes.push(text),
   })
+  let exitCode = 0
   try {
     await program.parseAsync(args, { from: 'user' })
-    return { printed, errors, exitCode: 0 }
   } catch (error) {
     if (!(error instanceof CommanderError)) {
       throw error
     }
-    return { printed, errors, exitCode: error.exitCode }
+    exitCode = error.exitCode
   }
+  return { printed, errors, exitCode, notes, copiedTexts, openedUrls }
 }
 
 describe('rove-ui show', () => {
@@ -110,12 +142,46 @@ describe('rove-ui search', () => {
 
 describe('rove-ui pick', () => {
   it('shows the component the person picks', async () => {
-    const { printed } = await runCli(['pick'], { isInteractive: true, pickedName: 'CardHeader' })
+    const { printed } = await runCli(['pick'], {
+      isInteractive: true,
+      pickedNames: ['CardHeader'],
+      chosenActions: ['show', null],
+    })
     expect(printed).toContain('CardHeader (Containers)')
   })
 
+  it('copies the import line, or prints it when there is no clipboard', async () => {
+    const terminal = { isInteractive: true, pickedNames: ['Button'], chosenActions: ['copyImport' as const, null] }
+    const withClipboard = await runCli(['pick'], { ...terminal, hasClipboard: true })
+    expect(withClipboard.copiedTexts).toEqual(["import { Button } from '@swiftsolve/rove-ui'"])
+    const withoutClipboard = await runCli(['pick'], { ...terminal, hasClipboard: false })
+    expect(withoutClipboard.notes[0]).toContain("Copy it from here: import { Button } from '@swiftsolve/rove-ui'")
+  })
+
+  it('opens the Docs page and the Figma component', async () => {
+    const { openedUrls } = await runCli(['pick'], {
+      isInteractive: true,
+      pickedNames: ['Button'],
+      chosenActions: ['openDocs', 'openFigma', null],
+    })
+    expect(openedUrls).toEqual([
+      'https://nabilr.com/rove/storybook/?path=/docs/actions-button--docs',
+      'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System?node-id=42-189',
+    ])
+  })
+
+  it('goes back to the list to pick another', async () => {
+    const { printed } = await runCli(['pick'], {
+      isInteractive: true,
+      pickedNames: ['Button', 'Link'],
+      chosenActions: ['pickAnother', 'show', null],
+    })
+    expect(printed).toContain('Link (Actions)')
+    expect(printed).not.toContain('Button (Actions)')
+  })
+
   it('prints nothing when the person cancels', async () => {
-    const { printed, exitCode } = await runCli(['pick'], { isInteractive: true, pickedName: null })
+    const { printed, exitCode } = await runCli(['pick'], { isInteractive: true, pickedNames: [null] })
     expect(printed).toBe('')
     expect(exitCode).toBe(0)
   })

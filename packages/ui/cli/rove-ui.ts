@@ -7,14 +7,19 @@
 import { CommanderError } from 'commander'
 
 import { readCatalog } from './catalog.ts'
-import { askForComponentName } from './pick.ts'
+import { askForAction, askForComponentName, writeNote } from './pick.ts'
 import { createProgram } from './program.ts'
+import { copyToClipboard, openInBrowser } from './system.ts'
 
 const program = createProgram(readCatalog(), {
   write: (text) => process.stdout.write(text),
   writeError: (text) => process.stderr.write(text),
   isInteractive: process.stdin.isTTY && process.stdout.isTTY,
   askForComponentName,
+  askForAction,
+  copyToClipboard,
+  openInBrowser,
+  writeNote,
 })
 
 try {
