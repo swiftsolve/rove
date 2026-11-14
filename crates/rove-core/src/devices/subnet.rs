@@ -29,13 +29,10 @@ fn to_cidr(ip: Ipv4Addr, prefix: u32) -> String {
     format!("{network}/{prefix}")
 }
 
-/// Whether `ip` belongs to `subnet` ("a.b.c.d/p"). Unparseable input counts as
-/// in scope: better to show too much than hide devices.
-pub fn contains(subnet: &str, ip: &str) -> bool {
+/// Whether `ip` belongs to `subnet` ("a.b.c.d/p"). A subnet that doesn't parse
+/// counts as containing everything: better to show too much than hide devices.
+pub fn contains(subnet: &str, ip: Ipv4Addr) -> bool {
     let Some((network, prefix)) = parse(subnet) else {
-        return true;
-    };
-    let Ok(ip) = ip.parse::<Ipv4Addr>() else {
         return true;
     };
     let mask = prefix_mask(prefix);
@@ -66,9 +63,4 @@ pub fn prefix_mask(prefix: u32) -> u32 {
     } else {
         u32::MAX << (32 - prefix.min(32))
     }
-}
-
-/// Numeric order for IPv4; anything else sorts last.
-pub fn ip_sort_key(ip: &str) -> u32 {
-    ip.parse::<Ipv4Addr>().map(u32::from).unwrap_or(u32::MAX)
 }

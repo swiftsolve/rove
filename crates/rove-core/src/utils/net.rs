@@ -91,23 +91,6 @@ pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
     m.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
-/// Canonical MAC form: lowercase, colon-separated, zero-padded octets
-/// ("8:3a:8d:AC:4:d0" → "08:3a:8d:ac:04:d0").
-///
-/// Accepts Windows' dashes too. BSD strips leading zeros, so without this its
-/// MACs wouldn't match sysinfo or the OUI table, or dedupe against this
-/// machine's own address.
-pub fn normalize_mac_colons(raw: &str) -> String {
-    raw.split([':', '-']).map(|octet| format!("{:0>2}", octet.to_ascii_lowercase())).collect::<Vec<_>>().join(":")
-}
-
-/// Bare MAC form: 12 lowercase hex chars ("AA:BB:CC:11:22:33" →
-/// "aabbcc112233"). The DHCP cache keys on this so hits join the neighbor table
-/// whatever the separator or case.
-pub fn normalize_mac_bare(mac: &str) -> String {
-    mac.chars().filter(char::is_ascii_hexdigit).map(|c| c.to_ascii_lowercase()).collect()
-}
-
 const VIRTUAL_PREFIXES: [&str; 18] = [
     "veth", "docker", "br-", "virbr", "vnet", "tap", "tun", "wg", "zt", "vmnet",
     // macOS pseudo-interfaces: VPN tunnels (utunN; "tun" above misses the
@@ -177,9 +160,10 @@ pub fn now_ms() -> i64 {
     i64::try_from(since_epoch.as_millis()).unwrap_or(i64::MAX)
 }
 
-/// True when `s` is an IP literal, and so safe to put in a shell command: a
-/// parsed address holds only `[0-9a-fA-F:.]`. Guards call sites that take an
-/// address straight from the neighbor table.
+/// True when `s` is an IP literal, and so safe to put in a shell command.
+///
+/// A parsed address holds only `[0-9a-fA-F:.]`. Guards call sites that take an
+/// address as text, such as a remote peer or the default gateway.
 pub fn is_shell_safe_ip(s: &str) -> bool {
     s.parse::<std::net::IpAddr>().is_ok()
 }
@@ -223,19 +207,6 @@ fn is_bidi_control(c: char) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn normalize_mac_colons_pads_and_lowercases() {
-        // BSD `arp` zero-strips octets; Windows separates with dashes.
-        assert_eq!(normalize_mac_colons("8:3a:8d:AC:4:d0"), "08:3a:8d:ac:04:d0");
-        assert_eq!(normalize_mac_colons("10-A5-1D-01-8F-9C"), "10:a5:1d:01:8f:9c");
-    }
-
-    #[test]
-    fn normalize_mac_bare_strips_separators_and_case() {
-        assert_eq!(normalize_mac_bare("AA:BB:CC:11:22:33"), "aabbcc112233");
-        assert_eq!(normalize_mac_bare("aa-bb-cc-11-22-33"), "aabbcc112233");
-    }
 
     #[test]
     fn npcap_shadow_adapter_is_virtual_but_real_nic_is_not() {

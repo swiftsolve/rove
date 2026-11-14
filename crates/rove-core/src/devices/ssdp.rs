@@ -41,7 +41,7 @@ pub struct SsdpHit {
 /// Discover UPnP devices within `window`, keyed by IPv4. `local_ip`, when known,
 /// is the address of the active interface: binding the search socket to it makes
 /// the `M-SEARCH` leave the right adapter on multi-homed and Windows hosts.
-pub async fn discover(window: Duration, local_ip: Option<Ipv4Addr>) -> HashMap<String, SsdpHit> {
+pub async fn discover(window: Duration, local_ip: Option<Ipv4Addr>) -> HashMap<Ipv4Addr, SsdpHit> {
     let deadline = Instant::now() + window;
     // Most of the window collects responses; the rest is left for the
     // description fetches, so the whole probe roughly fits the window.
@@ -59,7 +59,7 @@ pub async fn discover(window: Duration, local_ip: Option<Ipv4Addr>) -> HashMap<S
 }
 
 /// Send `M-SEARCH` and collect one description URL (`LOCATION`) per responder IP.
-async fn search(window: Duration, local_ip: Option<Ipv4Addr>) -> std::io::Result<HashMap<String, String>> {
+async fn search(window: Duration, local_ip: Option<Ipv4Addr>) -> std::io::Result<HashMap<Ipv4Addr, String>> {
     let bind_ip = local_ip.unwrap_or(Ipv4Addr::UNSPECIFIED);
     let socket = UdpSocket::bind((bind_ip, 0)).await?;
 
@@ -77,7 +77,7 @@ ST: ssdp:all\r\n\r\n";
         return Err(e);
     }
 
-    let mut locations: HashMap<String, String> = HashMap::new();
+    let mut locations: HashMap<Ipv4Addr, String> = HashMap::new();
     let mut buf = vec![0u8; 2048];
     let deadline = Instant::now() + window;
 
@@ -94,7 +94,7 @@ ST: ssdp:all\r\n\r\n";
             }
             continue;
         };
-        let ip = src.ip().to_string();
+        let ip = *src.ip();
         if locations.contains_key(&ip) {
             continue; // devices reply once per service; one description is enough
         }
@@ -106,13 +106,13 @@ ST: ssdp:all\r\n\r\n";
     Ok(locations)
 }
 
-async fn fetch_descriptions(locations: HashMap<String, String>, deadline: Instant) -> HashMap<String, SsdpHit> {
+async fn fetch_descriptions(locations: HashMap<Ipv4Addr, String>, deadline: Instant) -> HashMap<Ipv4Addr, SsdpHit> {
     // LAN description URLs must never go through an ambient HTTP(S) proxy.
     let Ok(client) = reqwest::Client::builder().no_proxy().timeout(FETCH_TIMEOUT).build() else {
         return HashMap::new();
     };
 
-    let results: Vec<(String, SsdpHit)> = futures_util::stream::iter(locations)
+    let results: Vec<(Ipv4Addr, SsdpHit)> = futures_util::stream::iter(locations)
         .map(|(ip, url)| {
             let client = client.clone();
             async move {

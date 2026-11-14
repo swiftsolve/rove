@@ -1,11 +1,19 @@
 use super::*;
 
+fn mac(text: &str) -> MacAddress {
+    text.parse().unwrap()
+}
+
+fn ip(text: &str) -> Ipv4Addr {
+    text.parse().unwrap()
+}
+
 #[test]
 fn devices_upsert_preserves_first_seen_and_hostname() {
     let store = Store::open_in_memory().unwrap();
     let mut device = LanDevice {
-        ip: "192.168.1.5".into(),
-        mac: "aa:bb:cc:dd:ee:ff".into(),
+        ip: ip("192.168.1.5"),
+        mac: Some(mac("aa:bb:cc:dd:ee:ff")),
         vendor: Some("Acme".into()),
         hostname: Some("nas".to_string()),
         model: None,
@@ -20,14 +28,14 @@ fn devices_upsert_preserves_first_seen_and_hostname() {
     };
     store.record_devices(std::slice::from_ref(&device), 1000).unwrap();
     device.hostname = None; // a later scan that couldn't resolve the name
-    device.ip = "192.168.1.9".into();
+    device.ip = ip("192.168.1.9");
     store.record_devices(std::slice::from_ref(&device), 2000).unwrap();
 
     let known = store.known_devices().unwrap();
     assert_eq!(known.len(), 1);
     assert_eq!(known[0].first_seen, 1000);
     assert_eq!(known[0].last_seen, 2000);
-    assert_eq!(known[0].ip.as_deref(), Some("192.168.1.9"));
+    assert_eq!(known[0].ip, Some(ip("192.168.1.9")));
     assert_eq!(known[0].hostname.as_deref(), Some("nas"));
 }
 
@@ -67,7 +75,7 @@ fn an_unreachable_live_device_keeps_its_last_known_identity() {
     store.record_devices(std::slice::from_ref(&silent), 2_000).unwrap();
 
     let merged = store.devices_with_offline(std::slice::from_ref(&silent), 2_000, OFFLINE_LIST_KEEP_MS).unwrap();
-    let row = merged.iter().find(|d| d.mac == "bb:bb:bb:bb:bb:bb").unwrap();
+    let row = merged.iter().find(|d| d.mac == Some(mac("bb:bb:bb:bb:bb:bb"))).unwrap();
     assert!(!row.is_reachable, "it still reads offline");
     assert_eq!(row.kind, DeviceKind::Phone, "with its remembered kind, not unknown");
     assert_eq!(row.os.as_deref(), Some("Android"), "its remembered OS");
@@ -87,15 +95,15 @@ fn an_offline_row_with_an_unknown_kind_is_not_guessed_from_the_vendor() {
     store.record_devices(std::slice::from_ref(&vendor_only), 1_000).unwrap();
 
     let merged = store.devices_with_offline(&[], 2_000, OFFLINE_LIST_KEEP_MS).unwrap();
-    let row = merged.iter().find(|d| d.mac == "ae:4a:06:fe:b5:37").unwrap();
+    let row = merged.iter().find(|d| d.mac == Some(mac("ae:4a:06:fe:b5:37"))).unwrap();
     assert_eq!(row.vendor.as_deref(), Some("Apple"), "the vendor is remembered");
     assert_eq!(row.kind, DeviceKind::Unknown, "but the kind is not invented from it");
 }
 
-fn device(mac: &str, ip: &str, kind: DeviceKind) -> LanDevice {
+fn device(mac_text: &str, ip_text: &str, kind: DeviceKind) -> LanDevice {
     LanDevice {
-        ip: ip.into(),
-        mac: mac.into(),
+        ip: ip(ip_text),
+        mac: Some(mac(mac_text)),
         vendor: None,
         hostname: None,
         model: None,
@@ -131,7 +139,7 @@ fn derives_join_change_offline_and_gateway_events() {
     store.record_devices(&[gw.clone(), phone.clone(), laptop.clone()], 2_000).unwrap();
     let latest = store.network_events(1).unwrap();
     assert_eq!(latest[0].event_type, "device_joined");
-    assert_eq!(latest[0].mac.as_deref(), Some("bb:bb:bb:bb:bb:bb"));
+    assert_eq!(latest[0].mac, Some(mac("bb:bb:bb:bb:bb:bb")));
 
     // The laptop reports a new hostname → no event (renames were too noisy,
     // so identity changes no longer surface at all).
@@ -143,7 +151,7 @@ fn derives_join_change_offline_and_gateway_events() {
 
     // A plain IP change now produces no event.
     let mut moved = renamed;
-    moved.ip = "192.168.1.31".into();
+    moved.ip = ip("192.168.1.31");
     let before = store.network_events(100).unwrap().len();
     store.record_devices(&[gw.clone(), phone.clone(), moved.clone()], 3_500).unwrap();
     assert_eq!(store.network_events(100).unwrap().len(), before, "IP changes are silent now");
@@ -158,7 +166,7 @@ fn derives_join_change_offline_and_gateway_events() {
 
     // The gateway's MAC changes under us → a gateway_changed warning.
     let mut gw2 = gw;
-    gw2.mac = "00:00:00:00:00:02".into();
+    gw2.mac = Some(mac("00:00:00:00:00:02"));
     store.record_devices(&[gw2, phone, moved], 6_000).unwrap();
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "gateway_changed");
@@ -190,7 +198,7 @@ fn moving_to_another_network_is_not_a_gateway_change() {
 
     // Home's gateway answering from a new MAC is the change worth flagging.
     let mut spoofed = home_router;
-    spoofed.mac = "00:00:00:00:00:66".into();
+    spoofed.mac = Some(mac("00:00:00:00:00:66"));
     store.record_devices(std::slice::from_ref(&spoofed), 4_000).unwrap();
     assert_eq!(gateway_changes(&store), 1);
 }
@@ -226,7 +234,7 @@ fn touch_devices_bumps_last_seen_without_touching_identity() {
     let known = store.known_devices().unwrap();
     assert_eq!(known.len(), 1);
     assert_eq!(known[0].last_seen, 5_000, "last_seen advances");
-    assert_eq!(known[0].ip.as_deref(), Some("192.168.2.20"), "and so does the IP");
+    assert_eq!(known[0].ip, Some(ip("192.168.2.20")), "and so does the IP");
     assert_eq!(known[0].hostname.as_deref(), Some("Janes-Phone"), "identity untouched");
     assert_eq!(known[0].kind, DeviceKind::Phone);
     assert_eq!(known[0].vendor.as_deref(), Some("Apple"));
@@ -274,7 +282,10 @@ fn touch_devices_records_a_genuinely_new_arrival() {
     newcomer.hostname = Some("new-tv".into());
     store.touch_devices(std::slice::from_ref(&newcomer), 2_000).unwrap();
 
-    assert!(store.known_devices().unwrap().iter().any(|d| d.mac == "cc:cc:cc:cc:cc:cc"), "the arrival is recorded");
+    assert!(
+        store.known_devices().unwrap().iter().any(|d| d.mac == mac("cc:cc:cc:cc:cc:cc")),
+        "the arrival is recorded"
+    );
     assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_joined");
 }
 
@@ -399,7 +410,7 @@ fn a_real_departure_still_fires_when_others_remain_reachable() {
     store.record_devices(&[gw], 2_000).unwrap(); // phone leaves, gateway stays
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "device_offline");
-    assert_eq!(latest.mac.as_deref(), Some("aa:aa:aa:aa:aa:aa"));
+    assert_eq!(latest.mac, Some(mac("aa:aa:aa:aa:aa:aa")));
 }
 
 #[test]
@@ -419,7 +430,7 @@ fn devices_with_offline_keeps_recent_departures_and_drops_stale_ones() {
     // Only the computer answered this scan; merge fills in the phone (recent)
     // but not the TV (beyond the 24h window).
     let merged = store.devices_with_offline(std::slice::from_ref(&here), now, OFFLINE_LIST_KEEP_MS).unwrap();
-    let by_mac = |m: &str| merged.iter().find(|d| d.mac == m).cloned();
+    let by_mac = |m: &str| merged.iter().find(|d| d.mac == Some(mac(m))).cloned();
 
     let online = by_mac("aa:aa:aa:aa:aa:aa").unwrap();
     assert!(online.is_reachable, "the live device stays reachable");
@@ -432,7 +443,7 @@ fn devices_with_offline_keeps_recent_departures_and_drops_stale_ones() {
 
     assert!(by_mac("cc:cc:cc:cc:cc:cc").is_none(), "a device gone > 24h drops off the list");
     assert!(
-        store.known_devices().unwrap().iter().any(|k| k.mac == "cc:cc:cc:cc:cc:cc"),
+        store.known_devices().unwrap().iter().any(|k| k.mac == mac("cc:cc:cc:cc:cc:cc")),
         "but its roster row is retained in the DB"
     );
 }
@@ -454,7 +465,7 @@ fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
 
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "device_offline");
-    assert_eq!(latest.mac.as_deref(), Some("bb:bb:bb:bb:bb:bb"));
+    assert_eq!(latest.mac, Some(mac("bb:bb:bb:bb:bb:bb")));
 
     // Still present, still unreachable → no second offline, no spurious online.
     store.record_devices(&[keep.clone(), asleep], 3_000).unwrap();
@@ -462,7 +473,7 @@ fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
         .network_events(100)
         .unwrap()
         .iter()
-        .filter(|e| e.event_type == "device_offline" && e.mac.as_deref() == Some("bb:bb:bb:bb:bb:bb"))
+        .filter(|e| e.event_type == "device_offline" && e.mac == Some(mac("bb:bb:bb:bb:bb:bb")))
         .count();
     assert_eq!(offline_count, 1, "offline fires once while it stays unreachable");
 
@@ -611,7 +622,7 @@ fn a_departed_device_keeps_its_snapshot_label() {
     store.lock().execute("DELETE FROM known_devices WHERE mac = ?1", ["bb:bb:bb:bb:bb:bb"]).unwrap();
 
     let offline =
-        store.network_events(100).unwrap().into_iter().find(|e| e.mac.as_deref() == Some("bb:bb:bb:bb:bb:bb")).unwrap();
+        store.network_events(100).unwrap().into_iter().find(|e| e.mac == Some(mac("bb:bb:bb:bb:bb:bb"))).unwrap();
     assert_eq!(offline.event_type, "device_offline");
     assert_eq!(offline.name.as_deref(), Some("laptop-01"), "snapshot survives departure");
 }
@@ -630,13 +641,27 @@ fn a_connection_event_keeps_its_ssid_despite_a_matching_mac() {
 
     // Seed the connection baseline, then transition to a named Wi-Fi network.
     store
-        .record_connection("wifi", Some("Home"), Some("wlan0"), Some("192.168.1.5"), Some("aa:bb:cc:dd:ee:ff"), 1_000)
+        .record_connection(
+            "wifi",
+            Some("Home"),
+            Some("wlan0"),
+            Some("192.168.1.5"),
+            Some(mac("aa:bb:cc:dd:ee:ff")),
+            1_000,
+        )
         .unwrap();
     store
-        .record_connection("ethernet", None, Some("eth0"), Some("192.168.1.5"), Some("aa:bb:cc:dd:ee:ff"), 1_500)
+        .record_connection("ethernet", None, Some("eth0"), Some("192.168.1.5"), Some(mac("aa:bb:cc:dd:ee:ff")), 1_500)
         .unwrap();
     store
-        .record_connection("wifi", Some("Home"), Some("wlan0"), Some("192.168.1.5"), Some("aa:bb:cc:dd:ee:ff"), 2_000)
+        .record_connection(
+            "wifi",
+            Some("Home"),
+            Some("wlan0"),
+            Some("192.168.1.5"),
+            Some(mac("aa:bb:cc:dd:ee:ff")),
+            2_000,
+        )
         .unwrap();
 
     let wifi = store.network_events(100).unwrap().into_iter().find(|e| e.event_type == "wifi_connected").unwrap();
@@ -671,4 +696,23 @@ fn a_feed_pruned_empty_is_not_seeded_again() {
     let events = store.network_events(10).unwrap();
     assert_eq!(events.len(), 1);
     assert_eq!(events[0].event_type, "device_joined", "a real join, not a second baseline");
+}
+
+#[test]
+fn a_stored_mac_that_does_not_parse_skips_its_row_not_the_roster() {
+    let store = Store::open_in_memory().unwrap();
+    store.record_devices(&[device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone)], 1_000).unwrap();
+    store
+        .lock()
+        .execute(
+            "INSERT INTO known_devices (mac, ip, kind, first_seen, last_seen) VALUES ('garbage', '192.168.1.21', 'unknown', 1, 1)",
+            [],
+        )
+        .unwrap();
+
+    let known = store.known_devices().unwrap();
+    assert_eq!(known.len(), 1);
+    assert_eq!(known[0].mac, mac("aa:aa:aa:aa:aa:aa"));
+    // A later scan still diffs against the readable rows.
+    store.record_devices(&[device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone)], 2_000).unwrap();
 }

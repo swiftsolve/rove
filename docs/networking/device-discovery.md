@@ -95,7 +95,8 @@ which is how the scan later filters the neighbor table to *just this subnet*
 
 > **Rust note:** `u32::from(ipv4)` and `Ipv4Addr::from(u32)` are free,
 > lossless conversions: an IPv4 address *is* a `u32`. Rove leans on this for
-> all subnet math and for `ip_sort_key` (sorting devices numerically by address).
+> all subnet math, and `Ipv4Addr`'s own ordering is that number's, so devices
+> sort numerically by address.
 
 ---
 
@@ -266,12 +267,11 @@ once, lazily, and cached in a `OnceLock`.
 
 Modern phones rotate a *random* MAC per network for privacy. Rove detects this
 from a single bit: the "locally administered" bit of the first octet
-(`is_randomized_mac` in `oui.rs`):
+(`MacAddress::is_locally_administered` in `utils/mac.rs`):
 
 ```rust
-pub fn is_randomized_mac(mac: &str) -> bool {
-    let hex: String = mac.chars().filter(|c| c.is_ascii_hexdigit()).take(2).collect();
-    u8::from_str_radix(&hex, 16).map(|b| b & 0x02 != 0).unwrap_or(false)
+pub const fn is_locally_administered(self) -> bool {
+    self.0[0] & 0x02 != 0
 }
 ```
 
@@ -448,7 +448,7 @@ Finally (`assemble`, at the end of `scan()` and the passive refresh):
   `local_machine_name` (in `hostname.rs`; it tries `/etc/hostname`, then
   `COMPUTERNAME`/`HOSTNAME` env vars, then the `hostname` binary).
 - **Sort** gateway first, then self, then numerically by IP
-  (`sort_by_key((!is_gateway, !is_self, ip_sort_key))`: `false < true`, so the
+  (`sort_by_key((!is_gateway, !is_self, ip))`: `false < true`, so the
   negation floats the special ones to the top).
 - **Dedupe by MAC** so a host with two IPs shows once.
 

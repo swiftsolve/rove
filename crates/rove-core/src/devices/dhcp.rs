@@ -31,6 +31,7 @@
 //! Classification comes from `data/dhcp_fingerprints.tsv`, a curated,
 //! license-clean table embedded like the OUI list: no key, no network.
 use crate::devices::DeviceKind;
+use crate::utils::mac::MacAddress;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU8, Ordering};
@@ -89,7 +90,7 @@ struct RawCapture {
 }
 
 impl RawCapture {
-    fn from_hit(mac: &str, hit: &DhcpHit) -> Self {
+    fn from_hit(mac: MacAddress, hit: &DhcpHit) -> Self {
         Self {
             mac: mac.to_string(),
             hostname: hit.hostname.clone(),
@@ -98,7 +99,10 @@ impl RawCapture {
         }
     }
 
-    fn into_hit(self) -> (String, DhcpHit) {
+    /// `None` when `mac` doesn't parse, so one bad entry skips only itself.
+    /// Files from older helpers hold bare hex, which parses too.
+    fn into_hit(self) -> Option<(MacAddress, DhcpHit)> {
+        let mac: MacAddress = self.mac.parse().ok()?;
         let (kind, os) = classify_fingerprint(self.vendor_class.as_deref(), self.fingerprint.as_deref());
         let hit = DhcpHit {
             fingerprint: self.fingerprint,
@@ -107,13 +111,13 @@ impl RawCapture {
             kind,
             os,
         };
-        (self.mac, hit)
+        Some((mac, hit))
     }
 }
 
 /// Lifetime cache of everything the background listener has seen, keyed by
-/// normalized MAC (12 lowercase hex chars, no separators).
-static CACHE: LazyLock<Mutex<HashMap<String, DhcpHit>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
+/// MAC.
+static CACHE: LazyLock<Mutex<HashMap<MacAddress, DhcpHit>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 /// Ensures the listener is spawned at most once, on the first scan.
 static START: Once = Once::new();
 
@@ -145,10 +149,10 @@ pub fn status() -> DhcpStatus {
     }
 }
 
-/// The DHCP hits captured so far, keyed by normalized MAC. The first call
+/// The DHCP hits captured so far, keyed by MAC. The first call
 /// starts the listener, so the first scan of a session sees only what the
 /// helper file holds.
-pub fn snapshot() -> HashMap<String, DhcpHit> {
+pub fn snapshot() -> HashMap<MacAddress, DhcpHit> {
     START.call_once(|| {
         // Only called from the async scan, so a Tokio runtime is present. A
         // failed bind isn't retried: privilege won't appear mid-run.
@@ -174,7 +178,7 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
 /// Binds `INADDR_ANY` so broadcasts to 255.255.255.255:67 arrive. Renewals a
 /// client unicasts to the router aren't seen; the join and rebind broadcasts
 /// carry the fingerprint. A failed bind is the expected unprivileged case.
-async fn capture_loop(mut on_hit: impl FnMut(String, DhcpHit)) -> std::io::Result<()> {
+async fn capture_loop(mut on_hit: impl FnMut(MacAddress, DhcpHit)) -> std::io::Result<()> {
     let socket = match UdpSocket::bind(("0.0.0.0", DHCP_SERVER_PORT)).await {
         Ok(socket) => {
             STATUS.store(STATUS_ACTIVE, Ordering::Relaxed);
@@ -209,7 +213,7 @@ async fn listen_forever() -> std::io::Result<()> {
 /// it.
 pub async fn run_capture_to_file(path: impl AsRef<Path>) -> std::io::Result<()> {
     let path = path.as_ref().to_path_buf();
-    let mut seen: HashMap<String, DhcpHit> = HashMap::new();
+    let mut seen: HashMap<MacAddress, DhcpHit> = HashMap::new();
     capture_loop(move |mac, hit| {
         seen.insert(mac, hit);
         if let Err(e) = write_cache_file(&path, &seen) {
@@ -232,8 +236,8 @@ pub fn helper_cache_path() -> PathBuf {
 }
 
 /// Temp file then rename, so the app never reads a half-written file.
-fn write_cache_file(path: &Path, cache: &HashMap<String, DhcpHit>) -> std::io::Result<()> {
-    let raw: Vec<RawCapture> = cache.iter().map(|(mac, hit)| RawCapture::from_hit(mac, hit)).collect();
+fn write_cache_file(path: &Path, cache: &HashMap<MacAddress, DhcpHit>) -> std::io::Result<()> {
+    let raw: Vec<RawCapture> = cache.iter().map(|(mac, hit)| RawCapture::from_hit(*mac, hit)).collect();
     let json = serde_json::to_vec(&raw).map_err(std::io::Error::other)?;
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
@@ -245,19 +249,19 @@ fn write_cache_file(path: &Path, cache: &HashMap<String, DhcpHit>) -> std::io::R
 
 /// Captures the helper wrote to `path`, reclassified with the current table.
 /// Empty if the file is absent or malformed.
-pub fn load_from_file(path: impl AsRef<Path>) -> HashMap<String, DhcpHit> {
+pub fn load_from_file(path: impl AsRef<Path>) -> HashMap<MacAddress, DhcpHit> {
     let Ok(bytes) = std::fs::read(path) else {
         return HashMap::new();
     };
     match serde_json::from_slice::<Vec<RawCapture>>(&bytes) {
-        Ok(raw) => raw.into_iter().map(RawCapture::into_hit).collect(),
+        Ok(raw) => raw.into_iter().filter_map(RawCapture::into_hit).collect(),
         Err(_) => HashMap::new(),
     }
 }
 
-/// A client packet as `(normalized MAC, hit)`; `None` for anything that isn't a
+/// A client packet as `(MAC, hit)`; `None` for anything that isn't a
 /// solicitation we can fingerprint.
-fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
+fn parse_packet(buf: &[u8]) -> Option<(MacAddress, DhcpHit)> {
     if buf.len() < BOOTP_MIN_LEN {
         return None;
     }
@@ -272,7 +276,7 @@ fn parse_packet(buf: &[u8]) -> Option<(String, DhcpHit)> {
     if buf[2] as usize != 6 {
         return None;
     }
-    let mac: String = buf[28..34].iter().map(|b| format!("{b:02x}")).collect();
+    let mac = MacAddress::new(buf[28..34].try_into().ok()?);
 
     let mut prl: Option<String> = None;
     let mut vendor_class: Option<String> = None;
@@ -423,7 +427,7 @@ mod tests {
             12, 5, b'm', b'y', b'-', b'p', b'c',
         ];
         let (mac, hit) = parse_packet(&packet(&opts)).expect("valid client packet");
-        assert_eq!(mac, "aabbcc112233");
+        assert_eq!(mac.to_string(), "aa:bb:cc:11:22:33");
         assert_eq!(hit.fingerprint.as_deref(), Some("1,3,6,15"));
         assert_eq!(hit.vendor_class.as_deref(), Some("MSFT 5.0"));
         assert_eq!(hit.hostname.as_deref(), Some("my-pc"));
@@ -527,8 +531,9 @@ mod tests {
         // The helper writes a capture and the app reads it back. The written hit
         // has no os or kind; the load path must recompute them.
         let mut cache = HashMap::new();
+        let mac: MacAddress = "ae:4a:06:fe:b5:37".parse().unwrap();
         cache.insert(
-            "ae4a06feb537".to_string(),
+            mac,
             DhcpHit {
                 fingerprint: Some("1,121,3,6,15,108,114,119,162,252".into()),
                 vendor_class: None,
@@ -543,11 +548,24 @@ mod tests {
         let loaded = load_from_file(&path);
         std::fs::remove_file(&path).ok();
 
-        let hit = loaded.get("ae4a06feb537").expect("capture present after round-trip");
+        let hit = loaded.get(&mac).expect("capture present after round-trip");
         assert_eq!(hit.hostname.as_deref(), Some("iPhone"));
         assert_eq!(hit.fingerprint.as_deref(), Some("1,121,3,6,15,108,114,119,162,252"));
         // Recomputed from the table on load, even though the written hit had none.
         assert_eq!(hit.os, Some("Apple"));
+    }
+
+    #[test]
+    fn helper_file_from_an_older_helper_keys_by_bare_hex_and_skips_bad_macs() {
+        let json = r#"[{"mac":"ae4a06feb537","hostname":"iPhone"},{"mac":"not-a-mac","hostname":"ghost"}]"#;
+        let path = std::env::temp_dir().join(format!("rove-dhcp-bare-{}.json", std::process::id()));
+        std::fs::write(&path, json).expect("write");
+        let loaded = load_from_file(&path);
+        std::fs::remove_file(&path).ok();
+
+        let mac: MacAddress = "ae:4a:06:fe:b5:37".parse().unwrap();
+        assert_eq!(loaded.len(), 1, "the unparsable entry is skipped, not the file");
+        assert_eq!(loaded.get(&mac).and_then(|hit| hit.hostname.as_deref()), Some("iPhone"));
     }
 
     #[test]

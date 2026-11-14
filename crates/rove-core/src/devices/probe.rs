@@ -45,12 +45,12 @@ const CONNECT_TIMEOUT: Duration = Duration::from_millis(400);
 
 pub struct ProbeResult {
     /// Accepted TCP ports keyed by host IP.
-    pub open_ports: HashMap<String, Vec<u16>>,
+    pub open_ports: HashMap<Ipv4Addr, Vec<u16>>,
     /// Hosts that answered any probe this scan, by accepting or refusing. Both
     /// prove the host is alive now, including a phone in Wi-Fi power-save that
     /// drops ICMP and announces nothing yet still RSTs a SYN to a closed port.
     /// It feeds the liveness verdict so such a phone doesn't read Offline.
-    pub responsive: HashSet<String>,
+    pub responsive: HashSet<Ipv4Addr>,
 }
 
 /// Probe every usable host in `subnet` across [`PROBE_PORTS`]. Silent hosts
@@ -64,14 +64,14 @@ pub async fn probe(subnet: &str) -> ProbeResult {
     // and the resulting future stays `Send + 'static` for the Tauri command.
     let targets: Vec<(Ipv4Addr, u16)> = hosts.flat_map(|ip| PROBE_PORTS.iter().map(move |&port| (ip, port))).collect();
 
-    let answers: Vec<(String, Option<u16>)> = futures_util::stream::iter(targets)
+    let answers: Vec<(Ipv4Addr, Option<u16>)> = futures_util::stream::iter(targets)
         .map(|(ip, port)| async move {
             let addr = SocketAddr::from((ip, port));
             match timeout(CONNECT_TIMEOUT, TcpStream::connect(addr)).await {
-                Ok(Ok(_stream)) => Some((ip.to_string(), Some(port))),
+                Ok(Ok(_stream)) => Some((ip, Some(port))),
                 // Refused (RST): the port is closed but the host is alive. This
                 // catches a power-saving phone that ignores ICMP.
-                Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => Some((ip.to_string(), None)),
+                Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => Some((ip, None)),
                 // Timeout or unreachable proves nothing.
                 _ => None,
             }
@@ -81,11 +81,11 @@ pub async fn probe(subnet: &str) -> ProbeResult {
         .collect()
         .await;
 
-    let mut open_ports: HashMap<String, Vec<u16>> = HashMap::new();
-    let mut responsive: HashSet<String> = HashSet::new();
+    let mut open_ports: HashMap<Ipv4Addr, Vec<u16>> = HashMap::new();
+    let mut responsive: HashSet<Ipv4Addr> = HashSet::new();
     for (ip, port) in answers {
         if let Some(port) = port {
-            open_ports.entry(ip.clone()).or_default().push(port);
+            open_ports.entry(ip).or_default().push(port);
         }
         responsive.insert(ip);
     }

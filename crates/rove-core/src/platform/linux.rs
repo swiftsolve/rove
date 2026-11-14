@@ -244,8 +244,8 @@ pub async fn neighbors() -> Option<Vec<RawNeighbor>> {
             .filter_map(|line| {
                 let c = LINUX_NEIGHBOR.captures(line)?;
                 Some(RawNeighbor {
-                    ip: c[1].to_string(),
-                    mac: c[2].to_lowercase(),
+                    ip: c[1].parse().ok()?,
+                    mac: c[2].parse().ok()?,
                     is_reachable: matches!(&c[3], "REACHABLE" | "DELAY" | "PROBE"),
                     // A real kernel state the scan can use as a liveness signal.
                     is_stateful: true,

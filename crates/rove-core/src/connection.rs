@@ -212,8 +212,8 @@ pub async fn network_info() -> NetworkInfo {
     // Fall back to the MAC's OUI for the adapter vendor when the platform probe
     // didn't supply one (Windows Ethernet, macOS Wi-Fi).
     if details.vendor.is_none() {
-        if let Some(mac) = &mac {
-            details.vendor = crate::devices::oui::lookup_vendor(mac);
+        if let Some(parsed) = mac.as_deref().and_then(|text| text.parse::<crate::utils::mac::MacAddress>().ok()) {
+            details.vendor = crate::devices::oui::lookup_vendor(parsed);
         }
     }
 

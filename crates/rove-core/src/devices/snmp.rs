@@ -74,15 +74,13 @@ fn has_model_token(s: &str) -> bool {
 /// discovery sources. `local_ip`, when known, is the active interface's
 /// address: binding to it sends the datagram out the right adapter on
 /// multi-homed and Windows hosts.
-pub async fn discover(gateway: Option<&str>, local_ip: Option<Ipv4Addr>) -> HashMap<String, SnmpHit> {
+pub async fn discover(gateway: Option<Ipv4Addr>, local_ip: Option<Ipv4Addr>) -> HashMap<Ipv4Addr, SnmpHit> {
     let mut out = HashMap::new();
-    // IPv4 only: the gateway comes from the v4 default route, and the neighbor
-    // table this feeds is keyed on those same v4 literals.
-    let Some(ip) = gateway.and_then(|g| g.parse::<Ipv4Addr>().ok()) else {
+    let Some(ip) = gateway else {
         return out;
     };
     if let Some(hit) = query_one(ip, local_ip).await {
-        out.insert(ip.to_string(), hit);
+        out.insert(ip, hit);
     }
     out
 }

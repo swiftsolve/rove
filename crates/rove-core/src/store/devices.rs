@@ -7,16 +7,18 @@ use super::events::{
 use super::Store;
 use crate::devices::LanDevice;
 use crate::devices::{DeviceKind, KindConfidence};
+use crate::utils::mac::MacAddress;
 use rusqlite::{params, Connection, Row};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
+use std::net::Ipv4Addr;
 
 /// A LAN device as remembered across scans, with first/last-seen timestamps.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KnownDevice {
-    pub mac: String,
-    pub ip: Option<String>,
+    pub mac: MacAddress,
+    pub ip: Option<Ipv4Addr>,
     pub hostname: Option<String>,
     pub vendor: Option<String>,
     /// OS family from the DHCP fingerprint ("Android", "Apple"), kept so a
@@ -52,10 +54,17 @@ const META_GATEWAY_MAC: &str = "gateway_mac";
 /// The `known_devices` columns in the order `known_device_from_row` reads them.
 const KNOWN_DEVICE_COLUMNS: &str = "mac, ip, hostname, vendor, kind, first_seen, last_seen, os, randomized";
 
-fn known_device_from_row(row: &Row) -> rusqlite::Result<KnownDevice> {
-    Ok(KnownDevice {
-        mac: row.get(0)?,
-        ip: row.get(1)?,
+/// A roster row, or `None` when its stored MAC doesn't parse: such a row can't
+/// match any device a scan finds, so it's skipped rather than failing the
+/// whole roster. A stored IP that doesn't parse reads as `None`.
+fn known_device_from_row(row: &Row) -> rusqlite::Result<Option<KnownDevice>> {
+    let Some(mac) = read_mac(row, 0)? else {
+        return Ok(None);
+    };
+    let ip_text: Option<String> = row.get(1)?;
+    Ok(Some(KnownDevice {
+        mac,
+        ip: ip_text.and_then(|text| text.parse().ok()),
         hostname: row.get(2)?,
         vendor: row.get(3)?,
         kind: row.get(4)?,
@@ -63,13 +72,22 @@ fn known_device_from_row(row: &Row) -> rusqlite::Result<KnownDevice> {
         last_seen: row.get(6)?,
         os: row.get(7)?,
         randomized: row.get(8)?,
-    })
+    }))
+}
+
+/// The MAC in column `index`: `None` for NULL, and for text that doesn't parse
+/// as a MAC, which callers treat as absent rather than an error.
+pub(super) fn read_mac(row: &Row, index: usize) -> rusqlite::Result<Option<MacAddress>> {
+    match row.get::<_, Option<MacAddress>>(index) {
+        Err(rusqlite::Error::FromSqlConversionFailure(..)) => Ok(None),
+        result => result,
+    }
 }
 
 /// Whether the newest event for `mac` is its departure, so it reads offline
 /// until it returns.
-fn is_marked_offline(last_event: &HashMap<String, String>, mac: &str) -> bool {
-    last_event.get(mac).map(String::as_str) == Some(EVENT_DEVICE_OFFLINE)
+fn is_marked_offline(last_event: &HashMap<MacAddress, String>, mac: MacAddress) -> bool {
+    last_event.get(&mac).map(String::as_str) == Some(EVENT_DEVICE_OFFLINE)
 }
 
 impl Store {
@@ -93,7 +111,7 @@ impl Store {
                 last_seen  = excluded.last_seen",
             params![
                 device.mac,
-                device.ip,
+                device.ip.to_string(),
                 device.hostname,
                 device.vendor,
                 device.os,
@@ -107,8 +125,11 @@ impl Store {
 
     /// Bump only `ip` and `last_seen` of an existing row. For the passive
     /// refresh, whose thin evidence must never overwrite a better identity.
-    fn bump_last_seen(conn: &Connection, mac: &str, ip: &str, now_ms: i64) -> rusqlite::Result<()> {
-        conn.execute("UPDATE known_devices SET ip = ?2, last_seen = ?3 WHERE mac = ?1", params![mac, ip, now_ms])?;
+    fn bump_last_seen(conn: &Connection, mac: MacAddress, ip: Ipv4Addr, now_ms: i64) -> rusqlite::Result<()> {
+        conn.execute(
+            "UPDATE known_devices SET ip = ?2, last_seen = ?3 WHERE mac = ?1",
+            params![mac, ip.to_string(), now_ms],
+        )?;
         Ok(())
     }
 
@@ -130,8 +151,11 @@ impl Store {
         let tx = conn.transaction()?;
         let last_event = Self::load_last_event_types(&tx)?;
 
-        for device in present.iter().filter(|d| !d.mac.is_empty() && d.is_reachable) {
-            match prior.get(&device.mac) {
+        for device in present.iter().filter(|d| d.is_reachable) {
+            let Some(mac) = device.mac else {
+                continue;
+            };
+            match prior.get(&mac) {
                 None => {
                     // Store its thin identity so the arrival isn't blank; the
                     // next active scan enriches it.
@@ -141,7 +165,7 @@ impl Store {
                 Some(_) => {
                     // Mirror `record_devices`' online transition, so a device
                     // returning while the window is hidden still lands on the feed.
-                    if is_marked_offline(&last_event, &device.mac) {
+                    if is_marked_offline(&last_event, mac) {
                         Self::record_device_event(
                             &tx,
                             now_ms,
@@ -149,7 +173,7 @@ impl Store {
                             NewEvent::new(EVENT_DEVICE_ONLINE, Severity::Info),
                         )?;
                     }
-                    Self::bump_last_seen(&tx, &device.mac, &device.ip, now_ms)?;
+                    Self::bump_last_seen(&tx, mac, device.ip, now_ms)?;
                 }
             }
         }
@@ -185,13 +209,15 @@ impl Store {
         // min). The debounce in `devices/liveness.rs` holds a device reachable
         // across a brief sleep or a burst of scans seconds apart, so this doesn't
         // flap.
-        let live: HashSet<&str> =
-            devices.iter().filter(|d| !d.mac.is_empty() && d.is_reachable).map(|d| d.mac.as_str()).collect();
+        let live: HashSet<MacAddress> = devices.iter().filter(|d| d.is_reachable).filter_map(|d| d.mac).collect();
 
-        for device in devices.iter().filter(|d| !d.mac.is_empty()) {
+        for device in devices {
+            let Some(mac) = device.mac else {
+                continue;
+            };
             if !is_seeding_feed {
-                let is_known = prior.contains_key(&device.mac);
-                Self::emit_arrival(&tx, device, is_known, is_roster_empty, &last_event, now_ms)?;
+                let is_known = prior.contains_key(&mac);
+                Self::emit_arrival(&tx, device, mac, is_known, is_roster_empty, &last_event, now_ms)?;
             }
             Self::upsert_device(&tx, device, now_ms)?;
         }
@@ -231,9 +257,10 @@ impl Store {
     fn emit_arrival(
         conn: &Connection,
         device: &LanDevice,
+        mac: MacAddress,
         is_known: bool,
         is_roster_empty: bool,
-        last_event: &HashMap<String, String>,
+        last_event: &HashMap<MacAddress, String>,
         now_ms: i64,
     ) -> rusqlite::Result<()> {
         if !is_known {
@@ -242,7 +269,7 @@ impl Store {
         // Gate on `is_reachable` so a device back in the ARP table but not
         // answering doesn't read as reconnected. Identity changes (hostname, IP,
         // vendor, kind) aren't logged: they proved too noisy.
-        if device.is_reachable && is_marked_offline(last_event, &device.mac) {
+        if device.is_reachable && is_marked_offline(last_event, mac) {
             Self::record_device_event(conn, now_ms, device, NewEvent::new(EVENT_DEVICE_ONLINE, Severity::Info))?;
         }
         Ok(())
@@ -252,21 +279,22 @@ impl Store {
     /// scan and isn't already marked offline.
     fn emit_departures(
         conn: &Connection,
-        prior: &HashMap<String, KnownDevice>,
-        live: &HashSet<&str>,
-        last_event: &HashMap<String, String>,
+        prior: &HashMap<MacAddress, KnownDevice>,
+        live: &HashSet<MacAddress>,
+        last_event: &HashMap<MacAddress, String>,
         now_ms: i64,
     ) -> rusqlite::Result<()> {
         let departed = prior.iter().filter(|(mac, prev)| {
-            !live.contains(mac.as_str())
+            !live.contains(*mac)
                 && now_ms - prev.last_seen <= OFFLINE_RECENCY_MS
-                && !is_marked_offline(last_event, mac)
+                && !is_marked_offline(last_event, **mac)
         });
         for (mac, prev) in departed {
             let name = Self::known_name(prev);
+            let ip_text = prev.ip.map(|ip| ip.to_string());
             let event = NewEvent {
-                mac: Some(mac),
-                ip: prev.ip.as_deref(),
+                mac: Some(*mac),
+                ip: ip_text.as_deref(),
                 name: name.as_deref(),
                 is_randomized: prev.randomized,
                 ..NewEvent::new(EVENT_DEVICE_OFFLINE, Severity::Info)
@@ -279,7 +307,7 @@ impl Store {
     /// The first populated scan's one "N devices discovered" row, after which
     /// the feed counts as seeded.
     fn seed_feed(conn: &Connection, devices: &[LanDevice], now_ms: i64) -> rusqlite::Result<()> {
-        let count = devices.iter().filter(|d| !d.mac.is_empty()).count();
+        let count = devices.iter().filter(|d| d.mac.is_some()).count();
         if count == 0 {
             return Ok(());
         }
@@ -290,28 +318,30 @@ impl Store {
     }
 
     /// The roster keyed by MAC: a scan's diff baseline.
-    fn load_known_map(conn: &Connection) -> rusqlite::Result<HashMap<String, KnownDevice>> {
+    fn load_known_map(conn: &Connection) -> rusqlite::Result<HashMap<MacAddress, KnownDevice>> {
         let mut stmt = conn.prepare(&format!("SELECT {KNOWN_DEVICE_COLUMNS} FROM known_devices"))?;
         let rows = stmt.query_map([], known_device_from_row)?;
         let mut map = HashMap::new();
         for row in rows {
-            let device = row?;
-            map.insert(device.mac.clone(), device);
+            if let Some(device) = row? {
+                map.insert(device.mac, device);
+            }
         }
         Ok(map)
     }
 
-    /// The newest event `type` per MAC.
-    fn load_last_event_types(conn: &Connection) -> rusqlite::Result<HashMap<String, String>> {
+    /// The newest event `type` per MAC, skipping a stored MAC that doesn't parse.
+    fn load_last_event_types(conn: &Connection) -> rusqlite::Result<HashMap<MacAddress, String>> {
         let mut stmt = conn.prepare(
             "SELECT mac, type FROM network_events WHERE id IN
                 (SELECT MAX(id) FROM network_events WHERE mac IS NOT NULL GROUP BY mac)",
         )?;
-        let rows = stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?;
+        let rows = stmt.query_map([], |row| Ok((read_mac(row, 0)?, row.get::<_, String>(1)?)))?;
         let mut map = HashMap::new();
         for row in rows {
-            let (mac, event_type) = row?;
-            map.insert(mac, event_type);
+            if let (Some(mac), event_type) = row? {
+                map.insert(mac, event_type);
+            }
         }
         Ok(map)
     }
@@ -335,31 +365,42 @@ impl Store {
         network: Option<&str>,
         ts: i64,
     ) -> rusqlite::Result<()> {
-        let Some(gateway) = devices.iter().find(|d| d.is_gateway && !d.mac.is_empty()) else {
+        let Some(gateway) = devices.iter().find(|d| d.is_gateway && d.mac.is_some()) else {
             return Ok(());
         };
+        let Some(gateway_mac) = gateway.mac else {
+            return Ok(());
+        };
+        let gateway_mac_text = gateway_mac.to_string();
         let key = format!("{META_GATEWAY_MAC}|{}", network.unwrap_or(""));
         let prev = Self::read_meta(conn, &key)?;
         if let Some(old) = prev.as_deref() {
-            if old != gateway.mac {
+            if old != gateway_mac_text {
                 let event = NewEvent {
                     old_value: Some(old),
-                    new_value: Some(&gateway.mac),
+                    new_value: Some(&gateway_mac_text),
                     ..NewEvent::new(EVENT_GATEWAY_CHANGED, Severity::Warning)
                 };
                 Self::record_device_event(conn, ts, gateway, event)?;
             }
         }
-        Self::write_meta(conn, &key, &gateway.mac)
+        Self::write_meta(conn, &key, &gateway_mac_text)
     }
 
-    /// Every device we've ever recorded, most-recently-seen first.
+    /// Every device we've ever recorded, most-recently-seen first, less any row
+    /// whose stored MAC doesn't parse.
     pub fn known_devices(&self) -> rusqlite::Result<Vec<KnownDevice>> {
         let conn = self.lock();
         let mut stmt =
             conn.prepare(&format!("SELECT {KNOWN_DEVICE_COLUMNS} FROM known_devices ORDER BY last_seen DESC"))?;
         let rows = stmt.query_map([], known_device_from_row)?;
-        rows.collect()
+        let mut devices = Vec::new();
+        for row in rows {
+            if let Some(device) = row? {
+                devices.push(device);
+            }
+        }
+        Ok(devices)
     }
 
     /// The live scan plus roster devices seen within `keep_ms` that didn't
@@ -373,9 +414,9 @@ impl Store {
         now_ms: i64,
         keep_ms: i64,
     ) -> rusqlite::Result<Vec<LanDevice>> {
-        let live_macs: HashSet<&str> = live.iter().map(|d| d.mac.as_str()).filter(|m| !m.is_empty()).collect();
-        let known: HashMap<String, KnownDevice> =
-            self.known_devices()?.into_iter().filter(|kd| !kd.mac.is_empty()).map(|kd| (kd.mac.clone(), kd)).collect();
+        let live_macs: HashSet<MacAddress> = live.iter().filter_map(|d| d.mac).collect();
+        let known: HashMap<MacAddress, KnownDevice> =
+            self.known_devices()?.into_iter().map(|kd| (kd.mac, kd)).collect();
         let mut merged: Vec<LanDevice> = live
             .iter()
             .cloned()
@@ -386,7 +427,7 @@ impl Store {
                 // and would read "Generic device". Backfill from the roster, but
                 // only while unreachable: a live device's scan may reclassify it.
                 if !d.is_reachable {
-                    if let Some(kd) = known.get(&d.mac) {
+                    if let Some(kd) = d.mac.and_then(|mac| known.get(&mac)) {
                         d.hostname = d.hostname.take().or_else(|| kd.hostname.clone());
                         d.vendor = d.vendor.take().or_else(|| kd.vendor.clone());
                         d.os = d.os.take().or_else(|| kd.os.clone());
@@ -402,15 +443,19 @@ impl Store {
             })
             .collect();
         for kd in known.into_values() {
-            if live_macs.contains(kd.mac.as_str()) {
+            if live_macs.contains(&kd.mac) {
                 continue;
             }
             if now_ms - kd.last_seen > keep_ms {
                 continue;
             }
+            // A row with no usable IP has nothing to show in the IP column.
+            let Some(ip) = kd.ip else {
+                continue;
+            };
             merged.push(LanDevice {
-                ip: kd.ip.unwrap_or_default(),
-                mac: kd.mac,
+                ip,
+                mac: Some(kd.mac),
                 vendor: kd.vendor,
                 hostname: kd.hostname,
                 model: None,

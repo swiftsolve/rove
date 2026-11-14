@@ -9,6 +9,7 @@
 //! Regenerate with `cargo run -p rove-core --example gen_oui` (see that file for
 //! the IEEE sources). Sourcing from IEEE rather than Wireshark's GPL-2.0 `manuf`
 //! keeps the bundled table free of copyleft obligations.
+use crate::utils::mac::MacAddress;
 use std::collections::HashMap;
 use std::io::Read;
 use std::sync::OnceLock;
@@ -70,9 +71,9 @@ fn table() -> &'static OuiTable {
 /// ("Motorola", not "Motorola (Wuhan) Mobility Technologies Communication Co.,
 /// Ltd.").
 ///
-/// `None` for unregistered or unparseable prefixes. A randomized MAC will
-/// almost never match, but callers should still gate on [`is_randomized_mac`].
-pub fn lookup_vendor(mac: &str) -> Option<String> {
+/// `None` for unregistered prefixes. A randomized MAC will almost never match,
+/// but callers should still gate on [`MacAddress::is_locally_administered`].
+pub fn lookup_vendor(mac: MacAddress) -> Option<String> {
     resolve(table(), mac).map(clean_vendor)
 }
 
@@ -88,7 +89,7 @@ pub fn lookup_vendor(mac: &str) -> Option<String> {
 /// smart-home line (Smart Clock, Smart Display, speakers), yet it tidies to the
 /// same "Motorola" as the phone blocks. Left to vote, every Lenovo Smart Clock
 /// would read as a phone.
-pub fn is_kind_ambiguous_vendor(mac: &str) -> bool {
+pub fn is_kind_ambiguous_vendor(mac: MacAddress) -> bool {
     resolve(table(), mac)
         .map(|v| {
             let v = v.to_ascii_lowercase();
@@ -231,43 +232,28 @@ fn tidy_vendor(vendor: &str) -> String {
 
 /// The precedence logic, apart from the global table so tests can use a
 /// synthetic one whatever the embedded snapshot contains.
-fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
-    let hex: String = mac.chars().filter(char::is_ascii_hexdigit).take(9).collect::<String>().to_uppercase();
-    if hex.len() < 6 {
-        return None;
-    }
-    if hex.len() >= 9 {
-        if let Ok(key) = u64::from_str_radix(&hex[..9], 16) {
-            if let Some(vendor) = t.b36.get(&key) {
-                return Some(vendor);
-            }
-        }
-    }
-    if hex.len() >= 7 {
-        if let Ok(key) = u32::from_str_radix(&hex[..7], 16) {
-            if let Some(vendor) = t.b28.get(&key) {
-                return Some(vendor);
-            }
-        }
-    }
-    let key = u32::from_str_radix(&hex[..6], 16).ok()?;
-    t.b24.get(&key).copied()
-}
-
-/// The locally administered bit marks a privacy-randomized MAC.
-pub fn is_randomized_mac(mac: &str) -> bool {
-    let hex: String = mac.chars().filter(char::is_ascii_hexdigit).take(2).collect();
-    u8::from_str_radix(&hex, 16).map(|b| b & 0x02 != 0).unwrap_or(false)
+fn resolve(t: &OuiTable, mac: MacAddress) -> Option<&'static str> {
+    let [o0, o1, o2, o3, o4, _] = mac.octets();
+    // The table's keys are the leading 9, 7 and 6 nibbles: the first five,
+    // four and three octets, less the half octet past the block.
+    let key36 = u64::from_be_bytes([0, 0, 0, o0, o1, o2, o3, o4]) >> 4;
+    let key28 = u32::from_be_bytes([o0, o1, o2, o3]) >> 4;
+    let key24 = u32::from_be_bytes([0, o0, o1, o2]);
+    t.b36.get(&key36).or_else(|| t.b28.get(&key28)).or_else(|| t.b24.get(&key24)).copied()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    fn mac(text: &str) -> MacAddress {
+        text.parse().unwrap()
+    }
+
     #[test]
     fn resolves_a_common_24_bit_oui() {
         // B8:27:EB is the Raspberry Pi Foundation MA-L block.
-        assert!(lookup_vendor("b8:27:eb:11:22:33").unwrap().to_lowercase().contains("raspberry"));
+        assert!(lookup_vendor(mac("b8:27:eb:11:22:33")).unwrap().to_lowercase().contains("raspberry"));
     }
 
     #[test]
@@ -275,19 +261,19 @@ mod tests {
         // 08:38:E6 is the Motorola (Wuhan) ODM block: Lenovo smart-home gear,
         // not a phone. It and the phone blocks both tidy to "Motorola", so the
         // flag is what keeps a lone Wuhan OUI from voting "phone".
-        assert_eq!(lookup_vendor("08:38:E6:D8:DF:23").as_deref(), Some("Motorola"));
-        assert!(is_kind_ambiguous_vendor("08:38:E6:D8:DF:23"));
-        assert!(is_kind_ambiguous_vendor("04:34:F6:00:00:01"));
+        assert_eq!(lookup_vendor(mac("08:38:E6:D8:DF:23")).as_deref(), Some("Motorola"));
+        assert!(is_kind_ambiguous_vendor(mac("08:38:E6:D8:DF:23")));
+        assert!(is_kind_ambiguous_vendor(mac("04:34:F6:00:00:01")));
 
         // The Motorola-brand phone blocks ("Motorola Mobility LLC, a Lenovo
         // Company") also tidy to "Motorola" but stay a confident phone vote.
-        assert_eq!(lookup_vendor("00:62:01:00:00:01").as_deref(), Some("Motorola"));
-        assert!(!is_kind_ambiguous_vendor("00:62:01:00:00:01"));
-        assert!(!is_kind_ambiguous_vendor("04:D3:95:00:00:01"));
+        assert_eq!(lookup_vendor(mac("00:62:01:00:00:01")).as_deref(), Some("Motorola"));
+        assert!(!is_kind_ambiguous_vendor(mac("00:62:01:00:00:01")));
+        assert!(!is_kind_ambiguous_vendor(mac("04:D3:95:00:00:01")));
 
         // An unrelated vendor and an unregistered prefix are never flagged.
-        assert!(!is_kind_ambiguous_vendor("b8:27:eb:11:22:33"));
-        assert!(!is_kind_ambiguous_vendor("02:00:00:00:00:00"));
+        assert!(!is_kind_ambiguous_vendor(mac("b8:27:eb:11:22:33")));
+        assert!(!is_kind_ambiguous_vendor(mac("02:00:00:00:00:00")));
     }
 
     #[test]
@@ -346,38 +332,31 @@ mod tests {
         t.b24.insert(0x0055DA, "Shared MA-L holder");
         t.b28.insert(0x0055DA1, "KoolPOS Inc.");
         // 0055DA1 has an MA-M entry, so the finer block wins.
-        assert_eq!(resolve(&t, "00:55:da:1f:00:01"), Some("KoolPOS Inc."));
+        assert_eq!(resolve(&t, mac("00:55:da:1f:00:01")), Some("KoolPOS Inc."));
         // 0055DA0 has none, so the 24-bit holder answers.
-        assert_eq!(resolve(&t, "00:55:da:0f:00:01"), Some("Shared MA-L holder"));
+        assert_eq!(resolve(&t, mac("00:55:da:0f:00:01")), Some("Shared MA-L holder"));
     }
 
     #[test]
     fn unregistered_prefix_returns_none() {
-        assert_eq!(lookup_vendor("02:00:00:00:00:00"), None);
+        assert_eq!(lookup_vendor(mac("02:00:00:00:00:00")), None);
     }
 
     #[test]
-    fn tolerates_dashes_and_short_input() {
-        assert!(lookup_vendor("B8-27-EB-00-00-00").is_some());
-        assert_eq!(lookup_vendor("b8:27"), None); // too few nibbles
+    fn tolerates_dashes_and_uppercase() {
+        assert!(lookup_vendor(mac("B8-27-EB-00-00-00")).is_some());
     }
 
     #[test]
     fn aliases_oem_legal_name_to_consumer_brand() {
         // 5C:E7:53 is a Govee block registered to the parent, Shenzhen
         // Intellirocks; the alias must surface "Govee".
-        assert_eq!(lookup_vendor("5c:e7:53:3d:59:80").as_deref(), Some("Govee"));
+        assert_eq!(lookup_vendor(mac("5c:e7:53:3d:59:80")).as_deref(), Some("Govee"));
     }
 
     #[test]
     fn alias_leaves_unmapped_vendors_untouched() {
         // Raspberry Pi has no alias, so the registry name passes through.
-        assert!(lookup_vendor("b8:27:eb:11:22:33").unwrap().to_lowercase().contains("raspberry"));
-    }
-
-    #[test]
-    fn detects_randomized_mac() {
-        assert!(is_randomized_mac("a2:00:00:00:00:00")); // 0xA2 has bit 0x02 set
-        assert!(!is_randomized_mac("b8:27:eb:00:00:00"));
+        assert!(lookup_vendor(mac("b8:27:eb:11:22:33")).unwrap().to_lowercase().contains("raspberry"));
     }
 }

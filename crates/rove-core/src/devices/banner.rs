@@ -10,6 +10,7 @@
 //! verification, which Rove deliberately doesn't offer.
 use futures_util::StreamExt;
 use std::collections::HashMap;
+use std::net::Ipv4Addr;
 use std::time::Duration;
 
 /// Plaintext HTTP only (see the module note).
@@ -44,11 +45,11 @@ impl BannerHit {
 
 /// HTTP banners keyed by IP for every host in `open_ports` with an HTTP port
 /// open. Hosts with no banner are absent.
-pub async fn grab(open_ports: &HashMap<String, Vec<u16>>) -> HashMap<String, BannerHit> {
-    let targets: Vec<String> = open_ports
+pub async fn grab(open_ports: &HashMap<Ipv4Addr, Vec<u16>>) -> HashMap<Ipv4Addr, BannerHit> {
+    let targets: Vec<Ipv4Addr> = open_ports
         .iter()
         .filter(|(_, ports)| ports.iter().any(|p| HTTP_PORTS.contains(p)))
-        .map(|(ip, _)| ip.clone())
+        .map(|(ip, _)| *ip)
         .collect();
     if targets.is_empty() {
         return HashMap::new();
@@ -59,10 +60,10 @@ pub async fn grab(open_ports: &HashMap<String, Vec<u16>>) -> HashMap<String, Ban
         return HashMap::new();
     };
 
-    let results: Vec<(String, BannerHit)> = futures_util::stream::iter(targets)
+    let results: Vec<(Ipv4Addr, BannerHit)> = futures_util::stream::iter(targets)
         .map(|ip| {
             let client = client.clone();
-            async move { grab_one(&client, &ip).await.map(|hit| (ip, hit)) }
+            async move { grab_one(&client, ip).await.map(|hit| (ip, hit)) }
         })
         .buffer_unordered(CONCURRENT_GRABS)
         .filter_map(|hit| async move { hit })
@@ -72,7 +73,7 @@ pub async fn grab(open_ports: &HashMap<String, Vec<u16>>) -> HashMap<String, Ban
     results.into_iter().collect()
 }
 
-async fn grab_one(client: &reqwest::Client, ip: &str) -> Option<BannerHit> {
+async fn grab_one(client: &reqwest::Client, ip: Ipv4Addr) -> Option<BannerHit> {
     let resp = client.get(format!("http://{ip}/")).send().await.ok()?;
 
     let server = resp

@@ -13,6 +13,7 @@ use super::banner::BannerHit;
 use super::snmp::SnmpHit;
 use super::ssdp::SsdpHit;
 use crate::devices::mdns::MdnsHit;
+use crate::utils::mac::MacAddress;
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
@@ -60,7 +61,7 @@ fn fill(dst: &mut Option<String>, src: &Option<String>) {
     }
 }
 
-static CACHE: LazyLock<Mutex<HashMap<String, DeviceEvidence>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
+static CACHE: LazyLock<Mutex<HashMap<MacAddress, DeviceEvidence>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// How authoritative a display name is, by source. `build_device`'s name chain
 /// follows this order within a scan; the rank carries it across scans, so a
@@ -85,13 +86,13 @@ pub enum NameRank {
 /// it. Remembering the name keeps the label and the kind stable: an
 /// "Office-LaserJet" stays a printer instead of falling back to its HP OUI
 /// (computer) on a nameless scan.
-static NAMES: LazyLock<Mutex<HashMap<String, (String, NameRank)>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
+static NAMES: LazyLock<Mutex<HashMap<MacAddress, (String, NameRank)>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Merge this scan's `fresh` signals for `mac` and return the union to
 /// classify from.
-pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
+pub fn merge_and_snapshot(mac: MacAddress, fresh: DeviceEvidence) -> DeviceEvidence {
     let mut cache = crate::utils::net::lock(&CACHE);
-    let entry = cache.entry(mac.to_string()).or_default();
+    let entry = cache.entry(mac).or_default();
     entry.absorb(&fresh);
     entry.clone()
 }
@@ -100,19 +101,19 @@ pub fn merge_and_snapshot(mac: &str, fresh: DeviceEvidence) -> DeviceEvidence {
 /// replaces the remembered name when its rank is equal (a real rename) or
 /// stronger (an upgrade); a weaker one is ignored. With no candidate, the last
 /// name stands, so the device doesn't revert to a bare vendor label.
-pub fn stable_name(mac: &str, candidate: Option<(String, NameRank)>) -> Option<String> {
+pub fn stable_name(mac: MacAddress, candidate: Option<(String, NameRank)>) -> Option<String> {
     let mut names = crate::utils::net::lock(&NAMES);
     match candidate {
         Some((name, rank)) => {
-            if let Some((stored, stored_rank)) = names.get(mac) {
+            if let Some((stored, stored_rank)) = names.get(&mac) {
                 if rank < *stored_rank {
                     return Some(stored.clone());
                 }
             }
-            names.insert(mac.to_string(), (name.clone(), rank));
+            names.insert(mac, (name.clone(), rank));
             Some(name)
         }
-        None => names.get(mac).map(|(name, _)| name.clone()),
+        None => names.get(&mac).map(|(name, _)| name.clone()),
     }
 }
 
@@ -176,7 +177,7 @@ mod tests {
 
     #[test]
     fn cache_accumulates_across_calls_for_one_mac() {
-        let mac = "aa:bb:cc:00:00:01";
+        let mac: MacAddress = "aa:bb:cc:00:00:01".parse().unwrap();
         merge_and_snapshot(mac, DeviceEvidence { mdns: mdns_kind(DeviceKind::Tv), ..Default::default() });
         let merged = merge_and_snapshot(mac, DeviceEvidence::default());
         assert_eq!(merged.mdns.kind, Some(DeviceKind::Tv));
@@ -186,14 +187,14 @@ mod tests {
     fn a_resolved_name_survives_a_later_nameless_scan() {
         // A Kasa plug's reverse DNS resolves "HS103" one scan and nothing the
         // next.
-        let mac = "aa:bb:cc:00:00:02";
+        let mac: MacAddress = "aa:bb:cc:00:00:02".parse().unwrap();
         assert_eq!(stable_name(mac, Some(("HS103".into(), NameRank::ReverseDns))).as_deref(), Some("HS103"));
         assert_eq!(stable_name(mac, None).as_deref(), Some("HS103"));
     }
 
     #[test]
     fn a_freshly_resolved_name_replaces_the_remembered_one_at_the_same_tier() {
-        let mac = "aa:bb:cc:00:00:03";
+        let mac: MacAddress = "aa:bb:cc:00:00:03".parse().unwrap();
         stable_name(mac, Some(("old-name".into(), NameRank::Mdns)));
         assert_eq!(stable_name(mac, Some(("new-name".into(), NameRank::Mdns))).as_deref(), Some("new-name"));
         assert_eq!(stable_name(mac, None).as_deref(), Some("new-name"));
@@ -201,7 +202,7 @@ mod tests {
 
     #[test]
     fn a_stronger_signal_upgrades_the_remembered_name() {
-        let mac = "aa:bb:cc:00:00:04";
+        let mac: MacAddress = "aa:bb:cc:00:00:04".parse().unwrap();
         stable_name(mac, Some(("living-room".into(), NameRank::ReverseDns)));
         assert_eq!(stable_name(mac, Some(("Kitchen-Sonos".into(), NameRank::Mdns))).as_deref(), Some("Kitchen-Sonos"));
     }
@@ -210,7 +211,7 @@ mod tests {
     fn a_weaker_later_signal_does_not_downgrade_the_remembered_name() {
         // NetBIOS names it one scan, then misses, and reverse DNS resolves an
         // uglier model-ish string.
-        let mac = "aa:bb:cc:00:00:05";
+        let mac: MacAddress = "aa:bb:cc:00:00:05".parse().unwrap();
         stable_name(mac, Some(("Living-Room-Clock".into(), NameRank::NetBios)));
         assert_eq!(
             stable_name(mac, Some(("LenovoCD-24502F".into(), NameRank::ReverseDns))).as_deref(),

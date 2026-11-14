@@ -64,7 +64,7 @@ pub async fn get_network_info(store: tauri::State<'_, Arc<Store>>) -> CommandRes
                 connection.details.ssid.as_deref(),
                 connection.interface_name.as_deref(),
                 connection.ip_address.as_deref(),
-                connection.mac_address.as_deref(),
+                connection.mac_address.as_deref().and_then(|mac| mac.parse().ok()),
                 now,
             )
         })

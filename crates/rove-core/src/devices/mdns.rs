@@ -3,6 +3,7 @@
 use crate::devices::DeviceKind;
 use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use std::collections::HashMap;
+use std::net::Ipv4Addr;
 use std::time::Duration;
 
 /// How long the browse loop sleeps when no receiver had an event.
@@ -174,11 +175,11 @@ fn instance_name(fullname: &str) -> Option<String> {
 
 /// Browse the known service types for `window`, keyed by IPv4. `mdns-sd`
 /// blocks, so it runs off the async workers.
-pub async fn discover(window: Duration) -> HashMap<String, MdnsHit> {
+pub async fn discover(window: Duration) -> HashMap<Ipv4Addr, MdnsHit> {
     tokio::task::spawn_blocking(move || discover_blocking(window)).await.unwrap_or_default()
 }
 
-fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
+fn discover_blocking(window: Duration) -> HashMap<Ipv4Addr, MdnsHit> {
     let Ok(daemon) = ServiceDaemon::new() else {
         return HashMap::new();
     };
@@ -191,7 +192,7 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
         .collect();
 
     let deadline = std::time::Instant::now() + window;
-    let mut hits: HashMap<String, MdnsHit> = HashMap::new();
+    let mut hits: HashMap<Ipv4Addr, MdnsHit> = HashMap::new();
 
     loop {
         let now = std::time::Instant::now();
@@ -207,10 +208,8 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
                     continue;
                 };
                 let sighting = sighting(&info, service, *kind, *is_strong);
-                for addr in info.get_addresses() {
-                    if addr.is_ipv4() {
-                        hits.entry(addr.to_string()).or_default().absorb(&sighting);
-                    }
+                for addr in info.get_addresses_v4() {
+                    hits.entry(*addr).or_default().absorb(&sighting);
                 }
             }
         }

@@ -319,7 +319,9 @@ pub async fn run() -> NetworkDiagnostics {
         None => (None, None),
     };
     let local_ipv4 = local_ip.and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok());
-    let self_vendor = local_mac.as_deref().and_then(crate::devices::oui::lookup_vendor);
+    let self_vendor = local_mac
+        .and_then(|mac| mac.parse::<crate::utils::mac::MacAddress>().ok())
+        .and_then(crate::devices::oui::lookup_vendor);
 
     // All concurrent. The identity lookup needn't wait out ten pings: SNMP
     // addresses the gateway directly, and its neighbour entry is almost always

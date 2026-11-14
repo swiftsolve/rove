@@ -29,16 +29,22 @@ pub use dhcp::DhcpStatus;
 pub use kind::{DeviceKind, KindConfidence};
 
 use crate::connection::{default_gateway, default_interface};
-use crate::devices::oui::{is_kind_ambiguous_vendor, is_randomized_mac, lookup_vendor};
+use crate::devices::oui::{is_kind_ambiguous_vendor, lookup_vendor};
 use crate::platform::{neighbor_table, RawNeighbor};
+use crate::utils::mac::MacAddress;
 use serde::Serialize;
+use std::collections::{HashMap, HashSet};
+use std::net::Ipv4Addr;
 use std::time::Duration;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LanDevice {
-    pub ip: String,
-    pub mac: String,
+    pub ip: Ipv4Addr,
+    /// `None` only for this machine when its interface reports no MAC. The UI
+    /// types it `mac: string`, so `None` goes out as `""`.
+    #[serde(serialize_with = "serialize_mac_or_empty")]
+    pub mac: Option<MacAddress>,
     pub vendor: Option<String>,
     pub hostname: Option<String>,
     /// Hardware model from mDNS TXT, a UPnP description or SNMP, with Apple
@@ -58,6 +64,14 @@ pub struct LanDevice {
     /// Epoch ms this device last answered, so the UI can show "last seen 3m ago"
     /// for an offline device. `None` until the store's roster merge stamps it.
     pub last_seen: Option<i64>,
+}
+
+/// A missing MAC as `""`, the empty string the UI's `mac: string` expects.
+fn serialize_mac_or_empty<S: serde::Serializer>(mac: &Option<MacAddress>, serializer: S) -> Result<S::Ok, S::Error> {
+    match mac {
+        Some(mac) => serializer.collect_str(mac),
+        None => serializer.serialize_str(""),
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -86,6 +100,7 @@ const GATEWAY_SSDP_WINDOW: Duration = Duration::from_millis(2000);
 
 pub async fn scan() -> LanDeviceScan {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
+    let gateway = gateway_ipv4(gateway.as_deref());
 
     let subnet = match &interface {
         Some(name) => subnet::subnet_of(name).await,
@@ -98,7 +113,7 @@ pub async fn scan() -> LanDeviceScan {
         Some(name) => crate::interfaces::address_of(name).await,
         None => (None, None),
     };
-    let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
+    let self_ip = self_ip.as_deref().and_then(|s| s.parse::<Ipv4Addr>().ok());
 
     // The sweep and probe wake idle hosts into the neighbor table; the probe
     // also reaches hosts that drop ICMP. mDNS and SSDP catch self-announcers.
@@ -106,7 +121,7 @@ pub async fn scan() -> LanDeviceScan {
         Some(subnet) => {
             let (mdns_hits, ssdp_hits, ping_live, probed) = tokio::join!(
                 mdns::discover(DISCOVERY_WINDOW),
-                ssdp::discover(DISCOVERY_WINDOW, local_ipv4),
+                ssdp::discover(DISCOVERY_WINDOW, self_ip),
                 sweep::sweep(subnet),
                 probe::probe(subnet),
             );
@@ -114,32 +129,28 @@ pub async fn scan() -> LanDeviceScan {
         }
         None => {
             let (mdns_hits, ssdp_hits) =
-                tokio::join!(mdns::discover(DISCOVERY_WINDOW), ssdp::discover(DISCOVERY_WINDOW, local_ipv4),);
-            (
-                mdns_hits,
-                ssdp_hits,
-                std::collections::HashSet::new(),
-                std::collections::HashMap::new(),
-                std::collections::HashSet::new(),
-            )
+                tokio::join!(mdns::discover(DISCOVERY_WINDOW), ssdp::discover(DISCOVERY_WINDOW, self_ip),);
+            (mdns_hits, ssdp_hits, HashSet::new(), HashMap::new(), HashSet::new())
         }
     };
 
     let in_scope: Vec<RawNeighbor> = neighbor_table()
         .await
         .into_iter()
-        .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true))
+        .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, n.ip)).unwrap_or(true))
         .collect();
 
     // Independent lookups run together so they cost one round, not four.
     // `hostnames` stays index-aligned with `in_scope` for the `zip` below. SNMP
     // asks only the gateway (see `snmp`).
-    let ips: Vec<String> = in_scope.iter().map(|n| n.ip.clone()).collect();
+    // Reverse DNS also serves the Hosts view's remote peers, so it takes text.
+    let ips: Vec<Ipv4Addr> = in_scope.iter().map(|n| n.ip).collect();
+    let ip_texts: Vec<String> = ips.iter().map(Ipv4Addr::to_string).collect();
     let (hostnames, banner_hits, netbios_hits, snmp_hits) = tokio::join!(
-        hostname::resolve_many(&ips),
+        hostname::resolve_many(&ip_texts),
         banner::grab(&open_ports),
         netbios::query_many(&ips),
-        snmp::discover(gateway.as_deref(), local_ipv4),
+        snmp::discover(gateway, self_ip),
     );
 
     // Keyed by MAC, as a joining client has no IP yet. Empty on the first scan,
@@ -162,12 +173,10 @@ pub async fn scan() -> LanDeviceScan {
     let mut devices: Vec<LanDevice> = in_scope
         .into_iter()
         .zip(hostnames)
-        .map(|(neighbor, hostname)| {
-            build_device(neighbor, hostname, &enrichment, gateway.as_deref(), self_ip.as_deref())
-        })
+        .map(|(neighbor, hostname)| build_device(neighbor, hostname, &enrichment, gateway, self_ip))
         .collect();
 
-    assemble(&mut devices, self_ip.as_deref(), self_mac.as_deref());
+    assemble(&mut devices, self_ip, self_mac.as_deref());
 
     LanDeviceScan {
         devices,
@@ -188,6 +197,7 @@ pub async fn scan() -> LanDeviceScan {
 /// leaves the rest of the roster alone.
 pub async fn passive_refresh() -> Vec<LanDevice> {
     let (gateway, interface) = tokio::join!(default_gateway(), default_interface());
+    let gateway = gateway_ipv4(gateway.as_deref());
 
     let subnet = match &interface {
         Some(name) => subnet::subnet_of(name).await,
@@ -198,29 +208,32 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
         Some(name) => crate::interfaces::address_of(name).await,
         None => (None, None),
     };
-    let local_ipv4 = self_ip.as_deref().and_then(|s| s.parse::<std::net::Ipv4Addr>().ok());
+    let self_ip = self_ip.as_deref().and_then(|s| s.parse::<Ipv4Addr>().ok());
 
     // A handful of multicast datagrams, no per-host probing: the whole
     // difference from `scan`.
-    let (mdns_hits, ssdp_hits) =
-        tokio::join!(mdns::discover(PASSIVE_WINDOW), ssdp::discover(PASSIVE_WINDOW, local_ipv4));
+    let (mdns_hits, ssdp_hits) = tokio::join!(mdns::discover(PASSIVE_WINDOW), ssdp::discover(PASSIVE_WINDOW, self_ip));
 
     let in_scope = neighbor_table()
         .await
         .into_iter()
-        .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, &n.ip)).unwrap_or(true));
+        .filter(|n| subnet.as_deref().map(|s| subnet::contains(s, n.ip)).unwrap_or(true));
 
     // Starts the DHCP listener even if the user never opens the Devices tab.
     let dhcp_hits = dhcp::snapshot();
 
     let mut devices: Vec<LanDevice> = in_scope
-        .filter_map(|neighbor| {
-            build_passive_device(neighbor, &mdns_hits, &ssdp_hits, &dhcp_hits, gateway.as_deref(), self_ip.as_deref())
-        })
+        .filter_map(|neighbor| build_passive_device(neighbor, &mdns_hits, &ssdp_hits, &dhcp_hits, gateway, self_ip))
         .collect();
 
-    assemble(&mut devices, self_ip.as_deref(), self_mac.as_deref());
+    assemble(&mut devices, self_ip, self_mac.as_deref());
     devices
+}
+
+/// The default gateway as IPv4, or `None` for an IPv6 or unknown one: the
+/// neighbor table it's matched against holds only IPv4 entries.
+fn gateway_ipv4(gateway: Option<&str>) -> Option<Ipv4Addr> {
+    gateway.and_then(|text| text.parse().ok())
 }
 
 /// A device for the passive refresh, or `None` when it can't be confirmed
@@ -235,14 +248,14 @@ pub async fn passive_refresh() -> Vec<LanDevice> {
 /// `touch_devices` ignores this typing for devices the store already knows.
 fn build_passive_device(
     neighbor: RawNeighbor,
-    mdns: &std::collections::HashMap<String, mdns::MdnsHit>,
-    ssdp: &std::collections::HashMap<String, ssdp::SsdpHit>,
-    dhcp: &std::collections::HashMap<String, dhcp::DhcpHit>,
-    gateway: Option<&str>,
-    self_ip: Option<&str>,
+    mdns: &HashMap<Ipv4Addr, mdns::MdnsHit>,
+    ssdp: &HashMap<Ipv4Addr, ssdp::SsdpHit>,
+    dhcp: &HashMap<MacAddress, dhcp::DhcpHit>,
+    gateway: Option<Ipv4Addr>,
+    self_ip: Option<Ipv4Addr>,
 ) -> Option<LanDevice> {
-    let is_gateway = gateway == Some(neighbor.ip.as_str());
-    let is_self = self_ip == Some(neighbor.ip.as_str());
+    let is_gateway = gateway == Some(neighbor.ip);
+    let is_self = self_ip == Some(neighbor.ip);
     let mdns_hit = mdns.get(&neighbor.ip);
     let ssdp_hit = ssdp.get(&neighbor.ip);
     let is_present = is_self
@@ -254,8 +267,8 @@ fn build_passive_device(
         return None;
     }
 
-    let vendor = lookup_vendor(&neighbor.mac);
-    let dhcp_hit = dhcp.get(&crate::utils::net::normalize_mac_bare(&neighbor.mac));
+    let vendor = lookup_vendor(neighbor.mac);
+    let dhcp_hit = dhcp.get(&neighbor.mac);
 
     // The full scan's name order, minus the active-only NetBIOS and reverse DNS.
     let hostname = mdns_hit
@@ -264,7 +277,7 @@ fn build_passive_device(
         .or_else(|| dhcp_hit.and_then(|h| h.hostname.clone()));
 
     // Withhold a kind-ambiguous OUI's vote, as the full scan does.
-    let classify_vendor = if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
+    let classify_vendor = if is_kind_ambiguous_vendor(neighbor.mac) { None } else { vendor.as_deref() };
     let verdict = classify::classify(&classify::Signals {
         vendor: classify_vendor,
         hostname: hostname.as_deref(),
@@ -279,7 +292,7 @@ fn build_passive_device(
     Some(LanDevice {
         kind: verdict.kind,
         kind_confidence: verdict.confidence,
-        is_randomized_mac: is_randomized_mac(&neighbor.mac),
+        is_randomized_mac: neighbor.mac.is_locally_administered(),
         os: dhcp_hit.and_then(|hit| hit.os).map(String::from),
         vendor,
         hostname,
@@ -288,7 +301,7 @@ fn build_passive_device(
         is_self,
         is_reachable: true,
         ip: neighbor.ip,
-        mac: neighbor.mac,
+        mac: Some(neighbor.mac),
         last_seen: None,
     })
 }
@@ -296,7 +309,7 @@ fn build_passive_device(
 /// The default gateway's identity for the diagnostics Router panel, which
 /// doesn't run a full scan. Every field is best effort.
 pub struct GatewayIdentity {
-    pub mac: Option<String>,
+    pub mac: Option<MacAddress>,
     /// Make from the MAC OUI.
     pub vendor: Option<String>,
     /// Model from SNMP `sysDescr`, else the UPnP `modelName`.
@@ -310,38 +323,39 @@ pub struct GatewayIdentity {
 /// Ping the gateway first so its neighbor-table entry is fresh. `local_ip`,
 /// when known, is the active interface address SNMP and SSDP bind to.
 pub async fn gateway_identity(gateway: Option<&str>, local_ip: Option<std::net::Ipv4Addr>) -> GatewayIdentity {
-    let Some(gw) = gateway else {
+    let Some(gw) = gateway_ipv4(gateway) else {
         return GatewayIdentity { mac: None, vendor: None, model: None, name: None };
     };
-    let mac = neighbor_table().await.into_iter().find(|n| n.ip == gw).map(|n| n.mac).filter(|m| !m.is_empty());
-    let vendor = mac.as_deref().and_then(lookup_vendor);
+    let mac = neighbor_table().await.into_iter().find(|n| n.ip == gw).map(|n| n.mac);
+    let vendor = mac.and_then(lookup_vendor);
 
     // SNMP names the model on gear that speaks it; most consumer routers
     // announce a UPnP friendlyName and modelName over SSDP instead.
     let (snmp_hits, ssdp_hits) =
-        tokio::join!(snmp::discover(gateway, local_ip), ssdp::discover(GATEWAY_SSDP_WINDOW, local_ip));
-    let ssdp_hit = ssdp_hits.get(gw);
+        tokio::join!(snmp::discover(Some(gw), local_ip), ssdp::discover(GATEWAY_SSDP_WINDOW, local_ip));
+    let ssdp_hit = ssdp_hits.get(&gw);
     let name = ssdp_hit.and_then(|hit| hit.name.clone());
-    let model = snmp_hits.get(gw).and_then(snmp::SnmpHit::model).or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
+    let model =
+        snmp_hits.get(&gw).and_then(snmp::SnmpHit::model).or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
     GatewayIdentity { mac, vendor, model, name }
 }
 
 /// The per-scan lookup tables `build_device` draws on, keyed by IP except
-/// `dhcp`, which is keyed by bare MAC. Bundled so a new discovery source doesn't
+/// `dhcp`, which is keyed by MAC. Bundled so a new discovery source doesn't
 /// grow the argument list.
 struct Enrichment<'a> {
-    mdns: &'a std::collections::HashMap<String, mdns::MdnsHit>,
-    ssdp: &'a std::collections::HashMap<String, ssdp::SsdpHit>,
-    banner: &'a std::collections::HashMap<String, banner::BannerHit>,
-    snmp: &'a std::collections::HashMap<String, snmp::SnmpHit>,
-    netbios: &'a std::collections::HashMap<String, String>,
-    dhcp: &'a std::collections::HashMap<String, dhcp::DhcpHit>,
-    open_ports: &'a std::collections::HashMap<String, Vec<u16>>,
+    mdns: &'a HashMap<Ipv4Addr, mdns::MdnsHit>,
+    ssdp: &'a HashMap<Ipv4Addr, ssdp::SsdpHit>,
+    banner: &'a HashMap<Ipv4Addr, banner::BannerHit>,
+    snmp: &'a HashMap<Ipv4Addr, snmp::SnmpHit>,
+    netbios: &'a HashMap<Ipv4Addr, String>,
+    dhcp: &'a HashMap<MacAddress, dhcp::DhcpHit>,
+    open_ports: &'a HashMap<Ipv4Addr, Vec<u16>>,
     /// IPs that replied to this scan's ICMP sweep.
-    ping_live: &'a std::collections::HashSet<String>,
+    ping_live: &'a HashSet<Ipv4Addr>,
     /// IPs that accepted or refused this scan's TCP probe, which proves life even
     /// for a power-saving phone that drops ICMP and announces nothing.
-    tcp_live: &'a std::collections::HashSet<String>,
+    tcp_live: &'a HashSet<Ipv4Addr>,
     /// False when the subnet is unknown and no sweep or probe ran, so liveness
     /// falls back to the neighbor table's own state.
     was_probed: bool,
@@ -351,20 +365,19 @@ fn build_device(
     neighbor: RawNeighbor,
     resolved_hostname: Option<String>,
     enrichment: &Enrichment,
-    gateway: Option<&str>,
-    self_ip: Option<&str>,
+    gateway: Option<Ipv4Addr>,
+    self_ip: Option<Ipv4Addr>,
 ) -> LanDevice {
-    let vendor = lookup_vendor(&neighbor.mac);
-    let is_gateway = gateway == Some(neighbor.ip.as_str());
-    let is_self = self_ip == Some(neighbor.ip.as_str());
-    let dhcp = enrichment.dhcp.get(&crate::utils::net::normalize_mac_bare(&neighbor.mac));
+    let vendor = lookup_vendor(neighbor.mac);
+    let is_gateway = gateway == Some(neighbor.ip);
+    let is_self = self_ip == Some(neighbor.ip);
+    let dhcp = enrichment.dhcp.get(&neighbor.mac);
 
     // One lossy window can miss a signal an earlier scan caught, which flipped
     // the kind, so classify from the per-MAC union of everything seen (see
-    // `history`). DHCP accumulates in its own listener. A MAC-less device can't
-    // be keyed, so it uses this scan alone.
-    let fresh = scan_evidence(enrichment, &neighbor.ip);
-    let evidence = if neighbor.mac.is_empty() { fresh } else { history::merge_and_snapshot(&neighbor.mac, fresh) };
+    // `history`). DHCP accumulates in its own listener.
+    let fresh = scan_evidence(enrichment, neighbor.ip);
+    let evidence = history::merge_and_snapshot(neighbor.mac, fresh);
 
     // An Amazon OUI advertising Spotify Connect is an Echo: Fire TVs and other
     // Amazon gear don't announce `_spotify-connect._tcp`. It names and types the
@@ -386,7 +399,7 @@ fn build_device(
     } else {
         // A kind-ambiguous OUI (see `is_kind_ambiguous_vendor`) is shown but
         // doesn't vote.
-        let classify_vendor = if is_kind_ambiguous_vendor(&neighbor.mac) { None } else { vendor.as_deref() };
+        let classify_vendor = if is_kind_ambiguous_vendor(neighbor.mac) { None } else { vendor.as_deref() };
         classify::classify(&classify::Signals {
             vendor: classify_vendor,
             hostname: hostname.as_deref(),
@@ -413,7 +426,7 @@ fn build_device(
     LanDevice {
         kind: verdict.kind,
         kind_confidence: verdict.confidence,
-        is_randomized_mac: is_randomized_mac(&neighbor.mac),
+        is_randomized_mac: neighbor.mac.is_locally_administered(),
         os: dhcp.and_then(|hit| hit.os).map(String::from),
         vendor,
         hostname,
@@ -422,20 +435,20 @@ fn build_device(
         is_self,
         is_reachable,
         ip: neighbor.ip,
-        mac: neighbor.mac,
+        mac: Some(neighbor.mac),
         // Stamped by the store's roster merge (see `devices_with_offline`).
         last_seen: None,
     }
 }
 
 /// What this scan's enrichment passes heard from `ip`.
-fn scan_evidence(enrichment: &Enrichment, ip: &str) -> history::DeviceEvidence {
+fn scan_evidence(enrichment: &Enrichment, ip: Ipv4Addr) -> history::DeviceEvidence {
     history::DeviceEvidence {
-        mdns: enrichment.mdns.get(ip).cloned().unwrap_or_default(),
-        ssdp: enrichment.ssdp.get(ip).cloned().unwrap_or_default(),
-        banner: enrichment.banner.get(ip).cloned().unwrap_or_default(),
-        snmp: enrichment.snmp.get(ip).cloned().unwrap_or_default(),
-        ports: enrichment.open_ports.get(ip).cloned().unwrap_or_default(),
+        mdns: enrichment.mdns.get(&ip).cloned().unwrap_or_default(),
+        ssdp: enrichment.ssdp.get(&ip).cloned().unwrap_or_default(),
+        banner: enrichment.banner.get(&ip).cloned().unwrap_or_default(),
+        snmp: enrichment.snmp.get(&ip).cloned().unwrap_or_default(),
+        ports: enrichment.open_ports.get(&ip).cloned().unwrap_or_default(),
     }
 }
 
@@ -467,11 +480,7 @@ fn pick_hostname(
         .or_else(|| resolved_hostname.map(|n| (n, NameRank::ReverseDns)))
         .or_else(|| is_echo.then(|| ("Amazon Echo".to_string(), NameRank::Synthetic)));
 
-    if neighbor.mac.is_empty() {
-        ranked.map(|(name, _)| name)
-    } else {
-        history::stable_name(&neighbor.mac, ranked)
-    }
+    history::stable_name(neighbor.mac, ranked)
 }
 
 /// Whether the device answered this scan. The macOS/Windows neighbor table has
@@ -483,7 +492,7 @@ fn is_reachable(neighbor: &RawNeighbor, enrichment: &Enrichment) -> bool {
     if !enrichment.was_probed {
         return neighbor.is_reachable;
     }
-    let ip = neighbor.ip.as_str();
+    let ip = &neighbor.ip;
     let is_live_now = (neighbor.is_stateful && neighbor.is_reachable)
         || enrichment.ping_live.contains(ip)
         || enrichment.tcp_live.contains(ip)
@@ -492,11 +501,7 @@ fn is_reachable(neighbor: &RawNeighbor, enrichment: &Enrichment) -> bool {
         || enrichment.netbios.contains_key(ip)
         || enrichment.snmp.contains_key(ip)
         || enrichment.banner.contains_key(ip);
-    if neighbor.mac.is_empty() {
-        is_live_now // no stable key to debounce against
-    } else {
-        liveness::record_and_check(&neighbor.mac, is_live_now)
-    }
+    liveness::record_and_check(neighbor.mac, is_live_now)
 }
 
 /// The maker when the OUI came up empty. Apple only: its handhelds randomize
@@ -554,30 +559,33 @@ fn is_apple_hostname(hostname: &str) -> bool {
 /// The finishing pass both scans share: add this machine, sort gateway first,
 /// then self, then by address (`false` sorts before `true`), and drop a second
 /// IP for the same MAC.
-fn assemble(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
-    add_self_if_missing(devices, self_ip, self_mac);
-    devices.sort_by_key(|d| (!d.is_gateway, !d.is_self, subnet::ip_sort_key(&d.ip)));
+fn assemble(devices: &mut Vec<LanDevice>, self_ip: Option<Ipv4Addr>, self_mac_text: Option<&str>) {
+    add_self_if_missing(devices, self_ip, self_mac_text);
+    devices.sort_by_key(|d| (!d.is_gateway, !d.is_self, d.ip));
     devices.dedup_by(|a, b| a.mac == b.mac);
 }
 
-/// The neighbor table never lists the local machine.
-fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self_mac: Option<&str>) {
-    let (Some(ip), Some(mac)) = (self_ip, self_mac) else {
+/// The neighbor table never lists the local machine. It's added whenever the
+/// interface reports an IPv4 and a MAC; a MAC that doesn't parse leaves the
+/// entry's `mac` empty rather than dropping this machine from the list.
+fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<Ipv4Addr>, self_mac_text: Option<&str>) {
+    let (Some(ip), Some(mac_text)) = (self_ip, self_mac_text) else {
         return;
     };
+    let mac = mac_text.parse::<MacAddress>().ok();
     if devices.iter().any(|d| d.mac == mac) {
         return;
     }
     devices.push(LanDevice {
-        ip: ip.to_string(),
-        mac: mac.to_string(),
-        vendor: lookup_vendor(mac),
+        ip,
+        mac,
+        vendor: mac.and_then(lookup_vendor),
         hostname: hostname::local_machine_name(),
         model: None,
         os: None,
         kind: DeviceKind::Computer,
         kind_confidence: KindConfidence::High,
-        is_randomized_mac: is_randomized_mac(mac),
+        is_randomized_mac: mac.is_some_and(MacAddress::is_locally_administered),
         is_gateway: false,
         is_self: true,
         is_reachable: true,
@@ -588,16 +596,16 @@ fn add_self_if_missing(devices: &mut Vec<LanDevice>, self_ip: Option<&str>, self
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
 
     /// A device from a bare neighbor and an mDNS hit, every other source empty.
     fn device_with_mdns(mac: &str, ip: &str, mdns: mdns::MdnsHit) -> LanDevice {
         let mut mdns_map = HashMap::new();
-        mdns_map.insert(ip.to_string(), mdns);
+        let ip: Ipv4Addr = ip.parse().unwrap();
+        mdns_map.insert(ip, mdns);
         let (ssdp, banner, snmp, netbios, dhcp, ports) =
             (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
-        let ping_live = std::collections::HashSet::new();
-        let tcp_live = std::collections::HashSet::new();
+        let ping_live = HashSet::new();
+        let tcp_live = HashSet::new();
         let enrichment = Enrichment {
             mdns: &mdns_map,
             ssdp: &ssdp,
@@ -610,7 +618,7 @@ mod tests {
             tcp_live: &tcp_live,
             was_probed: true,
         };
-        let neighbor = RawNeighbor { ip: ip.to_string(), mac: mac.to_string(), is_reachable: true, is_stateful: true };
+        let neighbor = RawNeighbor { ip, mac: mac.parse().unwrap(), is_reachable: true, is_stateful: true };
         build_device(neighbor, None, &enrichment, None, None)
     }
 
@@ -620,16 +628,16 @@ mod tests {
         // Linux `ip neigh` REACHABLE (stateful + reachable) is real liveness, so
         // it's confirmed present with no announcement needed.
         let reachable = RawNeighbor {
-            ip: "192.168.1.5".into(),
-            mac: "aa:bb:cc:dd:ee:01".into(),
+            ip: "192.168.1.5".parse().unwrap(),
+            mac: "aa:bb:cc:dd:ee:01".parse().unwrap(),
             is_reachable: true,
             is_stateful: true,
         };
         assert!(build_passive_device(reachable, &mdns, &ssdp, &dhcp, None, None).is_some());
         // A STALE entry that announces nothing is left to an active scan.
         let stale = RawNeighbor {
-            ip: "192.168.1.6".into(),
-            mac: "aa:bb:cc:dd:ee:02".into(),
+            ip: "192.168.1.6".parse().unwrap(),
+            mac: "aa:bb:cc:dd:ee:02".parse().unwrap(),
             is_reachable: false,
             is_stateful: true,
         };
@@ -640,10 +648,10 @@ mod tests {
     fn passive_does_not_trust_a_stateless_arp_entry_without_an_announcement() {
         // macOS/Windows `arp -a` reports reachable=true, stateful=false: a
         // placeholder, not liveness. A departed device lingers ~20 min.
-        let (mut mdns, ssdp, dhcp) = (HashMap::new(), HashMap::<String, ssdp::SsdpHit>::new(), HashMap::new());
+        let (mut mdns, ssdp, dhcp) = (HashMap::new(), HashMap::<Ipv4Addr, ssdp::SsdpHit>::new(), HashMap::new());
         let bare = RawNeighbor {
-            ip: "192.168.1.7".into(),
-            mac: "aa:bb:cc:dd:ee:03".into(),
+            ip: "192.168.1.7".parse().unwrap(),
+            mac: "aa:bb:cc:dd:ee:03".parse().unwrap(),
             is_reachable: true,
             is_stateful: false,
         };
@@ -653,10 +661,13 @@ mod tests {
         );
 
         // The same kind of host announcing over mDNS is confirmed, with its name.
-        mdns.insert("192.168.1.8".into(), mdns::MdnsHit { name: Some("Living Room TV".into()), ..Default::default() });
+        mdns.insert(
+            "192.168.1.8".parse().unwrap(),
+            mdns::MdnsHit { name: Some("Living Room TV".into()), ..Default::default() },
+        );
         let announcing = RawNeighbor {
-            ip: "192.168.1.8".into(),
-            mac: "aa:bb:cc:dd:ee:04".into(),
+            ip: "192.168.1.8".parse().unwrap(),
+            mac: "aa:bb:cc:dd:ee:04".parse().unwrap(),
             is_reachable: true,
             is_stateful: false,
         };
@@ -670,12 +681,12 @@ mod tests {
         // Even a stale, silent gateway entry is confirmed.
         let (mdns, ssdp, dhcp) = (HashMap::new(), HashMap::new(), HashMap::new());
         let gw = RawNeighbor {
-            ip: "192.168.1.1".into(),
-            mac: "aa:bb:cc:dd:ee:05".into(),
+            ip: "192.168.1.1".parse().unwrap(),
+            mac: "aa:bb:cc:dd:ee:05".parse().unwrap(),
             is_reachable: false,
             is_stateful: false,
         };
-        let dev = build_passive_device(gw, &mdns, &ssdp, &dhcp, Some("192.168.1.1"), None)
+        let dev = build_passive_device(gw, &mdns, &ssdp, &dhcp, Some(Ipv4Addr::new(192, 168, 1, 1)), None)
             .expect("the gateway is always present");
         assert!(dev.is_gateway);
     }
@@ -686,14 +697,14 @@ mod tests {
         // router, so a rogue AP joining while backgrounded must keep its DHCP
         // router fingerprint.
         let (mdns, ssdp) = (HashMap::new(), HashMap::new());
-        let mut dhcp: HashMap<String, dhcp::DhcpHit> = HashMap::new();
+        let mut dhcp: HashMap<MacAddress, dhcp::DhcpHit> = HashMap::new();
         dhcp.insert(
-            crate::utils::net::normalize_mac_bare("aa:bb:cc:dd:dd:06"),
+            "aa:bb:cc:dd:dd:06".parse().unwrap(),
             dhcp::DhcpHit { kind: Some(DeviceKind::Router), ..Default::default() },
         );
         let ap = RawNeighbor {
-            ip: "192.168.1.9".into(),
-            mac: "aa:bb:cc:dd:dd:06".into(),
+            ip: "192.168.1.9".parse().unwrap(),
+            mac: "aa:bb:cc:dd:dd:06".parse().unwrap(),
             is_reachable: true,
             is_stateful: true,
         };
@@ -716,9 +727,9 @@ mod tests {
             HashMap::new(),
             HashMap::new(),
         );
-        let ping_live = std::collections::HashSet::new();
-        let mut tcp_live = std::collections::HashSet::new();
-        tcp_live.insert("192.168.2.35".to_string());
+        let ping_live = HashSet::new();
+        let mut tcp_live = HashSet::new();
+        tcp_live.insert(Ipv4Addr::new(192, 168, 2, 35));
         let enrichment = Enrichment {
             mdns: &mdns,
             ssdp: &ssdp,
@@ -732,8 +743,8 @@ mod tests {
             was_probed: true,
         };
         let neighbor = RawNeighbor {
-            ip: "192.168.2.35".to_string(),
-            mac: "a6:80:ee:e0:f8:f7".to_string(),
+            ip: "192.168.2.35".parse().unwrap(),
+            mac: "a6:80:ee:e0:f8:f7".parse().unwrap(),
             is_reachable: true,
             is_stateful: false,
         };
@@ -772,6 +783,19 @@ mod tests {
         let phone = device_with_mdns("00:62:01:00:00:22", "192.168.2.29", mdns::MdnsHit::default());
         assert_eq!(phone.vendor.as_deref(), Some("Motorola"));
         assert_eq!(phone.kind, DeviceKind::Phone);
+    }
+
+    #[test]
+    fn json_carries_the_ip_and_mac_as_the_ui_expects() {
+        let mut device = device_with_mdns("08:3a:8d:ac:04:d0", "192.168.2.7", mdns::MdnsHit::default());
+        let json = serde_json::to_value(&device).unwrap();
+        assert_eq!(json["ip"], "192.168.2.7");
+        assert_eq!(json["mac"], "08:3a:8d:ac:04:d0");
+
+        // The UI types `mac: string`, so a missing MAC is "", never null.
+        device.mac = None;
+        let json = serde_json::to_value(&device).unwrap();
+        assert_eq!(json["mac"], "");
     }
 
     #[test]

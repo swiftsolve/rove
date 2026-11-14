@@ -8,6 +8,7 @@
 //! the native NetBIOS/SMB services on Windows and macOS, which hold :137.
 use futures_util::StreamExt;
 use std::collections::HashMap;
+use std::net::Ipv4Addr;
 use std::time::Duration;
 use tokio::net::UdpSocket;
 
@@ -34,9 +35,9 @@ const NBSTAT_QUERY: &[u8] = &[
 ];
 
 /// NetBIOS names keyed by IP. Hosts without NetBIOS don't answer and are absent.
-pub async fn query_many(ips: &[String]) -> HashMap<String, String> {
-    let results: Vec<(String, String)> = futures_util::stream::iter(ips.iter().cloned())
-        .map(|ip| async move { query_one(&ip).await.map(|name| (ip, name)) })
+pub async fn query_many(ips: &[Ipv4Addr]) -> HashMap<Ipv4Addr, String> {
+    let results: Vec<(Ipv4Addr, String)> = futures_util::stream::iter(ips.iter().copied())
+        .map(|ip| async move { query_one(ip).await.map(|name| (ip, name)) })
         .buffer_unordered(CONCURRENT_QUERIES)
         .filter_map(|hit| async move { hit })
         .collect()
@@ -45,10 +46,9 @@ pub async fn query_many(ips: &[String]) -> HashMap<String, String> {
     results.into_iter().collect()
 }
 
-async fn query_one(ip: &str) -> Option<String> {
-    let addr: std::net::Ipv4Addr = ip.parse().ok()?;
-    let socket = UdpSocket::bind((std::net::Ipv4Addr::UNSPECIFIED, 0)).await.ok()?;
-    socket.send_to(NBSTAT_QUERY, (addr, NBNS_PORT)).await.ok()?;
+async fn query_one(ip: Ipv4Addr) -> Option<String> {
+    let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).await.ok()?;
+    socket.send_to(NBSTAT_QUERY, (ip, NBNS_PORT)).await.ok()?;
 
     let mut buf = vec![0u8; 1024];
     let n = tokio::time::timeout(QUERY_TIMEOUT, socket.recv(&mut buf)).await.ok()?.ok()?;

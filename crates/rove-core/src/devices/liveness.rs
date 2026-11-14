@@ -18,6 +18,7 @@
 //!
 //! Like the identity accumulator in `history`, this state lives for the process,
 //! is keyed by MAC (IPs churn across scans) and starts empty.
+use crate::utils::mac::MacAddress;
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 use std::time::{Duration, Instant};
@@ -41,22 +42,22 @@ struct Streak {
     silent_since: Instant,
 }
 
-static STREAKS: LazyLock<Mutex<HashMap<String, Streak>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
+static STREAKS: LazyLock<Mutex<HashMap<MacAddress, Streak>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Fold this scan's result for `mac` into its miss streak and return whether
 /// the device still reads as reachable.
-pub fn record_and_check(mac: &str, is_live_now: bool) -> bool {
+pub fn record_and_check(mac: MacAddress, is_live_now: bool) -> bool {
     record_and_check_at(mac, is_live_now, Instant::now())
 }
 
 /// [`record_and_check`] with the clock injected, so tests advance time without sleeping.
-fn record_and_check_at(mac: &str, is_live_now: bool, now: Instant) -> bool {
+fn record_and_check_at(mac: MacAddress, is_live_now: bool, now: Instant) -> bool {
     let mut streaks = crate::utils::net::lock(&STREAKS);
     if is_live_now {
-        streaks.remove(mac);
+        streaks.remove(&mac);
         return true;
     }
-    let streak = streaks.entry(mac.to_string()).or_insert(Streak { misses: 0, silent_since: now });
+    let streak = streaks.entry(mac).or_insert(Streak { misses: 0, silent_since: now });
     streak.misses += 1;
     let is_gone = streak.misses >= MISS_LIMIT && now.duration_since(streak.silent_since) >= MIN_ABSENCE;
     !is_gone
@@ -68,7 +69,7 @@ mod tests {
 
     #[test]
     fn a_burst_of_misses_within_the_floor_stays_reachable() {
-        let mac = "aa:bb:cc:00:00:10";
+        let mac: MacAddress = "aa:bb:cc:00:00:10".parse().unwrap();
         let t0 = Instant::now();
         assert!(record_and_check_at(mac, true, t0), "a live device is reachable");
         // Three misses in two seconds, the bursty-scan case: the count hits
@@ -83,7 +84,7 @@ mod tests {
 
     #[test]
     fn flips_only_after_both_the_count_and_the_absence_floor() {
-        let mac = "aa:bb:cc:00:00:11";
+        let mac: MacAddress = "aa:bb:cc:00:00:11".parse().unwrap();
         let t0 = Instant::now();
         assert!(record_and_check_at(mac, true, t0));
         assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(1)), "miss 1");
@@ -97,7 +98,7 @@ mod tests {
 
     #[test]
     fn the_absence_floor_alone_is_not_enough() {
-        let mac = "aa:bb:cc:00:00:12";
+        let mac: MacAddress = "aa:bb:cc:00:00:12".parse().unwrap();
         let t0 = Instant::now();
         assert!(record_and_check_at(mac, true, t0));
         // A lone miss long after the last sighting isn't a departure.
@@ -109,7 +110,7 @@ mod tests {
 
     #[test]
     fn a_live_scan_resets_both_the_count_and_the_clock() {
-        let mac = "aa:bb:cc:00:00:13";
+        let mac: MacAddress = "aa:bb:cc:00:00:13".parse().unwrap();
         let t0 = Instant::now();
         assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(1))); // miss 1
         assert!(record_and_check_at(mac, false, t0 + Duration::from_secs(2))); // miss 2

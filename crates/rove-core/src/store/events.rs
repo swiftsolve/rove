@@ -5,6 +5,7 @@ use super::Store;
 use crate::devices::DeviceKind;
 use crate::devices::LanDevice;
 use crate::diagnostics::InternetStatus;
+use crate::utils::mac::MacAddress;
 use rusqlite::types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::Serialize;
@@ -20,7 +21,7 @@ pub struct NetworkEvent {
     #[serde(rename = "type")]
     pub event_type: String,
     pub severity: Severity,
-    pub mac: Option<String>,
+    pub mac: Option<MacAddress>,
     pub ip: Option<String>,
     /// Best-effort label snapshotted at event time, since a device's identity
     /// can drift later.
@@ -80,7 +81,7 @@ impl FromSql for Severity {
 pub(super) struct NewEvent<'a> {
     pub event_type: &'a str,
     pub severity: Severity,
-    pub mac: Option<&'a str>,
+    pub mac: Option<MacAddress>,
     pub ip: Option<&'a str>,
     pub name: Option<&'a str>,
     pub old_value: Option<&'a str>,
@@ -173,7 +174,7 @@ impl Store {
         network_name: Option<&str>,
         interface: Option<&str>,
         ip: Option<&str>,
-        mac: Option<&str>,
+        mac: Option<MacAddress>,
         now_ms: i64,
     ) -> rusqlite::Result<()> {
         // The SSID on Wi-Fi, the interface on Ethernet. Anything else
@@ -379,9 +380,10 @@ impl Store {
         event: NewEvent<'_>,
     ) -> rusqlite::Result<()> {
         let name = Self::device_name(device);
+        let ip_text = device.ip.to_string();
         let event = NewEvent {
-            mac: Some(&device.mac),
-            ip: Some(&device.ip),
+            mac: device.mac,
+            ip: Some(&ip_text),
             name: name.as_deref(),
             is_randomized: device.is_randomized_mac,
             ..event
@@ -470,7 +472,8 @@ impl Store {
                 ts: row.get(1)?,
                 event_type,
                 severity: row.get(3)?,
-                mac: row.get(4)?,
+                // A stored MAC that doesn't parse shows as none, not a failed feed.
+                mac: super::devices::read_mac(row, 4)?,
                 ip: row.get(5)?,
                 name,
                 kind,
@@ -501,7 +504,7 @@ mod tests {
                 Some("Home"),
                 Some("wlan0"),
                 Some("192.168.1.5"),
-                Some("aa:bb:cc:dd:ee:ff"),
+                Some("aa:bb:cc:dd:ee:ff".parse().unwrap()),
                 1_000,
             )
             .unwrap();
@@ -514,7 +517,7 @@ mod tests {
                 Some("Home"),
                 Some("wlan0"),
                 Some("192.168.1.5"),
-                Some("aa:bb:cc:dd:ee:ff"),
+                Some("aa:bb:cc:dd:ee:ff".parse().unwrap()),
                 1_500,
             )
             .unwrap();
@@ -522,7 +525,14 @@ mod tests {
 
         // A cable goes in: ethernet_connected, carrying the interface name.
         store
-            .record_connection("ethernet", None, Some("eth0"), Some("192.168.1.6"), Some("aa:bb:cc:dd:ee:00"), 2_000)
+            .record_connection(
+                "ethernet",
+                None,
+                Some("eth0"),
+                Some("192.168.1.6"),
+                Some("aa:bb:cc:dd:ee:00".parse().unwrap()),
+                2_000,
+            )
             .unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "ethernet_connected");
@@ -543,7 +553,14 @@ mod tests {
 
         // Back onto Wi-Fi: wifi_connected with the SSID as its subject.
         store
-            .record_connection("wifi", Some("Cafe"), Some("wlan0"), Some("10.0.0.9"), Some("aa:bb:cc:dd:ee:ff"), 4_000)
+            .record_connection(
+                "wifi",
+                Some("Cafe"),
+                Some("wlan0"),
+                Some("10.0.0.9"),
+                Some("aa:bb:cc:dd:ee:ff".parse().unwrap()),
+                4_000,
+            )
             .unwrap();
         let latest = &store.network_events(1).unwrap()[0];
         assert_eq!(latest.event_type, "wifi_connected");

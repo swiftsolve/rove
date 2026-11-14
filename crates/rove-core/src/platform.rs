@@ -24,9 +24,11 @@ pub mod windows;
 use crate::connection::infer_connection_type;
 use crate::connection::ConnectionDetails;
 use crate::interfaces::InterfaceSummary;
+use crate::utils::mac::MacAddress;
 use crate::utils::net::is_virtual_interface;
 use crate::utils::shell::try_run;
 use regex_lite::Regex;
+use std::net::Ipv4Addr;
 use std::sync::LazyLock;
 
 /// Stop a console child process flashing a terminal window on Windows.
@@ -99,8 +101,8 @@ pub(crate) fn sort_interfaces(list: &mut [InterfaceSummary]) {
 
 /// One entry from the OS neighbor table: an IP the kernel has resolved to a MAC.
 pub struct RawNeighbor {
-    pub ip: String,
-    pub mac: String,
+    pub ip: Ipv4Addr,
+    pub mac: MacAddress,
     pub is_reachable: bool,
     /// Whether `is_reachable` is a real kernel state (Linux `ip neigh`) rather than
     /// the `arp -a` fallback's blanket `true`. The device scan only trusts
@@ -141,14 +143,16 @@ async fn arp_neighbors() -> Vec<RawNeighbor> {
     out.lines()
         .filter_map(|line| {
             let c = ARP_A.captures(line)?;
-            let mac = crate::utils::net::normalize_mac_colons(&c[2]);
-            // Broadcast and multicast (IPv4 01:00:5e, IPv6 33:33) aren't devices.
-            if mac == "ff:ff:ff:ff:ff:ff" || mac.starts_with("01:00:5e") || mac.starts_with("33:33") {
+            let ip: Ipv4Addr = c[1].parse().ok()?;
+            let mac: MacAddress = c[2].parse().ok()?;
+            // Broadcast and multicast (ff:ff:…, IPv4 01:00:5e, IPv6 33:33) aren't
+            // devices.
+            if mac.is_multicast() {
                 return None;
             }
             // No liveness column, so `is_reachable` is a placeholder the scan
             // ignores (`is_stateful: false`).
-            Some(RawNeighbor { ip: c[1].to_string(), mac, is_reachable: true, is_stateful: false })
+            Some(RawNeighbor { ip, mac, is_reachable: true, is_stateful: false })
         })
         .collect()
 }

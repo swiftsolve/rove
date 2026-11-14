@@ -1,6 +1,6 @@
 //! Windows host/network probes: PowerShell (`Get-NetAdapter`, `Get-NetRoute`,
 //! `Get-NetIPAddress`, `Get-DnsClientServerAddress`) and the Native Wi-Fi API.
-// Only Windows reads these, and the tests check them on every platform.
+/// Only Windows reads these, and the tests check them on every platform.
 #[cfg(any(windows, test))]
 mod beacon;
 #[cfg(any(windows, test))]
@@ -27,7 +27,7 @@ use std::net::Ipv4Addr;
 ///
 /// `field` is `InterfaceAlias` or `NextHop`, from the one ranking.
 fn default_route_field(field: &str) -> String {
-    // Safe to splice: `field` is always one of the two literals passed below.
+    /// Safe to splice: `field` is always one of the two literals passed below.
     const SCRIPT: &str = "\
         Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | ForEach-Object { \
           $r = $_; $a = Get-NetAdapter -InterfaceIndex $r.ifIndex -ErrorAction SilentlyContinue; \
@@ -88,7 +88,10 @@ pub async fn interface_list() -> Vec<InterfaceSummary> {
             continue; // phantom/disabled rows carry no status
         }
         let speed = parts.next().and_then(parse_link_speed).filter(|v| *v > 0);
-        let mac = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(crate::utils::net::normalize_mac_colons);
+        let mac = parts
+            .next()
+            .and_then(|text| text.trim().parse::<crate::utils::mac::MacAddress>().ok())
+            .map(|mac| mac.to_string());
         let is_virtual_flag = parts.next().map(str::trim) == Some("1");
         let ip = parts.next().map(str::trim).filter(|s| !s.is_empty()).map(String::from);
 

@@ -354,7 +354,7 @@ mod tests {
         store.migrate().unwrap();
 
         let known = store.known_devices().unwrap();
-        let by_mac = |mac: &str| known.iter().find(|d| d.mac == mac).unwrap().hostname.clone();
+        let by_mac = |mac: &str| known.iter().find(|d| d.mac.to_string() == mac).unwrap().hostname.clone();
         assert_eq!(by_mac("11:11:11:11:11:11"), None);
         assert_eq!(by_mac("22:22:22:22:22:22").as_deref(), Some("pixel-7"));
     }

@@ -28,10 +28,10 @@ async fn main() {
     println!("Watching for DHCP broadcasts. Reconnect a device's Wi-Fi to force one. Ctrl-C to stop.\n");
     println!("{:<18} {:<24} {:<16} {:<9} VENDOR CLASS / PRL", "MAC", "HOSTNAME (opt 12)", "OS", "KIND");
 
-    let mut seen: HashSet<String> = HashSet::new();
+    let mut seen: HashSet<rove_core::utils::mac::MacAddress> = HashSet::new();
     loop {
         for (mac, hit) in dhcp::snapshot() {
-            if seen.insert(mac.clone()) {
+            if seen.insert(mac) {
                 let detail = hit.vendor_class.clone().or_else(|| hit.fingerprint.clone()).unwrap_or_else(|| "-".into());
                 println!(
                     "{:<18} {:<24} {:<16} {:<9} {}",
