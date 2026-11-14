@@ -108,6 +108,13 @@ const LINE_ICONS = {
     'M4 17v2',
     'M5 18H3',
   ],
+  // A file kept by hand.
+  pencil: [
+    'M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z',
+    'm15 5 4 4',
+  ],
+  // The command line, `npx rove-ui`.
+  terminal: ['M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'm7 11 2-2-2-2', 'M11 13h4'],
   arrow: ['M5 12h14', 'm12 5 7 7-7 7'],
   fileText: [
     'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z',
@@ -160,7 +167,8 @@ function Icon({ name }: { name: IconName }): JSX.Element {
 }
 
 // The pipeline, step by step: a step's `column` places it under its stage heading.
-const STAGES = ['Written in', 'Read by', 'Listed in', 'Mirrored in']
+// The sources come first and stack in the first column; every later step spans them all.
+const STAGES = ['Written in', 'Read by', 'Listed in', 'Read through']
 
 type Item = { name: string; body: string; href?: string }
 type Step = { column: number; icons: IconName[]; items: Item[] }
@@ -178,12 +186,36 @@ const STEPS: Step[] = [
     ],
   },
   {
+    column: 1,
+    icons: ['figma', 'step', 'braces'],
+    items: [
+      {
+        name: '`npm run figma:export`',
+        body: 'Reads each Figma component and its guide into `catalog/figma/`. Never edited by hand.',
+      },
+    ],
+  },
+  {
+    column: 1,
+    icons: ['pencil'],
+    items: [
+      {
+        name: '`figma-differences.json`',
+        body: 'Kept by hand: what a script can’t know, like a difference from Figma kept on purpose, and why.',
+      },
+    ],
+  },
+  {
     column: 2,
     icons: ['node', 'step', 'braces'],
     items: [
       {
         name: '`npm run gen`',
-        body: 'Reads every prop, variant value, story and guide from the code.',
+        body: 'Reads every prop, variant value, story and guide from the code, and the Figma side from `catalog/`.',
+      },
+      {
+        name: 'Compares with Figma',
+        body: 'Variants against props, and guide against guide. Fails on a difference with no reason.',
       },
     ],
   },
@@ -193,19 +225,40 @@ const STEPS: Step[] = [
     items: [
       {
         name: '`components.gen.json`',
-        body: 'Every component in one file, with its Figma node. Never edited directly.',
+        body: 'Every component in one file: props, stories, usage guide and Figma component. Never edited by hand.',
       },
     ],
   },
   {
     column: 4,
-    icons: ['figma'],
+    icons: ['terminal'],
     items: [
-      { name: 'Figma components', body: 'A component set per component, a variant for every value a prop takes.' },
-      { name: 'Docs sections', body: 'The same When to use and When not to use, worded for design.' },
+      {
+        name: '`npx rove-ui`',
+        body: 'One component at a time: `list`, `show`, `search`, `icons`. `--md` prints Markdown for agents.',
+      },
+      {
+        name: '`npx rove-ui pick`',
+        body: 'For a person: type to narrow, then show it, copy it, or open it in Storybook or Figma.',
+      },
     ],
   },
 ]
+
+const sourceCount = STEPS.filter(({ column }) => column === 1).length
+
+/** Where a step sits: a source in its own row, every later step down the full height of the sources. */
+function stepPlacement(column: number, index: number): CSSProperties {
+  if (column === 1) return { gridColumn: 1, gridRow: index + 1 }
+  return { gridColumn: column, gridRow: `1 / span ${sourceCount}` }
+}
+
+/** The arrow a step draws: into it from the left, or, for a lower source, out of it to the step it feeds. */
+function flowClassName(column: number, index: number): string {
+  if (column > 1) return 'has-flow'
+  if (index > 0) return 'has-flow-out'
+  return ''
+}
 
 type Card = { icon?: IconName; icons?: IconName[] } & Item
 
@@ -216,9 +269,14 @@ const CHECKS: Card[] = [
     body: 'Fails a raw colour or spacing where a token belongs, and an import from inside `packages/ui/`.',
   },
   {
+    icon: 'braces',
+    name: 'Catalog check',
+    body: '`npm run gen` holds the catalog to its schemas and fails on a difference from Figma with no reason.',
+  },
+  {
     icon: 'figma',
-    name: 'Figma check',
-    body: 'Fails when a component’s props or usage guide in code don’t match its Figma component.',
+    name: 'Figma export check',
+    body: 'Fails when the Figma file has changed since the last export. Skipped without `FIGMA_TOKEN`.',
   },
   {
     icon: 'storybook',
@@ -236,7 +294,7 @@ const CONSUMERS: Card[] = [
   {
     icons: ['claude', 'openai', 'cursor', 'copilot', 'gemini'],
     name: 'Coding agents',
-    body: 'Read `AGENTS.md` and `components.gen.json`, so they pick a component, not new markup.',
+    body: 'Run `npx rove-ui --md list`, then `show <Name>`, so they pick a component, not new markup.',
   },
   {
     icon: 'storybook',
@@ -264,7 +322,7 @@ const PRINCIPLES: { icon: IconName; lead: string; body: string }[] = [
   {
     icon: 'sparkles',
     lead: 'Written down for agents',
-    body: '`components.gen.json` names every prop, value and guide, generated from the code.',
+    body: '`npx rove-ui --md` gives an agent one component’s props, values and guide, in few tokens.',
   },
 ]
 
@@ -326,11 +384,17 @@ function Pipeline(): JSX.Element {
       <div className="intro-pipeline">
         <div className="intro-pipeline-title">
           <h3>Components</h3>
-          <p>Written here, then mirrored in Figma.</p>
+          <p>Start in code. Figma is read back to compare.</p>
         </div>
-        <ol className="intro-steps" aria-label="Components, from code to Figma">
+        <ol className="intro-steps" aria-label="Components, from code and Figma to the command line">
           {STEPS.map(({ column, icons, items }, index) => (
-            <Node key={column} icons={icons} style={{ gridColumn: column }} className={index > 0 ? 'has-flow' : ''}>
+            // Several steps share a column, so the key is the step's place in a list that never reorders.
+            <Node
+              key={index}
+              icons={icons}
+              style={stepPlacement(column, index)}
+              className={flowClassName(column, index)}
+            >
               <span className="intro-stage intro-stage-inline">{STAGES[column - 1]}</span>
               {items.map((item) => (
                 <ItemText key={item.name} {...item} />
@@ -409,7 +473,7 @@ export function Introduction(): JSX.Element {
       <section className="intro-section">
         <h2 className="intro-section-title">How it works</h2>
         <p className="intro-section-intro">
-          A component&rsquo;s path from its source to everything that uses it, in one direction.
+          A component&rsquo;s path from its sources to everything that uses it, in one direction.
         </p>
         <div className="intro-section-body">
           <Pipeline />

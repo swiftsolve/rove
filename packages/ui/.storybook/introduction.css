@@ -173,7 +173,8 @@
   color: var(--text-tertiary);
 }
 
-/* The diagram: a label column, then the four stages; each pipeline is a row. */
+/* The diagram: a label column, then the four stages; each pipeline is a row.
+   The sources stack in the first stage, and every later step runs their full height. */
 
 .intro-diagram {
   --intro-label: 168px;
@@ -231,14 +232,17 @@
 .intro-consumers {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: var(--intro-gap);
+  gap: var(--intro-gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* A card row takes as many equal columns as it has cards. */
 .intro-consumers {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: none;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
 }
 
 .intro-node {
@@ -259,8 +263,10 @@
 }
 
 /* The arrow into a step: a dashed line and an open chevron, level with the icons'
-   centre, running the whole gap from card to card, in the accent. */
-.intro-node.has-flow {
+   centre, running the whole gap from card to card, in the accent. A lower source
+   draws the same arrow out of its right edge, into the step it feeds. */
+.intro-node.has-flow,
+.intro-node.has-flow-out {
   --intro-arrow-y: calc(var(--intro-card-pad) + 12px); /* padding, half the 24px icon */
   --intro-arrow-weight: 1.5px;
   --intro-arrow-head: 8px;
@@ -278,7 +284,18 @@
   content: '';
 }
 
-.intro-node.has-flow::after {
+.intro-node.has-flow-out::before {
+  position: absolute;
+  top: calc(var(--intro-arrow-y) - var(--intro-arrow-weight) / 2);
+  left: 100%;
+  width: var(--intro-gap);
+  height: var(--intro-arrow-weight);
+  background: repeating-linear-gradient(to left, var(--intro-arrow-dash));
+  content: '';
+}
+
+.intro-node.has-flow::after,
+.intro-node.has-flow-out::after {
   position: absolute;
   top: calc(var(--intro-arrow-y) - var(--intro-arrow-head) / 2);
   right: 100%;
@@ -290,6 +307,11 @@
   border-top-right-radius: 1px;
   transform: rotate(45deg);
   content: '';
+}
+
+.intro-node.has-flow-out::after {
+  right: auto;
+  left: calc(100% + var(--intro-gap) - var(--intro-arrow-head));
 }
 
 .intro-item {
@@ -830,11 +852,19 @@
   .intro-steps,
   .intro-consumers {
     grid-template-columns: 1fr;
+    grid-auto-flow: row;
     row-gap: var(--intro-gap);
   }
 
   .intro-steps .intro-node {
     grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  /* Stacked, the sources sit one above another, so only the step after them takes an arrow. */
+  .intro-node.has-flow-out::before,
+  .intro-node.has-flow-out::after {
+    display: none;
   }
 
   .intro-stage-inline {
