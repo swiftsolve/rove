@@ -243,6 +243,14 @@ agree. Components start in `packages/ui/`, and Figma mirrors them. Without Figma
 browse the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/)
 and the [Components Storybook](https://nabilr.com/rove/storybook/).
 
+In a terminal, `npx rove-ui` looks a component up: `pick` to find one by
+typing, `show <Name>` for its props, usage guide and Figma component, and
+`--md` for an agent.
+
+<p align="center">
+  <img src="docs/assets/rove-ui-pick.png" width="620" alt="npx rove-ui in a terminal: a welcome box, ROVE UI in large letters, then a list of components narrowed by typing card, with CardHeader picked" />
+</p>
+
 ### Troubleshooting on Linux
 
 - **The app aborts at startup with a GLib or GTK error** when launched from
