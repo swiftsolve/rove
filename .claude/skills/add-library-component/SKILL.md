@@ -56,7 +56,7 @@ The library's rules (stories, docs pages, what every component does) are in
 ## The Figma side
 
 The component lives on its group's page in the Rove Design System file
-(`packages/ui/catalog/figma-components.json` has its URL; the file key is the part after `/design/`).
+(`packages/ui/catalog/figma/components.json` has its URL; the file key is the part after `/design/`).
 
 What you need:
 
@@ -81,7 +81,7 @@ Without the server, stop after the code side and say the Figma side is left.
    properties table. A changed one's section changes with it. Guidance is the
    stories' guide worded for designers:
    - When to use and When not to use, line for line with the stories'
-     (`gen/components.ts` holds them to it, through `figma-guides.json`).
+     (`gen/components.ts` holds them to it, through `figma/guides.json`).
    - Accessibility, as what they needn't draw (Built in) and what they decide
      or note (To handle).
    - No Guidelines block: a rule about one property goes in its row's
@@ -90,19 +90,21 @@ Without the server, stop after the code side and say the Figma side is left.
      component; MenuItem has none) has its guide in a Parts block at the end
      of its family's section: a "Parts" title, then per part its name, its
      code chip and a Guidance block.
-3. `npm run figma:export-guides`, then `npm run gen`, so
-   `packages/ui/catalog/figma-guides.json` and `components.gen.json` hold the new or
-   changed guide.
-4. Its entry in `packages/ui/catalog/figma-components.json`: the `map-figma-component` skill
-   (`.claude/skills/map-figma-component/SKILL.md`). For a changed one too when
-   a prop or value is renamed or removed: the check reads only the entry's
+3. `npm run figma:export`, then `npm run gen`, so `packages/ui/catalog/figma/`
+   and `components.gen.json` hold the new or changed component, its variants
+   and its guide.
+4. Where it differs from Figma on purpose, or Figma names it otherwise, its
+   entry in `packages/ui/catalog/figma-differences.json`: the
+   `write-figma-differences` skill
+   (`.claude/skills/write-figma-differences/SKILL.md`). For a changed one too
+   when a prop or value is renamed or removed: gen reads only the entry's
    keys, so a reason that names the old one goes stale without failing.
 
 ## Done
 
 - `npm run check` passes, with `FIGMA_TOKEN` in `.env.local` so
-  `checks/figma-library.ts` holds the names, variants, values and the exported
-  guides to the file.
+  `checks/figma-export.ts` holds the export to the file, and `npm run gen`
+  holds the variants, values and guides to the code.
 - A screenshot of the Figma docs section matches the stories.
 - Commit, then run the `resync-sites` skill: the Storybooks change, and the
   demo too if a screen uses the component.

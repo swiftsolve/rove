@@ -33,7 +33,7 @@ agents, open the file.
 | Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
 | Add or change a token, text style or shadow | `../rove-tokens/.claude/skills/update-tokens/SKILL.md` |
 | Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
-| Map a library component to its Figma component, in `packages/ui/catalog/figma-components.json` | `.claude/skills/map-figma-component/SKILL.md` |
+| Write where a library component differs from its Figma component, and why, in `packages/ui/catalog/figma-differences.json` | `.claude/skills/write-figma-differences/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
 | Sweep `apps/rove/src`, `packages/ui` and `scripts/` for code that isn't plain | `.claude/skills/readability-sweep/SKILL.md` |
 

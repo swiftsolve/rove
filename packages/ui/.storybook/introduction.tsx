@@ -4,7 +4,6 @@ import type { CSSProperties, JSX, ReactNode } from 'react'
 
 import type { ComponentListJson } from '../../../scripts/lib/library-json-types.ts'
 import componentList from '../catalog/components.gen.json'
-import figma from '../catalog/figma-components.json'
 import { DotSeparator } from '../src'
 import { BRAND_ICONS } from './brand-icons'
 import { GROUPS } from './introduction-specimens'
@@ -371,7 +370,7 @@ const groups = [...new Set(components.map(({ libraryGroup }) => libraryGroup))].
 
 // Line icons in the link's accent, so they read as one row.
 const LINKS: { icon: IconName; label: string; href: string }[] = [
-  { icon: 'figmaLine', label: 'Figma file', href: figma.figmaFileUrl },
+  { icon: 'figmaLine', label: 'Figma file', href: componentList.figmaFileUrl },
   { icon: 'rove', label: 'Rove Tokens', href: TOKENS },
   { icon: 'fileText', label: 'Frontend guide', href: `${REPO}/blob/master/apps/rove/src/README.md` },
   { icon: 'github', label: 'GitHub', href: REPO },

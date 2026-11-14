@@ -40,7 +40,7 @@ Each file's opening comment says what it guards. In short:
 | [checks/text-styles.ts](../../../scripts/checks/text-styles.ts) | A font size with no text style |
 | [checks/ui-classname.ts](../../../scripts/checks/ui-classname.ts) | A `className` that restyles a library component instead of placing it |
 | [checks/custom-properties.ts](../../../scripts/checks/custom-properties.ts) | A `var(--…)` nothing defines, such as a typo |
-| [checks/figma-library.ts](../../../scripts/checks/figma-library.ts) | The library and the Figma file disagreeing: a node, a name, a variant's values, a usage guide's lines (skipped without `FIGMA_TOKEN`) |
+| [checks/figma-export.ts](../../../scripts/checks/figma-export.ts) | Figma changed since the last export of its components and usage guides (skipped without `FIGMA_TOKEN`); `npm run gen` then compares the export with the code |
 | [gen/components.ts](../../../scripts/gen/components.ts) | A stale `components.gen.json`; a component or prop without a doc comment, a Figma entry or a usage guide; a handler no `play` story drives |
 | [gen/cn-theme.ts](../../../scripts/gen/cn-theme.ts) | A stale `cn-theme.gen.json`, so `cn` would miss a theme name ([chapter 3](03-cva-cx-cn.md)) |
 

@@ -16,7 +16,7 @@
     "lint": "eslint . && prettier --check . && node scripts/checks/run.ts",
     "format": "prettier --write .",
     "gen": "node scripts/gen/components.ts && node scripts/gen/cn-theme.ts",
-    "figma:export-guides": "node scripts/checks/figma-library.ts --export-guides",
+    "figma:export": "node scripts/checks/figma-export.ts --export",
     "typecheck": "turbo run typecheck && tsc -p scripts",
     "check": "npm run typecheck && npm run lint && npm test",
     "screenshots": "node scripts/screenshots.ts",

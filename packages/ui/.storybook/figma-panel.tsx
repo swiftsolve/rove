@@ -3,14 +3,14 @@ import React, { type JSX } from 'react'
 import { AddonPanel, EmptyTabContent, Link } from 'storybook/internal/components'
 import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 
-import type { FigmaComponentsJson } from '../../../scripts/lib/library-json-types.ts'
-import figma from '../catalog/figma-components.json'
+import type { ComponentListJson } from '../../../scripts/lib/library-json-types.ts'
+import componentList from '../catalog/components.gen.json'
 
 // A story's title ends in its component's name ('Containers/Card/CardHeader'),
-// which is figma-components.json's key, so every story finds its Figma component with
-// nothing set on the story itself.
-const COMPONENTS: FigmaComponentsJson['components'] = figma.components
-const FILE = new URL(figma.figmaFileUrl)
+// which is components.gen.json's key, so every story finds its Figma component
+// with nothing set on the story itself.
+const COMPONENTS: ComponentListJson['components'] = componentList.components
+const FILE = new URL(componentList.figmaFileUrl)
 
 const COLUMN: React.CSSProperties = { display: 'flex', flexDirection: 'column', height: '100%' }
 const EMBED: React.CSSProperties = { flex: 1, width: '100%', border: 0 }
@@ -22,32 +22,32 @@ export function FigmaPanel({ isActive }: { isActive: boolean }): JSX.Element {
   useStorybookState()
   const title = api.getCurrentStoryData()?.title ?? ''
   const name = title.split('/').at(-1) ?? ''
-  const component = COMPONENTS[name]
+  const figmaComponent = COMPONENTS[name]?.figmaComponent
 
   return (
     <AddonPanel active={isActive}>
-      {component && 'figmaNodeId' in component ? (
+      {figmaComponent && 'figmaNodeId' in figmaComponent ? (
         <div style={COLUMN}>
           {/* Only while the tab is open, so other tabs don't load Figma. */}
           {isActive && (
             <iframe
-              key={component.figmaNodeId}
-              title={`${component.figmaName} in Figma`}
-              src={figmaUrl('https://embed.figma.com', component.figmaNodeId, { 'embed-host': 'rove-storybook' })}
+              key={figmaComponent.figmaNodeId}
+              title={`${figmaComponent.figmaName} in Figma`}
+              src={figmaUrl('https://embed.figma.com', figmaComponent.figmaNodeId, { 'embed-host': 'rove-storybook' })}
               style={EMBED}
               allowFullScreen
             />
           )}
           <div style={{ padding: '8px 12px' }}>
-            <Link href={figmaUrl(FILE.origin, component.figmaNodeId)} target="_blank" rel="noreferrer" withArrow>
-              Open {component.figmaName} in Figma
+            <Link href={figmaUrl(FILE.origin, figmaComponent.figmaNodeId)} target="_blank" rel="noreferrer" withArrow>
+              Open {figmaComponent.figmaName} in Figma
             </Link>
           </div>
         </div>
       ) : (
         <EmptyTabContent
-          title={component ? `${name} has no Figma component` : `${name} isn't in figma-components.json`}
-          description={component?.whyNoFigmaComponent}
+          title={figmaComponent ? `${name} has no Figma component` : `${name} isn't in components.gen.json`}
+          description={figmaComponent?.whyNoFigmaComponent}
         />
       )}
     </AddonPanel>

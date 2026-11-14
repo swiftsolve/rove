@@ -226,9 +226,10 @@ rove/
 │   │   │                       type styles and layout, as utilities)
 │   │   └── fonts/              the faces base.css loads
 │   ├── catalog/                the library as data: components.gen.json
-│   │                           (written by npm run gen), figma-components.json
-│   │                           (by hand) and figma-guides.json (exported from
-│   │                           Figma)
+│   │                           (written by npm run gen), figma/ (components
+│   │                           and guides, exported from Figma by npm run
+│   │                           figma:export) and figma-differences.json (by
+│   │                           hand: where code and Figma differ, and why)
 │   └── .storybook/             the library's Storybook and its Docs pages
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per

@@ -6,13 +6,15 @@
  *   - its group, from the comment above it in `packages/ui/src/index.ts`;
  *   - its description and props (type, variant values, default), read from
  *     the code with react-docgen-typescript, as Storybook's docs tables are;
- *   - its Figma component, from `packages/ui/catalog/figma-components.json`;
+ *   - its Figma component, from `packages/ui/catalog/figma/components.json`
+ *     (which `npm run figma:export` writes), with its deliberate differences
+ *     from `figma-differences.json` (kept by hand);
  *   - its stories' ids, for `localhost:6006/?path=/story/<id>`;
  *   - its usage guide (when to use it, when not, accessibility), from its
  *     stories' `guidance` parameter, as its Docs page shows it, or for a part
  *     on its family's page, the family's `partGuidance`;
  *   - its usage guide as Figma words it (`figmaGuidance`), from
- *     `packages/ui/catalog/figma-guides.json`, which `npm run figma:export-guides` writes;
+ *     `packages/ui/catalog/figma/guides.json`, the same export;
  *   - for a part, the family it belongs to (`partOf`).
  *
  * Icons, hooks and helpers follow, by name and doc comment.
@@ -21,11 +23,14 @@
  *   node scripts/gen/components.ts --check   # fail if it's stale or incomplete
  *
  * `--check`, part of `npm run lint`, also fails when a component or one of its
- * own props has no doc comment, or a component has no entry in figma-components.json (`{ whyNoFigmaComponent }` says why it has no Figma counterpart), or a
+ * own props has no doc comment, or a component has no Figma component and
+ * figma-differences.json doesn't say why (`whyNoFigmaComponent`), or Figma's
+ * variant properties and its props differ where figma-differences.json gives
+ * no reason (lib/figma-variants.ts), or a
  * component has no usage guide: on its own Docs page (`Actions/Button`,
  * `Containers/Card/CardHeader`), or for a part shown on its family's page
  * (MenuItem on `Actions/Menu`), in that page's `partGuidance`; or a usage
- * guide and its Figma one in figma-guides.json fall out of step (line counts,
+ * guide and its Figma one in figma/guides.json fall out of step (line counts,
  * named alternatives), or Figma draws a guided component with no guide.
  *
  * It fails, too, when a component takes a handler (`onClick`, `onBack`) and
@@ -41,13 +46,17 @@ import { type ComponentDoc, type PropItem, withCustomConfig } from 'react-docgen
 import { storyNameFromExport, toId } from 'storybook/internal/csf'
 import ts from 'typescript'
 
+import { variantProblems } from '../lib/figma-variants.ts'
 import { schemaProblems } from '../lib/json-schema.ts'
 import type {
   ComponentEntry,
   ComponentListJson,
+  FigmaComponent,
   FigmaComponentsJson,
+  FigmaDifferencesJson,
   FigmaGuidesJson,
   Guidance,
+  NoFigmaComponent,
   PropEntry,
 } from '../lib/library-json-types.ts'
 
@@ -56,12 +65,15 @@ const UI_DIR = join(ROOT, 'packages/ui/src')
 const UI_INDEX = join(UI_DIR, 'index.ts')
 const CATALOG_DIR = join(ROOT, 'packages/ui/catalog')
 const COMPONENT_LIST = join(CATALOG_DIR, 'components.gen.json')
-const FIGMA_COMPONENTS_JSON = join(CATALOG_DIR, 'figma-components.json')
-const FIGMA_GUIDES_JSON = join(CATALOG_DIR, 'figma-guides.json')
-// Each file's schema says what every key means; both files are held to theirs.
+// Exported from Figma by `npm run figma:export`, and kept by hand beside them.
+const FIGMA_COMPONENTS_JSON = join(CATALOG_DIR, 'figma/components.json')
+const FIGMA_GUIDES_JSON = join(CATALOG_DIR, 'figma/guides.json')
+const FIGMA_DIFFERENCES_JSON = join(CATALOG_DIR, 'figma-differences.json')
+// Each file's schema says what every key means; every file is held to its own.
 const COMPONENT_LIST_SCHEMA = join(ROOT, 'schemas/components.schema.json')
 const FIGMA_COMPONENTS_SCHEMA = join(ROOT, 'schemas/figma-components.schema.json')
 const FIGMA_GUIDES_SCHEMA = join(ROOT, 'schemas/figma-guides.schema.json')
+const FIGMA_DIFFERENCES_SCHEMA = join(ROOT, 'schemas/figma-differences.schema.json')
 const isCheck = process.argv.includes('--check')
 
 /** A component the index exports, under its group's comment, and the file it comes from. */
@@ -308,18 +320,40 @@ function readOtherExports(componentNames: Set<string>): Pick<ComponentListJson, 
 
 const components = await readIndex()
 const { docs, elementProps } = readProps(components)
-const figmaMap = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8')) as FigmaComponentsJson
-problems.push(...(await schemaProblems(FIGMA_COMPONENTS_SCHEMA, figmaMap, relativeToRoot(FIGMA_COMPONENTS_JSON))))
+const figmaExport = JSON.parse(await readFile(FIGMA_COMPONENTS_JSON, 'utf8')) as FigmaComponentsJson
+problems.push(...(await schemaProblems(FIGMA_COMPONENTS_SCHEMA, figmaExport, relativeToRoot(FIGMA_COMPONENTS_JSON))))
+const figmaDifferencesFile = JSON.parse(await readFile(FIGMA_DIFFERENCES_JSON, 'utf8')) as FigmaDifferencesJson
+problems.push(
+  ...(await schemaProblems(FIGMA_DIFFERENCES_SCHEMA, figmaDifferencesFile, relativeToRoot(FIGMA_DIFFERENCES_JSON))),
+)
+const figmaDifferences = figmaDifferencesFile.components
 const figmaGuidesFile = JSON.parse(await readFile(FIGMA_GUIDES_JSON, 'utf8')) as FigmaGuidesJson
 problems.push(...(await schemaProblems(FIGMA_GUIDES_SCHEMA, figmaGuidesFile, relativeToRoot(FIGMA_GUIDES_JSON))))
 const figmaGuides = figmaGuidesFile.guides
 // An alternative is named in Figma by its Figma name, or its own for one Figma lacks.
-const figmaNameOf = (component: string) => {
-  const entry = figmaMap.components[component]
-  return entry && 'figmaName' in entry ? entry.figmaName : component
-}
+const figmaNameOf = (component: string) => figmaExport.components[component]?.figmaName ?? component
 const hasFigmaComponent = (component: string | undefined) =>
-  component !== undefined && 'figmaNodeId' in (figmaMap.components[component] ?? {})
+  component !== undefined && component in figmaExport.components
+
+/**
+ * A component's Figma component as components.gen.json carries it: the
+ * export's name and node with its written differences, or why it has none.
+ * Null, and a problem, when neither file has it.
+ */
+function figmaComponentOf(name: string): FigmaComponent | NoFigmaComponent | null {
+  const exported = figmaExport.components[name]
+  const differences = figmaDifferences[name]
+  if (differences && 'whyNoFigmaComponent' in differences) return differences
+  if (!exported) {
+    problems.push(
+      `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: ${name} has no Figma component: build it in Figma and npm run figma:export, ` +
+        `or say why it has none in figma-differences.json`,
+    )
+    return null
+  }
+  const { figmaName: _exportedName, ...writtenDifferences } = differences ?? {}
+  return { figmaName: exported.figmaName, figmaNodeId: exported.figmaNodeId, ...writtenDifferences }
+}
 const storiesByName = new Map<string, StoriesInfo>()
 for (const { name, source } of components) storiesByName.set(name, await readStories(source, name))
 
@@ -334,18 +368,13 @@ for (const { name, group, source } of components) {
   for (const prop of Object.values(doc.props)) {
     if (!prop.description) problems.push(`${relativeToRoot(source)}: ${name}'s ${prop.name} prop needs a doc comment`)
   }
-  const figmaEntry = figmaMap.components[name]
-  if (!figmaEntry) {
-    problems.push(
-      `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: add ${name}, with its Figma component, or { whyNoFigmaComponent } if it has none`,
-    )
-  }
+  const figmaEntry = figmaComponentOf(name)
   const figmaVariantPropertiesNotInCode =
     figmaEntry && 'figmaNodeId' in figmaEntry ? (figmaEntry.figmaVariantPropertiesNotInCode ?? {}) : {}
   for (const [figmaName, { fromProps }] of Object.entries(figmaVariantPropertiesNotInCode)) {
     for (const propName of fromProps.filter((propName) => !(propName in doc.props))) {
       problems.push(
-        `${relativeToRoot(FIGMA_COMPONENTS_JSON)}: ${name}'s ${figmaName} comes from ${propName}, which isn't a prop`,
+        `${relativeToRoot(FIGMA_DIFFERENCES_JSON)}: ${name}'s ${figmaName} comes from ${propName}, which isn't a prop`,
       )
     }
   }
@@ -355,7 +384,7 @@ for (const { name, group, source } of components) {
   const isGuidedInFigma = hasFigmaComponent(name) || hasFigmaComponent(stories.partOf)
   if (stories.guidance && isGuidedInFigma && !figmaGuidance) {
     problems.push(
-      `${relativeToRoot(FIGMA_GUIDES_JSON)}: ${name} has no Figma usage guide: add one to its docs section (a part: its family's Parts block), then npm run figma:export-guides`,
+      `${relativeToRoot(FIGMA_GUIDES_JSON)}: ${name} has no Figma usage guide: add one to its docs section (a part: its family's Parts block), then npm run figma:export`,
     )
   }
   if (stories.guidance && figmaGuidance)
@@ -371,7 +400,7 @@ for (const { name, group, source } of components) {
     libraryGroup: group,
     sourceFile: relativeToRoot(source),
     description: doc.description,
-    figmaComponent: figmaEntry ?? null,
+    figmaComponent: figmaEntry,
     props: Object.fromEntries(
       Object.values(doc.props)
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -390,17 +419,24 @@ for (const name of Object.keys(figmaGuides)) {
       `${relativeToRoot(FIGMA_GUIDES_JSON)}: ${name} isn't a component in packages/ui/src/index.ts: export again`,
     )
 }
-for (const name of Object.keys(figmaMap.components)) {
-  if (!components.some((component) => component.name === name)) {
-    problems.push(`${relativeToRoot(FIGMA_COMPONENTS_JSON)}: ${name} isn't a component in packages/ui/src/index.ts`)
-  }
+for (const [file, names] of [
+  [FIGMA_COMPONENTS_JSON, Object.keys(figmaExport.components)],
+  [FIGMA_DIFFERENCES_JSON, Object.keys(figmaDifferences)],
+] as const) {
+  for (const name of names.filter((name) => !(name in componentEntries)))
+    problems.push(`${relativeToRoot(file)}: ${name} isn't a component in packages/ui/src/index.ts`)
 }
+
+// Figma's variant properties against the props, now both are here.
+const propsByComponent = new Map(Object.entries(componentEntries).map(([name, { props }]) => [name, props]))
+for (const problem of variantProblems(figmaExport.components, figmaDifferences, propsByComponent))
+  problems.push(`${relativeToRoot(FIGMA_DIFFERENCES_JSON)}: ${problem}`)
 
 const componentList: ComponentListJson = {
   $schema: '../../schemas/components.schema.json',
   $comment:
     'Generated by `npm run gen` from packages/ui/src; edit the code, not this file. The schema says what each key means.',
-  figmaFileUrl: figmaMap.figmaFileUrl,
+  figmaFileUrl: figmaExport.figmaFileUrl,
   components: componentEntries,
   ...readOtherExports(new Set(components.map(({ name }) => name))),
 }

@@ -13,7 +13,7 @@
       "type": "string"
     },
     "figmaFileUrl": {
-      "description": "The Rove Design System file's URL, copied from figma-components.json.",
+      "description": "The Rove Design System file's URL, copied from figma/components.json.",
       "$ref": "figma-components.schema.json#/properties/figmaFileUrl"
     },
     "components": {
@@ -59,10 +59,10 @@
           "minLength": 1
         },
         "figmaComponent": {
-          "description": "Its entry in figma-components.json: its Figma component, or why it has none.",
+          "description": "Its Figma component, from figma/components.json, with its differences from figma-differences.json; or, from figma-differences.json, why it has none.",
           "oneOf": [
-            { "$ref": "figma-components.schema.json#/definitions/figmaComponent" },
-            { "$ref": "figma-components.schema.json#/definitions/noFigmaComponent" }
+            { "$ref": "figma-differences.schema.json#/definitions/figmaComponent" },
+            { "$ref": "figma-differences.schema.json#/definitions/noFigmaComponent" }
           ]
         },
         "props": {
@@ -91,7 +91,7 @@
           "$ref": "#/definitions/guidance"
         },
         "figmaGuidance": {
-          "description": "Its usage guide as the Figma file words it, for whoever designs with it, from figma-guides.json. When to use and When not to use match the code's line for line; Accessibility says what a designer needn't draw and what they decide.",
+          "description": "Its usage guide as the Figma file words it, for whoever designs with it, from figma/guides.json. When to use and When not to use match the code's line for line; Accessibility says what a designer needn't draw and what they decide.",
           "allOf": [{ "$ref": "#/definitions/guidance" }]
         }
       }

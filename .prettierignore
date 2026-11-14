@@ -16,8 +16,8 @@ storybook-static
 *.gen.*
 package-lock.json
 
-# Exported from Figma by npm run figma:export-guides.
-packages/ui/catalog/figma-guides.json
+# Exported from Figma by npm run figma:export.
+packages/ui/catalog/figma
 
 # Prose. Its line breaks and table layout are written by hand.
 *.md

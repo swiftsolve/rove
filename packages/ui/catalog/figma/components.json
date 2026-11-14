@@ -1,0 +1,511 @@
+{
+  "$schema": "../../../../schemas/figma-components.schema.json",
+  "$comment": "Exported from the Figma file by `npm run figma:export`; change it in Figma, then export again and run `npm run gen`.",
+  "figmaFileUrl": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
+  "components": {
+    "Button": {
+      "figmaName": "Button",
+      "figmaNodeId": "42:189",
+      "variantProperties": {
+        "Variant": [
+          "Solid",
+          "Soft"
+        ],
+        "Tone": [
+          "Accent",
+          "Negative",
+          "Neutral"
+        ],
+        "Size": [
+          "Md",
+          "Sm"
+        ],
+        "State": [
+          "Default",
+          "Hover",
+          "Disabled",
+          "Loading"
+        ]
+      }
+    },
+    "IconButton": {
+      "figmaName": "Icon button",
+      "figmaNodeId": "13:629",
+      "variantProperties": {
+        "Variant": [
+          "Soft",
+          "Ghost"
+        ],
+        "Icon size": [
+          "16",
+          "14"
+        ],
+        "State": [
+          "Default",
+          "Hover",
+          "Focus",
+          "Disabled",
+          "Loading"
+        ]
+      }
+    },
+    "Link": {
+      "figmaName": "Link",
+      "figmaNodeId": "505:845",
+      "variantProperties": {
+        "Type": [
+          "View",
+          "External"
+        ],
+        "State": [
+          "Default",
+          "Hover",
+          "Disabled"
+        ]
+      }
+    },
+    "Menu": {
+      "figmaName": "Menu",
+      "figmaNodeId": "498:719",
+      "variantProperties": {}
+    },
+    "MenuContent": {
+      "figmaName": "Menu",
+      "figmaNodeId": "498:719",
+      "variantProperties": {}
+    },
+    "MenuItem": {
+      "figmaName": "Menu item",
+      "figmaNodeId": "498:718",
+      "variantProperties": {
+        "Tone": [
+          "Neutral",
+          "Negative"
+        ],
+        "State": [
+          "Default",
+          "Highlighted"
+        ]
+      }
+    },
+    "MenuTrigger": {
+      "figmaName": "Menu trigger",
+      "figmaNodeId": "498:675",
+      "variantProperties": {
+        "State": [
+          "Default",
+          "Hover",
+          "Open"
+        ]
+      }
+    },
+    "TextField": {
+      "figmaName": "Text field",
+      "figmaNodeId": "500:810",
+      "variantProperties": {
+        "State": [
+          "Default",
+          "Focus",
+          "Invalid"
+        ],
+        "Action": [
+          "Yes",
+          "No"
+        ]
+      }
+    },
+    "TextFieldAction": {
+      "figmaName": "Text field",
+      "figmaNodeId": "500:810",
+      "variantProperties": {
+        "State": [
+          "Default",
+          "Focus",
+          "Invalid"
+        ],
+        "Action": [
+          "Yes",
+          "No"
+        ]
+      }
+    },
+    "Toggle": {
+      "figmaName": "Toggle",
+      "figmaNodeId": "42:198",
+      "variantProperties": {
+        "Checked": [
+          "false",
+          "true"
+        ],
+        "Disabled": [
+          "false",
+          "true"
+        ]
+      }
+    },
+    "SegmentedControl": {
+      "figmaName": "Segmented control",
+      "figmaNodeId": "499:758",
+      "variantProperties": {}
+    },
+    "Dialog": {
+      "figmaName": "Dialog",
+      "figmaNodeId": "372:235",
+      "variantProperties": {}
+    },
+    "Tooltip": {
+      "figmaName": "Tooltip",
+      "figmaNodeId": "43:7",
+      "variantProperties": {}
+    },
+    "Badge": {
+      "figmaName": "Badge",
+      "figmaNodeId": "497:650",
+      "variantProperties": {
+        "Tone": [
+          "Positive",
+          "Warning",
+          "Negative"
+        ]
+      }
+    },
+    "LiveBadge": {
+      "figmaName": "Live badge",
+      "figmaNodeId": "4:41",
+      "variantProperties": {}
+    },
+    "StatusDot": {
+      "figmaName": "Status dot",
+      "figmaNodeId": "494:735",
+      "variantProperties": {
+        "Tone": [
+          "Positive",
+          "Warning",
+          "Negative",
+          "Neutral",
+          "Accent"
+        ]
+      }
+    },
+    "Spinner": {
+      "figmaName": "Spinner",
+      "figmaNodeId": "43:40",
+      "variantProperties": {}
+    },
+    "ButtonSpinner": {
+      "figmaName": "Button spinner",
+      "figmaNodeId": "104:5176",
+      "variantProperties": {}
+    },
+    "LoadingState": {
+      "figmaName": "Loading state",
+      "figmaNodeId": "500:357",
+      "variantProperties": {}
+    },
+    "Banner": {
+      "figmaName": "Banner",
+      "figmaNodeId": "374:1346",
+      "variantProperties": {
+        "Variant": [
+          "Error"
+        ],
+        "State": [
+          "Default",
+          "Retrying"
+        ]
+      }
+    },
+    "EmptyState": {
+      "figmaName": "Empty state",
+      "figmaNodeId": "356:175",
+      "variantProperties": {
+        "Locked": [
+          "false",
+          "true"
+        ]
+      }
+    },
+    "EmptyStateDescription": {
+      "figmaName": "Empty state",
+      "figmaNodeId": "356:175",
+      "variantProperties": {
+        "Locked": [
+          "false",
+          "true"
+        ]
+      }
+    },
+    "DataList": {
+      "figmaName": "Data row",
+      "figmaNodeId": "15:642",
+      "variantProperties": {}
+    },
+    "DataRow": {
+      "figmaName": "Data row",
+      "figmaNodeId": "15:642",
+      "variantProperties": {}
+    },
+    "NoValue": {
+      "figmaName": "No value",
+      "figmaNodeId": "708:667",
+      "variantProperties": {
+        "Size": [
+          "Display",
+          "Compact"
+        ]
+      }
+    },
+    "Readout": {
+      "figmaName": "Readout",
+      "figmaNodeId": "4:106",
+      "variantProperties": {
+        "Size": [
+          "Large",
+          "Compact"
+        ],
+        "Has label": [
+          "True",
+          "False"
+        ]
+      }
+    },
+    "MetricValue": {
+      "figmaName": "Metric value",
+      "figmaNodeId": "38:360",
+      "variantProperties": {
+        "Status": [
+          "None",
+          "Positive",
+          "Warning",
+          "Negative"
+        ]
+      }
+    },
+    "BarMeter": {
+      "figmaName": "Bar meter",
+      "figmaNodeId": "495:1044",
+      "variantProperties": {
+        "Value": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      }
+    },
+    "SplitBar": {
+      "figmaName": "Split bar",
+      "figmaNodeId": "556:619",
+      "variantProperties": {
+        "Mix": [
+          "Mixed",
+          "Down only",
+          "Empty"
+        ]
+      }
+    },
+    "ListRow": {
+      "figmaName": "List row",
+      "figmaNodeId": "496:745",
+      "variantProperties": {
+        "State": [
+          "Default",
+          "Hover",
+          "Disabled"
+        ]
+      }
+    },
+    "IconTile": {
+      "figmaName": "Icon tile",
+      "figmaNodeId": "495:585",
+      "variantProperties": {
+        "Size": [
+          "Sm",
+          "Md",
+          "Lg"
+        ],
+        "Neutral": [
+          "false",
+          "true"
+        ]
+      }
+    },
+    "IconTileButton": {
+      "figmaName": "Icon tile",
+      "figmaNodeId": "495:585",
+      "variantProperties": {
+        "Size": [
+          "Sm",
+          "Md",
+          "Lg"
+        ],
+        "Neutral": [
+          "false",
+          "true"
+        ]
+      }
+    },
+    "TimelineNode": {
+      "figmaName": "Timeline node",
+      "figmaNodeId": "580:539",
+      "variantProperties": {
+        "Neutral": [
+          "false",
+          "true"
+        ],
+        "Last": [
+          "false",
+          "true"
+        ]
+      }
+    },
+    "Card": {
+      "figmaName": "Card",
+      "figmaNodeId": "565:7535",
+      "variantProperties": {
+        "Body layout": [
+          "Default",
+          "Rows",
+          "Flush"
+        ],
+        "Openable": [
+          "False",
+          "True"
+        ],
+        "State": [
+          "Default",
+          "Hover"
+        ]
+      }
+    },
+    "CardBody": {
+      "figmaName": "Card",
+      "figmaNodeId": "565:7535",
+      "variantProperties": {
+        "Body layout": [
+          "Default",
+          "Rows",
+          "Flush"
+        ],
+        "Openable": [
+          "False",
+          "True"
+        ],
+        "State": [
+          "Default",
+          "Hover"
+        ]
+      }
+    },
+    "CardFooter": {
+      "figmaName": "Card",
+      "figmaNodeId": "565:7535",
+      "variantProperties": {
+        "Body layout": [
+          "Default",
+          "Rows",
+          "Flush"
+        ],
+        "Openable": [
+          "False",
+          "True"
+        ],
+        "State": [
+          "Default",
+          "Hover"
+        ]
+      }
+    },
+    "CardHeader": {
+      "figmaName": "Card header",
+      "figmaNodeId": "4:65",
+      "variantProperties": {}
+    },
+    "CardList": {
+      "figmaName": "Card list",
+      "figmaNodeId": "555:132",
+      "variantProperties": {}
+    },
+    "DotSeparator": {
+      "figmaName": "Dot separator",
+      "figmaNodeId": "452:9524",
+      "variantProperties": {}
+    },
+    "InlineMeta": {
+      "figmaName": "Dot separator",
+      "figmaNodeId": "452:9524",
+      "variantProperties": {}
+    },
+    "TitleBar": {
+      "figmaName": "Title bar",
+      "figmaNodeId": "41:63",
+      "variantProperties": {}
+    },
+    "TitleBarStatus": {
+      "figmaName": "Title bar status",
+      "figmaNodeId": "4:40",
+      "variantProperties": {
+        "Tone": [
+          "Positive",
+          "Negative",
+          "Neutral"
+        ]
+      }
+    },
+    "WindowButton": {
+      "figmaName": "Window button",
+      "figmaNodeId": "35:1664",
+      "variantProperties": {
+        "Action": [
+          "Minimize",
+          "Close"
+        ],
+        "State": [
+          "Default",
+          "Hover"
+        ]
+      }
+    },
+    "NavItem": {
+      "figmaName": "Nav item",
+      "figmaNodeId": "4:12",
+      "variantProperties": {
+        "State": [
+          "Default",
+          "Active",
+          "Hover",
+          "Focus"
+        ]
+      }
+    },
+    "NavRail": {
+      "figmaName": "Nav rail",
+      "figmaNodeId": "41:892",
+      "variantProperties": {
+        "Page": [
+          "Home",
+          "Speed",
+          "Devices",
+          "Apps",
+          "Services",
+          "Timeline",
+          "Interfaces",
+          "Connection",
+          "Usage",
+          "Settings"
+        ]
+      }
+    },
+    "PageHeader": {
+      "figmaName": "Page header",
+      "figmaNodeId": "542:10510",
+      "variantProperties": {
+        "Back": [
+          "false",
+          "true"
+        ]
+      }
+    }
+  }
+}

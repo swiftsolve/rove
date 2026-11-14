@@ -36,7 +36,7 @@ library imports only itself (by relative path) and packages, never app code.
 - Each component has stories beside it (`Button.stories.tsx`), titled by its
   group (`Actions/Button`), in the same change as the component. Stories
   import the library by relative path, like the library itself.
-- A title's last part is the component's key in `figma-components.json`, so
+- A title's last part is the component's key in `components.gen.json`, so
   Storybook's Figma tab finds its Figma component with nothing set.
 - A family sits in a folder named for its parent (`Containers/Card/CardHeader`),
   and the parent's page shows its parts' props as tabs (`subcomponents`).
@@ -81,18 +81,24 @@ library imports only itself (by relative path) and packages, never app code.
 - `components.gen.json` is the library's API in one file: each component's
   group, doc comment, props, Figma component, story ids and usage guide, its
   usage guide as Figma words it (`figmaGuidance`), and for a part, its family
-  (`partOf`). `npm run gen` writes it from the code, `figma-components.json`
-  and `figma-guides.json`, so a change goes in those and the file is
-  regenerated. Every component and prop of its own has a doc comment, and
-  every component an entry in `figma-components.json`; each Figma guide has
-  as many When to use and When not to use lines as the code's, and names the
-  same alternatives. [✓ CHECKED by `gen/components.ts`]
-- `figma-guides.json` is the Figma file's usage guides, exported by
-  `npm run figma:export-guides`; never edit it by hand. After changing a guide
-  in Figma, export again, then `npm run gen`.
-- Figma matches the library: each entry's node and name, every variant
-  property and its values, and every usage guide matches `figma-guides.json`.
-  [✓ CHECKED by `checks/figma-library.ts`, skipped without `FIGMA_TOKEN`]
+  (`partOf`). `npm run gen` writes it from the code and the files beside it
+  in `catalog/`, so a change goes in those and the file is regenerated. Every
+  component and prop of its own has a doc comment; every component has a
+  Figma component or a reason it has none; each Figma variant property is a
+  prop with the same values; and each Figma guide has as many When to use and
+  When not to use lines as the code's, and names the same alternatives, unless
+  `figma-differences.json` says why not. [✓ CHECKED by `gen/components.ts`]
+- `catalog/figma/` is exported from the Figma file by `npm run figma:export`:
+  `components.json` (each component's Figma name, node and variant
+  properties) and `guides.json` (the usage guides). Never edit them by hand:
+  change Figma, export again, then `npm run gen`. A component's Figma
+  component is the one named its code name in sentence case.
+- `catalog/figma-differences.json` is kept by hand: a Figma name that isn't
+  the sentence-case one, why a component has no Figma component, and each
+  difference from Figma kept on purpose, with why (the
+  `write-figma-differences` skill).
+- The export matches the Figma file. [✓ CHECKED by `checks/figma-export.ts`,
+  skipped without `FIGMA_TOKEN`]
 
 ### Every component
 

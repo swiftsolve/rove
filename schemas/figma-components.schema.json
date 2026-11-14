@@ -1,61 +1,35 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Figma components map",
-  "description": "Maps each UI library component to its component in the Rove Design System Figma file. Edited by hand (the map-figma-component skill). npm run gen copies each entry into components.gen.json, and checks/figma-library.ts holds it to Figma.",
+  "title": "Figma components export",
+  "description": "Each library component's Figma component in the Rove Design System file: its name, node id and variant properties. Exported from Figma by npm run figma:export, never edited by hand: a component's Figma name is its code name in sentence case unless figma-differences.json gives another. checks/figma-export.ts fails when Figma has changed since, and npm run gen merges each entry into components.gen.json and compares its variants with the props.",
   "type": "object",
-  "required": ["figmaFileUrl", "components"],
+  "required": ["$schema", "$comment", "figmaFileUrl", "components"],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
+    "$comment": {
+      "type": "string"
+    },
     "figmaFileUrl": {
-      "description": "The Rove Design System file's URL. Its file key is the part after /design/.",
+      "description": "The Rove Design System file's URL, which the export read. Its file key is the part after /design/.",
       "type": "string",
       "pattern": "^https://www\\.figma\\.com/design/"
     },
     "components": {
-      "description": "Every component packages/ui/src/index.ts exports, by its export name.",
+      "description": "Every library component that has a Figma component, by its export name. Parts drawn inside their family's component share its node.",
       "type": "object",
       "additionalProperties": {
-        "oneOf": [{ "$ref": "#/definitions/figmaComponent" }, { "$ref": "#/definitions/noFigmaComponent" }]
+        "$ref": "#/definitions/figmaComponent"
       }
     }
   },
   "definitions": {
-    "noFigmaComponent": {
-      "description": "A component with no Figma counterpart, and why.",
-      "type": "object",
-      "required": ["whyNoFigmaComponent"],
-      "additionalProperties": false,
-      "properties": {
-        "whyNoFigmaComponent": {
-          "description": "Why Figma has none: it draws nothing of its own, or only arranges components that are in Figma.",
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "figmaVariantPropertyNotInCode": {
-      "description": "How code chooses a Figma variant property it has no prop for.",
-      "type": "object",
-      "required": ["fromProps", "note"],
-      "additionalProperties": false,
-      "properties": {
-        "fromProps": {
-          "description": "This component's props that decide it, checked against the code; empty when no prop does (CSS, or another component's prop).",
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 }
-        },
-        "note": {
-          "description": "How those props choose each value, in plain words with code in backticks; or, with no props, what does.",
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
     "figmaComponent": {
-      "description": "The Figma component a library component maps to, and any differences kept on purpose.",
+      "description": "A library component's Figma component.",
       "type": "object",
-      "required": ["figmaName", "figmaNodeId"],
+      "required": ["figmaName", "figmaNodeId", "variantProperties"],
       "additionalProperties": false,
       "properties": {
         "figmaName": {
@@ -68,20 +42,15 @@
           "type": "string",
           "pattern": "^\\d+:\\d+$"
         },
-        "propsNotInFigma": {
-          "description": "Code props Figma has no variant property for, each with why Figma doesn't need one.",
+        "variantProperties": {
+          "description": "Its variant properties by their name in Figma, each with its values: { \"Tone\": [\"Accent\", \"Neutral\"] }. State, how it looks under the pointer, is one too.",
           "type": "object",
-          "additionalProperties": { "type": "string", "minLength": 1 }
-        },
-        "figmaVariantPropertiesNotInCode": {
-          "description": "Figma variant properties code has no prop for, by their name in Figma, each with how code chooses it.",
-          "type": "object",
-          "additionalProperties": { "$ref": "#/definitions/figmaVariantPropertyNotInCode" }
-        },
-        "propsWithDifferentValuesInFigma": {
-          "description": "Code props whose values differ from their Figma variant property's on purpose, each with why.",
-          "type": "object",
-          "additionalProperties": { "type": "string", "minLength": 1 }
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     }

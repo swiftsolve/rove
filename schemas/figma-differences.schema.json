@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Figma differences",
+  "description": "Where a library component and its Figma component differ on purpose, and why, by component; a component that matches its Figma component isn't listed. Edited by hand (the write-figma-differences skill). npm run figma:export reads its Figma names, and npm run gen fails on a difference not written here, or one written here that's gone.",
+  "type": "object",
+  "required": ["components"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "components": {
+      "description": "Library components by their export name.",
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/differences"
+          },
+          {
+            "$ref": "#/definitions/noFigmaComponent"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "noFigmaComponent": {
+      "description": "A component with no Figma counterpart, and why.",
+      "type": "object",
+      "required": ["whyNoFigmaComponent"],
+      "additionalProperties": false,
+      "properties": {
+        "whyNoFigmaComponent": {
+          "description": "Why Figma has none: it draws nothing of its own, or only arranges components that are in Figma.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "figmaVariantPropertyNotInCode": {
+      "description": "How code chooses a Figma variant property it has no prop for.",
+      "type": "object",
+      "required": ["fromProps", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "fromProps": {
+          "description": "This component's props that decide it, checked against the code; empty when no prop does (CSS, or another component's prop).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "note": {
+          "description": "How those props choose each value, in plain words with code in backticks; or, with no props, what does.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "differences": {
+      "description": "How a component differs from its Figma component on purpose.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "figmaName": {
+          "description": "Its Figma component's name when that isn't its code name in sentence case: a part drawn inside its family's component (CardBody is drawn in Card).",
+          "type": "string",
+          "minLength": 1
+        },
+        "propsNotInFigma": {
+          "description": "Code props Figma has no variant property for, each with why Figma doesn't need one.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "figmaVariantPropertiesNotInCode": {
+          "description": "Figma variant properties code has no prop for, by their name in Figma, each with how code chooses it.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/figmaVariantPropertyNotInCode"
+          }
+        },
+        "propsWithDifferentValuesInFigma": {
+          "description": "Code props whose values differ from their Figma variant property's on purpose, each with why.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "figmaComponent": {
+      "description": "A library component's Figma component, and its differences from it on purpose: the export's entry without its variants, with its figma-differences.json entry.",
+      "type": "object",
+      "required": ["figmaName", "figmaNodeId"],
+      "additionalProperties": false,
+      "properties": {
+        "figmaName": {
+          "description": "The component's (or component set's) name in Figma, exactly.",
+          "type": "string",
+          "minLength": 1
+        },
+        "figmaNodeId": {
+          "description": "The node id of the component or component set: its link's node-id, with - as :.",
+          "type": "string",
+          "pattern": "^\\d+:\\d+$"
+        },
+        "propsNotInFigma": {
+          "description": "Code props Figma has no variant property for, each with why Figma doesn't need one.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "figmaVariantPropertiesNotInCode": {
+          "description": "Figma variant properties code has no prop for, by their name in Figma, each with how code chooses it.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/figmaVariantPropertyNotInCode"
+          }
+        },
+        "propsWithDifferentValuesInFigma": {
+          "description": "Code props whose values differ from their Figma variant property's on purpose, each with why.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
