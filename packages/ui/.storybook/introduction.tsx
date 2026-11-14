@@ -46,9 +46,17 @@ const withCode = (text: string): ReactNode[] =>
   )
 
 // The Figma mark in its own colours; the other icons are lines in currentColor.
+/** Figma's mark is as tall as its box; drawn at 84% it reads the size of the line icons beside it. */
+const FIGMA_MARK_OPTICAL = 0.84
+
 function FigmaMark(): JSX.Element {
   return (
-    <svg className="intro-icon" viewBox="0 0 38 57" aria-hidden="true">
+    <svg
+      className="intro-icon"
+      viewBox="0 0 38 57"
+      aria-hidden="true"
+      style={{ transform: `scale(${FIGMA_MARK_OPTICAL})` }}
+    >
       <path fill="#1abcfe" d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z" />
       <path fill="#0acf83" d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z" />
       <path fill="#ff7262" d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z" />
@@ -384,7 +392,7 @@ function Pipeline(): JSX.Element {
       <div className="intro-pipeline">
         <div className="intro-pipeline-title">
           <h3>Components</h3>
-          <p>Start in code. Figma is read back to compare.</p>
+          <p>Start in code. Figma is checked against it.</p>
         </div>
         <ol className="intro-steps" aria-label="Components, from code and Figma to the command line">
           {STEPS.map(({ column, icons, items }, index) => (
