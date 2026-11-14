@@ -17,7 +17,7 @@ straight from your operating system.
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-3d6fe0?style=flat-square" />
 </p>
 
-**[Try it in your browser](https://rove.swiftsolve.net)**&emsp;**[Download](https://github.com/swiftsolve/rove/releases/latest)**
+**[Try it in your browser](https://nabilr.com/rove)**&emsp;**[Download](https://github.com/swiftsolve/rove/releases/latest)**
 
 <img src="docs/screenshots/01-home.png" width="420" alt="Rove's Home screen: the Wi-Fi connection, live traffic, connection capabilities, data usage and devices online" />
 
@@ -226,8 +226,8 @@ Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoI
 in Figma and released from [rove-tokens](https://github.com/swiftsolve/rove-tokens),
 which exports them from Figma, one way, and checks that Figma and the package
 agree. Components start in `src/ui`, and Figma mirrors them. Without Figma,
-browse the [Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/)
-and the [Components Storybook](https://rove.swiftsolve.net/storybook/).
+browse the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/)
+and the [Components Storybook](https://nabilr.com/rove/storybook/).
 
 ### Troubleshooting on Linux
 

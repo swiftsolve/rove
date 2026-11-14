@@ -11,7 +11,7 @@ import { GROUPS } from './introduction-specimens'
 
 const REPO = 'https://github.com/swiftsolve/rove'
 // The Rove Tokens Storybook, whose tokens these components are built from.
-const TOKENS = 'https://rove.swiftsolve.net/storybook/tokens/'
+const TOKENS = 'https://nabilr.com/rove/storybook/tokens/'
 
 const COMPONENTS_BY_NAME: ComponentListJson['components'] = componentList.components
 const components = Object.values(COMPONENTS_BY_NAME)
