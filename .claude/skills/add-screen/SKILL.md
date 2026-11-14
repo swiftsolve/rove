@@ -19,7 +19,7 @@ The rules a screen follows (where code goes, names and copy, styles) are in
    navigating need no code.
 3. **Copy** follows `apps/rove/src/README.md`'s Names and copy. The empty, loading and
    failed states use the library's `EmptyState`, `LoadingState` and `Banner`.
-4. **Markup** from the library (`packages/ui/catalog/components.gen.json`). Markup no
+4. **Markup** from the library (`npx rove-ui list`, then `npx rove-ui show <Name>`). Markup no
    component covers is a new one: the `add-library-component` skill.
 
 ## Done

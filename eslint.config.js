@@ -12,6 +12,8 @@ import comments from './scripts/eslint/comments.ts'
 // The app's source and the library's, the two workspaces' `src`.
 const APP = 'apps/rove/src'
 const UI = 'packages/ui/src'
+// The library's CLI, which Node runs as .ts like the scripts.
+const UI_CLI = 'packages/ui/cli'
 
 const UI_INTERNALS = {
   // A path into the package or its folder. The app's test setup is the one
@@ -120,7 +122,7 @@ export default tseslint.config(
   // the strict, type-aware sets.
   ...[...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked].map((config) => ({
     ...config,
-    files: [`${APP}/**/*.{ts,tsx}`, `${UI}/**/*.{ts,tsx}`, 'scripts/**/*.ts'],
+    files: [`${APP}/**/*.{ts,tsx}`, `${UI}/**/*.{ts,tsx}`, `${UI_CLI}/**/*.ts`, 'scripts/**/*.ts'],
   })),
   reactHooks.configs.flat.recommended,
   { ...jsxA11y.configs.strict, files: [`${APP}/**/*.tsx`, `${UI}/**/*.tsx`] },
@@ -161,7 +163,7 @@ export default tseslint.config(
   // ── The app's source, and the tooling scripts ───────────────────────────
   {
     // Node runs the scripts as .ts; scripts/tsconfig.json types them.
-    files: [`${APP}/**/*.{ts,tsx}`, `${UI}/**/*.{ts,tsx}`, 'scripts/**/*.ts'],
+    files: [`${APP}/**/*.{ts,tsx}`, `${UI}/**/*.{ts,tsx}`, `${UI_CLI}/**/*.ts`, 'scripts/**/*.ts'],
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },

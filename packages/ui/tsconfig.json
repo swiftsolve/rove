@@ -26,5 +26,5 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src", ".storybook/**/*", "*.ts"]
+  "include": ["src", "cli", ".storybook/**/*", "*.ts"]
 }

@@ -11,6 +11,9 @@
     "./testing/setup": "./src/testing/setup.ts",
     "./catalog/*": "./catalog/*"
   },
+  "bin": {
+    "rove-ui": "./cli/rove-ui.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -23,6 +26,7 @@
     "@base-ui/react": "^1.9.0",
     "@swiftsolve/rove-tokens": "^4.6.3",
     "class-variance-authority": "^0.7.1",
+    "commander": "^15.1.0",
     "ldrs": "^1.1.9",
     "lucide-react": "^1.23.0",
     "tailwind-merge": "^3.3.1",
