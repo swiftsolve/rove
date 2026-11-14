@@ -210,6 +210,16 @@ describe('rove-ui pick', () => {
     expect(withoutClipboard.notes[0]).toContain("Copy it from here: import { Button } from '@swiftsolve/rove-ui'")
   })
 
+  it('copies the component as Markdown, or prints it when there is no clipboard', async () => {
+    const terminal = { isInteractive: true, pickedNames: ['Button'], chosenActions: ['copyMarkdown' as const, null] }
+    const withClipboard = await runCli(['pick'], { ...terminal, hasClipboard: true })
+    expect(withClipboard.copiedTexts[0]?.startsWith('# Button\n')).toBe(true)
+    expect(withClipboard.printed).toBe('')
+    const withoutClipboard = await runCli(['pick'], { ...terminal, hasClipboard: false })
+    expect(withoutClipboard.printed.startsWith('# Button\n')).toBe(true)
+    expect(withoutClipboard.notes[0]).toContain('the Markdown is above')
+  })
+
   it('opens the Docs page and the Figma component', async () => {
     const { openedUrls } = await runCli(['pick'], {
       isInteractive: true,

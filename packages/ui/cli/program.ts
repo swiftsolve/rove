@@ -39,7 +39,7 @@ export const PICK_MIN_COLUMNS = 40
 export const PICK_MIN_ROWS = 16
 
 /** What `pick` can do with the component picked. */
-export type PickActionId = 'show' | 'copyImport' | 'openDocs' | 'openFigma' | 'pickAnother'
+export type PickActionId = 'show' | 'copyMarkdown' | 'copyImport' | 'openDocs' | 'openFigma' | 'pickAnother'
 
 /** One choice in the menu after a pick, with a hint beside it when it helps. */
 export type PickAction = { id: PickActionId; label: string; hint?: string }
@@ -48,6 +48,7 @@ export type PickAction = { id: PickActionId; label: string; hint?: string }
 export function pickActions(catalog: ComponentListJson, component: NamedComponent): PickAction[] {
   const actions: PickAction[] = [
     { id: 'show', label: 'Show its props and usage guide', hint: `rove-ui show ${component.name}` },
+    { id: 'copyMarkdown', label: 'Copy as Markdown', hint: 'to paste into an agent or a PR' },
     { id: 'copyImport', label: 'Copy its import', hint: importLine(component) },
   ]
   if (storybookDocsUrl(component) !== null) {
@@ -176,6 +177,15 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
   async function runPickAction(actionId: PickActionId, component: NamedComponent): Promise<boolean> {
     if (actionId === 'show') {
       writeComponent(component)
+    } else if (actionId === 'copyMarkdown') {
+      const markdown = componentDetailsMarkdown(catalog, component)
+      const isCopied = await terminal.copyToClipboard(markdown)
+      if (isCopied) {
+        terminal.writeNote(`Copied ${component.name} as Markdown.`)
+      } else {
+        terminal.write(`${markdown}\n`)
+        terminal.writeNote('No clipboard tool found (wl-copy, xclip), so the Markdown is above.')
+      }
     } else if (actionId === 'copyImport') {
       const line = importLine(component)
       const isCopied = await terminal.copyToClipboard(line)

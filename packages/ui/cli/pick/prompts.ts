@@ -89,7 +89,8 @@ export async function askForComponentName(components: NamedComponent[], isFirstP
 /** Asks what to do with the picked component; null when the person is done (Escape or Ctrl+C). */
 export async function askForAction(componentName: string, actions: PickAction[]): Promise<PickActionId | null> {
   const actionId = await select({
-    message: `${styleText('bold', componentName)}: what next? ${styleText('gray', 'Esc quits')}`,
+    // The trailing line break leaves a blank guide line under the question, as the list prompt has.
+    message: `${styleText('bold', componentName)}: what next? ${styleText('gray', 'Esc quits')}\n`,
     options: actions.map((action) => ({ value: action.id, label: action.label, hint: action.hint })),
   })
   if (isCancel(actionId)) {
