@@ -1,11 +1,11 @@
 /**
  * Build the tokens in these steps:
  *
- *   1. Figma export -> DTCG files in dist/tokens/ (scripts/tokens/figma-to-dtcg.mjs)
- *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.mjs)
- *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.mjs)
- *   4. DTCG -> dist/tailwind-theme.css, a Tailwind v4 theme of the tokens (scripts/tokens/tailwind-theme.mjs)
- *   5. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.mjs)
+ *   1. Figma export -> DTCG files in dist/tokens/ (scripts/tokens/figma-to-dtcg.ts)
+ *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.ts)
+ *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.ts)
+ *   4. DTCG -> dist/tailwind-theme.css, a Tailwind v4 theme of the tokens (scripts/tokens/tailwind-theme.ts)
+ *   5. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.ts)
  *
  * so the CSS is generated from the same files other tools read.
  *
@@ -21,21 +21,30 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { writeFrontMatter } from './design-front-matter.mjs'
-import { buildCss } from './dtcg-to-css.mjs'
-import { buildTextStylesCss } from './dtcg-to-text-styles.mjs'
-import { writeDtcg } from './figma-to-dtcg.mjs'
-import { cssColor, slug } from './shared.mjs'
-import { writeTailwindTheme } from './tailwind-theme.mjs'
+import { writeFrontMatter } from './design-front-matter.ts'
+import { buildCss } from './dtcg-to-css.ts'
+import { buildTextStylesCss } from './dtcg-to-text-styles.ts'
+import { aliasOf, valueInMode, writeDtcg } from './figma-to-dtcg.ts'
+import { cssColor, slug } from './shared.ts'
+import { writeTailwindTheme } from './tailwind-theme.ts'
+import type {
+  CodeTokens,
+  FigmaColor,
+  FigmaEffectStyle,
+  FigmaEffectStyles,
+  FigmaTextStyles,
+  FigmaVariable,
+  FigmaVariables,
+} from './types.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const readJson = async (path) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8'))
+const readJson = async <T>(path: string) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8')) as T
 
-const figmaVariables = await readJson('src/figma/variables.json')
-const textStyles = await readJson('src/figma/text-styles.json')
-const effectStyles = await readJson('src/figma/effect-styles.json')
-const codeTokens = await readJson('src/code-tokens.json')
-const pkg = await readJson('package.json')
+const figmaVariables = await readJson<FigmaVariables>('src/figma/variables.json')
+const textStyles = await readJson<FigmaTextStyles>('src/figma/text-styles.json')
+const effectStyles = await readJson<FigmaEffectStyles>('src/figma/effect-styles.json')
+const codeTokens = await readJson<CodeTokens>('src/code-tokens.json')
+const pkg = await readJson<{ name: string; version: string }>('package.json')
 
 for (const v of figmaVariables.variables) {
   const expected = `var(--${v.name.replace(/\//g, '-')})`
@@ -51,27 +60,25 @@ if (undescribed.length) throw new Error(`No description in Figma: ${undescribed.
 
 const variableByName = new Map(figmaVariables.variables.map((v) => [v.name, v]))
 
-/** A variable's value in a mode, or in its only mode for a single-mode collection. */
-const valueInMode = (v, mode) => v.values[mode] ?? Object.values(v.values)[0]
-
 /** A Figma variable's raw value in a mode, following aliases, as CSS. */
-function rawValue(v, mode) {
+function rawValue(v: FigmaVariable, mode: string): string {
   let value = valueInMode(v, mode)
   // Eight hops is far more than any real chain, so more means a loop.
-  for (let hops = 0; value?.alias; hops++) {
+  for (let hops = 0, alias = aliasOf(value); alias; hops++, alias = aliasOf(value)) {
     if (hops === 8) throw new Error(`${v.name}: its aliases go round in a loop`)
-    const target = variableByName.get(value.alias)
-    if (!target) throw new Error(`${v.name}: alias to unknown Figma variable ${value.alias}`)
+    const target = variableByName.get(alias)
+    if (!target) throw new Error(`${v.name}: alias to unknown Figma variable ${alias}`)
     value = valueInMode(target, mode)
   }
-  if (v.type !== 'COLOR') return value
-  const { r, g, b, a } = value
+  if (typeof value !== 'object') return String(value)
+  if (v.type !== 'COLOR') throw new Error(`${v.name}: code-tokens.json can't pull in a ${v.type} value`)
+  const { r, g, b, a } = value as FigmaColor
   return cssColor([r, g, b], a)
 }
 
 /** A code-tokens.json template with `{figma/name}` filled in for a mode. */
-function interpolate(template, mode) {
-  return template.replace(/\{([\w/-]+)\}/g, (_, name) => {
+function interpolate(template: string, mode: string) {
+  return template.replace(/\{([\w/-]+)\}/g, (_, name: string) => {
     const v = variableByName.get(name)
     if (!v) throw new Error(`code-tokens.json references unknown Figma variable ${name}`)
     return rawValue(v, mode)
@@ -79,13 +86,13 @@ function interpolate(template, mode) {
 }
 
 /** A length as CSS: 0 bare, anything else in px. */
-const px = (n) => (n === 0 ? '0' : `${n}px`)
+const px = (n: number) => (n === 0 ? '0' : `${n}px`)
 
 /**
  * A Shadow/* effect style as a shadow token: `Shadow/Panel` is `--shadow-panel`,
  * each layer `x y blur [spread] {colour variable}`, as the build reads code tokens.
  */
-function shadowToken({ name, layers }) {
+function shadowToken({ name, layers }: FigmaEffectStyle): [string, string] {
   const cssName = `--shadow-${name
     .replace(/^Shadow\//, '')
     .toLowerCase()
@@ -122,12 +129,15 @@ const { written, cssOnly } = await writeDtcg({
   dir: tokensDir,
   variables: figmaVariables.variables,
   textStyles: textStyles.styles,
-  code: { ...codeTokens, tokens: { ...shadows, ...codeTokens.tokens } },
-  figmaOverride: (v, mode) => codeTokens.figma[v.name] && interpolate(codeTokens.figma[v.name], mode),
+  codeTokens: { ...shadows, ...codeTokens.tokens },
+  figmaOverride: (v, mode) => {
+    const template = codeTokens.figma[v.name]
+    return template ? interpolate(template, mode) : undefined
+  },
 })
 console.log(`dist/tokens/: ${written.join(', ')}`)
 
-const header = `/* ${pkg.name} ${pkg.version}. Generated from Figma by scripts/tokens/build.mjs; do not edit. */`
+const header = `/* ${pkg.name} ${pkg.version}. Generated from Figma by scripts/tokens/build.ts; do not edit. */`
 const { css, count, overrides } = await buildCss({ dir: tokensDir, header, cssOnly })
 // package.json's `exports` maps `@swiftsolve/rove-tokens/tokens.css` here.
 await writeFile(resolve(DIST, 'tokens.css'), css)

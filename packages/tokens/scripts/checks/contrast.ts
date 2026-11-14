@@ -13,11 +13,18 @@
  * (docs/rationale.md, Text and Status, says how the others were picked), export
  * and build.
  *
- *   npm run build && node scripts/checks/contrast.mjs
+ *   npm run build && node scripts/checks/contrast.ts
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+/** A colour as [r, g, b, a]: r, g and b 0–255, a 0–1. */
+type Rgba = [number, number, number, number]
+/** A theme's declarations, by name without --. */
+type Theme = Record<string, string>
+/** A background's opaque colour in a theme. */
+type Backgrounds = Record<string, (theme: Theme) => Rgba>
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const css = await readFile(resolve(ROOT, 'dist/tokens.css'), 'utf8')
@@ -26,83 +33,97 @@ const css = await readFile(resolve(ROOT, 'dist/tokens.css'), 'utf8')
 const WORDS = 4.5
 const GRAPHICS = 3
 
-const ruleBody = (selector) => {
+const ruleBody = (selector: string) => {
   const start = css.indexOf(`${selector} {`)
   if (start < 0) throw new Error(`dist/tokens.css has no ${selector} block: run npm run build`)
   return css.slice(start, css.indexOf('\n}', start))
 }
-const declarations = (text) =>
-  Object.fromEntries([...text.matchAll(/^\s*--([\w-]+):\s*([^;]+);/gm)].map(([, name, value]) => [name, value.trim()]))
+const declarations = (text: string): Theme =>
+  Object.fromEntries(
+    [...text.matchAll(/^\s*--([\w-]+):\s*([^;]+);/gm)].map(([, name = '', value = '']) => [name, value.trim()]),
+  )
 const dark = declarations(ruleBody(':root'))
-const THEMES = { Dark: dark, Light: { ...dark, ...declarations(ruleBody(':root.theme-light')) } }
+const THEMES: Record<string, Theme> = { Dark: dark, Light: { ...dark, ...declarations(ruleBody(':root.theme-light')) } }
 
 /** A token's colour as [r, g, b, a], r g b 0–255, following var() references. */
-function colour(theme, name) {
+function colour(theme: Theme, name: string): Rgba {
   let value = theme[name]
-  for (let match; (match = /^var\(--([\w-]+)\)$/.exec(value));) value = theme[match[1]]
-  const hex = /^#([0-9a-f]{6})$/i.exec(value ?? '')
-  if (hex) return [0, 2, 4].map((i) => parseInt(hex[1].slice(i, i + 2), 16)).concat(1)
-  const rgba = /^rgba?\(([^)]+)\)$/.exec(value ?? '')
-  // rgb() has no alpha, so add 1 and keep the first four: rgba() keeps its own.
-  if (rgba) return rgba[1].split(',').map(Number).concat(1).slice(0, 4)
+  for (let match; (match = /^var\(--([\w-]+)\)$/.exec(value ?? ''));) value = theme[match[1] ?? '']
+  const hex = /^#([0-9a-f]{6})$/i.exec(value ?? '')?.[1]
+  const hexChannel = (start: number) => parseInt(hex?.slice(start, start + 2) ?? '', 16)
+  if (hex) return [hexChannel(0), hexChannel(2), hexChannel(4), 1]
+  const rgba = /^rgba?\(([^)]+)\)$/.exec(value ?? '')?.[1]
+  // rgb() has no alpha, so it's 1: rgba() keeps its own.
+  if (rgba) {
+    const [r = 0, g = 0, b = 0, a = 1] = rgba.split(',').map(Number)
+    return [r, g, b, a]
+  }
   throw new Error(`--${name} isn't a colour this check reads: ${value}`)
 }
 /** A see-through colour laid over an opaque one, as the opaque colour it shows. */
-const over = ([r, g, b, a], below) => [r, g, b].map((c, i) => c * a + below[i] * (1 - a)).concat(1)
-const withAlpha = ([r, g, b], a) => [r, g, b, a]
+const over = ([r, g, b, a]: Rgba, below: Rgba): Rgba => [
+  r * a + below[0] * (1 - a),
+  g * a + below[1] * (1 - a),
+  b * a + below[2] * (1 - a),
+  1,
+]
+const withAlpha = ([r, g, b]: Rgba, a: number): Rgba => [r, g, b, a]
 /** WCAG's relative luminance. */
-const luminance = (rgb) =>
+const LUMINANCE_WEIGHTS = [0.2126, 0.7152, 0.0722]
+const luminance = (rgb: Rgba) =>
   rgb
     .slice(0, 3)
     .map((c) => c / 255)
     .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
-    .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0)
+    .reduce((sum, c, i) => sum + c * (LUMINANCE_WEIGHTS[i] ?? 0), 0)
 /** WCAG's contrast ratio, lighter over darker. */
-const contrastRatio = (a, b) => {
-  const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+const contrastRatio = (a: Rgba, b: Rgba) => {
+  const [lighter = 0, darker = 0] = [luminance(a), luminance(b)].sort((x, y) => y - x)
   return (lighter + 0.05) / (darker + 0.05)
 }
 
 // What text and graphics sit on: the five opaque backgrounds, and a hovered row
 // (the hover overlay on a card and on the backdrop).
-const BACKGROUNDS = {
-  'bg-base': (t) => colour(t, 'bg-base'),
-  'bg-surface': (t) => colour(t, 'bg-surface'),
-  'bg-inset': (t) => colour(t, 'bg-inset'),
-  'bg-popover': (t) => colour(t, 'bg-popover'),
-  'bg-chrome': (t) => colour(t, 'bg-chrome'),
-  'overlay-hover on bg-surface': (t) => over(colour(t, 'overlay-hover'), colour(t, 'bg-surface')),
-  'overlay-hover on bg-base': (t) => over(colour(t, 'overlay-hover'), colour(t, 'bg-base')),
+const BACKGROUNDS: Backgrounds = {
+  'bg-base': (t: Theme) => colour(t, 'bg-base'),
+  'bg-surface': (t: Theme) => colour(t, 'bg-surface'),
+  'bg-inset': (t: Theme) => colour(t, 'bg-inset'),
+  'bg-popover': (t: Theme) => colour(t, 'bg-popover'),
+  'bg-chrome': (t: Theme) => colour(t, 'bg-chrome'),
+  'overlay-hover on bg-surface': (t: Theme) => over(colour(t, 'overlay-hover'), colour(t, 'bg-surface')),
+  'overlay-hover on bg-base': (t: Theme) => over(colour(t, 'overlay-hover'), colour(t, 'bg-base')),
 }
-const HOVER = { 'bg-hover': (t) => colour(t, 'bg-hover') }
+const HOVER: Backgrounds = { 'bg-hover': (t: Theme) => colour(t, 'bg-hover') }
 // Each background is a function of the theme, giving its opaque colour.
-const tintOf = (name, below) => (t) =>
-  over(withAlpha(colour(t, name), parseFloat(t['opacity-tint-md']) / 100), colour(t, below))
-const onTint = (name) => ({
+const tintOf = (name: string, below: string) => (t: Theme) =>
+  over(withAlpha(colour(t, name), parseFloat(t['opacity-tint-md'] ?? '') / 100), colour(t, below))
+const onTint = (name: string): Backgrounds => ({
   [`${name} tint on bg-base`]: tintOf(name, 'bg-base'),
   [`${name} tint on bg-surface`]: tintOf(name, 'bg-surface'),
 })
-const solid = (name) => ({ [name]: (t) => colour(t, name) })
+const solid = (name: string): Backgrounds => ({ [name]: (t: Theme) => colour(t, name) })
 
 const STATUSES = ['positive', 'good', 'warning', 'poor', 'negative']
 const DEVICE_GROUPS = ['network', 'personal', 'entertainment', 'smart-home']
-const PAIRS = [
+/** A foreground, every background it sits on, and the ratio it must clear. */
+type Pair = [foreground: string, backgrounds: Backgrounds, minimum: number]
+const PAIRS: Pair[] = [
   // Words. A hovered control turns its label --text-primary, so --text-tertiary
   // meets --bg-hover only as an icon, below.
-  ...['text-primary', 'text-secondary'].map((fg) => [fg, { ...BACKGROUNDS, ...HOVER }, WORDS]),
+  ...['text-primary', 'text-secondary'].map((fg): Pair => [fg, { ...BACKGROUNDS, ...HOVER }, WORDS]),
   ['text-tertiary', BACKGROUNDS, WORDS],
   [
     'text-accent',
     {
       ...BACKGROUNDS,
       ...HOVER,
-      'accent-muted on bg-surface': (t) => over(colour(t, 'accent-muted'), colour(t, 'bg-surface')),
-      'accent-muted on bg-base': (t) => over(colour(t, 'accent-muted'), colour(t, 'bg-base')),
+      'accent-muted on bg-surface': (t: Theme) => over(colour(t, 'accent-muted'), colour(t, 'bg-surface')),
+      'accent-muted on bg-base': (t: Theme) => over(colour(t, 'accent-muted'), colour(t, 'bg-base')),
     },
     WORDS,
   ],
   // Status words, also on a badge: a tint of their own hue.
-  ...STATUSES.map((s) => [`text-${s}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`status-${s}`) }, WORDS]),
+  ...STATUSES.map((s): Pair => [`text-${s}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`status-${s}`) }, WORDS]),
   // Labels and icons on solids, resting and hovered.
   [
     'text-on-solid',
@@ -116,17 +137,17 @@ const PAIRS = [
   ],
   // Graphics: icons, bars, dots, chart lines and the focus ring.
   ['text-tertiary', HOVER, GRAPHICS],
-  ...STATUSES.map((s) => [`status-${s}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`status-${s}`) }, GRAPHICS]),
+  ...STATUSES.map((s): Pair => [`status-${s}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`status-${s}`) }, GRAPHICS]),
   // Device icons, on their own tile's tint as well.
-  ...DEVICE_GROUPS.map((g) => [`device-${g}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`device-${g}`) }, GRAPHICS]),
-  ...['accent-default', 'accent-hover', 'accent-press', 'series-down', 'series-up', 'focus-ring'].map((fg) => [
+  ...DEVICE_GROUPS.map((g): Pair => [`device-${g}`, { ...BACKGROUNDS, ...HOVER, ...onTint(`device-${g}`) }, GRAPHICS]),
+  ...['accent-default', 'accent-hover', 'accent-press', 'series-down', 'series-up', 'focus-ring'].map((fg): Pair => [
     fg,
     { ...BACKGROUNDS, ...HOVER },
     GRAPHICS,
   ]),
 ]
 
-const failures = []
+const failures: string[] = []
 let checked = 0
 for (const [themeName, theme] of Object.entries(THEMES)) {
   for (const [fg, backgrounds, minimum] of PAIRS) {

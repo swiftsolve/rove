@@ -12,18 +12,28 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-import { EXTENSION } from './shared.mjs'
+import { EXTENSION } from './shared.ts'
+import type { DtcgToken } from './types.ts'
+
+/** A text style's token as figma-to-dtcg.ts writes it. */
+type TextStyleToken = DtcgToken & {
+  $value: { fontFamily: string }
+  $extensions?: Record<string, { textCase?: string }>
+}
 
 /** Figma's text case as CSS text-transform. */
-const TEXT_TRANSFORMS = { UPPER: 'uppercase', LOWER: 'lowercase', TITLE: 'capitalize' }
+const TEXT_TRANSFORMS: Record<string, string> = { UPPER: 'uppercase', LOWER: 'lowercase', TITLE: 'capitalize' }
 
-export async function buildTextStylesCss({ dir, header }) {
-  const tokens = JSON.parse(await readFile(resolve(dir, 'text-styles.tokens.json'), 'utf8')).type
+export async function buildTextStylesCss({ dir, header }: { dir: string; header: string }) {
+  const file = JSON.parse(await readFile(resolve(dir, 'text-styles.tokens.json'), 'utf8')) as {
+    type: Record<string, TextStyleToken>
+  }
+  const tokens = file.type
   const rules = Object.entries(tokens).map(([slug, token]) => {
     const prefix = `--type-${slug}`
     // {font-family.sans} is --font-family-sans.
     const family = `--${token.$value.fontFamily.slice(1, -1).replace(/\./g, '-')}`
-    const textCase = TEXT_TRANSFORMS[token.$extensions?.[EXTENSION]?.textCase]
+    const textCase = TEXT_TRANSFORMS[token.$extensions?.[EXTENSION]?.textCase ?? '']
     const use = token.$description?.replace(/ Code:.*$/, '')
     return [
       ...(use ? [`  /* ${use} */`] : []),

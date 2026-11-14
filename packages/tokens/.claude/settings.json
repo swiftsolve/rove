@@ -7,7 +7,7 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/claude/guard-bash.mjs\"" }]
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/claude/guard-bash.ts\"" }]
       }
     ],
     "PostToolUse": [
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/claude/lint-edited-file.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/claude/lint-edited-file.ts\"",
             "timeout": 60
           }
         ]

@@ -17,8 +17,10 @@
  */
 import { writeFile } from 'node:fs/promises'
 
+import type { FigmaTextStyle, FigmaVariable } from './types.ts'
+
 /** A colour variable's name in the theme's `--color-*` namespace. */
-function colourName(figmaName) {
+function colourName(figmaName: string) {
   const [group, ...rest] = figmaName.split('/')
   const name = rest.join('-')
   if (group === 'bg') return `--color-${name}`
@@ -30,26 +32,43 @@ function colourName(figmaName) {
 }
 
 /** Each theme namespace, the token groups that fill it, and how a token's name maps. */
-const SCALES = [
-  ['Spacing (p-*, gap-*, m-*), plus 0 for resets and 1px for hairlines', 'spacing', (n) => `--spacing-${n}`],
-  ['Font families (font-sans, font-display)', 'font-family', (n) => `--font-${n}`],
-  ['Font sizes (text-*)', 'font-size', (n) => `--text-${n}`],
-  ['Font weights (font-*)', 'weight', (n) => `--font-weight-${n}`],
-  ['Corners (rounded-*)', 'radius', (n) => `--radius-${n}`],
+const SCALES: [comment: string, group: string, themeName: (name: string) => string][] = [
+  ['Spacing (p-*, gap-*, m-*), plus 0 for resets and 1px for hairlines', 'spacing', (n: string) => `--spacing-${n}`],
+  ['Font families (font-sans, font-display)', 'font-family', (n: string) => `--font-${n}`],
+  ['Font sizes (text-*)', 'font-size', (n: string) => `--text-${n}`],
+  ['Font weights (font-*)', 'weight', (n: string) => `--font-weight-${n}`],
+  ['Corners (rounded-*)', 'radius', (n: string) => `--radius-${n}`],
 ]
 
-export async function writeTailwindTheme({ path, header, variables, textStyles, slugOf, shadows }) {
-  const cssVariableName = (v) => `--${v.name.replace(/\//g, '-')}`
+type WriteTailwindThemeOptions = {
+  path: string
+  header: string
+  variables: FigmaVariable[]
+  textStyles: FigmaTextStyle[]
+  slugOf: (name: string) => string
+  /** The shadow tokens' CSS names, `--shadow-panel`. */
+  shadows: string[]
+}
+
+export async function writeTailwindTheme({
+  path,
+  header,
+  variables,
+  textStyles,
+  slugOf,
+  shadows,
+}: WriteTailwindThemeOptions) {
+  const cssVariableName = (v: FigmaVariable) => `--${v.name.replace(/\//g, '-')}`
   const cssVariables = variables.filter((v) => v.code)
-  const lines = []
-  const valueByThemeName = new Map()
-  const addThemeVariable = (name, value) => {
+  const lines: string[] = []
+  const valueByThemeName = new Map<string, string>()
+  const addThemeVariable = (name: string, value: string) => {
     if (valueByThemeName.has(name))
       throw new Error(`tailwind-theme.css: ${name} is both ${valueByThemeName.get(name)} and ${value}`)
     valueByThemeName.set(name, value)
     lines.push(`  ${name}: ${value};`)
   }
-  const startSection = (comment) => lines.push('', `  /* ${comment} */`)
+  const startSection = (comment: string) => lines.push('', `  /* ${comment} */`)
 
   for (const [comment, group, themeName] of SCALES) {
     startSection(comment)

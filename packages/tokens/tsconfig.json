@@ -1,0 +1,28 @@
+{
+  // The scripts and the plugin's test run as .ts straight under Node (>= 24),
+  // which strips the types without checking them: this config is what checks
+  // them (`npm run typecheck`). Only syntax Node can erase is allowed, and an
+  // import names the .ts file.
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["scripts/**/*.ts", "figma-plugin/**/*.ts"]
+}

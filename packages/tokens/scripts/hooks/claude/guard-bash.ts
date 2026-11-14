@@ -12,7 +12,7 @@
  * Wired up in .claude/settings.json; reads the hook's JSON on stdin. The same
  * file is in Rove; keep the two alike.
  *
- *   node scripts/hooks/claude/guard-bash.mjs --test   # check the cases below
+ *   node scripts/hooks/claude/guard-bash.ts --test   # check the cases below
  */
 import { readFileSync } from 'node:fs'
 
@@ -21,10 +21,10 @@ const FORCE_PUSH = 'force-pushes over the remote; use --force-with-lease if you 
 const HARD_RESET = "discards uncommitted work, other sessions' included"
 
 /** The command with heredoc bodies and quoted text gone; a quoted lone flag stays. */
-function stripText(command) {
+function stripText(command: string): string {
   const withoutHeredocs = command.replace(
     /<<-?\s*(['"]?)(\w+)\1([^\n]*)\n[\s\S]*?\n\s*\2\s*(?=\n|$)/g,
-    (_, _quote, _tag, rest) => rest,
+    (_match, _quote, _tag, rest: string) => rest,
   )
   return withoutHeredocs.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, (quoted) => {
     const text = quoted.slice(1, -1)
@@ -32,19 +32,23 @@ function stripText(command) {
   })
 }
 
+type GitCall = { subcommand: string | undefined; args: string[] }
+
 /** A git command's subcommand and the words after it, or null for any other command. */
-function gitCall(words) {
+function gitCall(words: string[]): GitCall | null {
   let i = 0
   // Leading assignments and wrappers: `GIT_DIR=x git …`, `env git …`.
-  while (i < words.length && (/^\w+=/.test(words[i]) || ['env', 'command', 'nohup', 'time'].includes(words[i]))) i++
+  const isWrapper = (word: string) => /^\w+=/.test(word) || ['env', 'command', 'nohup', 'time'].includes(word)
+  while (i < words.length && isWrapper(words[i] ?? '')) i++
   if (words[i] !== 'git') return null
   i++
   // Options before the subcommand: `git -C dir`, `git -c key=value`.
-  while (i < words.length && words[i].startsWith('-')) i += ['-C', '-c'].includes(words[i]) ? 2 : 1
+  const isOption = (word: string | undefined) => word?.startsWith('-') ?? false
+  while (isOption(words[i])) i += ['-C', '-c'].includes(words[i] ?? '') ? 2 : 1
   return { subcommand: words[i], args: words.slice(i + 1) }
 }
 
-function reasonFor({ subcommand, args }) {
+function reasonFor({ subcommand, args }: GitCall): string | null {
   const flags = args.filter((word) => word.startsWith('-'))
   if (flags.includes('--no-verify')) return SKIPS_HOOKS
   if (subcommand === 'commit' && flags.some((flag) => /^-[a-zA-Z]*n[a-zA-Z]*$/.test(flag))) return SKIPS_HOOKS
@@ -58,7 +62,7 @@ function reasonFor({ subcommand, args }) {
   return null
 }
 
-export function check(command) {
+export function check(command: string): string | null {
   for (const part of stripText(command).split(/&&|\|\||[;|&\n()`]|\$\(/)) {
     const call = gitCall(part.trim().split(/\s+/))
     const reason = call && reasonFor(call)
@@ -68,7 +72,7 @@ export function check(command) {
 }
 
 if (process.argv.includes('--test')) {
-  const cases = [
+  const cases: [command: string, expected: string | null][] = [
     ['git commit --no-verify -m x', SKIPS_HOOKS],
     ['git commit -nm x', SKIPS_HOOKS],
     ['cd repo && git -C . commit -am x --no-verify', SKIPS_HOOKS],
@@ -94,7 +98,8 @@ if (process.argv.includes('--test')) {
   process.exit(failures.length > 0 ? 1 : 0)
 }
 
-const input = JSON.parse(readFileSync(0, 'utf8'))
+type HookInput = { tool_input?: { command?: string } }
+const input = JSON.parse(readFileSync(0, 'utf8')) as HookInput
 const reason = check(input.tool_input?.command ?? '')
 if (reason) {
   console.error(`Blocked: this ${reason}.`)

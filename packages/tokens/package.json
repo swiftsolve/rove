@@ -21,14 +21,15 @@
     "DESIGN.md"
   ],
   "scripts": {
-    "build": "node scripts/tokens/build.mjs",
+    "build": "node scripts/tokens/build.ts",
+    "typecheck": "tsc -p .",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run build && npm run lint && node scripts/checks/contrast.mjs && node scripts/checks/design-md-format.mjs && npm test",
-    "test": "node --test figma-plugin/code.test.mjs",
-    "figma:export": "node scripts/figma/use-figma.mjs export",
-    "figma:save": "node scripts/figma/use-figma.mjs save",
-    "figma:check": "node scripts/figma/use-figma.mjs check",
+    "check": "npm run build && npm run typecheck && npm run lint && node scripts/checks/contrast.ts && node scripts/checks/design-md-format.ts && npm test",
+    "test": "node --test figma-plugin/code.test.ts",
+    "figma:export": "node scripts/figma/use-figma.ts export",
+    "figma:save": "node scripts/figma/use-figma.ts save",
+    "figma:check": "node scripts/figma/use-figma.ts check",
     "prepare": "git config core.hooksPath scripts/hooks/git || true; npm run build",
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build"
@@ -45,6 +46,7 @@
     "@google/design.md": "^0.4.0",
     "@storybook/addon-docs": "^10.6.5",
     "@storybook/react-vite": "^10.6.5",
+    "@types/node": "^24.19.2",
     "@vitejs/plugin-react": "^5.2.0",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -55,6 +57,8 @@
     "react-dom": "^18.3.1",
     "storybook": "^10.6.5",
     "style-dictionary": "^5.7.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
     "vite": "^7.3.7"
   }
 }
