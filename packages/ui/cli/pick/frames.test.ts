@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { namedComponents, readCatalog } from '../catalog/catalog.ts'
 import { pickActions } from '../program.ts'
-import { listFrame, menuFrame } from './frames.ts'
+import { listFrame, listWindow, menuFrame } from './frames.ts'
 import { rankComponents } from './match.ts'
 
 // Vitest's stdout isn't a terminal, so `styleText` leaves the frames uncoloured and readable here.
@@ -27,6 +27,21 @@ describe('listFrame', () => {
     expect(lines[4]).toMatch(/^│ {2}● Card {2,}The panel surface/)
     expect(lines[5]).toMatch(/^│ {2}○ CardBody /)
     expect(lines.at(-2)).toBe('│  ↑/↓ move   Enter pick   Type to search by name or group')
+  })
+
+  it('counts the rows the window hides instead of an ellipsis', () => {
+    const frame = listFrame({
+      state: 'active',
+      question: 'Which one?',
+      typedTextWithCursor: '',
+      components,
+      cursor: 0,
+      focusedName: 'Button',
+      columns: 100,
+      rows: 40,
+    })
+    expect(frame).toContain(`│  ↓ ${components.length - 11} more`)
+    expect(frame).not.toContain('...')
   })
 
   it('keeps every row within the terminal width', () => {
@@ -70,6 +85,27 @@ describe('listFrame', () => {
       rows: 40,
     })
     expect(frame).toBe('│\n◇  Which one?\n│  Button')
+  })
+})
+
+describe('listWindow', () => {
+  it('shows the whole list when it fits', () => {
+    expect(listWindow(5, 2, 12)).toEqual({ start: 0, end: 5 })
+  })
+
+  it('leaves a line for the count below at the top of a long list', () => {
+    expect(listWindow(54, 0, 12)).toEqual({ start: 0, end: 11 })
+  })
+
+  it('leaves lines for both counts in the middle, the cursor in between', () => {
+    const { start, end } = listWindow(54, 30, 12)
+    expect(end - start).toBe(10)
+    expect(start).toBeLessThanOrEqual(30)
+    expect(end).toBeGreaterThan(30)
+  })
+
+  it('leaves a line for the count above at the bottom', () => {
+    expect(listWindow(54, 53, 12)).toEqual({ start: 43, end: 54 })
   })
 })
 

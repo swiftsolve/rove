@@ -7,7 +7,6 @@
  */
 import type { State } from '@clack/core'
 import {
-  limitOptions,
   S_BAR,
   S_BAR_END,
   S_BAR_START,
@@ -34,6 +33,9 @@ const LIST_FRAME_EXTRA_ROWS = 8
 
 /** The most rows a list shows before it scrolls, however tall the terminal. */
 const MAX_LIST_ROWS = 12
+
+/** The fewest rows a list keeps, even on a short terminal: one component and both counts. */
+const MIN_LIST_ROWS = 3
 
 /** Columns a list row spends before its label: the guide line, the dot and their gaps. */
 const LIST_ROW_PREFIX_WIDTH = ROW_PREFIX.length + 2
@@ -99,6 +101,52 @@ export type ListFrameInput = {
   rows: number
 }
 
+/** The part of a list a frame shows: rows `start` up to (not including) `end`. */
+export type ListWindow = { start: number; end: number }
+
+/** Where a window of `itemRows` rows starts so the cursor sits in its middle, kept inside the list. */
+function centredStart(cursor: number, itemRows: number, total: number): number {
+  const start = cursor - Math.floor(itemRows / 2)
+  return Math.min(Math.max(start, 0), total - itemRows)
+}
+
+/**
+ * Which rows a list of `total` shows in `rows` lines, the cursor among them.
+ * A list that doesn't fit gives a line to each "N more" count it needs, above
+ * or below, so the window shrinks by one or two.
+ */
+export function listWindow(total: number, cursor: number, rows: number): ListWindow {
+  if (total <= rows) {
+    return { start: 0, end: total }
+  }
+  let itemRows = Math.max(1, rows - 1)
+  let start = centredStart(cursor, itemRows, total)
+  const needsBothCounts = start > 0 && start + itemRows < total
+  if (needsBothCounts) {
+    itemRows = Math.max(1, rows - 2)
+    start = centredStart(cursor, itemRows, total)
+  }
+  return { start, end: start + itemRows }
+}
+
+/** The list's rows for this window, with a count of those hidden above and below. */
+function windowedRows<Item>(
+  items: Item[],
+  cursor: number,
+  rows: number,
+  rowText: (item: Item, isFocused: boolean) => string,
+): string[] {
+  const { start, end } = listWindow(items.length, cursor, rows)
+  const visibleRows = items.slice(start, end).map((item, index) => rowText(item, start + index === cursor))
+  if (start > 0) {
+    visibleRows.unshift(quietText(`↑ ${start} more`))
+  }
+  if (end < items.length) {
+    visibleRows.push(quietText(`↓ ${items.length - end} more`))
+  }
+  return visibleRows
+}
+
 /** One row of the component list: dot, name in a column, first sentence cut to fit. */
 function componentRowText(
   component: NamedComponent,
@@ -121,17 +169,13 @@ export function listFrame(input: ListFrameInput): string {
   }
   const nameWidth = Math.max(...input.components.map((component) => component.name.length), 0) + 2
   const descriptionWidth = input.columns - LIST_ROW_PREFIX_WIDTH - nameWidth
+  const listRows = Math.max(MIN_LIST_ROWS, Math.min(MAX_LIST_ROWS, input.rows - LIST_FRAME_EXTRA_ROWS))
   const rows =
     input.components.length === 0
       ? [quietText('No component matches. Backspace to widen the search.')]
-      : limitOptions({
-          cursor: input.cursor,
-          options: input.components,
-          maxItems: Math.min(MAX_LIST_ROWS, input.rows - LIST_FRAME_EXTRA_ROWS),
-          columnPadding: ROW_PREFIX.length,
-          rowPadding: LIST_FRAME_EXTRA_ROWS,
-          style: (component, isFocused) => componentRowText(component, isFocused, nameWidth, descriptionWidth),
-        })
+      : windowedRows(input.components, input.cursor, listRows, (component, isFocused) =>
+          componentRowText(component, isFocused, nameWidth, descriptionWidth),
+        )
   const hints = keyHintsText([
     { keys: '↑/↓', action: 'move' },
     { keys: 'Enter', action: 'pick' },
