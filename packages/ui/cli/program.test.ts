@@ -188,7 +188,7 @@ describe('rove-ui search', () => {
 
   it('says when nothing matches', async () => {
     const { printed } = await runCli(['search', 'zzzz'])
-    expect(printed).toBe('No component mentions "zzzz".\n')
+    expect(printed).toBe('No component mentions "zzzz". Try fewer words, or `rove-ui list`.\n')
   })
 })
 
@@ -207,7 +207,7 @@ describe('rove-ui pick', () => {
     const withClipboard = await runCli(['pick'], { ...terminal, hasClipboard: true })
     expect(withClipboard.copiedTexts).toEqual(["import { Button } from '@swiftsolve/rove-ui'"])
     const withoutClipboard = await runCli(['pick'], { ...terminal, hasClipboard: false })
-    expect(withoutClipboard.notes[0]).toContain("Copy it from here: import { Button } from '@swiftsolve/rove-ui'")
+    expect(withoutClipboard.notes[0]).toContain("copy it from here: import { Button } from '@swiftsolve/rove-ui'")
   })
 
   it('copies the component as Markdown, or prints it when there is no clipboard', async () => {

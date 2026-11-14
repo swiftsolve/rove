@@ -47,17 +47,17 @@ export type PickAction = { id: PickActionId; label: string; hint?: string }
 /** The menu after picking a component: what it offers depends on where the component lives. */
 export function pickActions(catalog: ComponentListJson, component: NamedComponent): PickAction[] {
   const actions: PickAction[] = [
-    { id: 'show', label: 'Show its props and usage guide', hint: `rove-ui show ${component.name}` },
+    { id: 'show', label: 'Show props and usage', hint: `rove-ui show ${component.name}` },
     { id: 'copyMarkdown', label: 'Copy as Markdown', hint: 'to paste into an agent or a PR' },
-    { id: 'copyImport', label: 'Copy its import', hint: importLine(component) },
+    { id: 'copyImport', label: 'Copy import', hint: importLine(component) },
   ]
   if (storybookDocsUrl(component) !== null) {
-    actions.push({ id: 'openDocs', label: 'Open its Docs page in Storybook' })
+    actions.push({ id: 'openDocs', label: 'Open in Storybook' })
   }
   if (figmaComponentUrl(catalog, component) !== null) {
-    actions.push({ id: 'openFigma', label: 'Open it in Figma' })
+    actions.push({ id: 'openFigma', label: 'Open in Figma' })
   }
-  actions.push({ id: 'pickAnother', label: 'Pick another component' })
+  actions.push({ id: 'pickAnother', label: 'Pick another' })
   return actions
 }
 
@@ -86,10 +86,8 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
   const program: Command = new Command('rove-ui')
     .description("Look up Rove's UI library components: their props, usage guide, Figma component and stories.")
     .option('--json', 'print the catalog entries as JSON')
-    .option('--no-color', 'print without colour, as NO_COLOR does')
-    .addOption(
-      new Option('--md', 'print Markdown: no colour or columns, the fewest tokens for an agent').conflicts('json'),
-    )
+    .option('--no-color', 'print without colour (same as NO_COLOR)')
+    .addOption(new Option('--md', 'print Markdown for agents: the fewest tokens').conflicts('json'))
     .configureOutput({ writeOut: terminal.write, writeErr: terminal.writeError })
     .showHelpAfterError('Run `rove-ui --help` for the commands.')
     // Throws a CommanderError instead of exiting, so the caller sets the exit code.
@@ -136,7 +134,7 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
 
   program
     .command('list')
-    .description('list every component under its group')
+    .description('list every component by group')
     .option('-g, --group <group>', 'only this group, like Actions or "Data display"')
     .action((options: { group?: string }) => {
       const wantedGroup = options.group?.toLowerCase()
@@ -152,7 +150,7 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
 
   program
     .command('show')
-    .description("one component's description, props, parts, usage guide, Figma component and stories")
+    .description('show one component: props, parts, usage guide, links and stories')
     .argument('<name>', 'its name, like Button or CardHeader (any case)')
     .action((name: string) => {
       const component = findComponent(catalog, name)
@@ -164,13 +162,13 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
       writeComponent(component)
     })
 
-  /** Opens an address and says so, or says the component has none. */
-  function openAndSay(url: string | null): void {
+  /** Opens an address and says where, when the component has one. */
+  function openAndSay(url: string | null, placeName: string): void {
     if (url === null) {
       return
     }
     terminal.openInBrowser(url)
-    terminal.writeNote(`Opening ${url}`)
+    terminal.writeNote(`Opened in ${placeName}: ${url}`)
   }
 
   /** Does what the person chose; true when they want to pick another component. */
@@ -184,24 +182,26 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
         terminal.writeNote(`Copied ${component.name} as Markdown.`)
       } else {
         terminal.write(`${markdown}\n`)
-        terminal.writeNote('No clipboard tool found (wl-copy, xclip), so the Markdown is above.')
+        terminal.writeNote("Couldn't copy. Install wl-clipboard or xclip; the Markdown is above.")
       }
     } else if (actionId === 'copyImport') {
       const line = importLine(component)
       const isCopied = await terminal.copyToClipboard(line)
-      const note = isCopied ? `Copied: ${line}` : `No clipboard tool found (wl-copy, xclip). Copy it from here: ${line}`
+      const note = isCopied
+        ? `Copied: ${line}`
+        : `Couldn't copy. Install wl-clipboard or xclip, or copy it from here: ${line}`
       terminal.writeNote(note)
     } else if (actionId === 'openDocs') {
-      openAndSay(storybookDocsUrl(component))
+      openAndSay(storybookDocsUrl(component), 'Storybook')
     } else if (actionId === 'openFigma') {
-      openAndSay(figmaComponentUrl(catalog, component))
+      openAndSay(figmaComponentUrl(catalog, component), 'Figma')
     }
     return actionId === 'pickAnother'
   }
 
   program
     .command('pick')
-    .description('type to narrow a list of components, pick one, then show, copy or open it (needs a terminal)')
+    .description('find a component by typing, then show, copy or open it')
     .action(async () => {
       if (!terminal.isInteractive) {
         program.error('`rove-ui pick` needs a terminal to type in. Use `rove-ui list`, then `rove-ui show <name>`.')
@@ -238,12 +238,12 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
 
   program
     .command('search')
-    .description('the components whose name, description, props or usage guide hold every word')
+    .description('find components that mention every word')
     .argument('<words...>', 'words to look for, like "status line" or tooltip')
     .action((words: string[]) => {
       const components = searchComponents(catalog, words)
       if (components.length === 0 && outputFormat() !== 'json') {
-        terminal.write(`No component mentions "${words.join(' ')}".\n`)
+        terminal.write(`No component mentions "${words.join(' ')}". Try fewer words, or \`rove-ui list\`.\n`)
         return
       }
       writeComponentList(components)
@@ -251,7 +251,7 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
 
   program
     .command('icons')
-    .description('the icon names the library exports, optionally only those holding some text')
+    .description('list icon names, or only those containing some text')
     .argument('[text]', 'part of a name, like wifi')
     .action((text: string | undefined) => {
       const wantedText = text?.toLowerCase() ?? ''

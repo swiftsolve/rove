@@ -5,7 +5,7 @@
  */
 import { styleText } from 'node:util'
 
-import { autocomplete, cancel, intro, isCancel, log, outro, select } from '@clack/prompts'
+import { autocomplete, intro, isCancel, log, outro, select } from '@clack/prompts'
 
 import type { NamedComponent } from '../catalog/catalog.ts'
 import type { PickAction, PickActionId } from '../program.ts'
@@ -61,14 +61,15 @@ export async function askForComponentName(components: NamedComponent[], isFirstP
     const hasTrueColor = process.stdout.getColorDepth() >= TRUE_COLOR_DEPTH
     process.stdout.write(bannerText(hasTrueColor, process.stdout.columns))
   }
-  intro(styleText('bold', 'Find a component'))
+  const groupCount = new Set(components.map((component) => component.libraryGroup)).size
+  intro(styleText('bold', `${components.length} components in ${groupCount} groups`))
 
   // Each row says what the component is in a column after its name, cut to the terminal's width.
   const nameWidth = Math.max(...components.map((component) => component.name.length)) + 2
   const descriptionWidth = process.stdout.columns - ROW_PREFIX_WIDTH - nameWidth
   const componentsByName = new Map(components.map((component) => [component.name, component]))
   const choice = await autocomplete({
-    message: `Which component? ${styleText('gray', 'Esc quits')}`,
+    message: `Which one? ${styleText('gray', 'Esc quits')}`,
     maxItems: 12,
     options: components.map((component) => ({
       value: component.name,
@@ -80,7 +81,7 @@ export async function askForComponentName(components: NamedComponent[], isFirstP
     },
   })
   if (isCancel(choice)) {
-    cancel('Nothing picked.')
+    outro('Done.')
     return null
   }
   return choice
