@@ -10,7 +10,7 @@ impl Store {
              ON CONFLICT(date) DO UPDATE SET
                 rx_bytes = rx_bytes + excluded.rx_bytes,
                 tx_bytes = tx_bytes + excluded.tx_bytes",
-            params![date, rx_delta as i64, tx_delta as i64],
+            params![date, rx_delta, tx_delta],
         )?;
         Ok(())
     }
@@ -20,7 +20,7 @@ impl Store {
         let conn = self.lock();
         let row = conn
             .query_row("SELECT rx_bytes, tx_bytes FROM usage_day WHERE date = ?1", [date], |row| {
-                Ok((row.get::<_, i64>(0)? as u64, row.get::<_, i64>(1)? as u64))
+                Ok((row.get::<_, u64>(0)?, row.get::<_, u64>(1)?))
             })
             .optional()?;
         Ok(row.unwrap_or((0, 0)))
@@ -31,7 +31,7 @@ impl Store {
         self.lock().execute(
             "DELETE FROM usage_day WHERE date NOT IN
                 (SELECT date FROM usage_day ORDER BY date DESC LIMIT ?1)",
-            [retain as i64],
+            [retain],
         )?;
         Ok(())
     }

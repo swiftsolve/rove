@@ -108,7 +108,7 @@ mod tests {
         pkt.extend_from_slice(&[0x00, 0x01]); // class
         pkt.extend_from_slice(&[0x00, 0x00, 0x00, 0x00]); // ttl
         pkt.extend_from_slice(&[0x00, 0x00]); // rdlength (unused by parser)
-        pkt.push(entries.len() as u8);
+        pkt.push(u8::try_from(entries.len()).expect("a test packet has under 256 names"));
         for (name, is_group) in entries {
             let mut field = format!("{name:<15}").into_bytes();
             field.truncate(15);

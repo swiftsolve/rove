@@ -66,9 +66,9 @@ impl Store {
         }
 
         let previous = Self::service_state(&tx)?;
-        let up_count =
-            report.services.iter().filter(|svc| Self::reachability_status(svc) == ServiceStatus::Up).count() as i64;
-        let total_count = report.services.len() as i64;
+        let up_count = report.services.iter().filter(|svc| Self::reachability_status(svc) == ServiceStatus::Up).count();
+        let up_count = i64::try_from(up_count).unwrap_or(i64::MAX);
+        let total_count = i64::try_from(report.services.len()).unwrap_or(i64::MAX);
 
         // Anchor a brand-new timeline with a summary instead of leaving it blank
         // until something breaks. It can be partial: a service already down is

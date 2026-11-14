@@ -6,6 +6,8 @@
 //! and the network-change feed (`events`). The UI reaches it only through Tauri
 //! commands. Every method locks an internal `Mutex<Connection>`, so one
 //! `Arc<Store>` is shared by the command handlers and the background monitors.
+//! The methods block on disk I/O, so async code calls them through
+//! [`Store::run_blocking`].
 mod devices;
 mod events;
 mod services;
@@ -16,10 +18,14 @@ pub use devices::{KnownDevice, OFFLINE_LIST_KEEP_MS};
 pub use events::{NetworkEvent, Severity};
 pub use speed::{SpeedHistoryRecord, SPEED_HISTORY_LIMIT};
 
+/// What every store method fails with: `SQLite`'s own error, named here so
+/// callers needn't depend on rusqlite.
+pub use rusqlite::Error as StoreError;
+
 use crate::services::DEFAULT_SERVICES;
 use rusqlite::{params, Connection, OptionalExtension};
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 pub struct Store {
     conn: Mutex<Connection>,
@@ -158,11 +164,31 @@ impl Store {
     }
 
     fn from_connection(conn: Connection) -> rusqlite::Result<Self> {
-        // WAL keeps the background sampler's writes from blocking UI reads.
-        let _ = conn.pragma_update(None, "journal_mode", "WAL");
+        // WAL keeps the background sampler's writes from blocking UI reads. The
+        // store still works without it, only with more lock waits.
+        if let Err(e) = conn.pragma_update(None, "journal_mode", "WAL") {
+            tracing::warn!("could not switch the store to WAL: {e}");
+        }
         let store = Self { conn: Mutex::new(conn) };
         store.migrate()?;
         Ok(store)
+    }
+
+    /// Run `call` on tokio's blocking pool and await its result. Store methods
+    /// read and write the disk under a lock, which would stall an async worker
+    /// thread, so async code reaches the store through this.
+    pub async fn run_blocking<T, F>(self: &Arc<Self>, call: F) -> T
+    where
+        F: FnOnce(&Self) -> T + Send + 'static,
+        T: Send + 'static,
+    {
+        let store = Arc::clone(self);
+        match tokio::task::spawn_blocking(move || call(&store)).await {
+            Ok(value) => value,
+            // The task is never aborted, so it only fails by panicking: raise
+            // that panic here, as if `call` had run inline.
+            Err(join_error) => std::panic::resume_unwind(join_error.into_panic()),
+        }
     }
 
     fn migrate(&self) -> rusqlite::Result<()> {
@@ -187,7 +213,7 @@ impl Store {
             for (i, (name, host)) in DEFAULT_SERVICES.iter().enumerate() {
                 conn.execute(
                     "INSERT OR IGNORE INTO services (host, name, position) VALUES (?1, ?2, ?3)",
-                    params![host, name, i as i64],
+                    params![host, name, i],
                 )?;
             }
             conn.pragma_update(None, "user_version", 4)?;
@@ -268,12 +294,12 @@ impl Store {
 
     /// A small key/value table for one-off markers, such as when usage tracking
     /// began.
-    pub fn get_meta_u64(&self, key: &str) -> rusqlite::Result<Option<u64>> {
+    pub fn get_meta_i64(&self, key: &str) -> rusqlite::Result<Option<i64>> {
         let value = Self::read_meta(&self.lock(), key)?;
         Ok(value.and_then(|s| s.parse().ok()))
     }
 
-    pub fn set_meta_u64(&self, key: &str, value: u64) -> rusqlite::Result<()> {
+    pub fn set_meta_i64(&self, key: &str, value: i64) -> rusqlite::Result<()> {
         Self::write_meta(&self.lock(), key, &value.to_string())
     }
 
@@ -301,10 +327,10 @@ mod tests {
     #[test]
     fn meta_round_trips() {
         let store = Store::open_in_memory().unwrap();
-        assert_eq!(store.get_meta_u64("k").unwrap(), None);
-        store.set_meta_u64("k", 42).unwrap();
-        store.set_meta_u64("k", 43).unwrap();
-        assert_eq!(store.get_meta_u64("k").unwrap(), Some(43));
+        assert_eq!(store.get_meta_i64("k").unwrap(), None);
+        store.set_meta_i64("k", 42).unwrap();
+        store.set_meta_i64("k", 43).unwrap();
+        assert_eq!(store.get_meta_i64("k").unwrap(), Some(43));
     }
 
     #[test]

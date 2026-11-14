@@ -113,7 +113,7 @@ mod tests {
             store.insert_speed(&sample(i)).unwrap();
         }
         let rows = store.speed_history().unwrap();
-        assert_eq!(rows.len() as i64, SPEED_HISTORY_LIMIT);
+        assert_eq!(i64::try_from(rows.len()).unwrap(), SPEED_HISTORY_LIMIT);
         assert_eq!(rows[0].timestamp, SPEED_HISTORY_LIMIT + 4);
         // Link speed and band round-trip through the v2 columns.
         assert_eq!(rows[0].link_speed_mbps, Some(866.0));

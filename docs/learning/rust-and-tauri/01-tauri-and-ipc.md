@@ -85,7 +85,7 @@ Because the data is *copied across a process boundary as text*, both sides only
 ever exchange things that can be turned into JSON and back. This is exactly why:
 
 - Every type a command returns derives `Serialize` (see `NetworkInfo` in `crates/rove-core/src/connection.rs`).
-- Command errors are converted to `String` (`.map_err(|e| e.to_string())`): a
+- Command errors are a `CommandError` that serializes as its message string: a
   rich Rust error type can't cross the wire, but a string can.
 - The Rust structs use `#[serde(rename_all = "camelCase")]` so the JSON keys
   match what the TypeScript side expects.

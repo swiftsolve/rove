@@ -1,7 +1,11 @@
 //! The Tauri command handlers, each a thin wrapper around a rove-core service.
-//! Anything that probes, shells out or hits the network is `async`, so it runs
-//! off the main thread; cheap in-memory and database reads stay sync.
+//! Tauri runs a sync command on the main thread, so only cheap in-memory reads
+//! are sync. Anything that probes, shells out or hits the network is `async`,
+//! and store calls go through `Store::run_blocking` so disk I/O stays off the
+//! async workers too.
+use crate::error::{log_if_failed, CommandError, CommandResult};
 use crate::scanner::DeviceScanner;
+use crate::ui_events::emit_to_ui;
 use crate::AppState;
 use rove_core::{
     apps::{
@@ -13,49 +17,66 @@ use rove_core::{
     devices::LanDeviceScan,
     diagnostics::{InternetStatus, LiveDiagnostics, NetworkDiagnostics},
     interfaces::InterfaceSummary,
+    services::ServiceDef,
     services::{ServiceEvent, ServicesReport},
-    speed::SpeedTestResult,
-    store::{NetworkEvent, SpeedHistoryRecord, Store},
+    speed::{SpeedTestError, SpeedTestResult},
+    store::{NetworkEvent, SpeedHistoryRecord, Store, OFFLINE_LIST_KEEP_MS},
     usage::DataUsageSummary,
-    utils::net::lock,
+    utils::net::{lock, now_ms},
 };
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tauri::Emitter;
+use tauri::Manager;
 
-/// Fallible commands all return `Result<_, String>`, the one error shape the
-/// UI consumes.
-fn err_str(e: impl std::fmt::Display) -> String {
-    e.to_string()
+/// The user's service list, or the defaults if the store can't be read.
+async fn services_or_defaults(store: &Arc<Store>) -> Vec<ServiceDef> {
+    store.run_blocking(Store::services).await.unwrap_or_else(|e| {
+        tracing::warn!("could not read the service list, probing the defaults: {e}");
+        rove_core::services::default_service_list()
+    })
+}
+
+/// Record an internet check on the outage timeline, best-effort.
+async fn record_internet(store: &Arc<Store>, internet: InternetStatus) {
+    let now = now_ms();
+    let recorded = store.run_blocking(move |store| store.record_internet(internet, now)).await;
+    log_if_failed("record the internet status", recorded);
 }
 
 #[tauri::command]
-pub async fn get_network_info(store: tauri::State<'_, Arc<Store>>) -> Result<NetworkInfo, String> {
+pub async fn get_network_info(store: tauri::State<'_, Arc<Store>>) -> CommandResult<NetworkInfo> {
     tracing::info!("network info requested");
     let started = std::time::Instant::now();
     let info = rove_core::connection::network_info().await;
     tracing::info!(
-        elapsed_ms = started.elapsed().as_millis() as u64,
+        elapsed_ms = started.elapsed().as_millis(),
         interface = ?info.interface_name,
         "network info resolved"
     );
     // Best-effort: a database hiccup must not fail the read the whole UI
     // depends on.
-    let _ = store.record_connection(
-        &info.connection_type,
-        info.details.ssid.as_deref(),
-        info.interface_name.as_deref(),
-        info.ip_address.as_deref(),
-        info.mac_address.as_deref(),
-        rove_core::utils::net::now_ms() as i64,
-    );
+    let connection = info.clone();
+    let now = now_ms();
+    let recorded = store
+        .run_blocking(move |store| {
+            store.record_connection(
+                &connection.connection_type,
+                connection.details.ssid.as_deref(),
+                connection.interface_name.as_deref(),
+                connection.ip_address.as_deref(),
+                connection.mac_address.as_deref(),
+                now,
+            )
+        })
+        .await;
+    log_if_failed("record the connection", recorded);
     Ok(info)
 }
 
 #[tauri::command]
-pub async fn get_wifi_share() -> Result<rove_core::connection::wifi_share::WifiShare, String> {
+pub async fn get_wifi_share() -> CommandResult<rove_core::connection::wifi_share::WifiShare> {
     tracing::info!("wifi share requested");
-    rove_core::connection::wifi_share::current_wifi_share().await
+    Ok(rove_core::connection::wifi_share::current_wifi_share().await?)
 }
 
 #[tauri::command]
@@ -63,7 +84,7 @@ pub async fn get_interfaces() -> Vec<InterfaceSummary> {
     tracing::info!("interfaces requested");
     let started = std::time::Instant::now();
     let list = rove_core::interfaces::list().await;
-    tracing::info!(count = list.len(), elapsed_ms = started.elapsed().as_millis() as u64, "interfaces resolved");
+    tracing::info!(count = list.len(), elapsed_ms = started.elapsed().as_millis(), "interfaces resolved");
     list
 }
 
@@ -71,7 +92,7 @@ pub async fn get_interfaces() -> Vec<InterfaceSummary> {
 pub async fn get_devices(
     store: tauri::State<'_, Arc<Store>>,
     scanner: tauri::State<'_, Arc<DeviceScanner>>,
-) -> Result<LanDeviceScan, String> {
+) -> CommandResult<LanDeviceScan> {
     tracing::info!("device scan started");
     let started = std::time::Instant::now();
     let mut scan = scanner.scan().await;
@@ -79,33 +100,42 @@ pub async fn get_devices(
         devices = scan.devices.len(),
         subnet = ?scan.subnet,
         interface = ?scan.interface_name,
-        elapsed_ms = started.elapsed().as_millis() as u64,
+        elapsed_ms = started.elapsed().as_millis(),
         "device scan finished"
     );
-    let now = rove_core::utils::net::now_ms() as i64;
-    let _ = store.record_devices(&scan.devices, now);
-    // Keep recently seen devices listed as Offline instead of vanishing when
-    // the OS ages their ARP entries out.
-    if let Ok(merged) = store.devices_with_offline(&scan.devices, now, rove_core::store::OFFLINE_LIST_KEEP_MS) {
-        scan.devices = merged;
-    }
+    let now = now_ms();
+    let scanned = std::mem::take(&mut scan.devices);
+    scan.devices = store
+        .run_blocking(move |store| {
+            log_if_failed("record the scanned devices", store.record_devices(&scanned, now));
+            // Keep recently seen devices listed as Offline instead of vanishing
+            // when the OS ages their ARP entries out.
+            match store.devices_with_offline(&scanned, now, OFFLINE_LIST_KEEP_MS) {
+                Ok(with_offline) => with_offline,
+                Err(e) => {
+                    tracing::warn!("could not merge offline devices into the scan: {e}");
+                    scanned
+                }
+            }
+        })
+        .await;
     Ok(scan)
 }
 
 #[tauri::command]
-pub async fn run_diagnostics(store: tauri::State<'_, Arc<Store>>) -> Result<NetworkDiagnostics, String> {
+pub async fn run_diagnostics(store: tauri::State<'_, Arc<Store>>) -> CommandResult<NetworkDiagnostics> {
     let diagnostics = rove_core::diagnostics::run().await;
     // Best-effort: a database hiccup must not fail the diagnostics read.
-    let _ = store.record_internet(diagnostics.internet, rove_core::utils::net::now_ms() as i64);
+    record_internet(&store, diagnostics.internet).await;
     Ok(diagnostics)
 }
 
 #[tauri::command]
-pub async fn run_diagnostics_live(store: tauri::State<'_, Arc<Store>>) -> Result<LiveDiagnostics, String> {
+pub async fn run_diagnostics_live(store: tauri::State<'_, Arc<Store>>) -> CommandResult<LiveDiagnostics> {
     let live = rove_core::diagnostics::run_live().await;
     // The view's 15 s poll catches a WAN crossing sooner than the heartbeat.
     // Idempotent, so every poll can record.
-    let _ = store.record_internet(live.internet, rove_core::utils::net::now_ms() as i64);
+    record_internet(&store, live.internet).await;
     Ok(live)
 }
 
@@ -115,17 +145,19 @@ pub async fn run_diagnostics_live(store: tauri::State<'_, Arc<Store>>) -> Result
 pub async fn run_services(
     store: tauri::State<'_, Arc<Store>>,
     state: tauri::State<'_, AppState>,
-) -> Result<ServicesReport, String> {
-    let services = store.services().unwrap_or_else(|_| rove_core::services::default_service_list());
+) -> CommandResult<ServicesReport> {
+    let services = services_or_defaults(&store).await;
     let (report, network_key) = tokio::join!(rove_core::services::run_services(&services), network_key());
     state.remember_services_report(network_key, &report);
-    let now = rove_core::utils::net::now_ms() as i64;
-    let _ = store.record_internet(report.internet, now);
+    record_internet(&store, report.internet).await;
     // The heartbeat keeps the log complete but ticks only each minute; folding
     // in the view's 15 s poll puts a crossing the user is watching on the
     // timeline at once. `record_services` diffs against its own baseline, so
     // the two writers can't double-log one.
-    let _ = store.record_services(&report, now);
+    let now = now_ms();
+    let to_record = report.clone();
+    let recorded = store.run_blocking(move |store| store.record_services(&to_record, now)).await;
+    log_if_failed("record the services report", recorded);
     Ok(report)
 }
 
@@ -140,14 +172,14 @@ pub fn get_last_services_report(state: tauri::State<'_, AppState>, network_key: 
 /// The services outage timeline, newest first. The always-on heartbeat records
 /// it, so it covers outages while the window was closed.
 #[tauri::command]
-pub fn get_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<ServiceEvent>, String> {
-    store.service_events().map_err(err_str)
+pub async fn get_service_history(store: tauri::State<'_, Arc<Store>>) -> CommandResult<Vec<ServiceEvent>> {
+    Ok(store.run_blocking(Store::service_events).await?)
 }
 
 /// Wipe the timeline and its baseline (see `Store::clear_service_events`).
 #[tauri::command]
-pub fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), String> {
-    store.clear_service_events().map_err(err_str)
+pub async fn clear_service_history(store: tauri::State<'_, Arc<Store>>) -> CommandResult<()> {
+    Ok(store.run_blocking(Store::clear_service_events).await?)
 }
 
 /// The heartbeat's last internet status, or None before its first probe. A
@@ -163,10 +195,8 @@ pub async fn test_service(host: String) -> Option<f64> {
 }
 
 #[tauri::command]
-pub async fn list_services(
-    store: tauri::State<'_, Arc<Store>>,
-) -> Result<Vec<rove_core::services::ServiceDef>, String> {
-    store.services().map_err(err_str)
+pub async fn list_services(store: tauri::State<'_, Arc<Store>>) -> CommandResult<Vec<ServiceDef>> {
+    Ok(store.run_blocking(Store::services).await?)
 }
 
 #[tauri::command]
@@ -174,8 +204,8 @@ pub async fn add_service(
     store: tauri::State<'_, Arc<Store>>,
     name: String,
     host: String,
-) -> Result<Vec<rove_core::services::ServiceDef>, String> {
-    store.add_service(&name, &host).map_err(err_str)
+) -> CommandResult<Vec<ServiceDef>> {
+    Ok(store.run_blocking(move |store| store.add_service(&name, &host)).await?)
 }
 
 #[tauri::command]
@@ -184,16 +214,13 @@ pub async fn update_service(
     old_host: String,
     name: String,
     host: String,
-) -> Result<Vec<rove_core::services::ServiceDef>, String> {
-    store.update_service(&old_host, &name, &host).map_err(err_str)
+) -> CommandResult<Vec<ServiceDef>> {
+    Ok(store.run_blocking(move |store| store.update_service(&old_host, &name, &host)).await?)
 }
 
 #[tauri::command]
-pub async fn delete_service(
-    store: tauri::State<'_, Arc<Store>>,
-    host: String,
-) -> Result<Vec<rove_core::services::ServiceDef>, String> {
-    store.delete_service(&host).map_err(err_str)
+pub async fn delete_service(store: tauri::State<'_, Arc<Store>>, host: String) -> CommandResult<Vec<ServiceDef>> {
+    Ok(store.run_blocking(move |store| store.delete_service(&host)).await?)
 }
 
 #[tauri::command]
@@ -206,14 +233,14 @@ pub async fn run_speed_test(
     app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
     run_token: String,
-) -> Result<SpeedTestResult, String> {
+) -> CommandResult<SpeedTestResult> {
     let cancel = Arc::new(AtomicBool::new(false));
     {
         let mut runs = lock(&state.speed_runs);
         // Stopped before it got here: don't start a test nobody wants.
         if runs.stopped_early.as_deref() == Some(run_token.as_str()) {
             runs.stopped_early = None;
-            return Err(rove_core::speed::CANCELLED.into());
+            return Err(SpeedTestError::Cancelled.into());
         }
         if let Some((_, previous)) = runs.running.take() {
             previous.store(true, Ordering::Relaxed);
@@ -228,7 +255,7 @@ pub async fn run_speed_test(
     let (info, result) = tokio::join!(
         rove_core::connection::network_info(),
         rove_core::speed::run(cancel.clone(), move |progress| {
-            let _ = emitter.emit("speed-test-progress", &progress);
+            emit_to_ui(&emitter, "speed-test-progress", &progress);
         }),
     );
 
@@ -259,18 +286,26 @@ pub fn cancel_speed_test(state: tauri::State<'_, AppState>, run_token: String) {
     }
 }
 
+/// Async, on the blocking pool: the summary reads the daily buckets from the
+/// store.
 #[tauri::command]
-pub fn get_data_usage(state: tauri::State<'_, AppState>) -> DataUsageSummary {
-    // Fresh counters, so today's total includes what's moved since the last
-    // 30 s tick. Cheap: a read of each interface's counters.
-    let mut networks = lock(&state.networks);
-    networks.refresh(true);
-    lock(&state.usage).as_ref().map(|tracker| tracker.summary(&networks)).unwrap_or(DataUsageSummary {
-        days: vec![],
-        boot_rx_bytes: 0,
-        boot_tx_bytes: 0,
-        tracking_since: None,
+pub async fn get_data_usage(app: tauri::AppHandle) -> DataUsageSummary {
+    let summary = tokio::task::spawn_blocking(move || {
+        let state = app.state::<AppState>();
+        // Fresh counters, so today's total includes what's moved since the
+        // last 30 s tick. Cheap: a read of each interface's counters.
+        let mut networks = lock(&state.networks);
+        networks.refresh(true);
+        let usage = lock(&state.usage);
+        usage.as_ref().map(|tracker| tracker.summary(&networks))
     })
+    .await;
+    match summary {
+        Ok(Some(summary)) => summary,
+        // No store, so no tracker.
+        Ok(None) => DataUsageSummary { days: vec![], boot_rx_bytes: 0, boot_tx_bytes: 0, tracking_since: None },
+        Err(join_error) => std::panic::resume_unwind(join_error.into_panic()),
+    }
 }
 
 /// Per-app network usage since Rove started watching. An in-memory read;
@@ -309,13 +344,13 @@ pub fn usage_support_detail() -> Option<String> {
 /// instance exits. If the user declines, nothing launches and this instance
 /// stays up to show the error.
 #[tauri::command]
-pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
+pub async fn relaunch_as_admin(app: tauri::AppHandle) -> CommandResult<()> {
     #[cfg(windows)]
     {
         use rove_core::utils::shell::CREATE_NO_WINDOW;
         use std::os::windows::process::CommandExt;
 
-        let exe = std::env::current_exe().map_err(err_str)?;
+        let exe = std::env::current_exe()?;
         // Single-quote the path for PowerShell, doubling any embedded quote.
         let exe = exe.to_string_lossy().replace('\'', "''");
         // A dismissed prompt is a non-terminating error (PowerShell would still
@@ -328,11 +363,10 @@ pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
                 .args(["-NoProfile", "-Command", &script])
                 .creation_flags(CREATE_NO_WINDOW)
                 .status()
-                .map(|s| s.success())
+                .map(|status| status.success())
         })
         .await
-        .map_err(err_str)?
-        .map_err(err_str)?;
+        .map_err(std::io::Error::other)??;
 
         if launched {
             // No single-instance guard, so the brief overlap is fine: ferrisetw
@@ -340,19 +374,19 @@ pub async fn relaunch_as_admin(app: tauri::AppHandle) -> Result<(), String> {
             app.exit(0);
             Ok(())
         } else {
-            Err("Elevation was declined.".to_string())
+            Err(CommandError::ElevationDeclined)
         }
     }
     #[cfg(not(windows))]
     {
         let _ = app;
-        Err("Elevation is only supported on Windows.".to_string())
+        Err(CommandError::ElevationUnsupported)
     }
 }
 
 #[tauri::command]
-pub fn get_speed_history(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<SpeedHistoryRecord>, String> {
-    store.speed_history().map_err(err_str)
+pub async fn get_speed_history(store: tauri::State<'_, Arc<Store>>) -> CommandResult<Vec<SpeedHistoryRecord>> {
+    Ok(store.run_blocking(Store::speed_history).await?)
 }
 
 /// How many of the newest network events the feed shows.
@@ -361,18 +395,18 @@ const NETWORK_EVENTS_LIMIT: i64 = 200;
 /// The network-change feed, newest first. Written as a side effect of scans,
 /// network-info reads and internet checks, so this is only a read.
 #[tauri::command]
-pub fn get_network_events(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<NetworkEvent>, String> {
-    store.network_events(NETWORK_EVENTS_LIMIT).map_err(err_str)
+pub async fn get_network_events(store: tauri::State<'_, Arc<Store>>) -> CommandResult<Vec<NetworkEvent>> {
+    Ok(store.run_blocking(|store| store.network_events(NETWORK_EVENTS_LIMIT)).await?)
 }
 
 #[tauri::command]
-pub fn save_speed_result(store: tauri::State<'_, Arc<Store>>, entry: SpeedHistoryRecord) -> Result<(), String> {
-    store.insert_speed(&entry).map_err(err_str)
+pub async fn save_speed_result(store: tauri::State<'_, Arc<Store>>, entry: SpeedHistoryRecord) -> CommandResult<()> {
+    Ok(store.run_blocking(move |store| store.insert_speed(&entry)).await?)
 }
 
 #[tauri::command]
-pub fn clear_speed_history(store: tauri::State<'_, Arc<Store>>) -> Result<(), String> {
-    store.clear_speed_history().map_err(err_str)
+pub async fn clear_speed_history(store: tauri::State<'_, Arc<Store>>) -> CommandResult<()> {
+    Ok(store.run_blocking(Store::clear_speed_history).await?)
 }
 
 #[tauri::command]

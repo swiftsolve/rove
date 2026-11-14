@@ -1,6 +1,5 @@
 //! The live download and upload rate, sampled once a second.
 use serde::Serialize;
-use std::time::{SystemTime, UNIX_EPOCH};
 use sysinfo::Networks;
 
 #[derive(Debug, Clone, Serialize)]
@@ -8,7 +7,7 @@ use sysinfo::Networks;
 pub struct LiveThroughput {
     pub download_mbps: f64,
     pub upload_mbps: f64,
-    pub timestamp: u64,
+    pub timestamp: i64,
 }
 
 /// Weight of the newest reading in the moving average: smooths the chart
@@ -87,7 +86,7 @@ impl ThroughputSampler {
         LiveThroughput {
             download_mbps: self.smoothed_down,
             upload_mbps: self.smoothed_up,
-            timestamp: SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0),
+            timestamp: crate::utils::net::now_ms(),
         }
     }
 }

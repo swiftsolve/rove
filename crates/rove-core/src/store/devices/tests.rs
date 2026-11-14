@@ -135,14 +135,14 @@ fn derives_join_change_offline_and_gateway_events() {
 
     // The laptop reports a new hostname → no event (renames were too noisy,
     // so identity changes no longer surface at all).
-    let mut renamed = laptop.clone();
+    let mut renamed = laptop;
     renamed.hostname = Some("laptop-02".into());
     let before_rename = store.network_events(100).unwrap().len();
     store.record_devices(&[gw.clone(), phone.clone(), renamed.clone()], 3_000).unwrap();
     assert_eq!(store.network_events(100).unwrap().len(), before_rename, "hostname changes are silent now");
 
     // A plain IP change now produces no event.
-    let mut moved = renamed.clone();
+    let mut moved = renamed;
     moved.ip = "192.168.1.31".into();
     let before = store.network_events(100).unwrap().len();
     store.record_devices(&[gw.clone(), phone.clone(), moved.clone()], 3_500).unwrap();
@@ -157,9 +157,9 @@ fn derives_join_change_offline_and_gateway_events() {
     assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_online");
 
     // The gateway's MAC changes under us → a gateway_changed warning.
-    let mut gw2 = gw.clone();
+    let mut gw2 = gw;
     gw2.mac = "00:00:00:00:00:02".into();
-    store.record_devices(&[gw2, phone.clone(), moved.clone()], 6_000).unwrap();
+    store.record_devices(&[gw2, phone, moved], 6_000).unwrap();
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "gateway_changed");
     assert_eq!(latest.severity, Severity::Warning);
@@ -189,7 +189,7 @@ fn moving_to_another_network_is_not_a_gateway_change() {
     assert_eq!(gateway_changes(&store), 0, "each network keeps its own gateway");
 
     // Home's gateway answering from a new MAC is the change worth flagging.
-    let mut spoofed = home_router.clone();
+    let mut spoofed = home_router;
     spoofed.mac = "00:00:00:00:00:66".into();
     store.record_devices(std::slice::from_ref(&spoofed), 4_000).unwrap();
     assert_eq!(gateway_changes(&store), 1);
@@ -237,7 +237,7 @@ fn touch_devices_never_marks_an_absent_device_offline() {
     let store = Store::open_in_memory().unwrap();
     let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
     let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", DeviceKind::Computer);
-    store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[a.clone(), b], 1_000).unwrap(); // baseline
     let before = store.network_events(100).unwrap().len();
 
     // A passive pass that only saw `a` must not declare `b` gone: passive
@@ -300,7 +300,7 @@ fn offline_is_not_re_emitted_and_stale_devices_never_fire() {
     let a = device("aa:aa:aa:aa:aa:aa", "192.168.1.10", DeviceKind::Phone);
     let b = device("bb:bb:bb:bb:bb:bb", "192.168.1.11", DeviceKind::Computer);
 
-    store.record_devices(&[a.clone(), b.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[a.clone(), b], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&a), 2_000).unwrap(); // b drops → offline
     store.record_devices(std::slice::from_ref(&a), 3_000).unwrap(); // still gone → no repeat
     let offline: Vec<_> =
@@ -395,7 +395,7 @@ fn a_real_departure_still_fires_when_others_remain_reachable() {
     gw.is_gateway = true;
     let phone = device("aa:aa:aa:aa:aa:aa", "192.168.1.20", DeviceKind::Phone);
 
-    store.record_devices(&[gw.clone(), phone.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[gw.clone(), phone], 1_000).unwrap(); // baseline
     store.record_devices(&[gw], 2_000).unwrap(); // phone leaves, gateway stays
     let latest = &store.network_events(1).unwrap()[0];
     assert_eq!(latest.event_type, "device_offline");
@@ -457,7 +457,7 @@ fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
     assert_eq!(latest.mac.as_deref(), Some("bb:bb:bb:bb:bb:bb"));
 
     // Still present, still unreachable → no second offline, no spurious online.
-    store.record_devices(&[keep.clone(), asleep.clone()], 3_000).unwrap();
+    store.record_devices(&[keep.clone(), asleep], 3_000).unwrap();
     let offline_count = store
         .network_events(100)
         .unwrap()
@@ -467,7 +467,7 @@ fn a_present_but_unreachable_device_goes_offline_on_the_feed() {
     assert_eq!(offline_count, 1, "offline fires once while it stays unreachable");
 
     // It answers again → device_online.
-    store.record_devices(&[keep.clone(), phone.clone()], 4_000).unwrap();
+    store.record_devices(&[keep, phone], 4_000).unwrap();
     assert_eq!(store.network_events(1).unwrap()[0].event_type, "device_online");
 }
 
@@ -483,10 +483,10 @@ fn a_device_back_in_arp_but_still_silent_is_not_a_reconnect() {
 
     // Reappears in the ARP table but still isn't answering (reachable=false)
     // → not a reconnect; it stays offline on the feed.
-    let mut silent = phone.clone();
+    let mut silent = phone;
     silent.is_reachable = false;
     let before = store.network_events(100).unwrap().len();
-    store.record_devices(&[keep.clone(), silent], 3_000).unwrap();
+    store.record_devices(&[keep, silent], 3_000).unwrap();
     assert_eq!(
         store.network_events(100).unwrap().len(),
         before,
@@ -506,7 +506,7 @@ fn a_departed_randomized_device_keeps_its_live_label() {
     phone.is_randomized_mac = true;
     phone.os = Some("Android".into());
 
-    store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[keep.clone(), phone], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // phone drops off
 
     let offline = &store.network_events(1).unwrap()[0];
@@ -529,7 +529,7 @@ fn a_vendor_known_device_keeps_its_kind_in_the_name() {
     phone.vendor = Some("Apple".into());
     phone.is_randomized_mac = true;
 
-    store.record_devices(&[keep.clone(), phone.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[keep.clone(), phone], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // phone departs
 
     let offline = &store.network_events(1).unwrap()[0];
@@ -551,7 +551,7 @@ fn a_departed_anonymous_randomized_device_still_reads_private() {
     let mut ghost = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Unknown);
     ghost.is_randomized_mac = true;
 
-    store.record_devices(&[keep.clone(), ghost.clone()], 1_000).unwrap();
+    store.record_devices(&[keep.clone(), ghost], 1_000).unwrap();
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap();
 
     let offline = &store.network_events(1).unwrap()[0];
@@ -570,7 +570,7 @@ fn a_past_offline_relabels_once_the_classifier_catches_up() {
     // identity ("Private device" in the UI).
     let mut thin = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Unknown);
     thin.is_randomized_mac = true;
-    store.record_devices(&[keep.clone(), thin.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[keep.clone(), thin], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // drops off, thin
 
     let offline_id = {
@@ -585,7 +585,7 @@ fn a_past_offline_relabels_once_the_classifier_catches_up() {
     let mut pinned = device("1a:78:49:c6:0d:df", "192.168.1.20", DeviceKind::Phone);
     pinned.is_randomized_mac = true;
     pinned.os = Some("Android".into());
-    store.record_devices(&[keep.clone(), pinned.clone()], 3_000).unwrap();
+    store.record_devices(&[keep, pinned], 3_000).unwrap();
 
     // …and the *earlier* offline row now reads the improved label, resolved
     // live against the roster rather than the stale snapshot.
@@ -604,7 +604,7 @@ fn a_departed_device_keeps_its_snapshot_label() {
     // roster row is the only place a live identity could come from.
     let mut laptop = device("bb:bb:bb:bb:bb:bb", "192.168.1.30", DeviceKind::Computer);
     laptop.hostname = Some("laptop-01".into());
-    store.record_devices(&[keep.clone(), laptop.clone()], 1_000).unwrap(); // baseline
+    store.record_devices(&[keep.clone(), laptop], 1_000).unwrap(); // baseline
     store.record_devices(std::slice::from_ref(&keep), 2_000).unwrap(); // laptop departs
 
     // Forget the departed device, simulating a roster it's no longer part of.
@@ -626,7 +626,7 @@ fn a_connection_event_keeps_its_ssid_despite_a_matching_mac() {
     let mut selfd = device("aa:bb:cc:dd:ee:ff", "192.168.1.5", DeviceKind::Computer);
     selfd.hostname = Some("my-macbook".into());
     selfd.is_self = true;
-    store.record_devices(&[selfd.clone()], 500).unwrap();
+    store.record_devices(&[selfd], 500).unwrap();
 
     // Seed the connection baseline, then transition to a named Wi-Fi network.
     store

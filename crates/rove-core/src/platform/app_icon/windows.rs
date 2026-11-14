@@ -37,8 +37,11 @@ pub fn app_icon_data_uri(name: &str, pid: Option<u32>) -> Option<String> {
     // Trim the transparent margin each `.exe` bakes in, so icons with very
     // different padding (Edge and Notion pad heavily, node and svchost are
     // edge to edge) fill their tile alike. Untrimmed if nothing is visible.
-    match trim_to_content_square(&rgba, w as usize, h as usize) {
-        Some((cropped, side)) => encode_png_data_uri(&cropped, side as i32, side as i32),
+    match trim_to_content_square(&rgba, usize::try_from(w).ok()?, usize::try_from(h).ok()?) {
+        Some((cropped, side)) => {
+            let side = u32::try_from(side).ok()?;
+            encode_png_data_uri(&cropped, side, side)
+        }
         None => encode_png_data_uri(&rgba, w, h),
     }
 }
@@ -54,8 +57,8 @@ pub(crate) fn exe_path_for_pid(pid: u32) -> Option<PathBuf> {
         let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?;
         // Long paths can exceed MAX_PATH (260); 1024 covers any real install
         // location without a resize round-trip.
-        let mut buf = vec![0u16; 1024];
-        let mut len = buf.len() as u32;
+        let mut len: u32 = 1024;
+        let mut buf = vec![0u16; len as usize];
         let query = QueryFullProcessImageNameW(handle, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len);
         let _ = CloseHandle(handle);
         query.ok()?;
@@ -72,7 +75,7 @@ fn exe_path_for_name(name: &str) -> Option<PathBuf> {
     // fully initialised with its required `dwSize` before the first read.
     unsafe {
         let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0).ok()?;
-        let mut entry = PROCESSENTRY32W { dwSize: size_of::<PROCESSENTRY32W>() as u32, ..Default::default() };
+        let mut entry = PROCESSENTRY32W { dwSize: win32_size_of::<PROCESSENTRY32W>(), ..Default::default() };
         let mut pid: Option<u32> = None;
         if Process32FirstW(snapshot, &mut entry).is_ok() {
             loop {
@@ -94,7 +97,7 @@ fn exe_path_for_name(name: &str) -> Option<PathBuf> {
 /// straight-alpha RGBA. Returns the pixels with the width/height GDI actually
 /// produced (`SIIGBF_BIGGERSIZEOK` lets it hand back a larger native size,
 /// which the frontend's `<img>` scales down cleanly).
-fn rasterize_icon(path: &Path) -> Option<(Vec<u8>, i32, i32)> {
+fn rasterize_icon(path: &Path) -> Option<(Vec<u8>, u32, u32)> {
     // SAFETY: COM is initialised for the duration of the call via `ComGuard`;
     // the shell item and bitmap are created, used, and freed within this scope
     // before the guard uninitialises COM on drop.
@@ -116,24 +119,24 @@ fn rasterize_icon(path: &Path) -> Option<(Vec<u8>, i32, i32)> {
 /// RGBA, so each channel is divided by its alpha. Some icons come back with
 /// an all-zero alpha plane, meaning no transparency data rather than fully
 /// transparent; those are drawn opaque, or the whole icon would vanish.
-unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Option<(Vec<u8>, i32, i32)> {
+unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Option<(Vec<u8>, u32, u32)> {
     let mut info = BITMAP::default();
-    let read =
-        GetObjectW(HGDIOBJ(bitmap.0), size_of::<BITMAP>() as i32, Some(&mut info as *mut _ as *mut core::ffi::c_void));
+    let bitmap_size = i32::try_from(size_of::<BITMAP>()).ok()?;
+    let read = GetObjectW(HGDIOBJ(bitmap.0), bitmap_size, Some(&mut info as *mut _ as *mut core::ffi::c_void));
     if read == 0 {
         return None;
     }
-    let (w, h) = (info.bmWidth, info.bmHeight);
-    if w <= 0 || h <= 0 {
+    let (w, h) = (u32::try_from(info.bmWidth).ok()?, u32::try_from(info.bmHeight).ok()?);
+    if w == 0 || h == 0 {
         return None;
     }
 
     // Negative height requests a top-down DIB so row 0 is the top row.
     let mut bmi = BITMAPINFO {
         bmiHeader: BITMAPINFOHEADER {
-            biSize: size_of::<BITMAPINFOHEADER>() as u32,
-            biWidth: w,
-            biHeight: -h,
+            biSize: win32_size_of::<BITMAPINFOHEADER>(),
+            biWidth: info.bmWidth,
+            biHeight: -info.bmHeight,
             biPlanes: 1,
             biBitCount: 32,
             biCompression: BI_RGB.0,
@@ -145,7 +148,7 @@ unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Opti
 
     let hdc = GetDC(None);
     let lines =
-        GetDIBits(hdc, bitmap, 0, h as u32, Some(buf.as_mut_ptr() as *mut core::ffi::c_void), &mut bmi, DIB_RGB_COLORS);
+        GetDIBits(hdc, bitmap, 0, h, Some(buf.as_mut_ptr() as *mut core::ffi::c_void), &mut bmi, DIB_RGB_COLORS);
     ReleaseDC(None, hdc);
     if lines == 0 {
         return None;
@@ -169,14 +172,15 @@ unsafe fn bitmap_to_rgba(bitmap: windows::Win32::Graphics::Gdi::HBITMAP) -> Opti
 /// Recover a straight-alpha channel value from its premultiplied form,
 /// clamped in case rounding pushes it past 255.
 fn unpremultiply(channel: u8, alpha: u8) -> u8 {
-    ((channel as u32 * 255) / alpha as u32).min(255) as u8
+    let straight = (u32::from(channel) * 255) / u32::from(alpha);
+    u8::try_from(straight).unwrap_or(u8::MAX)
 }
 
 /// Encode a straight-alpha RGBA buffer as a base64 PNG `data:` URI.
-fn encode_png_data_uri(rgba: &[u8], w: i32, h: i32) -> Option<String> {
+fn encode_png_data_uri(rgba: &[u8], w: u32, h: u32) -> Option<String> {
     let mut png_bytes: Vec<u8> = Vec::new();
     {
-        let mut encoder = png::Encoder::new(&mut png_bytes, w as u32, h as u32);
+        let mut encoder = png::Encoder::new(&mut png_bytes, w, h);
         encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().ok()?;
@@ -223,6 +227,12 @@ fn to_wide(s: &OsStr) -> Vec<u16> {
 fn wide_nul_to_string(buf: &[u16]) -> String {
     let end = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
     String::from_utf16_lossy(&buf[..end])
+}
+
+/// `size_of::<T>()` as the `u32` a Win32 struct's size field takes.
+#[expect(clippy::cast_possible_truncation, reason = "Win32 structs are a few hundred bytes at most")]
+const fn win32_size_of<T>() -> u32 {
+    size_of::<T>() as u32
 }
 
 #[cfg(test)]

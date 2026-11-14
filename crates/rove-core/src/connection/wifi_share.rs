@@ -27,22 +27,28 @@ pub struct WifiShare {
     pub qr_svg: String,
 }
 
-/// The share payload for the active Wi-Fi network. Errs with a display string
-/// when there's no Wi-Fi link or no SSID, as there's nothing to share.
-pub async fn current_wifi_share() -> Result<WifiShare, String> {
+/// Why there's no Wi-Fi to share. The text is what the share dialog shows.
+#[derive(Debug, thiserror::Error)]
+pub enum WifiShareError {
+    #[error("Not connected to Wi-Fi.")]
+    NotOnWifi,
+    /// Usually macOS withholding the SSID without Location Services, but that
+    /// isn't certain, so the message doesn't say so.
+    #[error("Wi-Fi network name is unavailable.")]
+    NetworkNameUnavailable,
+    #[error("Could not encode the Wi-Fi QR code: {0}")]
+    QrEncoding(#[from] qrcode::types::QrError),
+}
+
+/// The share payload for the active Wi-Fi network. Errs when there's no Wi-Fi
+/// link or no SSID, as there's nothing to share.
+pub async fn current_wifi_share() -> Result<WifiShare, WifiShareError> {
     let info = network_info().await;
     if info.connection_type != "wifi" {
-        return Err("Not connected to Wi-Fi.".into());
+        return Err(WifiShareError::NotOnWifi);
     }
 
-    let ssid = info
-        .details
-        .ssid
-        .clone()
-        .filter(|s| !s.is_empty())
-        // Usually macOS withholding the SSID without Location Services, but that
-        // isn't certain, so the message doesn't say so.
-        .ok_or("Wi-Fi network name is unavailable.")?;
+    let ssid = info.details.ssid.clone().filter(|s| !s.is_empty()).ok_or(WifiShareError::NetworkNameUnavailable)?;
 
     let iface = info.interface_name.clone().unwrap_or_default();
     let encryption = encryption_token(info.details.security.as_deref());
@@ -122,13 +128,12 @@ const DOT_RADIUS: f32 = 0.42;
 /// finders and the alignment patterns as rounded squares, white field, the
 /// spec's 4-module quiet zone), so the frontend inlines it as a data URI with
 /// no QR library.
-fn qr_svg(data: &str) -> Result<String, String> {
+fn qr_svg(data: &str) -> Result<String, qrcode::types::QrError> {
     use qrcode::{Color, EcLevel, QrCode};
 
     // High error correction: the dialog covers the code's centre with the Rove
     // mark, and H recovers up to 30% of it, far more than the mark hides.
-    let code = QrCode::with_error_correction_level(data.as_bytes(), EcLevel::H)
-        .map_err(|e| format!("Could not encode the Wi-Fi QR code: {e}"))?;
+    let code = QrCode::with_error_correction_level(data.as_bytes(), EcLevel::H)?;
     let width = code.width();
     let colors = code.to_colors();
     let is_dark = |x: usize, y: usize| colors[y * width + x] == Color::Dark;

@@ -218,9 +218,9 @@ pub(crate) fn parse_link_speed(text: &str) -> Option<i64> {
     let text = text.trim();
     let value: f64 = text.split_whitespace().next()?.parse().ok()?;
     if text.to_lowercase().contains("gbps") {
-        Some((value * 1000.0) as i64)
+        Some(crate::utils::round_to_i64(value * 1000.0))
     } else {
-        Some(value as i64)
+        Some(crate::utils::round_to_i64(value))
     }
 }
 
@@ -255,5 +255,5 @@ pub fn utc_offset_secs() -> Option<i64> {
         .ok()
         .and_then(|o| String::from_utf8(o.stdout).ok())
         .and_then(|s| s.trim().parse::<f64>().ok())
-        .map(|minutes| (minutes * 60.0) as i64)
+        .map(|minutes| crate::utils::round_to_i64(minutes * 60.0))
 }

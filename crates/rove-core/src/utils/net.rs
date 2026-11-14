@@ -88,7 +88,7 @@ pub(crate) fn is_routable_peer(ip: IpAddr) -> bool {
 /// Lock a mutex, recovering from poison: one panic while holding it would
 /// otherwise wedge every later caller for the life of the process.
 pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
-    m.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    m.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 /// Canonical MAC form: lowercase, colon-separated, zero-padded octets
@@ -105,7 +105,7 @@ pub fn normalize_mac_colons(raw: &str) -> String {
 /// "aabbcc112233"). The DHCP cache keys on this so hits join the neighbor table
 /// whatever the separator or case.
 pub fn normalize_mac_bare(mac: &str) -> String {
-    mac.chars().filter(|c| c.is_ascii_hexdigit()).map(|c| c.to_ascii_lowercase()).collect()
+    mac.chars().filter(char::is_ascii_hexdigit).map(|c| c.to_ascii_lowercase()).collect()
 }
 
 const VIRTUAL_PREFIXES: [&str; 18] = [
@@ -170,8 +170,11 @@ pub fn is_virtual_interface(name: &str) -> bool {
     VIRTUAL_SUBSTRINGS.iter().any(|s| lower.contains(s))
 }
 
-pub fn now_ms() -> u64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0)
+/// Milliseconds since the Unix epoch, the timestamp the store and the UI use.
+/// 0 if the clock reads before 1970.
+pub fn now_ms() -> i64 {
+    let since_epoch = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
+    i64::try_from(since_epoch.as_millis()).unwrap_or(i64::MAX)
 }
 
 /// True when `s` is an IP literal, and so safe to put in a shell command: a

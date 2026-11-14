@@ -67,26 +67,33 @@ pub(super) fn trim_to_content_square(rgba: &[u8], w: usize, h: usize) -> Option<
     // shorter side's padding can overhang the source edge (when the glyph
     // reaches it); overhang is filled with transparent pixels.
     let (center_x, center_y) = bounds.center();
-    let start_x = (center_x - side as f64 / 2.0).round() as i64;
-    let start_y = (center_y - side as f64 / 2.0).round() as i64;
+    let half_side = side as f64 / 2.0;
+    let start_x = crate::utils::round_to_i64(center_x - half_side);
+    let start_y = crate::utils::round_to_i64(center_y - half_side);
 
     let mut out = vec![0u8; side * side * 4];
     for oy in 0..side {
-        let sy = start_y + oy as i64;
-        if sy < 0 || sy as usize >= h {
+        let Some(sy) = source_coordinate(start_y, oy, h) else {
             continue;
-        }
+        };
         for ox in 0..side {
-            let sx = start_x + ox as i64;
-            if sx < 0 || sx as usize >= w {
+            let Some(sx) = source_coordinate(start_x, ox, w) else {
                 continue;
-            }
-            let src = ((sy as usize) * w + sx as usize) * 4;
+            };
+            let src = (sy * w + sx) * 4;
             let dst = (oy * side + ox) * 4;
             out[dst..dst + 4].copy_from_slice(&rgba[src..src + 4]);
         }
     }
     Some((out, side))
+}
+
+/// The source pixel `offset` past `start`, or `None` when it falls outside
+/// `0..limit` (the square's overhang).
+#[cfg(any(target_os = "windows", target_os = "linux", test))]
+fn source_coordinate(start: i64, offset: usize, limit: usize) -> Option<usize> {
+    let coordinate = start.checked_add(i64::try_from(offset).ok()?)?;
+    usize::try_from(coordinate).ok().filter(|&coordinate| coordinate < limit)
 }
 
 #[cfg(test)]

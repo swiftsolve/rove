@@ -55,19 +55,22 @@ Rust has no exceptions either. Operations that can *fail* return a
 
 ```rust
 #[tauri::command]
-fn get_speed_history(store: tauri::State<'_, Arc<Store>>) -> Result<Vec<SpeedHistoryRecord>, String> {
-    store.speed_history().map_err(|e| e.to_string())
+pub async fn get_speed_history(store: tauri::State<'_, Arc<Store>>) -> CommandResult<Vec<SpeedHistoryRecord>> {
+    Ok(store.run_blocking(Store::speed_history).await?)
 }
 ```
 
-- `Result<Vec<SpeedHistoryRecord>, String>` = "on success, a vector (growable
-  array) of records; on failure, a String error message."
-- `store.speed_history()` returns a `Result` whose error type is some
-  database-error type.
-- `.map_err(|e| e.to_string())` transforms *just the error case*: if it failed,
-  convert the DB error into a plain `String`. (`|e| ...` is a closure, an inline
-  anonymous function, like JS `e => ...`.) Why? Because errors crossing to
-  JavaScript must be serializable, and a `String` always is.
+- `CommandResult<Vec<SpeedHistoryRecord>>` is short for `Result<Vec<…>,
+  CommandError>`: "on success, a vector (growable array) of records; on
+  failure, a `CommandError`."
+- `store.speed_history()` returns a `Result` whose error type is the database's
+  own (`StoreError`). `run_blocking` runs it on a thread where blocking on disk
+  is fine.
+- The `?` converts that `StoreError` into a `CommandError`, because
+  `CommandError` declares `#[from] StoreError` (in `src-tauri/src/error.rs`).
+  Why a `CommandError` at all? Errors crossing to JavaScript must be
+  serializable, so `CommandError` serializes as its message string, while the
+  Rust side keeps a type it can match on.
 
 When a Tauri command returns `Result`, the frontend's `invoke()` promise
 **resolves** on `Ok` and **rejects** on `Err`. So Rust's `Result` maps cleanly
@@ -78,7 +81,7 @@ The `?` operator is the payoff. See `relaunch_as_admin` in
 `apps/rove/src-tauri/src/commands.rs`:
 
 ```rust
-let exe = std::env::current_exe().map_err(err_str)?;   // ← the ?
+let exe = std::env::current_exe()?;   // ← the ?
 ```
 
 `?` means: "if this is `Err`, return that error from the whole function right

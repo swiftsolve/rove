@@ -1,5 +1,6 @@
 //! The system tray icon and its menu: the app's presence when the window is
 //! closed to the background.
+use crate::error::log_if_failed;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -9,9 +10,9 @@ use tauri::{
 /// Reveal the main window and pull it to the foreground.
 pub fn show_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.show();
-        let _ = window.unminimize();
-        let _ = window.set_focus();
+        log_if_failed("show the main window", window.show());
+        log_if_failed("unminimize the main window", window.unminimize());
+        log_if_failed("focus the main window", window.set_focus());
     }
 }
 

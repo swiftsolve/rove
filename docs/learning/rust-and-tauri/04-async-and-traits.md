@@ -33,9 +33,10 @@ spawned it, so it can't borrow.
 
 Two production details are worth internalizing:
 
-- **Panic isolation.** The sample tick is wrapped in `catch_unwind`
-  (`lib.rs:324`). A panic inside one 30 s tick is logged and swallowed, so a single
-  bad reading can't kill the loop and silently stop usage tracking for the rest of
+- **Panic isolation.** Each sample tick runs in `spawn_blocking`
+  (`monitors.rs`), since it writes the database, and a panic there comes back
+  as an `Err` from the join. It's logged and the loop goes on, so a single bad
+  reading can't kill the loop and silently stop usage tracking for the rest of
   the session. The loop is a *supervisor*.
 - **The tap pattern (command + event, combined).** `spawn_throughput_broadcaster`
   (`lib.rs:342`) wakes every second but only emits while an `AtomicBool` flag is

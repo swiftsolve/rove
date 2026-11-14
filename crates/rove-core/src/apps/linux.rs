@@ -41,7 +41,7 @@ pub(super) async fn sample_peers() -> Option<Vec<PeerReading>> {
 /// The number after `key` in a line, e.g. `5231` from `bytes_sent:5231`.
 fn field_u64(line: &str, key: &str) -> Option<u64> {
     let start = line.find(key)? + key.len();
-    let digits: String = line[start..].chars().take_while(|c| c.is_ascii_digit()).collect();
+    let digits: String = line[start..].chars().take_while(char::is_ascii_digit).collect();
     digits.parse().ok()
 }
 

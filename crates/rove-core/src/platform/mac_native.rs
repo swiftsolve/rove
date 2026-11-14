@@ -62,7 +62,7 @@ mod imp {
             let client = CWWiFiClient::sharedWiFiClient();
             let interface = client.interface()?;
             let rate = interface.transmitRate();
-            (rate > 0.0).then_some(rate as i64)
+            (rate > 0.0).then(|| crate::utils::round_to_i64(rate))
         }
     }
 }

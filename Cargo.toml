@@ -6,6 +6,7 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "time", "sync", "fs", "net"] }
+thiserror = "2"
 
 # Each crate opts in with `[lints] workspace = true`. CI runs clippy with
 # `-D warnings`, so these warnings fail the build.
@@ -23,3 +24,12 @@ too_long_first_doc_paragraph = "warn"
 # A module with children is `foo.rs` beside `foo/`, the Rust 2018 layout, not
 # `foo/mod.rs`.
 mod_module_files = "warn"
+# A numeric `as` cast that can wrap, truncate or drop a sign: convert with
+# `From` or `try_from`, or `#[expect]` the lint with the reason it can't.
+cast_lossless = "warn"
+cast_possible_truncation = "warn"
+cast_possible_wrap = "warn"
+cast_sign_loss = "warn"
+# Cheap to keep out once gone.
+redundant_clone = "warn"
+redundant_closure_for_method_calls = "warn"

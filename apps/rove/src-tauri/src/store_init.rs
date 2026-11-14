@@ -10,7 +10,10 @@ pub fn init_store(app: &tauri::App) {
         .path()
         .app_data_dir()
         .inspect(|dir| {
-            let _ = std::fs::create_dir_all(dir);
+            // Opening the store below reports the failure that matters.
+            if let Err(e) = std::fs::create_dir_all(dir) {
+                tracing::warn!("could not create the app-data folder {}: {e}", dir.display());
+            }
         })
         .unwrap_or_else(|_| std::path::PathBuf::from("."));
 

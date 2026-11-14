@@ -153,7 +153,9 @@ pub fn snapshot() -> HashMap<String, DhcpHit> {
         // Only called from the async scan, so a Tokio runtime is present. A
         // failed bind isn't retried: privilege won't appear mid-run.
         tokio::spawn(async {
-            let _ = listen_forever().await;
+            if let Err(e) = listen_forever().await {
+                tracing::info!("passive DHCP listener is off: {e}");
+            }
         });
     });
     let mut map = crate::utils::net::lock(&CACHE).clone();
@@ -380,7 +382,7 @@ fn fingerprint_table() -> &'static [FingerprintRow] {
 /// Best-effort `(kind, os)` for a fingerprint. The first matching row wins, and
 /// vendor-class rows come before the version-sensitive PRL rows.
 fn classify_fingerprint(vendor_class: Option<&str>, prl: Option<&str>) -> (Option<DeviceKind>, Option<&'static str>) {
-    let vendor_lc = vendor_class.map(|v| v.to_ascii_lowercase());
+    let vendor_lc = vendor_class.map(str::to_ascii_lowercase);
     for row in fingerprint_table() {
         let matched = match row.matcher {
             Matcher::Vendor => vendor_lc.as_deref().is_some_and(|v| v.contains(row.pattern)),

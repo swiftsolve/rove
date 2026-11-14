@@ -232,7 +232,7 @@ fn tidy_vendor(vendor: &str) -> String {
 /// The precedence logic, apart from the global table so tests can use a
 /// synthetic one whatever the embedded snapshot contains.
 fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
-    let hex: String = mac.chars().filter(|c| c.is_ascii_hexdigit()).take(9).collect::<String>().to_uppercase();
+    let hex: String = mac.chars().filter(char::is_ascii_hexdigit).take(9).collect::<String>().to_uppercase();
     if hex.len() < 6 {
         return None;
     }
@@ -256,7 +256,7 @@ fn resolve(t: &OuiTable, mac: &str) -> Option<&'static str> {
 
 /// The locally administered bit marks a privacy-randomized MAC.
 pub fn is_randomized_mac(mac: &str) -> bool {
-    let hex: String = mac.chars().filter(|c| c.is_ascii_hexdigit()).take(2).collect();
+    let hex: String = mac.chars().filter(char::is_ascii_hexdigit).take(2).collect();
     u8::from_str_radix(&hex, 16).map(|b| b & 0x02 != 0).unwrap_or(false)
 }
 

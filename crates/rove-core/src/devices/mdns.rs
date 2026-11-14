@@ -105,7 +105,7 @@ fn is_human_name(name: &str) -> bool {
     if name.len() > 32 || !name.chars().any(|c| c.is_ascii_alphabetic()) {
         return false;
     }
-    let compact: String = name.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
+    let compact: String = name.chars().filter(char::is_ascii_alphanumeric).collect();
     !(compact.len() >= 16 && compact.chars().all(|c| c.is_ascii_hexdigit()))
 }
 
@@ -220,7 +220,9 @@ fn discover_blocking(window: Duration) -> HashMap<String, MdnsHit> {
         }
     }
 
-    let _ = daemon.shutdown();
+    if let Err(e) = daemon.shutdown() {
+        tracing::debug!("mDNS daemon did not shut down cleanly: {e}");
+    }
     hits
 }
 

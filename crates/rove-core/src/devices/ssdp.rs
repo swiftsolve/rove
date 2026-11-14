@@ -69,9 +69,13 @@ HOST: 239.255.255.250:1900\r\n\
 MAN: \"ssdp:discover\"\r\n\
 MX: 2\r\n\
 ST: ssdp:all\r\n\r\n";
-    // Two sends: the first datagram is the one most often lost while a NIC wakes.
-    let _ = socket.send_to(msearch, SSDP_MULTICAST).await;
-    let _ = socket.send_to(msearch, SSDP_MULTICAST).await;
+    // Two sends: the first datagram is the one most often lost while a NIC
+    // wakes. Only both failing sinks the search.
+    let first_send = socket.send_to(msearch, SSDP_MULTICAST).await;
+    let second_send = socket.send_to(msearch, SSDP_MULTICAST).await;
+    if let (Err(_), Err(e)) = (first_send, second_send) {
+        return Err(e);
+    }
 
     let mut locations: HashMap<String, String> = HashMap::new();
     let mut buf = vec![0u8; 2048];

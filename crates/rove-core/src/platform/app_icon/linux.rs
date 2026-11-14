@@ -413,7 +413,10 @@ fn icon_data_uri(path: &Path) -> Option<String> {
     let bytes = fs::read(path).ok()?;
     let (rgba, w, h) = if extension == "svg" { rasterize_svg(&bytes)? } else { decode_png(&bytes)? };
     let (rgba, w, h) = match trim_to_content_square(&rgba, w as usize, h as usize) {
-        Some((cropped, side)) => (cropped, side as u32, side as u32),
+        Some((cropped, side)) => {
+            let side = u32::try_from(side).ok()?;
+            (cropped, side, side)
+        }
         None => (rgba, w, h),
     };
     let (rgba, w, h) = if w > ICON_PX || h > ICON_PX { downscale(&rgba, w, h, ICON_PX) } else { (rgba, w, h) };
@@ -425,6 +428,11 @@ fn data_uri(mime: &str, bytes: &[u8]) -> String {
 }
 
 /// Render an SVG to straight-alpha RGBA, its longer side [`SVG_RASTER_PX`].
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "each side is rounded, at least 1, and at most SVG_RASTER_PX by the scale"
+)]
 fn rasterize_svg(bytes: &[u8]) -> Option<(Vec<u8>, u32, u32)> {
     use resvg::{tiny_skia, usvg};
     let tree = usvg::Tree::from_data(bytes, &usvg::Options::default()).ok()?;
@@ -465,9 +473,14 @@ fn decode_png(bytes: &[u8]) -> Option<(Vec<u8>, u32, u32)> {
 /// Shrink an RGBA image so its longer side is `side`, averaging each target
 /// pixel's source area. Colours are weighted by alpha so transparent pixels
 /// don't darken the edges.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "each target side is rounded, at least 1, and at most `side` by the scale"
+)]
 pub(super) fn downscale(rgba: &[u8], w: u32, h: u32, side: u32) -> (Vec<u8>, u32, u32) {
-    let scale = side as f64 / w.max(h) as f64;
-    let (tw, th) = (((w as f64 * scale).round() as u32).max(1), ((h as f64 * scale).round() as u32).max(1));
+    let scale = f64::from(side) / f64::from(w.max(h));
+    let (tw, th) = (((f64::from(w) * scale).round() as u32).max(1), ((f64::from(h) * scale).round() as u32).max(1));
     let mut out = Vec::with_capacity((tw * th * 4) as usize);
     for ty in 0..th {
         let (y0, y1) = (ty * h / th, ((ty + 1) * h / th).max(ty * h / th + 1));
@@ -477,19 +490,20 @@ pub(super) fn downscale(rgba: &[u8], w: u32, h: u32, side: u32) -> (Vec<u8>, u32
             for y in y0..y1 {
                 for x in x0..x1 {
                     let i = ((y * w + x) * 4) as usize;
-                    let alpha = rgba[i + 3] as u64;
+                    let alpha = u64::from(rgba[i + 3]);
                     for channel in 0..3 {
-                        sum[channel] += rgba[i + channel] as u64 * alpha;
+                        sum[channel] += u64::from(rgba[i + channel]) * alpha;
                     }
                     sum[3] += alpha;
                 }
             }
-            let count = ((y1 - y0) * (x1 - x0)) as u64;
+            let count = u64::from((y1 - y0) * (x1 - x0));
             let alpha = sum[3];
+            // Averages of u8 samples, so each fits a u8.
             for channel in sum.iter().take(3) {
-                out.push(channel.checked_div(alpha).unwrap_or(0) as u8);
+                out.push(u8::try_from(channel.checked_div(alpha).unwrap_or(0)).unwrap_or(u8::MAX));
             }
-            out.push((alpha / count) as u8);
+            out.push(u8::try_from(alpha / count).unwrap_or(u8::MAX));
         }
     }
     (out, tw, th)
@@ -519,7 +533,7 @@ mod tests {
     }
 
     fn facts(names: &[&str]) -> ProcessFacts {
-        ProcessFacts { names: names.iter().map(|n| n.to_string()).collect(), ..Default::default() }
+        ProcessFacts { names: names.iter().map(std::string::ToString::to_string).collect(), ..Default::default() }
     }
 
     fn entry(id: &str, text: &str) -> DesktopEntry {

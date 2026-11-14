@@ -99,8 +99,9 @@ fn current_year_month() -> (i32, u32) {
     let days = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .expect("system clock is before the Unix epoch")
-        .as_secs() as i64
+        .as_secs()
         / 86_400;
+    let days = i64::try_from(days).expect("the day count fits i64");
 
     let z = days + 719_468;
     let era = z.div_euclid(146_097);
@@ -110,13 +111,16 @@ fn current_year_month() -> (i32, u32) {
     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
     let mp = (5 * doy + 2) / 153;
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
-    (if m <= 2 { y + 1 } else { y } as i32, m as u32)
+    let year = if m <= 2 { y + 1 } else { y };
+    (i32::try_from(year).expect("the year fits i32"), u32::try_from(m).expect("a month is 1 to 12"))
 }
 
 /// The month `back` months before (year, month).
 fn months_back(year: i32, month: u32, back: u32) -> (i32, u32) {
-    let total = year as i64 * 12 + (month as i64 - 1) - back as i64;
-    (total.div_euclid(12) as i32, total.rem_euclid(12) as u32 + 1)
+    let total = i64::from(year) * 12 + (i64::from(month) - 1) - i64::from(back);
+    let year = i32::try_from(total.div_euclid(12)).expect("the year fits i32");
+    let month = u32::try_from(total.rem_euclid(12)).expect("rem_euclid(12) is 0 to 11") + 1;
+    (year, month)
 }
 
 /// Reject anything that isn't the database we expect before it lands in the

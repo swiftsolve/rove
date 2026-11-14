@@ -36,9 +36,13 @@ pub struct SpeedTestProgress {
     pub progress: u8,
 }
 
-/// The error a cancelled test returns; `useSpeedTest` matches on it to tell a
-/// cancel from a failure.
-pub const CANCELLED: &str = "SPEED_TEST_CANCELLED";
+/// Why a speed test stopped short.
+#[derive(Debug, thiserror::Error)]
+pub enum SpeedTestError {
+    /// `useSpeedTest` matches on this text to tell a cancel from a failure.
+    #[error("SPEED_TEST_CANCELLED")]
+    Cancelled,
+}
 
 /// Download endpoints, tried in order. Cloudflare first: its anycast network is
 /// near almost everywhere and built for parallel tests, so stacking connections
@@ -159,7 +163,9 @@ async fn adaptive_transfer(
 
     // Workers exit on their own at the deadline; just drain them.
     for handle in handles {
-        let _ = handle.await;
+        if let Err(e) = handle.await {
+            tracing::warn!("a speed test worker panicked: {e}");
+        }
     }
     counters.counted.load(Ordering::Relaxed)
 }
@@ -296,10 +302,13 @@ pub async fn measure_upload(cancel: &Arc<AtomicBool>) -> f64 {
 /// `network_info()` probe (10 s+ on Windows with a VPN and other virtual
 /// adapters), and waiting on it froze the UI at "Starting speed test…". The
 /// command runs that probe alongside the test instead.
-pub async fn run<F: Fn(SpeedTestProgress)>(cancel: Arc<AtomicBool>, report: F) -> Result<SpeedTestResult, String> {
+pub async fn run<F: Fn(SpeedTestProgress)>(
+    cancel: Arc<AtomicBool>,
+    report: F,
+) -> Result<SpeedTestResult, SpeedTestError> {
     let ensure_not_cancelled = || {
         if cancel.load(Ordering::Relaxed) {
-            Err(CANCELLED.to_string())
+            Err(SpeedTestError::Cancelled)
         } else {
             Ok(())
         }

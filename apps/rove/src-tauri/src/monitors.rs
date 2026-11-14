@@ -2,14 +2,20 @@
 //! refresh, the internet and services heartbeats, and the OS network-change
 //! monitor that nudges the UI off its polling interval. They run whether or not
 //! the window is open.
+use crate::error::log_if_failed;
+use crate::ui_events::emit_to_ui;
 use crate::AppState;
 use futures_util::FutureExt;
-use rove_core::{live_throughput::ThroughputSampler, store::Store, utils::net::lock};
+use rove_core::{
+    live_throughput::ThroughputSampler,
+    store::Store,
+    utils::net::{lock, now_ms},
+};
 use std::panic::AssertUnwindSafe;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::{Emitter, Manager};
+use tauri::Manager;
 
 /// How often the passive refresh tops up the device roster. A full scan is heavy
 /// and noisy, so the UI scans only on demand; the passive pass (neighbour table
@@ -27,16 +33,20 @@ const USAGE_SAMPLE_INTERVAL: Duration = Duration::from_secs(30);
 pub fn spawn_usage_sampler(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
-            // A panic here must not end usage tracking for the session.
-            let outcome = std::panic::catch_unwind(AssertUnwindSafe(|| {
-                let state = handle.state::<AppState>();
+            // On the blocking pool, since a sample writes the store. A panic
+            // there comes back as an error, so it can't end usage tracking for
+            // the session.
+            let tick_handle = handle.clone();
+            let outcome = tokio::task::spawn_blocking(move || {
+                let state = tick_handle.state::<AppState>();
                 let mut networks = lock(&state.networks);
                 networks.refresh(true);
                 let mut usage = lock(&state.usage);
                 if let Some(tracker) = usage.as_mut() {
                     tracker.sample(&networks);
                 }
-            }));
+            })
+            .await;
             if outcome.is_err() {
                 tracing::error!("usage sampler tick panicked; continuing");
             }
@@ -63,7 +73,7 @@ pub fn spawn_app_usage_sampler(handle: tauri::AppHandle) {
                     let state = handle.state::<AppState>();
                     lock(&state.app_usage).ingest(units);
                     // The Apps view refetches on this rather than waiting for a poll.
-                    let _ = handle.emit("app-usage", &());
+                    emit_to_ui(&handle, "app-usage", ());
                 }
             };
             // A panic here must not end per-app tracking for the session.
@@ -104,7 +114,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                 };
                 // The Hosts and Traffic views refetch on this: once for the
                 // new byte counts, and again below once names and flags land.
-                let _ = handle.emit("host-usage", &());
+                emit_to_ui(&handle, "host-usage", ());
                 let is_enriching = !need_hosts.is_empty() || !need_countries.is_empty();
 
                 // Misses are recorded too, so each peer resolves once.
@@ -134,7 +144,7 @@ pub fn spawn_host_usage_sampler(handle: tauri::AppHandle) {
                     lock(&state.host_usage).record_countries(resolved);
                 }
                 if is_enriching {
-                    let _ = handle.emit("host-usage", &());
+                    emit_to_ui(&handle, "host-usage", ());
                 }
             };
             // A panic here must not end host tracking for the session.
@@ -170,7 +180,7 @@ pub fn spawn_throughput_broadcaster(handle: tauri::AppHandle) {
                 continue;
             }
             let sample = sampler.sample();
-            let _ = handle.emit("live-throughput", &sample);
+            emit_to_ui(&handle, "live-throughput", &sample);
         }
     });
 }
@@ -187,11 +197,10 @@ pub fn spawn_device_refresh(handle: tauri::AppHandle) {
         tokio::time::sleep(PASSIVE_REFRESH_WARMUP).await;
         loop {
             let present = rove_core::devices::passive_refresh().await;
-            let now = rove_core::utils::net::now_ms() as i64;
+            let now = now_ms();
             let store = handle.state::<Arc<Store>>();
-            if let Err(e) = store.touch_devices(&present, now) {
-                tracing::warn!("passive device refresh failed to persist: {e}");
-            }
+            let recorded = store.run_blocking(move |store| store.touch_devices(&present, now)).await;
+            log_if_failed("record the passive device refresh", recorded);
             tokio::time::sleep(PASSIVE_REFRESH_INTERVAL).await;
         }
     });
@@ -210,17 +219,16 @@ pub fn spawn_internet_heartbeat(handle: tauri::AppHandle) {
         let mut last: Option<rove_core::diagnostics::InternetStatus> = None;
         loop {
             let status = rove_core::diagnostics::check_internet().await;
-            let now = rove_core::utils::net::now_ms() as i64;
+            let now = now_ms();
             {
                 let state = handle.state::<AppState>();
                 *lock(&state.internet) = Some(status);
             }
             let store = handle.state::<Arc<Store>>();
-            if let Err(e) = store.record_internet(status, now) {
-                tracing::warn!("internet heartbeat failed to persist: {e}");
-            }
+            let recorded = store.run_blocking(move |store| store.record_internet(status, now)).await;
+            log_if_failed("record the internet heartbeat", recorded);
             if last != Some(status) {
-                let _ = handle.emit("internet-status", status);
+                emit_to_ui(&handle, "internet-status", status);
                 last = Some(status);
             }
             tokio::time::sleep(INTERNET_HEARTBEAT_INTERVAL).await;
@@ -246,22 +254,20 @@ pub fn spawn_services_heartbeat(handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(SERVICES_HEARTBEAT_WARMUP).await;
         loop {
-            let services = {
-                let store = handle.state::<Arc<Store>>();
-                store.services().unwrap_or_else(|_| rove_core::services::default_service_list())
-            };
+            let store = handle.state::<Arc<Store>>();
+            let services = store.run_blocking(Store::services).await.unwrap_or_else(|e| {
+                tracing::warn!("could not read the service list, probing the defaults: {e}");
+                rove_core::services::default_service_list()
+            });
             if !services.is_empty() {
                 let (report, network_key) =
                     tokio::join!(rove_core::services::run_services(&services), rove_core::connection::network_key());
                 handle.state::<AppState>().remember_services_report(network_key, &report);
-                let now = rove_core::utils::net::now_ms() as i64;
-                let store = handle.state::<Arc<Store>>();
-                match store.record_services(&report, now) {
+                let now = now_ms();
+                match store.run_blocking(move |store| store.record_services(&report, now)).await {
                     // So an outage lands on a timeline already on screen.
-                    Ok(()) => {
-                        let _ = handle.emit("services-timeline", &());
-                    }
-                    Err(e) => tracing::warn!("services heartbeat failed to persist: {e}"),
+                    Ok(()) => emit_to_ui(&handle, "services-timeline", ()),
+                    Err(e) => tracing::warn!("could not record the services heartbeat: {e}"),
                 }
             }
             tokio::time::sleep(SERVICES_HEARTBEAT_INTERVAL).await;
@@ -355,13 +361,15 @@ where
         while let Ok(Some(_)) = lines.next_line().await {
             if last_emit.is_none_or(|at| at.elapsed() >= NETWORK_CHANGE_THROTTLE) {
                 last_emit = Some(Instant::now());
-                let _ = handle.emit("network-changed", &());
+                emit_to_ui(&handle, "network-changed", ());
             }
         }
 
+        // Its stdout closed, so it has almost certainly exited already: a
+        // failed kill only means there's nothing left to kill.
+        let _ = child.kill().await;
         // One that stayed up a while resets the backoff; rapid crashes escalate
         // it so we don't spin respawning.
-        let _ = child.kill().await;
         if started.elapsed() >= MONITOR_STABLE_UPTIME {
             backoff = MONITOR_MIN_BACKOFF;
         } else {

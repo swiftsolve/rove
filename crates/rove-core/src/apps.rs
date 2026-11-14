@@ -129,7 +129,7 @@ pub struct AppUsageSummary {
     /// instead of showing an empty list.
     pub support: Support,
     /// Epoch ms of the first sample, or null before then.
-    pub tracking_since: Option<u64>,
+    pub tracking_since: Option<i64>,
 }
 
 /// `Supported` on Linux and macOS, and on Windows while the ETW session is up
@@ -236,7 +236,7 @@ pub struct AppUsageTracker {
     last: HashMap<String, ByteCounts>,
     totals: HashMap<String, ByteCounts>,
     /// Epoch ms of the first snapshot; `None` until one arrives.
-    tracking_since: Option<u64>,
+    tracking_since: Option<i64>,
     /// How to read the counters: the platform's, or any in tests.
     semantics: CounterSemantics,
     /// OS icon per app name, as a `data:` URI. Cached because the lookup is

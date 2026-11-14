@@ -152,11 +152,17 @@ connect to it.
 **Sync vs async matters on the Rust side.** Every command returns a promise in
 JavaScript, but a plain `fn` command runs on the main thread while an `async fn`
 runs on a thread pool. The split in `commands.rs` follows that: anything that
-probes, shells out or hits the network is `async` (`get_devices`,
-`run_speed_test`, `get_network_info`); the cheap in-memory and database reads are
-sync (`get_app_usage`, `get_speed_history`, `cancel_speed_test`). A slow command
-declared sync would freeze the window while the UI politely awaited it, and
-nothing in the type system would warn you.
+probes, shells out, hits the network or touches the database is `async`
+(`get_devices`, `run_speed_test`, `get_speed_history`); only cheap in-memory
+reads are sync (`get_app_usage`, `cancel_speed_test`). A slow command declared
+sync would freeze the window while the UI politely awaited it, and nothing in
+the type system would warn you. Inside an `async` command, a database call still
+blocks, so it goes through `Store::run_blocking`, which runs it on tokio's
+blocking pool instead of an async worker.
+
+Commands fail with `CommandError` (`src-tauri/src/error.rs`), which wraps each
+core error type (the store's, the speed test's, the Wi-Fi share's) and
+serializes as its message: the UI only ever sees a string.
 
 ---
 

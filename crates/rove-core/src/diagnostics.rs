@@ -142,7 +142,7 @@ pub async fn ping(host: &str, count: u32) -> Option<PingStats> {
     } else {
         0.0
     };
-    let loss = ((count as f64 - times.len() as f64) / count as f64 * 100.0).max(0.0);
+    let loss = ((f64::from(count) - times.len() as f64) / f64::from(count) * 100.0).max(0.0);
 
     Some(PingStats {
         avg_ms: (avg * 10.0).round() / 10.0,

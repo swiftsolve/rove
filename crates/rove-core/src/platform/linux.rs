@@ -107,11 +107,11 @@ fn parse_nmcli_wifi_line(line: &str) -> ConnectionDetails {
     if parts.first() != Some(&"yes") {
         return d;
     }
-    d.ssid = parts.get(1).filter(|s| !s.is_empty()).map(|s| s.to_string());
+    d.ssid = parts.get(1).filter(|s| !s.is_empty()).map(std::string::ToString::to_string);
     d.signal_strength = parts.get(2).and_then(|s| s.parse().ok());
     d.frequency = parts.get(3).and_then(|s| s.parse().ok());
     d.channel = parts.get(4).and_then(|s| s.parse().ok());
-    d.security = parts.get(5).filter(|s| !s.is_empty()).map(|s| s.to_string());
+    d.security = parts.get(5).filter(|s| !s.is_empty()).map(std::string::ToString::to_string);
     d
 }
 
@@ -143,7 +143,7 @@ pub async fn wifi_details(iface: &str) -> ConnectionDetails {
         if d.link_speed_mbps.is_none() {
             d.link_speed_mbps = first_match(&out, &IW_TX_BITRATE)
                 .and_then(|s| s.parse::<f64>().ok())
-                .map(|mbps| mbps.round() as i64)
+                .map(crate::utils::round_to_i64)
                 .filter(|v| *v > 0);
         }
     }
@@ -231,7 +231,7 @@ pub async fn subnet_of(interface: &str) -> Option<(Ipv4Addr, u32)> {
     let addr = parsed.first()?["addr_info"].as_array()?.iter().find(|a| a["family"] == "inet")?.clone();
 
     let ip: Ipv4Addr = addr["local"].as_str()?.parse().ok()?;
-    let prefix = addr["prefixlen"].as_u64()? as u32;
+    let prefix = u32::try_from(addr["prefixlen"].as_u64()?).ok()?;
     Some((ip, prefix))
 }
 

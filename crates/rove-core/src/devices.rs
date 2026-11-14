@@ -66,7 +66,7 @@ pub struct LanDeviceScan {
     pub devices: Vec<LanDevice>,
     pub subnet: Option<String>,
     pub interface_name: Option<String>,
-    pub scanned_at: u64,
+    pub scanned_at: i64,
     /// Passive DHCP fingerprinting's state.
     pub dhcp_status: DhcpStatus,
 }
@@ -322,7 +322,7 @@ pub async fn gateway_identity(gateway: Option<&str>, local_ip: Option<std::net::
         tokio::join!(snmp::discover(gateway, local_ip), ssdp::discover(GATEWAY_SSDP_WINDOW, local_ip));
     let ssdp_hit = ssdp_hits.get(gw);
     let name = ssdp_hit.and_then(|hit| hit.name.clone());
-    let model = snmp_hits.get(gw).and_then(|hit| hit.model()).or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
+    let model = snmp_hits.get(gw).and_then(snmp::SnmpHit::model).or_else(|| ssdp_hit.and_then(|hit| hit.model.clone()));
     GatewayIdentity { mac, vendor, model, name }
 }
 

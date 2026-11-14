@@ -78,6 +78,7 @@ const fn instance(pid: u32, generation: u32) -> Instance {
     ((generation as u64) << 32) | pid as u64
 }
 
+#[expect(clippy::cast_possible_truncation, reason = "the pid is the low 32 bits, and the cast keeps them")]
 const fn instance_pid(inst: Instance) -> u32 {
     inst as u32
 }
@@ -379,7 +380,11 @@ fn try_start() -> Result<(), TraceError> {
     let (trace, handle) =
         UserTrace::new().named(String::from(SESSION_NAME)).enable(processes).enable(provider).start()?;
     std::thread::spawn(move || {
-        let _ = UserTrace::process_from_handle(handle);
+        // Returns only when the session ends, and an error then means per-app
+        // usage stopped counting.
+        if let Err(e) = UserTrace::process_from_handle(handle) {
+            tracing::warn!("the ETW usage session stopped: {e:?}");
+        }
     });
     std::mem::forget(trace);
     ACTIVE.store(true, Ordering::Release);

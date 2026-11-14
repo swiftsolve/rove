@@ -58,7 +58,7 @@ fn rows_from_csv(text: &str, rows: &mut BTreeSet<(u8, String, String)>) {
         };
         let Some(bits) = bits_for(registry) else { continue };
 
-        let prefix: String = assignment.chars().filter(|c| c.is_ascii_hexdigit()).collect::<String>().to_uppercase();
+        let prefix: String = assignment.chars().filter(char::is_ascii_hexdigit).collect::<String>().to_uppercase();
         if prefix.len() != (bits / 4) as usize {
             continue;
         }

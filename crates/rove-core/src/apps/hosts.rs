@@ -84,7 +84,7 @@ pub struct HostUsageSummary {
     pub apps: Vec<AppHosts>,
     /// See [`platform_support`].
     pub support: Support,
-    pub tracking_since: Option<u64>,
+    pub tracking_since: Option<i64>,
 }
 
 /// One kind of traffic: the connections grouped by their peer (service) port,
@@ -111,7 +111,7 @@ pub struct TrafficUsageSummary {
     pub types: Vec<TrafficType>,
     /// See [`platform_support`].
     pub support: Support,
-    pub tracking_since: Option<u64>,
+    pub tracking_since: Option<i64>,
 }
 
 /// The same as [`crate::apps::platform_support`]: on Windows both views
@@ -257,7 +257,7 @@ pub struct HostUsageTracker {
     /// `id`.
     by_traffic_type: HashMap<&'static str, (TrafficClass, ByteCounts)>,
     /// Epoch ms of the first snapshot; `None` until one arrives.
-    tracking_since: Option<u64>,
+    tracking_since: Option<i64>,
     /// How to read the counters: the platform's ([`peer_counter_semantics`]),
     /// or any in tests.
     semantics: CounterSemantics,

@@ -1,11 +1,13 @@
 //! Thin Tauri shell over rove-core: each command wraps one service. This file
 //! is the builder wiring; the substance lives in the modules below.
 mod commands;
+mod error;
 mod logging;
 mod monitors;
 mod scanner;
 mod store_init;
 mod tray;
+mod ui_events;
 
 use rove_core::apps::hosts::HostUsageTracker;
 use rove_core::apps::AppUsageTracker;
@@ -203,7 +205,7 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     // the decorations, and GTK keeps the decorated size for a
     // non-resizable window, so it came up ~52px larger each way.
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.show();
+        error::log_if_failed("show the main window", window.show());
     }
 
     Ok(())
@@ -213,7 +215,7 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 fn on_window_event(window: &tauri::Window, event: &tauri::WindowEvent) {
     if let tauri::WindowEvent::CloseRequested { api, .. } = event {
         if window.label() == "main" && window.app_handle().state::<AppState>().has_tray.load(Ordering::Relaxed) {
-            let _ = window.hide();
+            error::log_if_failed("hide the main window", window.hide());
             api.prevent_close();
         }
     }

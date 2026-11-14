@@ -199,14 +199,14 @@ mod tests {
             111,  // centre segment 1
             0x01, // minimum rate
         ];
-        let mut element = vec![EXTENSION, body.len() as u8];
+        let mut element = vec![EXTENSION, u8::try_from(body.len()).expect("a test element fits a length byte")];
         element.extend_from_slice(&body);
         element
     }
 
     fn eht_operation(control: u8) -> Vec<u8> {
         let body = [EHT_OPERATION, 0x01, 0x44, 0x44, 0x44, 0x44, control, 31, 63];
-        let mut element = vec![EXTENSION, body.len() as u8];
+        let mut element = vec![EXTENSION, u8::try_from(body.len()).expect("a test element fits a length byte")];
         element.extend_from_slice(&body);
         element
     }

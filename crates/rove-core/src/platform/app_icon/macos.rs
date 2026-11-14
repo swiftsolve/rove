@@ -30,7 +30,7 @@ pub fn app_icon_data_uri(name: &str, pid: Option<u32>) -> Option<String> {
 fn icon_via_pid(pid: u32) -> Option<Retained<NSImage>> {
     // Each accessor returns null when the pid isn't a bundled app, which the
     // `?` chain turns into `None`.
-    let app = NSRunningApplication::runningApplicationWithProcessIdentifier(pid as i32)?;
+    let app = NSRunningApplication::runningApplicationWithProcessIdentifier(i32::try_from(pid).ok()?)?;
     app.bundleURL()?;
     app.icon()
 }
@@ -81,7 +81,7 @@ fn render_png_data_uri(icon: &NSImage) -> Option<String> {
 /// visible.
 fn glyph_fill_rect(rep: &NSBitmapImageRep) -> Option<NSRect> {
     let side = ICON_PX as usize;
-    let stride = rep.bytesPerRow() as usize;
+    let stride = usize::try_from(rep.bytesPerRow()).ok()?;
     let data = rep.bitmapData();
     if data.is_null() || stride < side * 4 {
         return None;

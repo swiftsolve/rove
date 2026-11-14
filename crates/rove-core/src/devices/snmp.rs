@@ -25,7 +25,7 @@ const COMMUNITY: &[u8] = b"public";
 const OID_SYS_DESCR: &[u8] = &[0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x01, 0x00];
 /// Only one request is ever outstanding, so a constant id is enough and keeps
 /// the encoder deterministic for tests.
-const REQUEST_ID: i32 = 0x726f7665_u32 as i32; // "rove"
+const REQUEST_ID: i32 = i32::from_be_bytes(*b"rove");
 
 /// The gateway answers in single-digit ms; this bounds a host that silently
 /// drops the datagram.
@@ -152,14 +152,15 @@ fn tlv(tag: u8, value: &[u8]) -> Vec<u8> {
 
 /// BER length: short form below 128, else long form (byte count then bytes).
 fn encode_len(len: usize) -> Vec<u8> {
-    if len < 0x80 {
-        return vec![len as u8];
+    if let Ok(short @ 0..0x80) = u8::try_from(len) {
+        return vec![short];
     }
     let bytes = len.to_be_bytes();
     let first = bytes.iter().position(|&b| b != 0).unwrap_or(bytes.len() - 1);
     let significant = &bytes[first..];
     let mut out = Vec::with_capacity(significant.len() + 1);
-    out.push(0x80 | significant.len() as u8);
+    // At most `size_of::<usize>()` bytes, so the count fits the low 7 bits.
+    out.push(0x80 | significant.len().to_le_bytes()[0]);
     out.extend_from_slice(significant);
     out
 }

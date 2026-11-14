@@ -434,7 +434,7 @@ pub fn classify(s: &Signals) -> Verdict {
     vendors.vote(&mut tally, dhcp.and_then(|hit| hit.vendor_class.as_deref()), W_VENDOR);
 
     // An owned join of Server header and title, so it bypasses the channels.
-    if let Some(identity) = banner.and_then(|b| b.identity()) {
+    if let Some(identity) = banner.and_then(super::banner::BannerHit::identity) {
         tally.cast(VENDOR_KINDS.matches(&identity).or_else(|| HOSTNAME_KINDS.matches(&identity)), W_BANNER);
     }
 

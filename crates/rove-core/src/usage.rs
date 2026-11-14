@@ -19,7 +19,7 @@ pub struct DataUsageSummary {
     pub days: Vec<DailyUsage>,
     pub boot_rx_bytes: u64,
     pub boot_tx_bytes: u64,
-    pub tracking_since: Option<u64>,
+    pub tracking_since: Option<i64>,
 }
 
 /// Daily buckets kept in the store; older days are pruned on each write.
@@ -71,9 +71,7 @@ fn compute_local_offset_secs() -> i64 {
 }
 
 pub fn local_date_key(offset_days: i64) -> String {
-    let secs = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
-        + local_offset_secs()
-        + offset_days * SECS_PER_DAY;
+    let secs = crate::utils::net::now_ms() / 1000 + local_offset_secs() + offset_days * SECS_PER_DAY;
     let days = secs.div_euclid(SECS_PER_DAY);
     civil_from_days(days)
 }
@@ -104,7 +102,7 @@ pub struct UsageTracker {
 
 impl UsageTracker {
     pub fn new(store: Arc<Store>) -> Self {
-        let first_sample_recorded = store.get_meta_u64(FIRST_SAMPLE_KEY).ok().flatten().is_some();
+        let first_sample_recorded = store.get_meta_i64(FIRST_SAMPLE_KEY).ok().flatten().is_some();
         Self { store, last_bytes: HashMap::new(), first_sample_recorded }
     }
 
@@ -120,7 +118,7 @@ impl UsageTracker {
         self.last_bytes.retain(|name, _| networks.contains_key(name) && !crate::utils::net::is_virtual_interface(name));
 
         if !self.first_sample_recorded {
-            if let Err(e) = self.store.set_meta_u64(FIRST_SAMPLE_KEY, crate::utils::net::now_ms()) {
+            if let Err(e) = self.store.set_meta_i64(FIRST_SAMPLE_KEY, crate::utils::net::now_ms()) {
                 tracing::warn!("failed to record first-sample timestamp: {e}");
             }
             self.first_sample_recorded = true;
@@ -178,7 +176,7 @@ impl UsageTracker {
             days,
             boot_rx_bytes: boot_rx,
             boot_tx_bytes: boot_tx,
-            tracking_since: self.store.get_meta_u64(FIRST_SAMPLE_KEY).ok().flatten(),
+            tracking_since: self.store.get_meta_i64(FIRST_SAMPLE_KEY).ok().flatten(),
         }
     }
 }
