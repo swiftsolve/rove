@@ -6,10 +6,17 @@ import { styleText } from 'node:util'
 
 /**
  * The Rove Mark (BrandIcon's centre dot inside a ring open at the bottom),
- * drawn in braille dots, eight to a cell, so its curves stay round at four
- * lines tall.
+ * drawn in braille dots, eight to a cell. A dot is about as wide as it is
+ * tall, so the ring stays round: 28 dots across, 24 down.
  */
-const ROVE_MARK_ROWS = ['  ⢀⣠⣤⣤⣄⡀  ', ' ⣰⡟⠉⣀⣀⠉⢻⣆ ', ' ⣿ ⢸⣿⣿⡇ ⣿ ', ' ⠹⣧ ⠉⠉ ⣼⠏ ']
+const ROVE_MARK_ROWS = [
+  '     ⣀⣀⣀⣀     ',
+  '  ⢀⣴⠿⠛⠉⠉⠛⠿⣦⡀  ',
+  ' ⢠⣿⠃ ⣠⣤⣤⣄ ⠘⣿⡄ ',
+  ' ⢸⡇  ⣿⣿⣿⣿  ⢸⡇ ',
+  ' ⠘⣿⡄ ⠙⠛⠛⠋ ⢠⣿⠃ ',
+  '  ⠈⠛      ⠛⠁  ',
+]
 
 /** A colour as its red, green and blue parts, 0 to 255. */
 type Rgb = { red: number; green: number; blue: number }
@@ -34,6 +41,7 @@ function trueColorText(text: string, color: Rgb): string {
 
 /** What the banner says beside the mark, a line per mark row, centred on it. */
 const BANNER_WORDS = [
+  '',
   '',
   styleText('bold', 'Rove UI CLI'),
   styleText('gray', 'Props, usage and Figma for every component'),

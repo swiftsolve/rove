@@ -3,12 +3,13 @@
  * is given, prints through `write` and asks through `askForComponentName`, so a
  * test can run one with stand-ins and read what it printed.
  */
-import { Command } from 'commander'
+import { Command, Option } from 'commander'
 
-import type { ComponentListJson, NamedComponent } from './catalog.ts'
-import { findComponent, namedComponents, searchComponents, similarComponentNames } from './catalog.ts'
-import { componentDetailsText, componentListText } from './format.ts'
-import { figmaComponentUrl, importLine, storybookDocsUrl } from './links.ts'
+import type { ComponentListJson, NamedComponent } from './catalog/catalog.ts'
+import { findComponent, namedComponents, searchComponents, similarComponentNames } from './catalog/catalog.ts'
+import { figmaComponentUrl, importLine, storybookDocsUrl } from './catalog/links.ts'
+import { componentDetailsMarkdown, componentListMarkdown } from './output/markdown.ts'
+import { componentDetailsText, componentListText } from './output/text.ts'
 
 /** Where the CLI prints its answers and asks its questions. */
 export type CliTerminal = {
@@ -16,6 +17,8 @@ export type CliTerminal = {
   write: (text: string) => void
   /** Prints why a command failed. */
   writeError: (text: string) => void
+  /** How wide a line of `show` may run: the terminal's width, at most MAX_LINE_WIDTH. */
+  lineWidth: number
   /** Whether a person is at a terminal to answer a prompt: stdin and stdout are both one. */
   isInteractive: boolean
   /** Asks which component to pick, with the banner the first time; null when the person cancels. */
@@ -52,11 +55,16 @@ export function pickActions(catalog: ComponentListJson, component: NamedComponen
   return actions
 }
 
-/** Commander's options shared by every command. */
+/** Commander's options shared by every command, named after their flags. */
 type GlobalOptions = {
   // eslint-disable-next-line @typescript-eslint/naming-convention -- Commander names it after the `--json` flag
   json?: boolean
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- Commander names it after the `--md` flag
+  md?: boolean
 }
+
+/** How a command prints: laid out for a person, as Markdown for an agent, or the raw entries. */
+type OutputFormat = 'text' | 'md' | 'json'
 
 /** A value as indented JSON, for `--json`. */
 function jsonText(value: unknown): string {
@@ -68,19 +76,44 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
   // Typed, so TypeScript knows `program.error` never returns and narrows after it.
   const program: Command = new Command('rove-ui')
     .description("Look up Rove's UI library components: their props, usage guide, Figma component and stories.")
-    .option('--json', 'print the catalog entries as JSON instead of text')
+    .option('--json', 'print the catalog entries as JSON')
+    .addOption(
+      new Option('--md', 'print Markdown: no colour or columns, the fewest tokens for an agent').conflicts('json'),
+    )
     .configureOutput({ writeOut: terminal.write, writeErr: terminal.writeError })
     .showHelpAfterError('Run `rove-ui --help` for the commands.')
     // Throws a CommanderError instead of exiting, so the caller sets the exit code.
     .exitOverride()
 
-  function isJson(): boolean {
-    return program.opts<GlobalOptions>().json === true
+  function outputFormat(): OutputFormat {
+    const options = program.opts<GlobalOptions>()
+    if (options.json === true) {
+      return 'json'
+    }
+    if (options.md === true) {
+      return 'md'
+    }
+    return 'text'
   }
 
-  /** Prints one component in full, or its catalog entry with `--json`. */
+  /** Prints one component in full, in the chosen format. */
   function writeComponent(component: NamedComponent): void {
-    terminal.write(`${isJson() ? jsonText(component) : componentDetailsText(catalog, component)}\n`)
+    const textByFormat: Record<OutputFormat, () => string> = {
+      text: () => componentDetailsText(catalog, component, terminal.lineWidth),
+      md: () => componentDetailsMarkdown(catalog, component),
+      json: () => jsonText(component),
+    }
+    terminal.write(`${textByFormat[outputFormat()]()}\n`)
+  }
+
+  /** Prints components under their groups, in the chosen format. */
+  function writeComponentList(components: NamedComponent[]): void {
+    const textByFormat: Record<OutputFormat, () => string> = {
+      text: () => componentListText(components),
+      md: () => componentListMarkdown(components),
+      json: () => jsonText(components),
+    }
+    terminal.write(`${textByFormat[outputFormat()]()}\n`)
   }
 
   program
@@ -96,7 +129,7 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
         const groups = [...new Set(namedComponents(catalog).map((component) => component.libraryGroup))]
         program.error(`No group named "${options.group ?? ''}". Groups: ${groups.join(', ')}`)
       }
-      terminal.write(`${isJson() ? jsonText(components) : componentListText(components)}\n`)
+      writeComponentList(components)
     })
 
   program
@@ -175,15 +208,11 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
     .argument('<words...>', 'words to look for, like "status line" or tooltip')
     .action((words: string[]) => {
       const components = searchComponents(catalog, words)
-      if (isJson()) {
-        terminal.write(`${jsonText(components)}\n`)
-        return
-      }
-      if (components.length === 0) {
+      if (components.length === 0 && outputFormat() !== 'json') {
         terminal.write(`No component mentions "${words.join(' ')}".\n`)
         return
       }
-      terminal.write(`${componentListText(components)}\n`)
+      writeComponentList(components)
     })
 
   program
@@ -193,7 +222,8 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
     .action((text: string | undefined) => {
       const wantedText = text?.toLowerCase() ?? ''
       const iconNames = catalog.iconNames.filter((iconName) => iconName.toLowerCase().includes(wantedText))
-      terminal.write(`${isJson() ? jsonText(iconNames) : iconNames.join('\n')}\n`)
+      const iconText = outputFormat() === 'json' ? jsonText(iconNames) : iconNames.join('\n')
+      terminal.write(`${iconText}\n`)
     })
 
   return program

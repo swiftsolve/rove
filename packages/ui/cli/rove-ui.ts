@@ -6,14 +6,17 @@
  */
 import { CommanderError } from 'commander'
 
-import { readCatalog } from './catalog.ts'
-import { askForAction, askForComponentName, writeNote } from './pick.ts'
+import { readCatalog } from './catalog/catalog.ts'
+import { MAX_LINE_WIDTH } from './output/text.ts'
+import { askForAction, askForComponentName, writeNote } from './pick/prompts.ts'
+import { copyToClipboard, openInBrowser } from './pick/system.ts'
 import { createProgram } from './program.ts'
-import { copyToClipboard, openInBrowser } from './system.ts'
 
 const program = createProgram(readCatalog(), {
   write: (text) => process.stdout.write(text),
   writeError: (text) => process.stderr.write(text),
+  // A pipe has no width (columns is undefined), so piped text takes the widest line.
+  lineWidth: Math.min(process.stdout.columns || MAX_LINE_WIDTH, MAX_LINE_WIDTH),
   isInteractive: process.stdin.isTTY && process.stdout.isTTY,
   askForComponentName,
   askForAction,

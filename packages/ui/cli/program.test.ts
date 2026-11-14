@@ -1,8 +1,8 @@
 import { CommanderError } from 'commander'
 import { describe, expect, it } from 'vitest'
 
-import type { ComponentEntry } from './catalog.ts'
-import { readCatalog, similarComponentNames } from './catalog.ts'
+import type { ComponentEntry } from './catalog/catalog.ts'
+import { readCatalog, similarComponentNames } from './catalog/catalog.ts'
 import type { PickActionId } from './program.ts'
 import { createProgram } from './program.ts'
 
@@ -42,6 +42,7 @@ async function runCli(args: string[], terminal: TerminalStandIn = {}): Promise<R
   const program = createProgram(catalog, {
     write: (text) => (printed += text),
     writeError: (text) => (errors += text),
+    lineWidth: 100,
     isInteractive: terminal.isInteractive ?? false,
     askForComponentName: () => Promise.resolve(pickedNames.shift() ?? null),
     askForAction: () => Promise.resolve(chosenActions.shift() ?? null),
@@ -69,27 +70,50 @@ async function runCli(args: string[], terminal: TerminalStandIn = {}): Promise<R
 describe('rove-ui show', () => {
   it("prints a component's props, usage guide, Figma component and stories", async () => {
     const { printed } = await runCli(['show', 'Button'])
-    expect(printed).toContain('Button (Actions)')
-    expect(printed).toContain("variant: 'solid' | 'soft' = soft")
-    expect(printed).toContain('When not to use')
-    expect(printed).toContain('Figma: Button, https://www.figma.com/design/')
-    expect(printed).toContain('actions-button--solid')
+    expect(printed).toContain('Button  Actions')
+    expect(printed).toMatch(/ {2}variant +'solid' \| 'soft' {2}default soft\n/)
+    expect(printed).toContain('WHEN NOT TO USE\n  ✗ Opening another view')
+    expect(printed).toMatch(/ {2}Figma +Button {2}https:\/\/www\.figma\.com\/design\//)
+    expect(printed).toContain('?path=/docs/actions-button--docs')
+    expect(printed).toContain('STORIES (9)\n  solid, solid-negative,')
   })
 
   it('finds a component whatever its case', async () => {
     const { printed } = await runCli(['show', 'cardheader'])
-    expect(printed).toContain('CardHeader (Containers)')
+    expect(printed).toContain('CardHeader  Containers')
     expect(printed).toContain('Part of Card')
   })
 
   it("lists a family's parts", async () => {
     const { printed } = await runCli(['show', 'Card'])
-    expect(printed).toMatch(/Parts\n {2}- CardBody: /)
+    expect(printed).toMatch(/PARTS\n {2}- CardBody: /)
   })
 
   it('says why a component has no Figma component', async () => {
     const { printed } = await runCli(['show', 'StretchedLink'])
-    expect(printed).toContain('Figma: none. Draws nothing')
+    expect(printed).toMatch(/ {2}Figma +none\. Draws nothing/)
+  })
+
+  it('keeps every line but a link within the terminal width', async () => {
+    const { printed } = await runCli(['show', 'Card'])
+    // An address can't break between words, so its line may run on.
+    const linesOfWords = printed.split('\n').filter((line) => !line.includes('https://'))
+    const longestLine = Math.max(...linesOfWords.map((line) => line.length))
+    expect(longestLine).toBeLessThanOrEqual(100)
+  })
+
+  it('prints Markdown with --md, without columns', async () => {
+    const { printed } = await runCli(['--md', 'show', 'Button'])
+    expect(printed.startsWith('# Button\nActions. A text button.')).toBe(true)
+    expect(printed).toContain("- `variant`: 'solid' | 'soft', default soft. `solid` for a page's main action")
+    expect(printed).toContain('## When not to use\n- Opening another view or an address: use `Link`.')
+    expect(printed).toContain('- Docs: https://nabilr.com/rove/storybook/?path=/docs/actions-button--docs')
+  })
+
+  it('refuses --md and --json together', async () => {
+    const { errors, exitCode } = await runCli(['--md', '--json', 'show', 'Button'])
+    expect(exitCode).toBe(1)
+    expect(errors).toContain("option '--md' cannot be used with option '--json'")
   })
 
   it('prints the catalog entry with --json', async () => {
@@ -113,6 +137,11 @@ describe('rove-ui list', () => {
       expect(printed).toContain(name)
     }
     expect(printed).toMatch(/^Actions\n {2}Button: /)
+  })
+
+  it('lists them as Markdown with --md', async () => {
+    const { printed } = await runCli(['--md', 'list', '--group', 'actions'])
+    expect(printed).toMatch(/^## Actions\n- Button: A text button\./)
   })
 
   it('keeps to one group, whatever its case', async () => {
@@ -147,7 +176,7 @@ describe('rove-ui pick', () => {
       pickedNames: ['CardHeader'],
       chosenActions: ['show', null],
     })
-    expect(printed).toContain('CardHeader (Containers)')
+    expect(printed).toContain('CardHeader  Containers')
   })
 
   it('copies the import line, or prints it when there is no clipboard', async () => {
@@ -176,8 +205,8 @@ describe('rove-ui pick', () => {
       pickedNames: ['Button', 'Link'],
       chosenActions: ['pickAnother', 'show', null],
     })
-    expect(printed).toContain('Link (Actions)')
-    expect(printed).not.toContain('Button (Actions)')
+    expect(printed).toContain('Link  Actions')
+    expect(printed).not.toContain('Button  Actions')
   })
 
   it('prints nothing when the person cancels', async () => {

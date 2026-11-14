@@ -231,7 +231,9 @@ rove/
 │   │                           figma:export) and figma-differences.json (by
 │   │                           hand: where code and Figma differ, and why)
 │   ├── cli/                    rove-ui, which prints the catalog a component
-│   │                           at a time (npx rove-ui --help)
+│   │                           at a time (npx rove-ui --help): program.ts
+│   │                           (the commands), catalog/ (reads it), output/
+│   │                           (text and Markdown) and pick/ (the prompts)
 │   └── .storybook/             the library's Storybook and its Docs pages
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per

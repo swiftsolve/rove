@@ -6,14 +6,14 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import type { ComponentEntry, ComponentListJson } from '../../../scripts/lib/library-json-types.ts'
+import type { ComponentEntry, ComponentListJson } from '../../../../scripts/lib/library-json-types.ts'
 
 export type { ComponentEntry, ComponentListJson }
 
 /** A component with its name, which components.gen.json keeps as its key. */
 export type NamedComponent = ComponentEntry & { name: string }
 
-const CATALOG_PATH = join(import.meta.dirname, '../catalog/components.gen.json')
+const CATALOG_PATH = join(import.meta.dirname, '../../catalog/components.gen.json')
 
 /** Reads the component catalog from disk. */
 export function readCatalog(): ComponentListJson {

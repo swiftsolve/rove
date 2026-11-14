@@ -16,7 +16,7 @@ Read the rows your task matches:
 | --- | --- |
 | Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
 | UI | `apps/rove/src/README.md` and DESIGN.md; for the library, also `packages/ui/README.md` |
-| Which library component, and its props | `npx rove-ui list`, then `npx rove-ui show <Name>`: one component from `packages/ui/catalog/components.gen.json`, generated from the code (`apps/rove/src/README.md`: Components) |
+| Which library component, and its props | `npx rove-ui --md list`, then `npx rove-ui --md show <Name>`: one component from `packages/ui/catalog/components.gen.json`, generated from the code (`apps/rove/src/README.md`: Components) |
 | The UI↔backend boundary, commands, events | `docs/architecture.md` |
 | A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |

@@ -18,8 +18,8 @@ writing new markup. Which one to use, and its props, variants and usage guide,
 are in `packages/ui/catalog/components.gen.json`: read it first, not the sources.
 `npx rove-ui` prints it a component at a time: `list` (each by group), `show
 Button` (its props, parts, usage guide, Figma component and stories), `search
-tooltip`, `icons wifi`, `pick` (type to narrow the list, then show, copy or open one, in a terminal), and
-`--json` for the raw entry. For how
+tooltip`, `icons wifi`, `pick` (type to narrow the list, then show, copy or open one, in a terminal),
+`--md` for an agent (Markdown, the fewest tokens) and `--json` for the raw entry. For how
 one is used, read its stories, beside its source (`Link.stories.tsx`). Each
 project JSON file has a schema in `schemas/`, `<name>.schema.json`, that says
 what every key means, and the generators fail on a file that breaks it.

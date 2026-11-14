@@ -11,7 +11,7 @@ The library's rules (stories, docs pages, what every component does) are in
 
 ## Before you start
 
-- Look in the catalog (`npx rove-ui list`, `npx rove-ui search <words>`) for a component that already fits, or one
+- Look in the catalog (`npx rove-ui --md list`, `npx rove-ui --md search <words>`) for a component that already fits, or one
   that needs only a variant. A variant on an existing component beats a new one.
 - Name it, and its props, the way the library does (`variant`, `tone`,
   `isDisabled`, `description`, `actions`; `packages/ui/README.md`: Every component). The

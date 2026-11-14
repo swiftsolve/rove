@@ -7,9 +7,9 @@ import { styleText } from 'node:util'
 
 import { autocomplete, cancel, intro, isCancel, log, outro, select } from '@clack/prompts'
 
+import type { NamedComponent } from '../catalog/catalog.ts'
+import type { PickAction, PickActionId } from '../program.ts'
 import { bannerText } from './banner.ts'
-import type { NamedComponent } from './catalog.ts'
-import type { PickAction, PickActionId } from './program.ts'
 
 /** Colour depth `getColorDepth` reports for a 24-bit terminal. */
 const TRUE_COLOR_DEPTH = 24
