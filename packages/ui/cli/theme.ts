@@ -9,9 +9,26 @@ import { styleText } from 'node:util'
 /** A colour as its red, green and blue parts, 0 to 255. */
 export type Rgb = { red: number; green: number; blue: number }
 
+/** A colour for each kind of terminal: dark, light, and one without 24-bit colour. */
+type TerminalColor = { onDark: Rgb; onLight: Rgb; fallback: 'blueBright' | 'blue' }
+
 /** Rove's --accent-default: Dark's on a dark terminal, Light's on a light one. */
-const ACCENT_ON_DARK: Rgb = { red: 0x5b, green: 0x8c, blue: 0xff }
-const ACCENT_ON_LIGHT: Rgb = { red: 0x3a, green: 0x69, blue: 0xd5 }
+const ACCENT: TerminalColor = {
+  onDark: { red: 0x5b, green: 0x8c, blue: 0xff },
+  onLight: { red: 0x3a, green: 0x69, blue: 0xd5 },
+  fallback: 'blueBright',
+}
+
+/**
+ * The accent pushed toward the background, for a shadow under accent text:
+ * deeper on a dark terminal (Light's --accent-press), paler on a light one
+ * (the top of BrandIcon's dock gradient).
+ */
+const ACCENT_SHADE: TerminalColor = {
+  onDark: { red: 0x2c, green: 0x55, blue: 0xb8 },
+  onLight: { red: 0x7a, green: 0xa4, blue: 0xff },
+  fallback: 'blue',
+}
 
 /** The colour depth `getColorDepth` reports for a 24-bit terminal. */
 const TRUE_COLOR_DEPTH = 24
@@ -46,16 +63,25 @@ export function trueColorText(text: string, color: Rgb): string {
   return `\x1b[38;2;${color.red};${color.green};${color.blue}m${text}\x1b[39m`
 }
 
-/** Text in Rove's accent, or the terminal's bright blue where 24-bit colour isn't shown. */
-export function accentText(text: string): string {
+/** Text in a colour that suits the terminal, or plain where colour isn't shown. */
+function terminalColorText(text: string, color: TerminalColor): string {
   if (!isColorShown()) {
     return text
   }
   if (!hasTrueColor()) {
-    return styleText('blueBright', text)
+    return styleText(color.fallback, text)
   }
-  const accent = isLightTerminal(process.env.COLORFGBG) ? ACCENT_ON_LIGHT : ACCENT_ON_DARK
-  return trueColorText(text, accent)
+  return trueColorText(text, isLightTerminal(process.env.COLORFGBG) ? color.onLight : color.onDark)
+}
+
+/** Text in Rove's accent, or the terminal's bright blue where 24-bit colour isn't shown. */
+export function accentText(text: string): string {
+  return terminalColorText(text, ACCENT)
+}
+
+/** Text in a shade of the accent, for the shadow under large accent letters. */
+export function accentShadeText(text: string): string {
+  return terminalColorText(text, ACCENT_SHADE)
 }
 
 /** Text that supports what's beside it: a hint, a type, a guide line. */

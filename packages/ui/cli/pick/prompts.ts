@@ -9,13 +9,9 @@ import { AutocompletePrompt, isCancel, SelectPrompt } from '@clack/core'
 
 import type { NamedComponent } from '../catalog/catalog.ts'
 import type { PickAction, PickActionId } from '../program.ts'
-import { isLightTerminal } from '../theme.ts'
 import { bannerText } from './banner.ts'
 import { introText, listFrame, menuFrame, noteText, outroText } from './frames.ts'
 import { rankComponents } from './match.ts'
-
-/** Colour depth `getColorDepth` reports for a 24-bit terminal. */
-const TRUE_COLOR_DEPTH = 24
 
 /**
  * Joins the typed text to a name in an option's value. @clack/core keeps focus
@@ -36,9 +32,7 @@ function nameFromValue(value: string): string {
 /** Asks which component to pick, after the banner the first time; null when the person quits. */
 export async function askForComponentName(components: NamedComponent[], isFirstPick: boolean): Promise<string | null> {
   if (isFirstPick) {
-    const hasTrueColor = process.stdout.getColorDepth() >= TRUE_COLOR_DEPTH
-    const isLight = isLightTerminal(process.env.COLORFGBG)
-    process.stdout.write(bannerText(hasTrueColor, process.stdout.columns, isLight))
+    process.stdout.write(bannerText(process.stdout.columns))
   }
   const groupCount = new Set(components.map((component) => component.libraryGroup)).size
   process.stdout.write(introText(`${components.length} components in ${groupCount} groups`))

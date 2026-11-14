@@ -1,71 +1,77 @@
 /**
- * The banner `rove-ui pick` opens with: the Rove Mark beside the library's
- * name, in the dock icon's top-to-bottom blue.
+ * The banner `rove-ui pick` opens with: a welcome line in a rounded box, then
+ * ROVE over UI in large shadowed letters, then what the CLI gives. Letters are
+ * straight lines, so they stay crisp in any terminal font, where a drawn curve
+ * would break into cells.
  */
-import { styleText } from 'node:util'
-
-import type { Rgb } from '../theme.ts'
-import { trueColorText } from '../theme.ts'
+import { accentShadeText, accentText, quietText, strongText } from '../theme.ts'
 
 /**
- * The Rove Mark (BrandIcon's centre dot inside a ring open at the bottom),
- * drawn in braille dots, eight to a cell. A dot is about as wide as it is
- * tall, so the ring stays round: 28 dots across, 24 down.
+ * Each letter in the "ANSI Shadow" style, six rows tall: full blocks are the
+ * letter, box-drawing lines its shadow down and to the right.
  */
-const ROVE_MARK_ROWS = [
-  '     ⣀⣀⣀⣀     ',
-  '  ⢀⣴⠿⠛⠉⠉⠛⠿⣦⡀  ',
-  ' ⢠⣿⠃ ⣠⣤⣤⣄ ⠘⣿⡄ ',
-  ' ⢸⡇  ⣿⣿⣿⣿  ⢸⡇ ',
-  ' ⠘⣿⡄ ⠙⠛⠛⠋ ⢠⣿⠃ ',
-  '  ⠈⠛      ⠛⠁  ',
-]
-
-/** The mark's top-to-bottom gradient: BrandIcon's dock-icon blue on a dark terminal, Light's accent on a light one. */
-const MARK_GRADIENT_ON_DARK = {
-  top: { red: 0x7a, green: 0xa4, blue: 0xff },
-  bottom: { red: 0x54, green: 0x84, blue: 0xf5 },
-}
-const MARK_GRADIENT_ON_LIGHT = {
-  top: { red: 0x3a, green: 0x69, blue: 0xd5 },
-  bottom: { red: 0x2c, green: 0x55, blue: 0xb8 },
+const LETTER_ROWS: Record<string, string[]> = {
+  R: ['██████╗ ', '██╔══██╗', '██████╔╝', '██╔══██╗', '██║  ██║', '╚═╝  ╚═╝'],
+  O: [' ██████╗ ', '██╔═══██╗', '██║   ██║', '██║   ██║', '╚██████╔╝', ' ╚═════╝ '],
+  V: ['██╗   ██╗', '██║   ██║', '██║   ██║', '╚██╗ ██╔╝', ' ╚████╔╝ ', '  ╚═══╝  '],
+  E: ['███████╗', '██╔════╝', '█████╗  ', '██╔══╝  ', '███████╗', '╚══════╝'],
+  U: ['██╗   ██╗', '██║   ██║', '██║   ██║', '██║   ██║', '╚██████╔╝', ' ╚═════╝ '],
+  I: ['██╗', '██║', '██║', '██║', '██║', '╚═╝'],
 }
 
-/** The colour `progress` of the way from one colour to another, 0 to 1. */
-function mixColor(from: Rgb, to: Rgb, progress: number): Rgb {
-  return {
-    red: Math.round(from.red + (to.red - from.red) * progress),
-    green: Math.round(from.green + (to.green - from.green) * progress),
-    blue: Math.round(from.blue + (to.blue - from.blue) * progress),
-  }
-}
+const LETTER_HEIGHT = 6
 
-const TITLE = 'Rove UI CLI'
+/** The words the wordmark stacks, one per block of rows. */
+const WORDMARK_WORDS = ['ROVE', 'UI']
+
+const PRODUCT_NAME = 'Rove UI CLI'
 const SUBTITLE = 'Props, usage and Figma for every component'
 
-/** What the banner says beside the mark, a line per mark row, centred on it. */
-const BANNER_WORDS = ['', '', styleText('bold', TITLE), styleText('gray', SUBTITLE), '']
+/** The blank columns the banner keeps from the terminal's left edge. */
+const MARGIN = '  '
 
-/** The columns the mark and its words take side by side: margin, mark, gap, subtitle. */
-const FULL_BANNER_WIDTH = 2 + 14 + 2 + SUBTITLE.length
+/** A word's rows in large letters, the letters side by side. */
+function largeWordRows(word: string): string[] {
+  return Array.from({ length: LETTER_HEIGHT }, (_, rowIndex) =>
+    word
+      .split('')
+      .map((letter) => LETTER_ROWS[letter]?.[rowIndex] ?? '')
+      .join(''),
+  )
+}
+
+/** A row of large letters coloured: the blocks in the accent, the shadow a deeper shade of it. */
+function coloredLetterRow(row: string): string {
+  return row.replace(/(█+)|([^█]+)/g, (_, blocks: string | undefined, shadow: string | undefined) =>
+    blocks === undefined ? accentShadeText(shadow ?? '') : accentText(blocks),
+  )
+}
+
+/** The welcome line in a rounded box, its border in the accent. */
+function welcomeBoxRows(): string[] {
+  const welcome = `${accentText('◉')} Welcome to ${strongText(PRODUCT_NAME)}`
+  const welcomeWidth = `◉ Welcome to ${PRODUCT_NAME}`.length
+  const border = '─'.repeat(welcomeWidth + 2)
+  return [accentText(`╭${border}╮`), `${accentText('│')} ${welcome} ${accentText('│')}`, accentText(`╰${border}╯`)]
+}
+
+/** The widest the large letters run, and so the narrowest terminal that shows them. */
+const WORDMARK_WIDTH = Math.max(...WORDMARK_WORDS.map((word) => largeWordRows(word)[0]?.length ?? 0)) + MARGIN.length
 
 /**
- * The mark and the words beside it. With `hasTrueColor` the mark takes the
- * gradient, the light one on a light terminal; without, the terminal's own
- * blue, which NO_COLOR turns off too. A terminal too narrow for both gets the
- * words alone, so nothing wraps.
+ * The whole banner for a terminal this wide. One too narrow for the large
+ * letters gets the box and the subtitle alone, so nothing wraps.
  */
-export function bannerText(hasTrueColor: boolean, columns: number, isLight = false): string {
-  if (columns < FULL_BANNER_WIDTH) {
-    const subtitleLine = columns >= 2 + SUBTITLE.length ? `\n  ${styleText('gray', SUBTITLE)}` : ''
-    return `\n  ${styleText('bold', TITLE)}${subtitleLine}\n\n`
+export function bannerText(columns: number): string {
+  const rows = [...welcomeBoxRows(), '']
+  if (columns >= WORDMARK_WIDTH) {
+    for (const word of WORDMARK_WORDS) {
+      rows.push(...largeWordRows(word).map(coloredLetterRow))
+    }
+    rows.push('')
   }
-  const lastRow = ROVE_MARK_ROWS.length - 1
-  const lines = ROVE_MARK_ROWS.map((markRow, rowIndex) => {
-    const gradient = isLight ? MARK_GRADIENT_ON_LIGHT : MARK_GRADIENT_ON_DARK
-    const rowColor = mixColor(gradient.top, gradient.bottom, rowIndex / lastRow)
-    const coloredRow = hasTrueColor ? trueColorText(markRow, rowColor) : styleText('blueBright', markRow)
-    return `  ${coloredRow}  ${BANNER_WORDS[rowIndex] ?? ''}`.trimEnd()
-  })
-  return `\n${lines.join('\n')}\n\n`
+  if (columns >= MARGIN.length + SUBTITLE.length) {
+    rows.push(quietText(SUBTITLE))
+  }
+  return `\n${rows.map((row) => (row === '' ? '' : MARGIN + row).trimEnd()).join('\n')}\n\n`
 }

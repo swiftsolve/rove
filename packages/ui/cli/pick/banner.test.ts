@@ -1,29 +1,36 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { bannerText } from './banner.ts'
 
 describe('bannerText', () => {
-  it('names the CLI and says what it gives', () => {
-    const banner = bannerText(false, 100)
-    expect(banner).toContain('Rove UI CLI')
-    expect(banner).toContain('Props, usage and Figma for every component')
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
-  it("draws the mark in the dock icon's gradient, top to bottom, on a 24-bit terminal", () => {
-    const banner = bannerText(true, 100)
-    expect(banner).toContain('\x1b[38;2;122;164;255m')
-    expect(banner).toContain('\x1b[38;2;84;132;245m')
+  it('welcomes you in a box, spells ROVE over UI in large letters, then says what the CLI gives', () => {
+    const lines = bannerText(100).split('\n')
+    expect(lines[1]).toBe('  ╭──────────────────────────╮')
+    expect(lines[2]).toBe('  │ ◉ Welcome to Rove UI CLI │')
+    expect(lines[3]).toBe('  ╰──────────────────────────╯')
+    expect(lines[5]).toBe('  ██████╗  ██████╗ ██╗   ██╗███████╗')
+    expect(lines[11]).toBe('  ██╗   ██╗██╗')
+    expect(lines.at(-3)).toBe('  Props, usage and Figma for every component')
   })
 
-  it('drops the mark on a terminal too narrow for it beside the words, so nothing wraps', () => {
-    const banner = bannerText(true, 50)
-    expect(banner).not.toContain('⣿')
-    expect(banner).toContain('Rove UI CLI')
-    expect(banner).toContain('Props, usage and Figma for every component')
-    expect(bannerText(true, 30)).not.toContain('Props, usage')
+  it('drops the large letters on a terminal too narrow for them, so nothing wraps', () => {
+    const banner = bannerText(30)
+    expect(banner).not.toContain('██')
+    expect(banner).toContain('Welcome to Rove UI CLI')
+    expect(banner).not.toContain('Props, usage')
   })
 
-  it('leaves out 24-bit colour on a terminal without it', () => {
-    expect(bannerText(false, 100)).not.toContain('\x1b[38;2;')
+  it("draws the letters in Rove's accent with a deeper shadow on a 24-bit terminal", () => {
+    vi.stubEnv('NO_COLOR', undefined)
+    vi.stubEnv('FORCE_COLOR', '3')
+    vi.stubEnv('COLORFGBG', undefined)
+    const banner = bannerText(100)
+    // A pipe has no colour depth to ask, so a forced-colour run gets the 16-colour blues.
+    expect(banner).toContain('\x1b[94m██████')
+    expect(banner).toContain('\x1b[34m╗')
   })
 })
