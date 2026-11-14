@@ -1,6 +1,6 @@
 /**
  * Turns catalog entries into the text the rove-ui CLI prints, laid out for a
- * person in a terminal. Four colours at most: blue for the component's name,
+ * person in a terminal. Four colours at most: Rove's accent for the component's name,
  * gray for what supports it, green and red beside ✓ and ✗, so no colour
  * carries meaning alone. `styleText` drops them when stdout is piped or
  * NO_COLOR is set; the layout is the same either way.
@@ -11,6 +11,7 @@ import type { Guidance, PropEntry } from '../../../../scripts/lib/library-json-t
 import type { ComponentListJson, NamedComponent } from '../catalog/catalog.ts'
 import { partsOf } from '../catalog/catalog.ts'
 import { figmaNodeUrl, storybookDocsUrl } from '../catalog/links.ts'
+import { accentText, quietText } from '../theme.ts'
 
 const INDENT = '  '
 
@@ -26,11 +27,6 @@ const PROP_COLUMNS_MIN_WIDTH = 64
 /** A section's title, bold capitals that stand out without colour: "PROPS". */
 function headingText(text: string): string {
   return styleText('bold', text.toUpperCase())
-}
-
-/** Text that supports what's beside it: a type, a default, a link. */
-function quietText(text: string): string {
-  return styleText('gray', text)
 }
 
 /** A doc comment on one line, its wrapped lines joined. */
@@ -198,7 +194,7 @@ export function componentDetailsText(
   terminalWidth: number,
 ): string {
   const lineWidth = Math.min(terminalWidth, MAX_LINE_WIDTH) - MARGIN.length
-  const title = `${styleText(['bold', 'blueBright'], component.name)}  ${quietText(component.libraryGroup)}`
+  const title = `${styleText('bold', accentText(component.name))}  ${quietText(component.libraryGroup)}`
   const header = [title, wrapText(component.description, lineWidth, '')]
   if (component.partOf) {
     header.push(quietText(`Part of ${component.partOf}: rove-ui show ${component.partOf}`))

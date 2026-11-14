@@ -93,8 +93,11 @@ library imports only itself (by relative path) and packages, never app code.
   Text is laid out for a terminal, in columns wrapped to its width; `--md`
   prints Markdown for an agent, the fewest tokens, and `--json` the raw
   entries. For a person at a terminal, `pick` is a list that narrows as you
-  type (`crdhdr` finds CardHeader), then a menu to show the component, copy
-  its import, or open its Docs page or Figma component, from @clack/prompts.
+  type, best match first (`crdhdr` finds CardHeader), then a menu to show
+  the component, copy it as Markdown or copy its import, or open its Docs
+  page or Figma component. @clack/core handles the keys; `pick/frames.ts`
+  draws the prompts in Rove's accent (`theme.ts`: Dark's `--accent-default`,
+  Light's on a light terminal, the terminal's blue without 24-bit colour).
   `rove-ui` alone opens `pick` in a terminal and prints the help in a pipe.
   `pick` needs at least 40x16; text keeps a two-column margin, drops prop
   descriptions under their names below 64 columns, and drops its colour with
