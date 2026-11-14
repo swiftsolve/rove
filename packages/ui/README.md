@@ -90,7 +90,9 @@ library imports only itself (by relative path) and packages, never app code.
   `figma-differences.json` says why not. [✓ CHECKED by `gen/components.ts`]
 - `npx rove-ui` reads `components.gen.json` a component at a time, for an
   agent or a person: `list`, `show <Name>`, `search <words>`, `icons [text]`,
-  each with `--json`. It lives in `cli/`, built on Commander, and Node runs it
+  each with `--json`, and for a person at a terminal, `pick` (a list that
+  narrows as you type, from @clack/prompts). It lives in `cli/`, built on
+  Commander, and Node runs it
   as .ts, so it reads the file as `npm run gen` last wrote it.
 - `catalog/figma/` is exported from the Figma file by `npm run figma:export`:
   `components.json` (each component's Figma name, node and variant

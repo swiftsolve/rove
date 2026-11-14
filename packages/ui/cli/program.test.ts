@@ -10,13 +10,18 @@ const catalog = readCatalog()
 /** What a run printed, and the exit code Commander gave a failed one. */
 type RunResult = { printed: string; errors: string; exitCode: number }
 
+/** How a run's terminal behaves: whether a person is there, and what they pick. */
+type TerminalStandIn = { isInteractive?: boolean; pickedName?: string | null }
+
 /** Runs rove-ui with these arguments against the real catalog. */
-async function runCli(args: string[]): Promise<RunResult> {
+async function runCli(args: string[], terminal: TerminalStandIn = {}): Promise<RunResult> {
   let printed = ''
   let errors = ''
   const program = createProgram(catalog, {
     write: (text) => (printed += text),
     writeError: (text) => (errors += text),
+    isInteractive: terminal.isInteractive ?? false,
+    askForComponentName: () => Promise.resolve(terminal.pickedName ?? null),
   })
   try {
     await program.parseAsync(args, { from: 'user' })
@@ -100,6 +105,25 @@ describe('rove-ui search', () => {
   it('says when nothing matches', async () => {
     const { printed } = await runCli(['search', 'zzzz'])
     expect(printed).toBe('No component mentions "zzzz".\n')
+  })
+})
+
+describe('rove-ui pick', () => {
+  it('shows the component the person picks', async () => {
+    const { printed } = await runCli(['pick'], { isInteractive: true, pickedName: 'CardHeader' })
+    expect(printed).toContain('CardHeader (Containers)')
+  })
+
+  it('prints nothing when the person cancels', async () => {
+    const { printed, exitCode } = await runCli(['pick'], { isInteractive: true, pickedName: null })
+    expect(printed).toBe('')
+    expect(exitCode).toBe(0)
+  })
+
+  it('refuses without a terminal, and points at list and show', async () => {
+    const { errors, exitCode } = await runCli(['pick'], { isInteractive: false })
+    expect(exitCode).toBe(1)
+    expect(errors).toContain('rove-ui show <name>')
   })
 })
 
