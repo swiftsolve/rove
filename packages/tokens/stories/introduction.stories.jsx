@@ -11,7 +11,7 @@ export default { title: 'Introduction' }
 const REPO_URL = 'https://github.com/swiftsolve/rove-tokens'
 const FIGMA_URL = 'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System'
 // The Rove Components Storybook, built from these tokens.
-const COMPONENTS_URL = 'https://rove.swiftsolve.net/storybook/'
+const COMPONENTS_URL = 'https://nabilr.com/rove/storybook/'
 
 // A Storybook page, from inside the preview iframe: `./?path=` is the manager.
 const storyHref = (id) => `./?path=/story/${id}`

@@ -21,8 +21,8 @@ Tokens for Rove, straight from the Rove Design System in Figma.
 📐 [DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
 💡 [Rationale](docs/rationale.md)
 
-📖 [Tokens Storybook](https://rove.swiftsolve.net/storybook/tokens/) &nbsp;·&nbsp;
-🧱 [Components Storybook](https://rove.swiftsolve.net/storybook/)
+📖 [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/) &nbsp;·&nbsp;
+🧱 [Components Storybook](https://nabilr.com/rove/storybook/)
 
 </div>
 
@@ -91,10 +91,10 @@ The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both them
 
 ## Storybook
 
-Two Storybooks are hosted on rove.swiftsolve.net:
+Two Storybooks are hosted on nabilr.com:
 
-- [**Rove Tokens**](https://rove.swiftsolve.net/storybook/tokens/): every token in both themes (colour, palette, type, spacing, radius, effects, motion and layout), built from this repo's `main`.
-- [**Rove Components**](https://rove.swiftsolve.net/storybook/): the Rove app's UI library, built from the tokens.
+- [**Rove Tokens**](https://nabilr.com/rove/storybook/tokens/): every token in both themes (colour, palette, type, spacing, radius, effects, motion and layout), built from this repo's `main`.
+- [**Rove Components**](https://nabilr.com/rove/storybook/): the Rove app's UI library, built from the tokens.
 
 To run Rove Tokens locally, `npm run storybook`. It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `dist/tokens/` and are styled with `dist/tokens.css`, so a new build shows up without editing them.
 
@@ -105,7 +105,7 @@ To run Rove Tokens locally, `npm run storybook`. It opens on <http://localhost:6
   <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by npm run build, and ship as @swiftsolve/rove-tokens (tokens.css, text-styles.css, the Tailwind theme and DTCG) and DESIGN.md. Checked by npm run check, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
 </picture>
 
-The diagram is the [Storybook's Introduction](https://rove.swiftsolve.net/storybook/tokens/). [What's where](#whats-where) lists the scripts behind each step.
+The diagram is the [Storybook's Introduction](https://nabilr.com/rove/storybook/tokens/). [What's where](#whats-where) lists the scripts behind each step.
 
 ## Update the tokens
 

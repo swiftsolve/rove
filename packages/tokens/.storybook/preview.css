@@ -1,5 +1,5 @@
 /* The fonts Rove bundles, from .storybook/fonts. Relative, so Vite bundles them
-   and the build works under a subpath (rove.swiftsolve.net/storybook/tokens/). */
+   and the build works under a subpath (nabilr.com/rove/storybook/tokens/). */
 @font-face {
   font-family: 'Hanken Grotesk';
   font-style: normal;
