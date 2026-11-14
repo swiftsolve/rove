@@ -7,14 +7,20 @@ describe('bannerText', () => {
     vi.unstubAllEnvs()
   })
 
-  it('welcomes you in a box, spells ROVE over UI in large letters, then says what the CLI gives', () => {
+  it('welcomes you in a box, spells ROVE UI in large letters on one line, then says what the CLI gives', () => {
     const lines = bannerText(100).split('\n')
     expect(lines[1]).toBe('  ╭──────────────────────────╮')
     expect(lines[2]).toBe('  │ ◉ Welcome to Rove UI CLI │')
     expect(lines[3]).toBe('  ╰──────────────────────────╯')
+    expect(lines[5]).toBe('  ██████╗  ██████╗ ██╗   ██╗███████╗    ██╗   ██╗██╗')
+    expect(lines[11]).toBe('')
+    expect(lines.at(-3)).toBe('  Props, usage and Figma for every component')
+  })
+
+  it('stacks ROVE over UI on a terminal too narrow for one line', () => {
+    const lines = bannerText(45).split('\n')
     expect(lines[5]).toBe('  ██████╗  ██████╗ ██╗   ██╗███████╗')
     expect(lines[11]).toBe('  ██╗   ██╗██╗')
-    expect(lines.at(-3)).toBe('  Props, usage and Figma for every component')
   })
 
   it('drops the large letters on a terminal too narrow for them, so nothing wraps', () => {

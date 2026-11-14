@@ -1,6 +1,6 @@
 /**
  * The banner `rove-ui pick` opens with: a welcome line in a rounded box, then
- * ROVE over UI in large shadowed letters, then what the CLI gives. Letters are
+ * ROVE UI in large shadowed letters, then what the CLI gives. Letters are
  * straight lines, so they stay crisp in any terminal font, where a drawn curve
  * would break into cells.
  */
@@ -21,8 +21,11 @@ const LETTER_ROWS: Record<string, string[]> = {
 
 const LETTER_HEIGHT = 6
 
-/** The words the wordmark stacks, one per block of rows. */
+/** The wordmark's words: side by side where they fit, stacked where they don't. */
 const WORDMARK_WORDS = ['ROVE', 'UI']
+
+/** The blank cells between the words when they sit side by side. */
+const WORD_GAP = '    '
 
 const PRODUCT_NAME = 'Rove UI CLI'
 const SUBTITLE = 'Props, usage and Figma for every component'
@@ -55,20 +58,34 @@ function welcomeBoxRows(): string[] {
   return [accentText(`╭${border}╮`), `${accentText('│')} ${welcome} ${accentText('│')}`, accentText(`╰${border}╯`)]
 }
 
-/** The widest the large letters run, and so the narrowest terminal that shows them. */
-const WORDMARK_WIDTH = Math.max(...WORDMARK_WORDS.map((word) => largeWordRows(word)[0]?.length ?? 0)) + MARGIN.length
+/** The wordmark on one line: each row of every word, side by side. */
+function sideBySideRows(): string[] {
+  const rowsByWord = WORDMARK_WORDS.map(largeWordRows)
+  return Array.from({ length: LETTER_HEIGHT }, (_, rowIndex) =>
+    rowsByWord.map((rows) => rows[rowIndex] ?? '').join(WORD_GAP),
+  )
+}
+
+/** The wordmark with each word on its own block of rows. */
+function stackedRows(): string[] {
+  return WORDMARK_WORDS.flatMap(largeWordRows)
+}
+
+/** The widest a set of rows runs, with the margin: the narrowest terminal that shows them. */
+function widthWithMargin(rows: string[]): number {
+  return Math.max(...rows.map((row) => row.length)) + MARGIN.length
+}
 
 /**
- * The whole banner for a terminal this wide. One too narrow for the large
- * letters gets the box and the subtitle alone, so nothing wraps.
+ * The whole banner for a terminal this wide: ROVE UI on one line, stacked on a
+ * narrower terminal, left out on one too narrow for either, so nothing wraps.
  */
 export function bannerText(columns: number): string {
   const rows = [...welcomeBoxRows(), '']
-  if (columns >= WORDMARK_WIDTH) {
-    for (const word of WORDMARK_WORDS) {
-      rows.push(...largeWordRows(word).map(coloredLetterRow))
-    }
-    rows.push('')
+  const wordmarkLayouts = [sideBySideRows(), stackedRows()]
+  const wordmark = wordmarkLayouts.find((layout) => columns >= widthWithMargin(layout))
+  if (wordmark !== undefined) {
+    rows.push(...wordmark.map(coloredLetterRow), '')
   }
   if (columns >= MARGIN.length + SUBTITLE.length) {
     rows.push(quietText(SUBTITLE))
