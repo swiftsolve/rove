@@ -1,11 +1,11 @@
 # ARIA in Rove
 
-Rove uses 15 ARIA attributes and 10 roles in `src/`, mostly to name icon-only
-controls, hide decorative marks and announce status. Base UI
-(`@base-ui/react`) adds the rest itself: `aria-expanded`, `aria-controls` and
+Rove uses 15 ARIA attributes and 10 roles in `apps/rove/src/` and
+`packages/ui/src/`, mostly to name icon-only controls, hide decorative marks
+and announce status. Base UI (`@base-ui/react`) adds the rest itself: `aria-expanded`, `aria-controls` and
 `aria-haspopup` on collapsibles and menus, plus dialog and focus wiring.
 
-Counts are every occurrence in `.ts`/`.tsx` under `src/`, tests and stories
+Counts are every occurrence in `.ts`/`.tsx` under both, tests and stories
 included, as of November 2026.
 
 | Attribute or role | Uses | Main purpose |

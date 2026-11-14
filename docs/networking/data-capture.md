@@ -44,15 +44,15 @@ Three things to notice, each a deliberate design choice:
   *"callers treat missing tools as 'no data'."* This is what makes the fallback
   chains in §3 possible: a failed probe just returns `None` and the caller tries
   the next option.
-- **It's `async` with a timeout** (`tokio::time::timeout`, in `capture` in `util/shell.rs`). A hung
+- **It's `async` with a timeout** (`tokio::time::timeout`, in `capture` in `utils/shell.rs`). A hung
   `nmcli` can't freeze the app; after 15s it's abandoned.
-- **It picks the right shell per OS** (`shell` in `util/shell.rs`): `cmd /C` on Windows, `sh -c`
+- **It picks the right shell per OS** (`shell` in `utils/shell.rs`): `cmd /C` on Windows, `sh -c`
   everywhere else. On Windows there's a separate `try_run_powershell` because most
   Windows probes are PowerShell, not `cmd`.
 
 There's also a Windows-only detail: `hide_window` sets the `CREATE_NO_WINDOW`
 flag (`0x0800_0000`) so spawning `powershell` doesn't flash a black
-console window on screen (`CREATE_NO_WINDOW` in `util/shell.rs`). No-op on Unix.
+console window on screen (`CREATE_NO_WINDOW` in `utils/shell.rs`). No-op on Unix.
 
 ---
 
@@ -62,16 +62,16 @@ Because Rove builds shell command strings that sometimes contain values from
 the network (interface names, neighbor IPs), it has to guard against injection.
 Two gatekeepers in `crates/rove-core/src/utils/net.rs`:
 
-- **`is_shell_safe_ip`** (in `util/net.rs`): an address is safe to interpolate
+- **`is_shell_safe_ip`** (in `utils/net.rs`): an address is safe to interpolate
   *only if it parses as a real `IpAddr`*, because a parsed address can only
   contain `[0-9a-fA-F:.]`, never a `;`, `|`, `$`, or backtick. Guards the
   `ping`/`getent` call sites that take an IP straight from the ARP table.
-- **`is_shell_safe_iface`** (in `util/net.rs`): interface names are bounded to
+- **`is_shell_safe_iface`** (in `utils/net.rs`): interface names are bounded to
   ≤40 chars of a safe alphabet. It deliberately *allows spaces* (Windows really
   has interfaces named `"Ethernet 2"` and `"Local Area Connection"`) but rejects
   every genuine metacharacter.
 
-And **`sanitize_display`** (in `util/net.rs`) strips control characters and
+And **`sanitize_display`** (in `utils/net.rs`) strips control characters and
 Unicode bidi overrides (and caps the length at 64 characters) from names that come off the network (mDNS TXT records,
 reverse DNS) before they're stored or rendered, so a malicious neighbour can't
 inject terminal escape sequences or right-to-left overrides into your device

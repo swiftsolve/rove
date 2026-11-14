@@ -105,13 +105,13 @@ and the backend is memory-safe Rust.
 The Hosts view knows which remote hosts each app talks to, a list that is
 browsing history in all but name. *That list* never leaves your machine: country
 flags are resolved against an IP-to-country table bundled in the binary
-(`util/geoip.rs`), not by asking a geolocation API about each peer.
+(`utils/geoip.rs`), not by asking a geolocation API about each peer.
 
 Two things do leave, neither of them a peer address:
 
 - **Your own WAN identity**, when the Connection tab asks: your public IP
   (api.ipify.org). Your ISP, ASN, and country are then resolved from that IP
-  against bundled tables (`util/geoip.rs`), no request. A best-effort call to
+  against bundled tables (`utils/geoip.rs`), no request. A best-effort call to
   ipwho.is only *enriches* the card with your city and ISP website when it isn't
   rate-limited; the card stays populated without it. Every request here is about
   your own address.
@@ -170,6 +170,7 @@ npm run storybook            # the UI library's components, at localhost:6006
 npm run screenshots          # refresh docs/screenshots: every screen, at window size
 npm run format               # lay out the code with Prettier
 npm run gen                  # rewrite the *.gen.* files after a library or theme change
+npx rove-ui                  # find a library component: pick one, or list, show, search (--md for agents)
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```
 
@@ -220,7 +221,8 @@ apps/rove/          the app: src/ (React UI: app/ the shell, features/ a folder
                     per screen, types/ and bridge/ the contract) and src-tauri/
                     (the thin Tauri shell: commands, events, capabilities)
 packages/ui/        the component library, @swiftsolve/rove-ui: src/, its
-                    Storybook, and catalog/ (the library as data)
+                    Storybook, catalog/ (the library as data) and cli/
+                    (npx rove-ui, which looks a component up in it)
 crates/rove-core/   every platform service, in pure Rust, plus the bundled data
 scripts/            checks, generators, git hooks, screenshots, the a11y audit
 docs/               the deeper dives, diagrams and screenshots

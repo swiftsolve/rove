@@ -162,6 +162,6 @@ Outside the library, a button is one of its components (`Button`,
 - Disabled and loading swallow every activation, a form submit included, and
   keep the button focusable, so a tooltip can say why. They mark the element
   with `data-disabled` and `data-loading`.
-- Everything pressable shares that behaviour through `ui/utils/pressable.ts`,
+- Everything pressable shares that behaviour through `utils/pressable.ts`,
   and styles a hover or press that only applies while usable with the
   `usable:` variant (`usable:hover:bg-hover`).

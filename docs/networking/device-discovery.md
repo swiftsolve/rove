@@ -460,7 +460,7 @@ The result is a `LanDeviceScan` that serializes across the IPC bridge (see the
 ## Security & privacy touches
 
 Because device names and models come *off the network* from untrusted neighbors,
-every such string passes through `sanitize_display` (in `util/net.rs`) before it's
+every such string passes through `sanitize_display` (in `utils/net.rs`) before it's
 stored or rendered, stripping control characters and Unicode bidi overrides so a
 hostile device can't inject terminal escapes or right-to-left text into your
 device list. And every IP interpolated into a `ping`/`getent` shell command is

@@ -15,8 +15,9 @@ says what it guards. A rule without the tag is judgment:
 
 Each Figma component has a counterpart in the library: build from these before
 writing new markup. Which one to use, and its props, variants and usage guide,
-are in `packages/ui/catalog/components.gen.json`: read it first, not the sources.
-`npx rove-ui` prints it a component at a time: `list` (each by group), `show
+are in `packages/ui/catalog/components.gen.json`, generated from the code.
+Look one up there before the sources, through `npx rove-ui`, which prints it a
+component at a time: `list` (each by group), `show
 Button` (its props, parts, usage guide, Figma component and stories), `search
 tooltip`, `icons wifi`, `pick` (type to narrow the list, then show, copy or open one, in a terminal),
 `--md` for an agent (Markdown, the fewest tokens) and `--json` for the raw entry. For how
@@ -112,7 +113,7 @@ what every key means, and the generators fail on a file that breaks it.
   `hasGradient`, `canRunTest`, `shouldShowLabel`, `wasDeclined`, or a verb
   phrase (`needsNetworkInfo`). [✓ CHECKED by `eslint.config.js`]
   - It covers props, `useState` pairs (`[isOpen, setIsOpen]`), params, fields
-    and module constants (`IS_MAC`), in `src/` and `scripts/` alike.
+    and module constants (`IS_MAC`), in the app, the library and `scripts/` alike.
   - A name the DOM or a library picks keeps its name: alias Recharts' `active`
     to `isActive` where you read it.
 - Data that's shared and must not change (a context value, a list passed
@@ -139,7 +140,7 @@ what every key means, and the generators fail on a file that breaks it.
 
 ### TypeScript
 
-These hold in `src/` and `scripts/` alike.
+These hold in the app, the library and `scripts/` alike.
 
 - A cast (`as`) says what the compiler can't prove, so it stays where a value
   comes in from outside: parsed JSON, `history.state`, an event's target, a
@@ -161,7 +162,7 @@ These hold in `src/` and `scripts/` alike.
 - A type comes from where its thing is defined: a library the project already
   depends on (`ComponentProps<typeof Menu>`, Playwright's `Page`, Storybook's
   `StoryIndex`), or this repo (`AppLocation`, `ReturnPoint`), which `scripts/`
-  reach through `@/` as `src/` does. A shape is written by hand only when
+  reach through `@/` as the app does. A shape is written by hand only when
   nothing defines it, and then holds only the fields the code reads.
 - A data file's shape is one named type that every reader imports, like
   `scripts/lib/library-json-types.ts`, not a shape written again inline.
