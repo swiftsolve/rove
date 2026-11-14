@@ -7,13 +7,14 @@ describe('bannerText', () => {
     vi.unstubAllEnvs()
   })
 
-  it('welcomes you in a box, spells ROVE over UI in large letters, then says what the CLI gives', () => {
+  it('welcomes you in a box, spells ROVE over UI in large square letters with a soft shadow, then says what the CLI gives', () => {
     const lines = bannerText(100).split('\n')
     expect(lines[1]).toBe('  ╭──────────────────────────╮')
     expect(lines[2]).toBe('  │ ◉ Welcome to Rove UI CLI │')
     expect(lines[3]).toBe('  ╰──────────────────────────╯')
-    expect(lines[5]).toBe('  ██████╗  ██████╗ ██╗   ██╗███████╗')
-    expect(lines[11]).toBe('  ██╗   ██╗██╗')
+    expect(lines[5]).toBe('  ████████     ██████████   ██      ██   ██████████')
+    expect(lines[6]).toBe('  ██░░░░░░██   ██░░░░░░██░  ██░     ██░  ██░░░░░░░░░')
+    expect(lines[12]).toBe('  ██      ██   ██████')
     expect(lines.at(-3)).toBe('  Props, usage and Figma for every component')
   })
 
@@ -30,7 +31,7 @@ describe('bannerText', () => {
     vi.stubEnv('COLORFGBG', undefined)
     const banner = bannerText(100)
     // A pipe has no colour depth to ask, so a forced-colour run gets the 16-colour blues.
-    expect(banner).toContain('\x1b[94m██████')
-    expect(banner).toContain('\x1b[34m╗')
+    expect(banner).toContain('\x1b[94m████████')
+    expect(banner).toContain('\x1b[34m░░░░░░')
   })
 })
