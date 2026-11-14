@@ -1,5 +1,7 @@
-// The backend's coarse progress steps, mirrored here. The fill creeps to just
-// short of the next step and eases to catch up on a jump, so it never visibly steps.
+/**
+ * The backend's coarse progress steps, mirrored here. The fill creeps to just
+ * short of the next step and eases to catch up on a jump, so it never visibly steps.
+ */
 export const DOWNLOAD_PHASE_START_PCT = 15
 export const UPLOAD_PHASE_START_PCT = 55
 const PROGRESS_STEPS = [0, DOWNLOAD_PHASE_START_PCT, UPLOAD_PHASE_START_PCT, 85, 100]

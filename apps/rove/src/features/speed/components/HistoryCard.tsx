@@ -58,8 +58,10 @@ function Metric({ label, value, unit, series }: MetricProps) {
   )
 }
 
-// Like the capability verdict strip: the padding gives back the 1px border so
-// the content stays aligned with the grid above.
+/**
+ * Like the capability verdict strip: the padding gives back the 1px border so
+ * the content stays aligned with the grid above.
+ */
 const CARD_FOOTER = cx(
   '-mx-(--card-body-padding) mt-8 px-[calc(var(--card-body-padding)-1px)] py-12',
   'rounded-b-lg border border-t-0 border-inset bg-base',

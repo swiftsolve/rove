@@ -2,7 +2,9 @@
 //! (`scripts/eslint/comments.ts`), over every `.rs` file in the workspace:
 //! short, a `//` note in at most 6 lines of text, a `///` doc in at most 10,
 //! and anything longer belongs in `docs/`. A module's `//!` header, which
-//! documents the whole file, is exempt.
+//! documents the whole file, is exempt. A comment right above an item (a
+//! `fn`, type, `const`, `static` or `mod`) describes it, so it's a `///` doc,
+//! which shows on hover, as `comments/doc-on-declarations` holds for the UI.
 //!
 //! clippy can't take house rules, so this runs with `cargo test`.
 
@@ -151,9 +153,35 @@ fn comments(source: &str) -> Vec<Comment> {
     found
 }
 
+/// The keywords that open an item, after any visibility and qualifiers.
+const ITEM_KEYWORDS: [&str; 9] = ["fn ", "struct ", "enum ", "union ", "trait ", "type ", "const ", "static ", "mod "];
+const VISIBILITIES: [&str; 4] = ["pub(crate) ", "pub(super) ", "pub(self) ", "pub "];
+const QUALIFIERS: [&str; 4] = ["const ", "async ", "unsafe ", "extern \"C\" "];
+
+/// Whether `line` opens an item a doc comment can document. `impl` blocks
+/// aren't counted: their docs rarely show anywhere.
+fn opens_item(line: &str) -> bool {
+    let mut rest = line.trim_start();
+    if let Some(visibility) = VISIBILITIES.iter().find(|v| rest.starts_with(**v)) {
+        rest = &rest[visibility.len()..];
+    }
+    if ITEM_KEYWORDS.iter().any(|keyword| rest.starts_with(keyword)) {
+        return true;
+    }
+    // `const fn`, `async fn`, `unsafe fn`, `extern "C" fn`.
+    QUALIFIERS.iter().any(|qualifier| rest.starts_with(qualifier) && rest[qualifier.len()..].starts_with("fn "))
+}
+
+/// The first line after `line` (1-based) that isn't an attribute: the item an
+/// attribute-topped comment sits over.
+fn line_after_attributes<'a>(lines: &[&'a str], line: usize) -> Option<&'a str> {
+    lines.iter().skip(line).find(|next| !next.trim_start().starts_with("#[")).copied()
+}
+
 /// The problems in one file's source, as `line: message`.
 fn problems(source: &str) -> Vec<String> {
     let found = comments(source);
+    let lines: Vec<&str> = source.lines().collect();
     let mut problems = Vec::new();
 
     // Consecutive whole-line comments of one kind in one column read as one.
@@ -172,6 +200,16 @@ fn problems(source: &str) -> Vec<String> {
         }
     }
     for group in groups {
+        let last_line = group[group.len() - 1].line;
+        let documents_item = group[0].is_whole_line
+            && group[0].kind == Kind::Note
+            && line_after_attributes(&lines, last_line).is_some_and(opens_item);
+        if documents_item {
+            problems.push(format!(
+                "{}: this // comment describes the item below it, so make it a /// doc (it then shows on hover)",
+                group[0].line
+            ));
+        }
         let (marker, limit) = match group[0].kind {
             Kind::Note => ("//", MAX_NOTE_LINES),
             Kind::Doc => ("///", MAX_DOC_LINES),
@@ -229,4 +267,13 @@ fn flags_an_overlong_note_but_not_strings_or_headers() {
     let found = problems(source);
     assert_eq!(found.len(), 1, "{found:?}");
     assert!(found[0].starts_with("10: keep this // comment to 6 lines"), "{found:?}");
+}
+
+#[test]
+fn flags_a_note_over_an_item_but_not_one_in_a_body() {
+    let source = "// Describes f.\n#[inline]\npub(crate) const fn f() {\n    // Why this line.\n    let x = 1;\n}\n\
+        /// Already a doc.\nfn g() {}\nconst A: u8 = 1; // trailing\nstatic B: u8 = 2;\n";
+    let found = problems(source);
+    assert_eq!(found.len(), 1, "{found:?}");
+    assert!(found[0].starts_with("1: this // comment describes the item"), "{found:?}");
 }

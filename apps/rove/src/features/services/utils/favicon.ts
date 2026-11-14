@@ -1,10 +1,12 @@
 import { isIpv4 } from '@/utils/ip'
 
-// Suffixes that only ever name something on the local network, so the public
-// icon service has nothing to serve for them and answers 404.
+/**
+ * Suffixes that only ever name something on the local network, so the public
+ * icon service has nothing to serve for them and answers 404.
+ */
 const PRIVATE_SUFFIXES = ['.local', '.lan', '.internal', '.home', '.home.arpa', '.localdomain']
 
-// Well above the rendered size, so it stays crisp on high-DPI screens.
+/** Well above the rendered size, so it stays crisp on high-DPI screens. */
 const FAVICON_REQUEST_PX = 64
 
 /**

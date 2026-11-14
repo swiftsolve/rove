@@ -4,7 +4,7 @@ import { Fragment } from 'react'
 import { type Guidance, GUIDANCE_TOC } from '../../.storybook/docs-page'
 import { SplitBar } from './SplitBar'
 
-// Rows of one list, every bar scaled against the busiest row's total.
+/** Rows of one list, every bar scaled against the busiest row's total. */
 const ROWS = [
   { name: 'Busiest', down: 840, up: 160 },
   { name: 'Mostly up', down: 90, up: 410 },

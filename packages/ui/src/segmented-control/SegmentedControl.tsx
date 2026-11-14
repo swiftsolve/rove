@@ -5,18 +5,22 @@ import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 
 import { cn } from '../utils/cn'
 
-// An inset track, like the Toggle's, so the two read as a set. Equal grid
-// columns make every segment as wide as the widest, so the thumb slides by its
-// own width. Plain `1fr`, since `auto-cols-fr`'s `minmax(0, 1fr)` collapses to
-// nothing; `w-max`, since a track squeezed to min-content lets columns differ.
+/**
+ * An inset track, like the Toggle's, so the two read as a set. Equal grid
+ * columns make every segment as wide as the widest, so the thumb slides by its
+ * own width. Plain `1fr`, since `auto-cols-fr`'s `minmax(0, 1fr)` collapses to
+ * nothing; `w-max`, since a track squeezed to min-content lets columns differ.
+ */
 const TRACK =
   'relative inline-grid grid-flow-col auto-cols-[1fr] w-max gap-2 p-2 bg-inset border border-line rounded-sm'
 
-// The accent-muted thumb behind the chosen segment. Its width and position
-// come from `--count` and `--index` on the track: each column is the track's
-// inner width, less the gaps, over the count, and each step is a column plus
-// a gap. `data-keeps-transition` lets it slide while a theme switch has
-// transitions off (styles/base.css), since picking a theme moves it.
+/**
+ * The accent-muted thumb behind the chosen segment. Its width and position
+ * come from `--count` and `--index` on the track: each column is the track's
+ * inner width, less the gaps, over the count, and each step is a column plus
+ * a gap. `data-keeps-transition` lets it slide while a theme switch has
+ * transitions off (styles/base.css), since picking a theme moves it.
+ */
 const THUMB = cx(
   'pointer-events-none absolute inset-y-2 left-2 rounded-xs bg-accent-muted',
   'w-[calc((100%-(var(--count)+1)*var(--spacing-2))/var(--count))]',
@@ -24,10 +28,12 @@ const THUMB = cx(
   'transition-[translate] duration-(--duration-normal) ease-out',
 )
 
-// Segments sit 2px inside the track, so the focus ring goes inside the segment
-// rather than over the track's edge and its neighbours. Padded like a small
-// Button, so the two line up side by side. They sit above the thumb, and an
-// unchosen one takes a faint fill on hover.
+/**
+ * Segments sit 2px inside the track, so the focus ring goes inside the segment
+ * rather than over the track's edge and its neighbours. Padded like a small
+ * Button, so the two line up side by side. They sit above the thumb, and an
+ * unchosen one takes a faint fill on hover.
+ */
 const SEGMENT = cx(
   'relative inline-flex cursor-pointer items-center justify-center gap-6 rounded-xs border-none px-10 py-6',
   'type-body-medium whitespace-nowrap',

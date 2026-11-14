@@ -53,8 +53,10 @@ function subscribeEvent<T>(event: string, callback: (payload: T) => void): Unsub
   }
 }
 
-// A Rust command's `Err(String)` rejects as a bare string. Wrap it once here, so
-// every caller gets an Error whose message is the backend's reason.
+/**
+ * A Rust command's `Err(String)` rejects as a bare string. Wrap it once here, so
+ * every caller gets an Error whose message is the backend's reason.
+ */
 async function invokeCommand<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   try {
     return await invoke<T>(command, args)

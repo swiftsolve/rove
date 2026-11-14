@@ -32,7 +32,7 @@ import { EventHeading } from '@/features/timeline/components/EventHeading'
 import type { NetworkEvent, NetworkEventType } from '@/types'
 import { formatDuration, formatMac } from '@/utils/format'
 
-// The icon says what happened; the tint says how to read it.
+/** The icon says what happened; the tint says how to read it. */
 const TONE_COLORS = {
   /** Recoveries & connections: this computer's link or internet came up. */
   join: 'var(--status-positive)',
@@ -79,7 +79,7 @@ const EVENT_STYLES: Record<NetworkEventType, EventStyle> = {
   internet_restored: { icon: GlobeIcon, tone: 'join' },
 }
 
-// The network-wide baseline row has no address line.
+/** The network-wide baseline row has no address line. */
 function addressItems(event: NetworkEvent): ReactNode[] {
   const items: ReactNode[] = []
   if (event.type === 'initial_scan') return items

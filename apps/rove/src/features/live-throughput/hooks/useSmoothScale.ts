@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-// How fast the scale closes its gap: the time it takes to cover about two
-// thirds of it. Up is quick, so a spike is in scale before it scrolls into
-// view; down is gentler, so the trace grows calmly once a peak has left.
+/**
+ * How fast the scale closes its gap: the time it takes to cover about two
+ * thirds of it. Up is quick, so a spike is in scale before it scrolls into
+ * view; down is gentler, so the trace grows calmly once a peak has left.
+ */
 const EASE_UP_MS = 60
 const EASE_DOWN_MS = 150
 /** Within this fraction of the target, the scale snaps onto it and the loop stops. */

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 
-// Long enough for a page's enter stagger to finish (`page` in utilities.css:
-// 220ms, the last child starting 180ms in) before the rest of the list renders.
+/**
+ * Long enough for a page's enter stagger to finish (`page` in utilities.css:
+ * 220ms, the last child starting 180ms in) before the rest of the list renders.
+ */
 const SETTLE_MS = 420
 
 /**

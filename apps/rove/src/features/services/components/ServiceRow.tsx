@@ -18,8 +18,10 @@ import { isHttpErroring, latencyBand } from '@/features/services/utils/service-s
 import type { ServiceDefinition, ServiceReachability } from '@/types'
 import { formatLatencyMs } from '@/utils/format'
 
-// With a hover-capable pointer the kebab stays collapsed until its row is hovered,
-// it has focus or its menu is open. Touch can't hover, so it always shows there.
+/**
+ * With a hover-capable pointer the kebab stays collapsed until its row is hovered,
+ * it has focus or its menu is open. Touch can't hover, so it always shows there.
+ */
 const KEBAB_REVEAL = cx(
   'transition-[width,opacity,color,background] duration-(--duration-fast) ease-in-out',
   '[@media(hover:hover)]:w-0 [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
@@ -28,8 +30,10 @@ const KEBAB_REVEAL = cx(
   'data-popup-open:w-[30px] data-popup-open:opacity-100',
 )
 
-// One line of a row's body: left-hand text that ellipsises, right-hand value
-// that holds its width.
+/**
+ * One line of a row's body: left-hand text that ellipsises, right-hand value
+ * that holds its width.
+ */
 const LINE = 'flex min-w-0 items-center gap-12'
 
 type RowMenuProps = {

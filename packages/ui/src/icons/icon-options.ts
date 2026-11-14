@@ -2,8 +2,10 @@ import { createElement, type ReactElement } from 'react'
 
 import * as Icons from './Icons'
 
-// Every icon the library exports (the types are gone at runtime), by name, for
-// a story's icon control, as Figma's Icon swap offers.
+/**
+ * Every icon the library exports (the types are gone at runtime), by name, for
+ * a story's icon control, as Figma's Icon swap offers.
+ */
 const ICON_COMPONENTS: Record<string, Icons.IconComponent> = Object.fromEntries(
   Object.entries(Icons)
     .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')

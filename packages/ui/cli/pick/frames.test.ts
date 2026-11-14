@@ -5,7 +5,7 @@ import { pickActions } from '../program.ts'
 import { listFrame, listWindow, menuFrame } from './frames.ts'
 import { rankComponents } from './match.ts'
 
-// Vitest's stdout isn't a terminal, so `styleText` leaves the frames uncoloured and readable here.
+/** Vitest's stdout isn't a terminal, so `styleText` leaves the frames uncoloured and readable here. */
 const catalog = readCatalog()
 const components = namedComponents(catalog)
 

@@ -23,19 +23,19 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import type { CapabilityDefinition, CapabilityId, CapabilityRating } from '@/types'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 
-// A few headline use-cases previewed before any test runs.
+/** A few headline use-cases previewed before any test runs. */
 const PREVIEW_IDS: CapabilityId[] = ['browsing', 'streaming-4k', 'video-calls', 'gaming']
 const PREVIEW_CAPABILITIES = PREVIEW_IDS.flatMap((id) =>
   CAPABILITY_DEFINITIONS.filter((definition) => definition.id === id),
 )
 
-// No first/last padding special cases, so every row's hover highlight matches.
+/** No first/last padding special cases, so every row's hover highlight matches. */
 const LIST = 'flex flex-col'
 
-// Name over description, as in a service row: Body, then Caption 2px below.
+/** Name over description, as in a service row: Body, then Caption 2px below. */
 const ROW_TEXT = 'flex min-w-0 flex-1 flex-col gap-2'
 
-// Tertiary while a test runs, like the muted tile: the rating is about to change.
+/** Tertiary while a test runs, like the muted tile: the rating is about to change. */
 const levelVariants = cva('type-caption shrink-0', {
   variants: {
     tone: { ...CAPABILITY_LEVEL_TEXT_COLORS, testing: 'text-tertiary' },
@@ -71,7 +71,7 @@ function CapabilityRow({
   )
 }
 
-// A ListRow's layout, bleed included, with nothing to press.
+/** A ListRow's layout, bleed included, with nothing to press. */
 const PREVIEW_ROW =
   'flex items-center gap-12 -mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y) opacity-(--opacity-disabled)'
 

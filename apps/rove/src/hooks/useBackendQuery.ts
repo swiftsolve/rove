@@ -39,8 +39,10 @@ export type BackendQuery<T> = {
   dataUpdatedAt: number
 }
 
-// How long a result counts as current when nothing polls it: a screen that
-// opens within this, like the next one in a Home → Devices swap, reuses it.
+/**
+ * How long a result counts as current when nothing polls it: a screen that
+ * opens within this, like the next one in a Home → Devices swap, reuses it.
+ */
 const DEFAULT_FRESH_FOR_MS = 10_000
 
 function errorText(error: unknown, fallback: string): string {

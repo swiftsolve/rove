@@ -28,8 +28,10 @@ import { groupByDay } from '@/features/timeline/utils/day-groups'
 import { useIncrementalCount } from '@/hooks/useIncrementalCount'
 import { useNow } from '@/hooks/useNow'
 
-// Rows rendered with the page (more than the window holds), and how many more
-// each step after it has settled.
+/**
+ * Rows rendered with the page (more than the window holds), and how many more
+ * each step after it has settled.
+ */
 const INITIAL_ROWS = 20
 const ROWS_PER_STEP = 40
 

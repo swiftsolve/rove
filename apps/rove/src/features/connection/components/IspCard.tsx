@@ -5,8 +5,10 @@ import { formatLocation } from '@/features/connection/utils/diagnostics-display'
 import { ServiceIcon } from '@/features/services/components/ServiceIcon'
 import type { IspInfo, NetworkDiagnostics } from '@/types'
 
-// "VPN" when the egress is a hosting ASN, else the brand mark if one resolves.
-// No monogram fallback: many ISPs have no favicon, and a lone letter reads as a glitch.
+/**
+ * "VPN" when the egress is a hosting ASN, else the brand mark if one resolves.
+ * No monogram fallback: many ISPs have no favicon, and a lone letter reads as a glitch.
+ */
 function ispBadge(isp: IspInfo | null | undefined): ReactNode {
   if (isp?.isVpn) return <Badge tone="positive">VPN</Badge>
   if (isp?.domain) {

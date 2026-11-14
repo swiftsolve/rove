@@ -8,8 +8,10 @@ import { hostIconLabel } from '@/features/apps/utils/host-labels'
 import type { HostUsage } from '@/types'
 import { isPrivateIp } from '@/utils/ip'
 
-// Fixed width keeps hostnames aligned with or without a flag. Twemoji comes first
-// because Windows has no flag emoji (see the @font-face note in styles/base.css).
+/**
+ * Fixed width keeps hostnames aligned with or without a flag. Twemoji comes first
+ * because Windows has no flag emoji (see the @font-face note in styles/base.css).
+ */
 const FLAG_SLOT = cx(
   'inline-flex w-[18px] shrink-0 items-center justify-center',
   "font-[family-name:'Twemoji_Country_Flags',var(--font-family-sans)] text-sm leading-none",

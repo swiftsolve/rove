@@ -8,8 +8,10 @@ function percentOf(value: number, max: number): number {
   return value * scale
 }
 
-// The width eases so the bars glide in step with the count-up figures beside
-// them; the global reduced-motion rule turns it off.
+/**
+ * The width eases so the bars glide in step with the count-up figures beside
+ * them; the global reduced-motion rule turns it off.
+ */
 const segmentVariants = cva('h-full transition-[width] duration-400 ease-out', {
   variants: {
     series: { down: 'bg-series-down', up: 'bg-series-up' },

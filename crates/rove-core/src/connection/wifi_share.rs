@@ -139,7 +139,7 @@ fn qr_svg(data: &str) -> Result<String, qrcode::types::QrError> {
     let is_dark = |x: usize, y: usize| colors[y * width + x] == Color::Dark;
 
     const QUIET: usize = 4;
-    // A finder is 7x7 modules, in three corners.
+    /// A finder is 7x7 modules, in three corners.
     const FINDER: usize = 7;
     let dim = width + QUIET * 2;
     // Modules an eye draws whole, so the dots skip them.

@@ -2,8 +2,10 @@ import { Card, CardBody, CardHeader, DirectionIcon, NoValue, Readout, StatusDot 
 import { cx } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-// One figure's line tall whatever it holds (the value, a spinner, a placeholder
-// or a button), so swapping them never resizes the card or the row.
+/**
+ * One figure's line tall whatever it holds (the value, a spinner, a placeholder
+ * or a button), so swapping them never resizes the card or the row.
+ */
 const READOUT_AREA = cx(
   'flex flex-col whitespace-nowrap',
   'h-[calc(var(--type-stat-size)*var(--type-stat-line-height))]',

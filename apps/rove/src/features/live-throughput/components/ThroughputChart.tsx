@@ -14,19 +14,23 @@ import {
 import { CHART_WINDOW_LABEL, CHART_WINDOW_SAMPLES } from '@/features/live-throughput/utils/throughput-history'
 
 const CHART_HEIGHT = 80
-// The right margin is the y-axis labels' 28px column, wide enough for the
-// widest ("125M"), and a 12px gap (--spacing-12) so the "Now" dots never
-// crowd them. The time axis's right padding repeats it.
+/**
+ * The right margin is the y-axis labels' 28px column, wide enough for the
+ * widest ("125M"), and a 12px gap (--spacing-12) so the "Now" dots never
+ * crowd them. The time axis's right padding repeats it.
+ */
 const CHART_MARGIN = { top: 4, right: 40, bottom: 4, left: 2 }
 const PLOT_HEIGHT = CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom
 
 const AXIS_LABEL_TEXT = 'type-caption text-tertiary num'
 
-// What the chart shows, not its numbers: the card reads the current speeds
-// just before it, so repeating them here would say them twice.
+/**
+ * What the chart shows, not its numbers: the card reads the current speeds
+ * just before it, so repeating them here would say them twice.
+ */
 const CHART_DESCRIPTION = `Download and upload over the last ${CHART_WINDOW_SAMPLES} seconds`
 
-// The 4px inset matches the chart's vertical margin.
+/** The 4px inset matches the chart's vertical margin. */
 const Y_AXIS_LABELS = cx(
   'pointer-events-none absolute top-4 right-0 bottom-4 w-[28px]',
   'flex flex-col items-end justify-between',

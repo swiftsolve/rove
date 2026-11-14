@@ -5,10 +5,12 @@ import { ButtonSpinner } from '../../spinner/ButtonSpinner'
 import { cn } from '../../utils/cn'
 import { PRESS, pressableProps, STATE_CLASSES } from '../../utils/pressable'
 
-// A quiet accent wash with an accent label, so it reads as secondary to the
-// form's solid confirm. Its corner is a step smaller than the field's, so the
-// two curves stay parallel 4px apart. Loading, the label is just a spinner, so
-// the button collapses to a square rather than holding its width around it.
+/**
+ * A quiet accent wash with an accent label, so it reads as secondary to the
+ * form's solid confirm. Its corner is a step smaller than the field's, so the
+ * two curves stay parallel 4px apart. Loading, the label is just a spinner, so
+ * the button collapses to a square rather than holding its width around it.
+ */
 const actionVariants = cva(
   [
     'inline-flex h-[30px] shrink-0 items-center justify-center rounded-xs',

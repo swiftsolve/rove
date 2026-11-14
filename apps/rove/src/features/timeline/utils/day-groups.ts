@@ -5,14 +5,16 @@ export type DayGroup<T> = {
   events: T[]
 }
 
-// Local time, so days split at the user's midnight.
+/** Local time, so days split at the user's midnight. */
 function dayKey(ts: number): string {
   const date = new Date(ts)
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
-// The user's locale orders the parts: "Monday, January 12" in the US,
-// "Monday 12 January" in the UK.
+/**
+ * The user's locale orders the parts: "Monday, January 12" in the US,
+ * "Monday 12 January" in the UK.
+ */
 const DAY_FORMAT = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
 const DAY_WITH_YEAR_FORMAT = new Intl.DateTimeFormat(undefined, {
   weekday: 'long',

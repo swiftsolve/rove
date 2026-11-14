@@ -18,7 +18,7 @@ export type LatencyHistory = Record<string, LatencySample[]>
 
 const STORAGE_KEY = 'rove.service-latency.v1'
 
-// About six minutes at the 15 s services poll: enough to read a trend at a glance.
+/** About six minutes at the 15 s services poll: enough to read a trend at a glance. */
 export const MAX_SAMPLES = 24
 
 function latestWindow(samples: LatencySample[]): LatencySample[] {
@@ -87,8 +87,10 @@ export function appendSamples(
   return next
 }
 
-// An external store (read with useSyncExternalStore), so rows stay reactive
-// without a per-component effect or a setState during render.
+/**
+ * An external store (read with useSyncExternalStore), so rows stay reactive
+ * without a per-component effect or a setState during render.
+ */
 let cache: LatencyHistory = readLatencyHistory()
 const listeners = new Set<() => void>()
 

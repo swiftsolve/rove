@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { useHistoryNavigation } from './useHistoryNavigation'
 
-// A real history step, waiting for the popstate it fires.
+/** A real history step, waiting for the popstate it fires. */
 async function step(go: () => void): Promise<void> {
   const popped = new Promise((resolve) => window.addEventListener('popstate', resolve, { once: true }))
   act(go)

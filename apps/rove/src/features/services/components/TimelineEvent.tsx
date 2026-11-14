@@ -17,13 +17,17 @@ import { useNow } from '@/hooks/useNow'
 import type { ConnectionEvent, ServiceEvent, ServicesRunningEvent, ServiceTransitionEvent } from '@/types'
 import { formatCount, formatDuration } from '@/utils/format'
 
-// The same colour language as the reachability numbers: a drop is negative, a
-// recovery or healthy summary positive.
+/**
+ * The same colour language as the reachability numbers: a drop is negative, a
+ * recovery or healthy summary positive.
+ */
 const DOWN_COLOR = 'var(--status-negative)'
 const UP_COLOR = 'var(--status-positive)'
 
-// The line under the title, as in the events feed: what happened on top, which
-// service beneath.
+/**
+ * The line under the title, as in the events feed: what happened on top, which
+ * service beneath.
+ */
 const subjectVariants = cva('type-caption min-w-0 items-center gap-4', {
   variants: {
     /** A quiet aside (the running summary, the connection status), not a service name. */
@@ -36,7 +40,7 @@ const subjectVariants = cva('type-caption min-w-0 items-center gap-4', {
 
 const DURATION = 'ml-auto shrink-0 whitespace-nowrap'
 
-// The rows are memoised, so a list a few hundred long renders each row once.
+/** The rows are memoised, so a list a few hundred long renders each row once. */
 const TransitionRow = memo(function TransitionRow({
   event,
   durationMs,

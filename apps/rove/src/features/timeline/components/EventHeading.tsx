@@ -1,4 +1,4 @@
-// Time only, on the user's own 12- or 24-hour clock: the day heading above carries the date.
+/** Time only, on the user's own 12- or 24-hour clock: the day heading above carries the date. */
 const TIME_FORMAT = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' })
 
 function formatTime(ts: number): string {

@@ -8,9 +8,11 @@ import { iconElementControl } from '../icons/icon-options'
 import { GlobeIcon, PlusIcon, SearchIcon } from '../icons/Icons'
 import { PageHeader } from './PageHeader'
 
-// PageHeader takes `icon` or `onBack`, never both: a union Storybook's StoryObj
-// can't derive story args from (they come out `never`). The stories type their
-// args flat, with both optional, and pass one or the other.
+/**
+ * PageHeader takes `icon` or `onBack`, never both: a union Storybook's StoryObj
+ * can't derive story args from (they come out `never`). The stories type their
+ * args flat, with both optional, and pass one or the other.
+ */
 type PageHeaderArgs = Omit<ComponentProps<typeof PageHeader>, 'icon' | 'onBack'> & {
   icon?: ReactNode
   onBack?: () => void

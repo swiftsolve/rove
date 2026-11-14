@@ -17,9 +17,11 @@ import { cva, cx } from 'class-variance-authority'
 import type { NetworkInterfaceSummary } from '@/types'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/utils/format'
 
-// Wi-Fi and Ethernet take the accent, as on the connection strip; anything
-// else stays neutral. Every type needs an entry: a missing one leaves the tile
-// washed in the text colour.
+/**
+ * Wi-Fi and Ethernet take the accent, as on the connection strip; anything
+ * else stays neutral. Every type needs an entry: a missing one leaves the tile
+ * washed in the text colour.
+ */
 const TILE_COLORS = {
   wifi: 'var(--accent-default)',
   ethernet: 'var(--accent-default)',
@@ -42,8 +44,10 @@ const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6 
   },
 })
 
-// The bottom pad is trimmed: with no divider, header and body padding stacked
-// into too big a gap below the name.
+/**
+ * The bottom pad is trimmed: with no divider, header and body padding stacked
+ * into too big a gap below the name.
+ */
 const PANEL_HEADER = cx(
   'flex items-center justify-between gap-12',
   'px-(--card-header-padding-x) pt-(--card-header-padding-y) pb-8',

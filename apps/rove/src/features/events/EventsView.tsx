@@ -24,7 +24,7 @@ const FEED_HINT = 'Devices and access points joining or leaving between scans. K
 
 const EMPTY_HINT = 'Devices joining or leaving show up here.'
 
-// Only the day headings need the clock, and they only turn over at midnight.
+/** Only the day headings need the clock, and they only turn over at midnight. */
 const DAY_HEADING_TICK_MS = 60_000
 
 /** The day-grouped feed, or its loading / empty placeholder. */

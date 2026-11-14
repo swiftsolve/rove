@@ -17,13 +17,17 @@ const CHEVRON = cx(
   'transform-[rotate(-90deg)] group-data-panel-open/header:transform-[rotate(0deg)]',
 )
 
-// Matches the card's curve on the edges it touches, so the nav-flash and focus
-// rings aren't shaved square by the card's overflow:hidden. With no background, the
-// radius is otherwise invisible. Scroll margin leaves room above a focused group.
+/**
+ * Matches the card's curve on the edges it touches, so the nav-flash and focus
+ * rings aren't shaved square by the card's overflow:hidden. With no background, the
+ * radius is otherwise invisible. Scroll margin leaves room above a focused group.
+ */
 const GROUP = cx('scroll-mt-12 first:rounded-t-lg last:rounded-b-lg')
 
-// Carries the row's inset so the whole row is the click target. Its focus ring
-// is drawn on the group instead.
+/**
+ * Carries the row's inset so the whole row is the click target. Its focus ring
+ * is drawn on the group instead.
+ */
 const GROUP_HEADER = cx(
   'group/header flex w-full items-center justify-between gap-12 px-(--card-body-padding) py-12 aria-expanded:pb-8',
   'text-left text-inherit [font:inherit] hover:text-primary focus-visible:text-primary',
@@ -35,8 +39,10 @@ const HOST_COUNT = cx(
   'type-caption text-center text-tertiary tabular-nums',
 )
 
-// Indented so each 18px flag centres under the 16px app icon: chevron 14 + gap 8
-// + half of (16 − 18) ≈ 21px.
+/**
+ * Indented so each 18px flag centres under the 16px app icon: chevron 14 + gap 8
+ * + half of (16 − 18) ≈ 21px.
+ */
 const HOSTS = cx('flex flex-col gap-8', 'pr-(--card-body-padding) pb-12 pl-[calc(var(--card-body-padding)+21px)]')
 
 /** Memoised: each poll keeps an idle app's object, so its group skips the render. */

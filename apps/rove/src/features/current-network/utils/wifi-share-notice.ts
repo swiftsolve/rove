@@ -7,8 +7,10 @@ export type ShareNotice = {
   description: string
 }
 
-// Matched against the backend's error text (crates/rove-core/src/connection/
-// wifi_share.rs), which says why in words; anything else is shown as it came.
+/**
+ * Matched against the backend's error text (crates/rove-core/src/connection/
+ * wifi_share.rs), which says why in words; anything else is shown as it came.
+ */
 function describeShareError(message: string): ShareNotice {
   if (/not connected/i.test(message)) {
     return { icon: 'wifi-off', title: 'Not on Wi‑Fi', description: 'Connect to a Wi‑Fi network to share it.' }

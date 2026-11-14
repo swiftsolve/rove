@@ -145,16 +145,16 @@ function scaleForProperty(property: string): Map<string, string> | null {
   return null
 }
 
-// Tailwind utilities whose bare value is a spacing step (`p-12`, `size-4`, `-mt-6`).
+/** Tailwind utilities whose bare value is a spacing step (`p-12`, `size-4`, `-mt-6`). */
 const SPACING_UTILITY =
   /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|start|end|w|h|size|min-w|min-h|max-w|max-h|translate-[xy]|scroll-[mp][xytrblse]?)$/
 const RADIUS_UTILITY = /^rounded(?:-[a-z]{1,2})?$/
-// The utilities DESIGN.md holds to the spacing scale: gaps, paddings and margins.
+/** The utilities DESIGN.md holds to the spacing scale: gaps, paddings and margins. */
 const SPACE_UTILITY = /^(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])$/
 const SPACE_PROPERTY = /^(?:padding|margin|gap|row-gap|column-gap)(?:-[a-z-]+)?$/
 
 const TOKEN_READ = /var\(--[\w-]+\)/g
-// A number with a unit, not part of a name or a longer number.
+/** A number with a unit, not part of a name or a longer number. */
 const RAW_LENGTH = /(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/
 /**
  * A value built from tokens alone, with no raw length once its `var()`s are
@@ -163,18 +163,18 @@ const RAW_LENGTH = /(?<![A-Za-z0-9_.])\d*\.?\d+(?:px|rem|em|%)/
  */
 const isBuiltFromTokens = (value: string) => !RAW_LENGTH.test(value.replace(TOKEN_READ, ''))
 
-// CSS properties by the scale their lengths come from.
+/** CSS properties by the scale their lengths come from. */
 const SPACING_PROPERTY =
   /^(?:padding|margin|gap|row-gap|column-gap|inset|top|right|bottom|left|width|height|min-width|min-height|max-width|max-height)(?:-[a-z-]+)?$/
 const RADIUS_PROPERTY = /^border(?:-[a-z]+)*-radius$/
 
-// Word edges leave out `_`: Tailwind writes a space as `_` in an arbitrary value.
+/** Word edges leave out `_`: Tailwind writes a space as `_` in an arbitrary value. */
 const HEX = /(?<![A-Za-z0-9&#/$-])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![A-Za-z0-9-])/g
 const COLOUR_FUNCTION = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/g
 const NAMED_COLOUR = /(?<![A-Za-z0-9-])(?:white|black)(?![A-Za-z0-9-])/g
 const EASING_KEYWORD = /(?<![A-Za-z0-9-])(?:ease|ease-in|ease-out|ease-in-out)(?![A-Za-z0-9-])/g
 const PX_LENGTH = /^-?\d*\.?\d+px$/
-// An arbitrary value (`p-[12px]`, `-mt-[3px]`): the utility and the value in its brackets.
+/** An arbitrary value (`p-[12px]`, `-mt-[3px]`): the utility and the value in its brackets. */
 const ARBITRARY_VALUE = /(?<![\w-])-?([a-z][a-z-]*?)-\[([^\]\s'"`]+)\]/g
 const TIME = /(?<![A-Za-z0-9.-])(\d*\.?\d+)(ms|s)(?![A-Za-z0-9-])/g
 

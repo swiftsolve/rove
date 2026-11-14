@@ -4,10 +4,12 @@ import type { ComponentProps, ReactNode } from 'react'
 import { cn } from '../../utils/cn'
 import type { VariantOf } from '../../utils/variants'
 
-// The body's padding, by what it holds. Rows that carry their own vertical
-// padding stack with none above them, and just enough below to clear a footer
-// (CardFooter marks itself `data-card-footer`).
-// It grows to fill an openable card, so content can sit at its foot.
+/**
+ * The body's padding, by what it holds. Rows that carry their own vertical
+ * padding stack with none above them, and just enough below to clear a footer
+ * (CardFooter marks itself `data-card-footer`).
+ * It grows to fill an openable card, so content can sit at its foot.
+ */
 const bodyVariants = cva('grow', {
   variants: {
     layout: {

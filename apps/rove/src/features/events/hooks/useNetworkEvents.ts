@@ -2,7 +2,7 @@ import { queryClient } from '@/app/utils/query-client'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { NetworkEvent } from '@/types'
 
-// A cheap local DB read, so the feed can afford a quick background poll.
+/** A cheap local DB read, so the feed can afford a quick background poll. */
 const EVENTS_POLL_INTERVAL_MS = 5000
 
 const NETWORK_EVENTS_KEY = ['networkEvents']

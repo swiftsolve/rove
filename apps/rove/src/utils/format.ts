@@ -141,7 +141,7 @@ export function formatBytes(bytes: number): string {
   return `${value} ${unit}`
 }
 
-// Built once: a formatter is costly to make, and the history list formats many.
+/** Built once: a formatter is costly to make, and the history list formats many. */
 const DATE_TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
   month: 'short',
   day: 'numeric',

@@ -23,14 +23,14 @@ const APP_THEME_CSS = join(ROOT, 'packages/ui/src/styles/tailwind.css')
 const OUTPUT = join(ROOT, 'packages/ui/src/utils/cn-theme.gen.json')
 const OUTPUT_SCHEMA = join(ROOT, 'schemas/cn-theme.schema.json')
 const require = createRequire(import.meta.url)
-// The tokens' theme first, then the app's, as tailwind.css imports them.
+/** The tokens' theme first, then the app's, as tailwind.css imports them. */
 const TOKENS_THEME_CSS = require.resolve('@swiftsolve/rove-tokens/tailwind-theme.css')
 const TEXT_STYLES_CSS = require.resolve('@swiftsolve/rove-tokens/text-styles.css')
 const isCheck = process.argv.includes('--check')
 
-// Colours Tailwind has without a theme entry, listed so they still merge.
+/** Colours Tailwind has without a theme entry, listed so they still merge. */
 const BUILT_IN_COLORS = ['transparent', 'current', 'inherit']
-// Longest first, so `--font-weight-*` isn't read as a `--font-*` name.
+/** Longest first, so `--font-weight-*` isn't read as a `--font-*` name. */
 const NAMESPACES = [
   'font-weight',
   'font',

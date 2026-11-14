@@ -4,7 +4,7 @@ import { type Guidance, GUIDANCE_TOC } from '../../.storybook/docs-page'
 import { ArrowDownIcon, ArrowLeftIcon, CheckIcon, RefreshIcon, RouterIcon, SearchIcon } from '../icons/Icons'
 import { TimelineNode } from './TimelineNode'
 
-// The colours the app's timelines use. The marker takes any CSS colour.
+/** The colours the app's timelines use. The marker takes any CSS colour. */
 const COLORS = [
   'var(--status-positive)',
   'var(--status-warning)',
@@ -13,8 +13,10 @@ const COLORS = [
   'neutral',
 ]
 
-// An event's lines, as the timelines set them: what happened and when, then
-// what it happened to.
+/**
+ * An event's lines, as the timelines set them: what happened and when, then
+ * what it happened to.
+ */
 function Lines({ title, subject, time = '1:24 PM' }: { title: string; subject: string; time?: string }) {
   return (
     <>

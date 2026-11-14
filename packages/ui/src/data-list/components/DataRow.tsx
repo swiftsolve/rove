@@ -3,8 +3,10 @@ import type { JSX, ReactNode } from 'react'
 
 import type { VariantOf } from '../../utils/variants'
 
-// Label left, value right. The first row sits flush to the top of its
-// container and the last to the bottom, so `py` only sets the gap between rows.
+/**
+ * Label left, value right. The first row sits flush to the top of its
+ * container and the last to the bottom, so `py` only sets the gap between rows.
+ */
 const rowVariants = cva('flex justify-between gap-16 py-(--data-row-py) first:pt-0 last:pb-0', {
   variants: {
     align: { baseline: 'items-baseline', center: 'items-center' },

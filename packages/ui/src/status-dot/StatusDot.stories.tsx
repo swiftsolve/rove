@@ -5,7 +5,7 @@ import { type Guidance, GUIDANCE_TOC } from '../../.storybook/docs-page'
 import { useSecondTicks } from '../../.storybook/use-second-ticks'
 import { StatusDot } from './StatusDot'
 
-// The dot is decorative, so each story shows it beside the words it marks.
+/** The dot is decorative, so each story shows it beside the words it marks. */
 const WORDS = { none: 'Online', calm: 'Connected', live: 'Live', busy: 'Scanning…' }
 
 /** A StatusDot as the app runs it: a `live` one takes a new key each second, as each sample lands. */

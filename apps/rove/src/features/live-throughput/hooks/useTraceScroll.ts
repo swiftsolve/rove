@@ -1,7 +1,9 @@
 import { useEffectEvent, useLayoutEffect, useRef } from 'react'
 
-// A sample lands each second; each scroll runs a little longer, so a sample
-// that's slightly late carries the scroll on instead of finding it stopped.
+/**
+ * A sample lands each second; each scroll runs a little longer, so a sample
+ * that's slightly late carries the scroll on instead of finding it stopped.
+ */
 const SCROLL_MS = 1100
 /** How far the scroll may fall behind (slots) before it skips ahead, as after a burst of samples. */
 const MAX_LAG_SLOTS = 1

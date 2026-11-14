@@ -60,9 +60,9 @@ impl KindPatterns {
     }
 }
 
-// The first matching row wins, so rows go most specific first: NAS before
-// computer, tablet before phone, camera or speaker before IoT. Keep cross-kind
-// tokens ("android-tv" against a phone's "android") off the broader kind.
+/// The first matching row wins, so rows go most specific first: NAS before
+/// computer, tablet before phone, camera or speaker before IoT. Keep cross-kind
+/// tokens ("android-tv" against a phone's "android") off the broader kind.
 static HOSTNAME_KINDS: LazyLock<KindPatterns> = LazyLock::new(|| {
     KindPatterns::new(&[
         (

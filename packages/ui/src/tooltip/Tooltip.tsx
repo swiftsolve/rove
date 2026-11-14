@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 
 import { LAYER_POPOVER } from '../utils/layers'
 
-// Fades in from 3px above its place. Not hoverable: the pointer passes through.
+/** Fades in from 3px above its place. Not hoverable: the pointer passes through. */
 const BUBBLE = cx(
   'w-max rounded-sm px-10 py-8',
   'border border-line bg-popover shadow-popover',

@@ -7,7 +7,7 @@ function stubReducedMotion(isReduced: boolean): void {
   vi.stubGlobal('matchMedia', (query: string) => ({ matches: isReduced, media: query }))
 }
 
-// Runs animation frames until the ease settles, or gives up.
+/** Runs animation frames until the ease settles, or gives up. */
 async function settle(): Promise<void> {
   for (let frame = 0; frame < 200; frame++) {
     await act(() => new Promise((resolve) => requestAnimationFrame(resolve)))

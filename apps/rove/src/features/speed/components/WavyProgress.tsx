@@ -2,9 +2,11 @@ import { type CSSProperties, useEffect, useEffectEvent, useId, useRef } from 're
 
 import { advanceFill } from '@/features/speed/utils/progress-fill'
 
-// Material 3 wavy determinate progress, after Android's LinearWavyProgressIndicator.
-// Drawn in measured pixels, not a stretched viewBox, so the wavelength holds and
-// the caps stay round. Sizes are px, mirroring Android's dp defaults.
+/**
+ * Material 3 wavy determinate progress, after Android's LinearWavyProgressIndicator.
+ * Drawn in measured pixels, not a stretched viewBox, so the wavelength holds and
+ * the caps stay round. Sizes are px, mirroring Android's dp defaults.
+ */
 const WAVE_HEIGHT = 16
 const WAVE_MID = WAVE_HEIGHT / 2
 const WAVE_AMPLITUDE = 2.5
@@ -18,17 +20,21 @@ const LEAD_DOT_RADIUS = WAVE_STROKE + 2 // dot rides the leading edge of the wav
 const MIN_REDRAW_PX = 0.25 // skip DOM writes for moves smaller than this
 const MIN_TRACK_PX = 0.5 // hide the track once less than this is left of it
 
-// Module scope so a tab switch mid-test resumes the bar where it had crept to.
-// Tagged with its run, since a test started from Home begins while this is
-// unmounted and must not resume the last run's full bar.
+/**
+ * Module scope so a tab switch mid-test resumes the bar where it had crept to.
+ * Tagged with its run, since a test started from Home begins while this is
+ * unmounted and must not resume the last run's full bar.
+ */
 const persistedFill = { runId: 0, pct: 0 }
 
 function waveY(x: number, phase: number): number {
   return WAVE_MID + WAVE_AMPLITUDE * Math.sin(((x + phase) / WAVE_LENGTH) * Math.PI * 2)
 }
 
-// Built once per width; the scroll is a CSS transform. One wavelength of
-// overscan on the left keeps that scroll from exposing a gap.
+/**
+ * Built once per width; the scroll is a CSS transform. One wavelength of
+ * overscan on the left keeps that scroll from exposing a gap.
+ */
 function buildStaticWave(width: number): string {
   const start = -WAVE_LENGTH
   let prevX = start

@@ -1,6 +1,8 @@
 const DOTTED_QUAD = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/
-// An IPv4 address carried in IPv6 (::ffff:a.b.c.d, or its hex form ::ffff:hhhh:hhhh),
-// as a dual-stack socket reports an IPv4 peer.
+/**
+ * An IPv4 address carried in IPv6 (::ffff:a.b.c.d, or its hex form ::ffff:hhhh:hhhh),
+ * as a dual-stack socket reports an IPv4 peer.
+ */
 const MAPPED_DOTTED = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i
 const MAPPED_HEX = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i
 

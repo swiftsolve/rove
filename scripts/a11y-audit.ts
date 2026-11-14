@@ -29,12 +29,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { width, height } = await readWindowSize()
 const AXE_SOURCE = await readFile(resolve(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8')
 
-// WCAG 2.1 A and AA, plus axe's best practices (landmarks, heading order, …).
+/** WCAG 2.1 A and AA, plus axe's best practices (landmarks, heading order, …). */
 const RULE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
 
-// Base UI's focus guards: empty spans, hidden from screen readers but
-// focusable, that hand focus straight back into (or out of) an open popup.
-// Hidden-yet-focusable is the technique, so aria-hidden-focus would flag it.
+/**
+ * Base UI's focus guards: empty spans, hidden from screen readers but
+ * focusable, that hand focus straight back into (or out of) an open popup.
+ * Hidden-yet-focusable is the technique, so aria-hidden-focus would flag it.
+ */
 const EXCLUDED = [['[data-base-ui-focus-guard]']]
 
 /** A node axe flagged, marked in the page with whether it sits in a faded preview. */
@@ -114,7 +116,7 @@ const SCENARIOS: [name: string, location: AppLocation, buttonLabel?: string][] =
 ]
 
 const existingUrl = flag('url')
-// How many places to list per rule; `--limit all` lists every one.
+/** How many places to list per rule; `--limit all` lists every one. */
 const limitFlag = flag('limit') ?? '12'
 const placeLimit = limitFlag === 'all' ? Infinity : Number(limitFlag)
 const server: RunningServer = existingUrl ? { url: existingUrl, stop: () => {} } : await startDevServer()

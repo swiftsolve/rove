@@ -153,7 +153,7 @@ function ServiceFields(): ReactNode {
   )
 }
 
-// A box of its own, the way the app opens a dialog over its content column.
+/** A box of its own, the way the app opens a dialog over its content column. */
 const FRAME = 'relative h-[420px] overflow-hidden rounded-lg'
 
 /** The dialog open in its frame. */

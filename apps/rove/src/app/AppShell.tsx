@@ -12,10 +12,12 @@ import { useNavigation } from '@/app/hooks/useNavigation'
 import { useScreenFocus } from '@/app/hooks/useScreenFocus'
 import { locationKey } from '@/app/utils/location'
 
-// Column flex so <main> fills the visible area and centres the loading screen.
-// overflow-y: scroll, not scrollbar-gutter, which WebKitGTK ignores until the
-// content overflows. The right inset is 7px of padding plus the 5px scrollbar
-// (base.css), matching the rail's 12px.
+/**
+ * Column flex so <main> fills the visible area and centres the loading screen.
+ * overflow-y: scroll, not scrollbar-gutter, which WebKitGTK ignores until the
+ * content overflows. The right inset is 7px of padding plus the 5px scrollbar
+ * (base.css), matching the rail's 12px.
+ */
 const SCROLL = cx(
   'flex min-h-0 min-w-0 flex-1 flex-col',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',

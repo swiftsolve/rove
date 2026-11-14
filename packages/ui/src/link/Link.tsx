@@ -5,9 +5,11 @@ import { ArrowUpRightIcon, ChevronRightIcon, type IconComponent } from '../icons
 import { cn } from '../utils/cn'
 import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 
-// Focus shows the way hover does (accent and underline), not with a ring. The
-// pill's padding hangs outside the text (with the icons' empty edges), so the
-// words line up with the text around them and the link adds no height to its line.
+/**
+ * Focus shows the way hover does (accent and underline), not with a ring. The
+ * pill's padding hangs outside the text (with the icons' empty edges), so the
+ * words line up with the text around them and the link adds no height to its line.
+ */
 const LINK = cx(
   'group/link -my-2 mr-[-9px] ml-[-9.5px] inline-flex items-center gap-[5px] rounded-full px-8 py-2',
   'text-[length:inherit] leading-[inherit] [font-weight:inherit] whitespace-nowrap text-secondary no-underline',
@@ -16,19 +18,23 @@ const LINK = cx(
   STATE_CLASSES,
 )
 
-// The icons take the link's own (animating) colour, a touch dimmer at rest
-// through opacity, so there's one colour animation rather than two that drift.
-// Flex centring sets them on the line box, which keeps descender room the label
-// doesn't use, so a quarter pixel up centres them on the label's capitals and
-// x-height; a full 1px left them reading high.
+/**
+ * The icons take the link's own (animating) colour, a touch dimmer at rest
+ * through opacity, so there's one colour animation rather than two that drift.
+ * Flex centring sets them on the line box, which keeps descender room the label
+ * doesn't use, so a quarter pixel up centres them on the label's capitals and
+ * x-height; a full 1px left them reading high.
+ */
 const ICON = cx(
   'translate-y-[-0.25px] opacity-72 transition-opacity duration-(--duration-fast) ease-in-out',
   'group-focus-visible/link:opacity-100 group-usable/link:group-hover/link:opacity-100',
 )
 
-// Only the label underlines, not the icons. It carries the link's baseline:
-// without it the first icon's bottom edge is the baseline, and the line the
-// link sits in grows by a descender.
+/**
+ * Only the label underlines, not the icons. It carries the link's baseline:
+ * without it the first icon's bottom edge is the baseline, and the line the
+ * link sits in grows by a descender.
+ */
 const LABEL = cx(
   'self-baseline',
   'group-usable/link:group-hover/link:underline group-usable/link:group-hover/link:underline-offset-2',

@@ -118,7 +118,7 @@ pub(super) fn parse_ss(output: &str) -> Vec<UsageUnit> {
 /// peer (listeners, loopback) are dropped.
 pub(super) fn parse_ss_peers(output: &str) -> Vec<PeerReading> {
     let mut readings = Vec::new();
-    // (app, conn_key, peer_ip, peer_port, pid) awaiting its following info line.
+    /// `(app, conn_key, peer_ip, peer_port, pid)` awaiting its following info line.
     type Pending = (String, String, String, Option<u16>, Option<u32>);
     let mut pending: Option<Pending> = None;
 

@@ -58,7 +58,7 @@ const EXPORT_COMMENT =
   'Exported from the Figma file by `npm run figma:export`; change it in Figma, then export again and run `npm run gen`.'
 const FIGMA_API = 'https://api.figma.com/v1'
 const COMPONENT_TYPES = new Set(['COMPONENT', 'COMPONENT_SET'])
-// Text inside these is a live component, not the docs around it.
+/** Text inside these is a live component, not the docs around it. */
 const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
 const isExport = process.argv.includes('--export')
 
@@ -287,7 +287,7 @@ const { components: figmaComponents, sections } = await readFigma(
   new Set(guideLocations.flatMap(({ ownSection, familySection }) => [ownSection, familySection].filter(isDefined))),
 )
 
-// Each library component's Figma component, found by name.
+/** Each library component's Figma component, found by name. */
 const exportedComponents: Record<string, ExportedFigmaComponent> = {}
 for (const component of Object.keys(componentList)) {
   const figmaName = figmaNameOf(component)
@@ -316,7 +316,7 @@ for (const component of Object.keys(componentList)) {
   }
 }
 
-// The usage guides, read by their layers.
+/** The usage guides, read by their layers. */
 const exportedGuides: Record<string, Guidance> = {}
 for (const location of guideLocations) {
   const block = guidanceBlockOf(location, sections)

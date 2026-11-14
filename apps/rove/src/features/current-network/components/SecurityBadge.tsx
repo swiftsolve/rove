@@ -7,16 +7,18 @@ import { spokenText } from '@/utils/spoken'
 
 type SecurityLevel = 'secured' | 'weak' | 'open'
 
-// Block flex, not inline-flex, which sits the lock on the baseline a little low.
+/** Block flex, not inline-flex, which sits the lock on the baseline a little low. */
 const securityBadgeVariants = cva('flex min-w-0 items-center gap-6 in-[dl]:justify-end', {
   variants: {
     level: { secured: null, weak: null, open: 'text-negative' },
   },
 })
 
-// Centred on the line box, the lock already sits at the middle of a mostly
-// lowercase label ("Secured"). The short label is all capitals ("WPA3"),
-// whose middle is higher, so there the lock is lifted 0.5px.
+/**
+ * Centred on the line box, the lock already sits at the middle of a mostly
+ * lowercase label ("Secured"). The short label is all capitals ("WPA3"),
+ * whose middle is higher, so there the lock is lifted 0.5px.
+ */
 const securityIconVariants = cva('shrink-0', {
   variants: {
     level: { secured: 'text-status-positive', weak: 'text-status-warning', open: null },

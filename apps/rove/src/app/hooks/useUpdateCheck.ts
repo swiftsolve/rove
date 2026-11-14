@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { checkForUpdates, type PendingUpdate } from '@/app/utils/updater'
 import { getSetting } from '@/hooks/useSetting'
 
-// One check per launch, shared: StrictMode's dev remount runs the effect twice.
+/** One check per launch, shared: StrictMode's dev remount runs the effect twice. */
 let launchCheck: Promise<PendingUpdate | null> | null = null
 
 /**

@@ -15,10 +15,10 @@ type RunningSwap = {
   animation: Animation | null
 }
 
-// Module-level: there is only one document root to animate.
+/** Module-level: there is only one document root to animate. */
 let runningSwap: RunningSwap | null = null
 
-// Little ease-in and no long tail: a slow finish reads as dragging.
+/** Little ease-in and no long tail: a slow finish reads as dragging. */
 const SWAP_DURATION_MS = 200
 const SWAP_EASING = 'cubic-bezier(0.3, 0, 0.2, 1)'
 
@@ -84,7 +84,7 @@ function themeTokenNames(): string[] {
   return []
 }
 
-// Ease in and out, so the fade neither jumps off the press nor stops dead.
+/** Ease in and out, so the fade neither jumps off the press nor stops dead. */
 function easeInOut(progress: number): number {
   return 0.5 - Math.cos(Math.PI * progress) / 2
 }

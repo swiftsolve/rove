@@ -6,9 +6,11 @@ import { useStorybookApi, useStorybookState } from 'storybook/manager-api'
 import type { ComponentListJson } from '../../../scripts/lib/library-json-types.ts'
 import componentList from '../catalog/components.gen.json'
 
-// A story's title ends in its component's name ('Containers/Card/CardHeader'),
-// which is components.gen.json's key, so every story finds its Figma component
-// with nothing set on the story itself.
+/**
+ * A story's title ends in its component's name ('Containers/Card/CardHeader'),
+ * which is components.gen.json's key, so every story finds its Figma component
+ * with nothing set on the story itself.
+ */
 const COMPONENTS: ComponentListJson['components'] = componentList.components
 const FILE = new URL(componentList.figmaFileUrl)
 

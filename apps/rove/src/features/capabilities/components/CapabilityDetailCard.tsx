@@ -11,12 +11,14 @@ import {
 import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capability-level-labels'
 import type { CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 
-// Three tiers: an intro row with the level, a metrics grid on an inset panel, then the verdict.
+/** Three tiers: an intro row with the level, a metrics grid on an inset panel, then the verdict. */
 const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
 
-// One row whatever the values: each column hugs its text, which never wraps,
-// and the leftover width is shared out as equal gaps. The widest values a
-// check can show (9998.0 ms, 100.0 Gbps) still fit the window.
+/**
+ * One row whatever the values: each column hugs its text, which never wraps,
+ * and the leftover width is shared out as equal gaps. The widest values a
+ * check can show (9998.0 ms, 100.0 Gbps) still fit the window.
+ */
 const METRICS = cx(
   'grid auto-cols-max grid-flow-col justify-between gap-x-8',
   '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
@@ -29,8 +31,10 @@ const metricValueVariants = cva('type-body leading-[1.25] font-medium whitespace
   defaultVariants: { isUnmet: false },
 })
 
-// Framed on three sides in the metrics' inset colour, so it sits inside the card
-// edge. The padding gives back the 1px border to stay aligned with the grid.
+/**
+ * Framed on three sides in the metrics' inset colour, so it sits inside the card
+ * edge. The padding gives back the 1px border to stay aligned with the grid.
+ */
 const VERDICT = cx(
   'flex items-center gap-12',
   '-mx-(--card-header-padding-x) px-[calc(var(--card-header-padding-x)-1px)] py-12',

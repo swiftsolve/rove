@@ -168,11 +168,11 @@ export const RefreshIcon = appIconFromLucide(RotateCw, 16)
 export const SearchIcon = appIconFromLucide(Search, 16)
 export const AlertIcon = appIconFromLucide(TriangleAlert, 16)
 
-// Window controls
+/** Window controls */
 export const MinimizeIcon = appIconFromLucide(Minus, 15)
 export const CloseIcon = appIconFromLucide(X, 15)
 
-// Capability icons
+/** Capability icons */
 export const BrowsingIcon = appIconFromLucide(AppWindowMac, 22)
 export const VideoCallIcon = appIconFromLucide(Video, 22)
 export const GamepadIcon = appIconFromLucide(Gamepad2, 22)

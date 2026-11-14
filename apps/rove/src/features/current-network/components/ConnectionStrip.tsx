@@ -26,16 +26,20 @@ import { formatBand } from '@/utils/format'
 
 import styles from './ConnectionStrip.module.css'
 
-// Wi-Fi and Ethernet share the accent, which marks what's yours: a status or
-// series colour would read as one medium being better, or as download.
+/**
+ * Wi-Fi and Ethernet share the accent, which marks what's yours: a status or
+ * series colour would read as one medium being better, or as download.
+ */
 const CONNECTION_ICONS = {
   wifi: { Icon: WifiIcon, color: 'var(--accent-default)' },
   ethernet: { Icon: EthernetIcon, color: 'var(--accent-default)' },
   disconnected: { Icon: OfflineIcon, color: 'var(--status-negative)' },
 } as const satisfies Record<ConnectionDisplayVariant, { Icon: IconComponent; color: IconTileColor }>
 
-// Content sits above the stretched toggle but lets clicks fall through to it;
-// only the share button opts back in.
+/**
+ * Content sits above the stretched toggle but lets clicks fall through to it;
+ * only the share button opts back in.
+ */
 const ABOVE_TOGGLE = 'relative z-1 pointer-events-none'
 
 const stripVariants = cva(
@@ -55,8 +59,10 @@ const stripVariants = cva(
   },
 )
 
-// Keep the subtitle on one line inside the narrow strip (InlineMeta's
-// `shouldTruncate`; the security badge's item in ConnectionStrip.module.css).
+/**
+ * Keep the subtitle on one line inside the narrow strip (InlineMeta's
+ * `shouldTruncate`; the security badge's item in ConnectionStrip.module.css).
+ */
 const STRIP_SUBTITLE = cx('type-body text-secondary', styles.stripSub, 'truncate')
 
 const chevronVariants = cva(

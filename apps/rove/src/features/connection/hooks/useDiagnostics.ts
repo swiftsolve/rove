@@ -6,8 +6,10 @@ import { overlayLiveMetrics } from '@/features/connection/utils/live-metrics'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { LiveDiagnostics, NetworkDiagnostics } from '@/types'
 
-// Only the cheap live metrics poll. The full run makes an external ISP lookup,
-// so it runs just on open and on network change.
+/**
+ * Only the cheap live metrics poll. The full run makes an external ISP lookup,
+ * so it runs just on open and on network change.
+ */
 const LIVE_POLL_INTERVAL_MS = 15_000
 
 const ERROR_MESSAGE = 'Couldn’t check your connection'

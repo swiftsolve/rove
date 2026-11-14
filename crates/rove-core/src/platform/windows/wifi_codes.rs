@@ -2,7 +2,7 @@
 //! "802.11ax" for a PHY type, "WPA3-Personal" for an auth algorithm, and the
 //! passphrase from a saved profile's XML.
 
-// `DOT11_PHY_TYPE` values, the 802.11 amendment a link runs.
+/// `DOT11_PHY_TYPE` values, the 802.11 amendment a link runs.
 const PHY_DSSS: i32 = 2;
 const PHY_OFDM: i32 = 4;
 const PHY_HRDSSS: i32 = 5;

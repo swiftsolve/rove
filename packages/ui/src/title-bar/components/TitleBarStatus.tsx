@@ -4,9 +4,11 @@ import { StatusDot } from '../../status-dot/StatusDot'
 import { STATUS_TEXT } from '../../utils/status'
 import type { VariantOf } from '../../utils/variants'
 
-// Nudged down a hair so the label optically aligns with the wordmark's centre
-// rather than sitting slightly high next to it. A new tone eases the dot and
-// words to their new colour.
+/**
+ * Nudged down a hair so the label optically aligns with the wordmark's centre
+ * rather than sitting slightly high next to it. A new tone eases the dot and
+ * words to their new colour.
+ */
 const statusVariants = cva(
   [
     'type-body-medium',

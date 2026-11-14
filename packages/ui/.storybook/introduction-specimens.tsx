@@ -87,10 +87,10 @@ function itemAt<Item>(items: readonly Item[], index: number): Item {
  */
 const BEAT = 1800
 const TYPE_BEAT = 150
-// A beat in typing ticks, so a scene that types keeps the same beat on one clock.
+/** A beat in typing ticks, so a scene that types keeps the same beat on one clock. */
 const TICKS_PER_BEAT = BEAT / TYPE_BEAT
 
-// The rail's main tabs and their icons, as the app's tab registry (apps/rove/src/app/utils/tab-registry.ts) lists them.
+/** The rail's main tabs and their icons, as the app's tab registry (apps/rove/src/app/utils/tab-registry.ts) lists them. */
 const TABS: { label: string; icon: IconComponent }[] = [
   { label: 'Home', icon: HomeIcon },
   { label: 'Speed', icon: SpeedIcon },
@@ -103,12 +103,12 @@ const TABS: { label: string; icon: IconComponent }[] = [
   { label: 'Interfaces', icon: LayersIcon },
 ]
 
-// The title bar's verdicts, in the words of apps/rove/src/app/utils/connection-status.ts.
+/** The title bar's verdicts, in the words of apps/rove/src/app/utils/connection-status.ts. */
 const CONNECTING = { tone: 'neutral', label: 'Connecting…' } as const
 const ONLINE = { tone: 'positive', label: 'Online' } as const
 const NO_INTERNET = { tone: 'negative', label: 'No internet' } as const
 
-// One change a beat, the rail's tab or the title bar's status, never both, and back to the start.
+/** One change a beat, the rail's tab or the title bar's status, never both, and back to the start. */
 const FRAME_BEATS = [
   { tab: 0, verdict: CONNECTING },
   { tab: 0, verdict: ONLINE },
@@ -229,11 +229,13 @@ function ActionsScene(): JSX.Element {
  */
 const TYPED = 'github.com'
 
-// A beat each, one change at a time: type, test, Light, System, the toggle on,
-// Dark again, the toggle off, the field cleared, then over.
+/**
+ * A beat each, one change at a time: type, test, Light, System, the toggle on,
+ * Dark again, the toggle off, the field cleared, then over.
+ */
 const INPUT_BEATS = ['type', 'test', 'light', 'system', 'sound-on', 'dark', 'sound-off', 'clear'] as const
 
-// Settings' THEME_OPTIONS (apps/rove/src/features/settings/SettingsView.tsx).
+/** Settings' THEME_OPTIONS (apps/rove/src/features/settings/SettingsView.tsx). */
 const THEMES = [
   { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} className="shrink-0" /> },
   { value: 'light', label: 'Light', icon: <SunIcon size={15} className="shrink-0" /> },
@@ -273,14 +275,16 @@ function InputsScene(): JSX.Element {
   )
 }
 
-// The share dialog's QR code, as the dev mock draws it.
+/** The share dialog's QR code, as the dev mock draws it. */
 const QR_SVG = mockQrSvg()
 
-// The library's own classes for the parts drawn in place: Tooltip's bubble
-// (tooltip/Tooltip.tsx) and Dialog's layers, panel, sizer and header
-// (dialog/Dialog.tsx), with their open and close animations. The real ones are
-// modal and portal out of the page, which a looping scene can't be, so the
-// scene sets the `data-open` / `data-closed` that Base UI would.
+/**
+ * The library's own classes for the parts drawn in place: Tooltip's bubble
+ * (tooltip/Tooltip.tsx) and Dialog's layers, panel, sizer and header
+ * (dialog/Dialog.tsx), with their open and close animations. The real ones are
+ * modal and portal out of the page, which a looping scene can't be, so the
+ * scene sets the `data-open` / `data-closed` that Base UI would.
+ */
 const BUBBLE = 'w-max px-10 py-8 rounded-sm bg-popover border border-line type-caption leading-hint text-secondary'
 const LAYER =
   'absolute inset-0 data-open:animate-overlay-in data-closed:pointer-events-none data-closed:animate-overlay-out'
@@ -398,7 +402,7 @@ const STATES = [
   { tone: 'negative', label: 'Offline' },
 ] as const
 
-// Two beats loading, then a beat for each verdict.
+/** Two beats loading, then a beat for each verdict. */
 const LOADING_BEATS = 2
 
 function StatusScene(): JSX.Element {
@@ -423,7 +427,7 @@ function StatusScene(): JSX.Element {
   )
 }
 
-// Home's Wi‑Fi connection, as the dev mock (apps/rove/src/bridge/mock-network-api.ts) reports it.
+/** Home's Wi‑Fi connection, as the dev mock (apps/rove/src/bridge/mock-network-api.ts) reports it. */
 const NETWORK: WifiNetworkInfo = {
   connectionType: 'wifi',
   interfaceName: 'en0',
@@ -462,8 +466,10 @@ function ContainersScene(): JSX.Element {
   )
 }
 
-// Lucide's line icons, drawn as the library's are: seeing, the accessibility
-// mark, and a voice, for the ways a page reaches someone.
+/**
+ * Lucide's line icons, drawn as the library's are: seeing, the accessibility
+ * mark, and a voice, for the ways a page reaches someone.
+ */
 const A11Y_MARKS = [
   {
     name: 'eye',

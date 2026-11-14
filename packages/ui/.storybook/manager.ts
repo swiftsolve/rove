@@ -5,19 +5,23 @@ import { themes } from 'storybook/theming'
 
 import { FigmaPanel } from './figma-panel'
 
-// Storybook's own frame is dark, as the app is by default, whatever the system's setting.
+/** Storybook's own frame is dark, as the app is by default, whatever the system's setting. */
 const theme = themes.dark
 
-// The sidebar runs in its own frame without tokens.css, so it takes the font
-// stacks from the token files; manager-head.html loads the two faces.
-// Family names are quoted; generic ones (system-ui, sans-serif) can't be.
+/**
+ * The sidebar runs in its own frame without tokens.css, so it takes the font
+ * stacks from the token files; manager-head.html loads the two faces.
+ * Family names are quoted; generic ones (system-ui, sans-serif) can't be.
+ */
 const fontStack = (family: { $value: string[] }): string =>
   family.$value.map((name) => (/[A-Z ]/.test(name) ? `'${name}'` : name)).join(', ')
 const SANS = fontStack(typography['font-family'].sans)
 const DISPLAY = fontStack(typography['font-family'].display)
 
-// The Rove Mark (BrandIcon's paths) in the accent, which names Rove, then
-// Rove Components. With no brandImage, Storybook renders brandTitle as HTML.
+/**
+ * The Rove Mark (BrandIcon's paths) in the accent, which names Rove, then
+ * Rove Components. With no brandImage, Storybook renders brandTitle as HTML.
+ */
 const brandTitle = `
   <span style="display:inline-flex;align-items:center;gap:10px">
     <svg width="32" height="32" viewBox="0 0 48 48" fill="none" aria-hidden="true">

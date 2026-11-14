@@ -4,10 +4,12 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
-// Three kinds of test: `.test.ts` is pure logic, in Node. `.test.tsx` renders
-// into happy-dom with Testing Library, for behaviour and accessibility, not
-// looks. Every story runs in headless Chromium with the real styles, its `play`
-// function and the a11y checks.
+/**
+ * Three kinds of test: `.test.ts` is pure logic, in Node. `.test.tsx` renders
+ * into happy-dom with Testing Library, for behaviour and accessibility, not
+ * looks. Every story runs in headless Chromium with the real styles, its `play`
+ * function and the a11y checks.
+ */
 export default defineConfig({
   server: {
     watch: {

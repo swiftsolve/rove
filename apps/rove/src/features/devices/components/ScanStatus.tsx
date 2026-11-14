@@ -35,8 +35,10 @@ const scanPhaseVariants = cva(
 
 type ScanPhaseState = VariantOf<typeof scanPhaseVariants, 'state'>
 
-// The scan runs its stages concurrently and reports no per-stage progress, so
-// these step on a timer, in pipeline order, holding on the last until it ends.
+/**
+ * The scan runs its stages concurrently and reports no per-stage progress, so
+ * these step on a timer, in pipeline order, holding on the last until it ends.
+ */
 const SCAN_PHASES = ['Sweeping', 'Listening', 'Identifying'] as const
 const SCAN_PHASE_MS = 1300
 

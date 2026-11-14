@@ -1,8 +1,10 @@
 import { type UsageQuery, useUsageQuery } from '@/hooks/useUsageQuery'
 import type { DataUsageSummary } from '@/types'
 
-// Every 2 s, so today's total climbs as traffic moves: the backend adds what's
-// moved since its last 30 s save to it, a cheap counter read.
+/**
+ * Every 2 s, so today's total climbs as traffic moves: the backend adds what's
+ * moved since its last 30 s save to it, a cheap counter read.
+ */
 const POLL_INTERVAL_MS = 2_000
 
 const EMPTY_USAGE: DataUsageSummary = { days: [], bootRxBytes: 0, bootTxBytes: 0, trackingSince: null }

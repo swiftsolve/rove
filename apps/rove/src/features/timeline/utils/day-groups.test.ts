@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { formatDayHeading, groupByDay } from '@/features/timeline/utils/day-groups'
 
-// Local-time dates, so the tests hold in any time zone.
+/** Local-time dates, so the tests hold in any time zone. */
 const now = new Date(2026, 9, 28, 15, 0).getTime()
 
 function event(id: number, ts: number): { id: number; ts: number } {

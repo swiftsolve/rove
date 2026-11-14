@@ -13,12 +13,14 @@ import { captureReturnPoint, isReturnPoint, type ReturnPoint, trackClicks } from
 import { isTauri } from '@/bridge/tauri-network-api'
 import { IS_MAC } from '@/utils/platform'
 
-// Namespaced, so we don't clobber anything the webview host keeps on `history.state`.
+/** Namespaced, so we don't clobber anything the webview host keeps on `history.state`. */
 const LOCATION_KEY = '__roveNav'
-// The screen's return point, saved on its entry as we leave it for another.
+/** The screen's return point, saved on its entry as we leave it for another. */
 const RETURN_KEY = '__roveReturn'
-// How many of our own entries sit behind this one. Kept on the entry, not
-// counted on each pop, so a forward step or a reload can't throw it off.
+/**
+ * How many of our own entries sit behind this one. Kept on the entry, not
+ * counted on each pop, so a forward step or a reload can't throw it off.
+ */
 const DEPTH_KEY = '__roveDepth'
 
 /** One of our fields on a history entry's state, or undefined on an entry we didn't write. */
@@ -42,7 +44,7 @@ function readReturnPoint(state: unknown): ReturnPoint | null {
   return isReturnPoint(returnPoint) ? returnPoint : null
 }
 
-// A new entry starts with no return point: the current entry's is its own.
+/** A new entry starts with no return point: the current entry's is its own. */
 function historyStateFor(location: AppLocation): Record<string, unknown> {
   const { [RETURN_KEY]: _returnPoint, ...current } = (window.history.state as Record<string, unknown> | null) ?? {}
   return { ...current, [LOCATION_KEY]: location }

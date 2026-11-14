@@ -6,8 +6,10 @@ import { recordLatency } from '@/features/services/utils/service-latency'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { NetworkAPI, ServicesReport } from '@/types'
 
-// Matches the Connection view's live poll, which services used to ride on, so
-// the sparklines keep their rate.
+/**
+ * Matches the Connection view's live poll, which services used to ride on, so
+ * the sparklines keep their rate.
+ */
 const SERVICE_POLL_INTERVAL_MS = 15_000
 
 type UseServiceReachabilityResult = {

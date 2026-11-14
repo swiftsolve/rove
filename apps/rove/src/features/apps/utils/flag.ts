@@ -1,9 +1,11 @@
-// Regional Indicator Symbol Letter A; the flag for "XY" is the pair of
-// indicators at offsets X-'A' and Y-'A' from it.
+/**
+ * Regional Indicator Symbol Letter A; the flag for "XY" is the pair of
+ * indicators at offsets X-'A' and Y-'A' from it.
+ */
 const REGIONAL_INDICATOR_A = 0x1f1e6
 const CHAR_CODE_A = 65
 
-// Built once rather than per host row.
+/** Built once rather than per host row. */
 const regionNames =
   typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null
 

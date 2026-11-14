@@ -9,7 +9,7 @@ import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 import { testStatusText } from '@/features/speed/utils/test-status'
 import { CAPABILITY_DEFINITIONS } from '@/types'
 
-// Bleeds past the body padding to span the card, like the throughput chart.
+/** Bleeds past the body padding to span the card, like the throughput chart. */
 const CAPABILITY_ROW = cx('flex items-center justify-between', '-mx-(--card-body-padding) px-(--card-body-padding)')
 
 /**

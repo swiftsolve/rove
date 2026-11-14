@@ -28,7 +28,7 @@ const program = createProgram(readCatalog(), {
   writeNote,
 })
 
-// With no command, a person at a terminal gets the picker and a pipe gets the help, which exits cleanly.
+/** With no command, a person at a terminal gets the picker and a pipe gets the help, which exits cleanly. */
 const commandArgs = process.argv.slice(2)
 if (commandArgs.length === 0) {
   commandArgs.push(isInteractive ? 'pick' : '--help')

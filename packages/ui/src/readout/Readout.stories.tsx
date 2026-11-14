@@ -5,7 +5,7 @@ import { DirectionIcon } from '../icons/DirectionIcon'
 import { iconElementControl } from '../icons/icon-options'
 import { Readout } from './Readout'
 
-// The direction arrows lead the list: they're what a speed readout carries.
+/** The direction arrows lead the list: they're what a speed readout carries. */
 const ICON_CONTROL = iconElementControl(14, {
   'Direction down': <DirectionIcon series="down" />,
   'Direction up': <DirectionIcon series="up" />,

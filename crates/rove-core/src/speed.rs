@@ -58,10 +58,10 @@ const DOWNLOAD_URLS: [&str; 2] =
 const UPLOAD_URL: &str = "https://speed.cloudflare.com/__up";
 const PING_HOST: &str = "1.1.1.1";
 
-// One TCP connection keeps only bandwidth×RTT bytes in flight before waiting
-// on ACKs, so on a fast link it tops out well below line rate. Too few
-// connections undershoot gigabit; too many waste setup on a slow link. So the
-// count ramps up during warmup until aggregate throughput stops climbing.
+/// One TCP connection keeps only bandwidth×RTT bytes in flight before waiting
+/// on ACKs, so on a fast link it tops out well below line rate. Too few
+/// connections undershoot gigabit; too many waste setup on a slow link. So the
+/// count ramps up during warmup until aggregate throughput stops climbing.
 const MIN_CONNS: usize = 4;
 const MAX_CONNS: usize = 32;
 /// Connections added each ramp step while throughput is still climbing.

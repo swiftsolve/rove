@@ -38,11 +38,13 @@ function Lines({ label, lines }: { label?: string; lines: string[] }): JSX.Eleme
   )
 }
 
-// As in Figma's Guidance block: When to use and When not to use side by side,
-// then Accessibility across both, its two lists in the same columns. Sections
-// sit under hairlines. `sb-unstyled` keeps Storybook's prose styles off it
-// (preview.css styles it). The page's own guide has `<h2>`s, with ids, for the
-// page's contents; a part's guide has `<h4>`s, which the contents leave out.
+/**
+ * As in Figma's Guidance block: When to use and When not to use side by side,
+ * then Accessibility across both, its two lists in the same columns. Sections
+ * sit under hairlines. `sb-unstyled` keeps Storybook's prose styles off it
+ * (preview.css styles it). The page's own guide has `<h2>`s, with ids, for the
+ * page's contents; a part's guide has `<h4>`s, which the contents leave out.
+ */
 function GuidanceSections({ guidance, isPart = false }: { guidance: Guidance; isPart?: boolean }): JSX.Element {
   const { whenToUse, whenNotToUse, accessibility } = guidance
   const sections: { title: string; groups: { label?: string; lines: string[] }[] }[] = [
@@ -72,8 +74,10 @@ function GuidanceSections({ guidance, isPart = false }: { guidance: Guidance; is
   )
 }
 
-// The guides of the parts shown on this page (MenuItem on Menu's), each under
-// its name, as Figma's Parts block has them at the end of the family's section.
+/**
+ * The guides of the parts shown on this page (MenuItem on Menu's), each under
+ * its name, as Figma's Parts block has them at the end of the family's section.
+ */
 function PartsSections({ partGuidance }: { partGuidance: Record<string, Guidance> }): JSX.Element {
   return (
     <div className="parts sb-unstyled">
@@ -90,8 +94,10 @@ function PartsSections({ partGuidance }: { partGuidance: Record<string, Guidance
   )
 }
 
-// The contents list links to headings by id, and Storybook's Title renders
-// none, so its <h1> takes one here, before the list reads them.
+/**
+ * The contents list links to headings by id, and Storybook's Title renders
+ * none, so its <h1> takes one here, before the list reads them.
+ */
 function PageTitle(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => ref.current?.querySelector('h1')?.setAttribute('id', 'top'), [])

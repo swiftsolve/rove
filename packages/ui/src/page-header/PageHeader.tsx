@@ -8,8 +8,10 @@ import { Tooltip } from '../tooltip/Tooltip'
 import { LAYER_RAISED } from '../utils/layers'
 import { PRESS } from '../utils/pressable'
 
-// The back button in the icon chip's slot: the same box (a rail item's, 10px
-// radius), so a subpage's header reads like a top-level page's.
+/**
+ * The back button in the icon chip's slot: the same box (a rail item's, 10px
+ * radius), so a subpage's header reads like a top-level page's.
+ */
 const BACK = cx(
   'inline-flex size-(--rail-item-size) shrink-0 items-center justify-center rounded-md',
   'bg-overlay-subtle text-secondary hover:bg-hover hover:text-primary',
@@ -17,12 +19,16 @@ const BACK = cx(
   PRESS,
 )
 
-// Reserves a line's height even while it's empty, so the title above never
-// shifts as the line fills in.
+/**
+ * Reserves a line's height even while it's empty, so the title above never
+ * shifts as the line fills in.
+ */
 const LINE = 'min-h-[calc(var(--font-size-xs)*1.35)] type-caption text-tertiary'
 
-// One height on every page, an icon button's: beside a taller button a line
-// its full height reads longer than it, as the button's corners round off.
+/**
+ * One height on every page, an icon button's: beside a taller button a line
+ * its full height reads longer than it, as the button's corners round off.
+ */
 const DIVIDER = 'h-[28px] w-px shrink-0 bg-line'
 
 type PageHeaderProps = {

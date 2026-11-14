@@ -62,7 +62,7 @@ export const Warning: Story = { args: { value: 180, status: 'warning' } }
 
 export const Negative: Story = { args: { value: 900, status: 'negative' } }
 
-// Latency a service might report on successive polls.
+/** Latency a service might report on successive polls. */
 const POLLS = [24, 38, 180, 62, 900, 31]
 
 function statusOf(ms: number): MetricStatus {

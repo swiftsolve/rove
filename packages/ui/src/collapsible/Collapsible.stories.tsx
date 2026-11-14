@@ -13,7 +13,7 @@ import { CollapsibleTrigger } from './components/CollapsibleTrigger'
 
 type CollapsibleArgs = ComponentProps<typeof Collapsible>
 
-// The trigger is a card header: its height, padding and title type.
+/** The trigger is a card header: its height, padding and title type. */
 const TRIGGER = [
   'group flex w-full items-center justify-between gap-12 text-left',
   'h-(--card-header-height) px-(--card-header-padding-x) type-heading text-primary',
@@ -25,7 +25,7 @@ const CHEVRON = [
   'group-data-panel-open:transform-[rotate(180deg)]',
 ].join(' ')
 
-// The rows sit on a dark inset panel under the header, as on the connection card.
+/** The rows sit on a dark inset panel under the header, as on the connection card. */
 const DETAILS = 'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)'
 
 /** The connection card's details: a trigger row and the rows it shows. */

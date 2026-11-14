@@ -5,10 +5,12 @@ import type { Transfer } from '@/features/apps/utils/transfer'
 import { formatBytes } from '@/utils/format'
 
 const FIGURE = 'inline-flex items-center gap-[5px] type-caption text-tertiary'
-// The widest a figure can read: `formatBytes` shows three significant digits,
-// so at most three digits, a point and a two-letter unit. The value takes this
-// width, right-aligned, so units line up on the right across rows and any
-// spare room sits between the arrow and the number, never more than that.
+/**
+ * The widest a figure can read: `formatBytes` shows three significant digits,
+ * so at most three digits, a point and a two-letter unit. The value takes this
+ * width, right-aligned, so units line up on the right across rows and any
+ * spare room sits between the arrow and the number, never more than that.
+ */
 const WIDEST_FIGURE = '88.8 MB'
 const FIGURE_CELL = 'col-start-1 row-start-1'
 

@@ -2,10 +2,12 @@ import path from 'node:path'
 
 import { defineConfig } from 'vitest/config'
 
-// Two kinds of test: `.test.ts` is pure logic, in Node. `.test.tsx` renders
-// into happy-dom with Testing Library, for behaviour and accessibility, not
-// looks. They share only the `@` alias with vite.config.ts. The library's
-// stories run in packages/ui.
+/**
+ * Two kinds of test: `.test.ts` is pure logic, in Node. `.test.tsx` renders
+ * into happy-dom with Testing Library, for behaviour and accessibility, not
+ * looks. They share only the `@` alias with vite.config.ts. The library's
+ * stories run in packages/ui.
+ */
 export default defineConfig({
   resolve: {
     alias: {

@@ -46,9 +46,9 @@ use crate::usage::ByteCounts;
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
-// One source per OS behind the same `sys` API (`SEMANTICS`, `support`,
-// `support_detail`, `sample_units`, `sample_peers`), so this module and `hosts`
-// carry no per-OS branches. The Linux and macOS parsers build in every test run.
+/// One source per OS behind the same `sys` API (`SEMANTICS`, `support`,
+/// `support_detail`, `sample_units`, `sample_peers`), so this module and `hosts`
+/// carry no per-OS branches. The Linux and macOS parsers build in every test run.
 #[cfg(windows)]
 mod etw;
 #[cfg(any(target_os = "linux", test))]
@@ -72,7 +72,7 @@ mod sys {
     use super::Support;
     use super::{CounterSemantics, UsageUnit};
 
-    // Nothing is ever sampled, so the choice doesn't matter.
+    /// Nothing is ever sampled, so the choice doesn't matter.
     pub(super) const SEMANTICS: CounterSemantics = CounterSemantics::Socket;
 
     pub(super) fn support() -> Support {

@@ -4,7 +4,7 @@ import type { LanDevice, LanDeviceScan, NetworkEvent } from '@/types'
 
 import { knownEvents, narrowDeviceScan } from './narrow'
 
-// What a newer backend might send: values this UI has never heard of.
+/** What a newer backend might send: values this UI has never heard of. */
 const device = (kind: string) => ({ kind, ip: '192.168.1.9' }) as unknown as LanDevice
 const event = (type: string, kind: string | null = null) => ({ id: 1, type, kind }) as unknown as NetworkEvent
 

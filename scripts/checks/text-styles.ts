@@ -30,7 +30,7 @@ import { join, relative } from 'node:path'
 import { APP_SRC, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
 
 const SKIPPED = [join(APP_SRC, 'assets'), join(APP_SRC, 'bridge', 'mock-network-api.ts')]
-// The Tailwind theme packages/ui/src/styles/tailwind.css imports.
+/** The Tailwind theme packages/ui/src/styles/tailwind.css imports. */
 const THEME = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tailwind-theme.css')
 
 type AllowedEntry = { file: string; value: string }
@@ -68,10 +68,12 @@ if (SIZE_STEPS.length === 0) {
   process.exit(1)
 }
 
-// `text-sm`, with any variants (`md:`, `group-hover:`), but not a colour
-// (`text-secondary`) or a custom property (`var(--text-sm)`).
+/**
+ * `text-sm`, with any variants (`md:`, `group-hover:`), but not a colour
+ * (`text-secondary`) or a custom property (`var(--text-sm)`).
+ */
 const SIZE_UTILITY = new RegExp(`(?<![\\w-])!?text-(?:${SIZE_STEPS.join('|')})(?![\\w-])`, 'g')
-// `text-[13px]`, `text-[1.1rem]`, `text-(length:--x)`: a size, not an arbitrary colour.
+/** `text-[13px]`, `text-[1.1rem]`, `text-(length:--x)`: a size, not an arbitrary colour. */
 const ARBITRARY_SIZE = /(?<![\w-])!?text-(?:\[(?:length:)?[\d.]+(?:px|r?em|%)?\]|\(length:[^)]*\))/g
 const FONT_SIZE_PROP = /\bfontSize\b/g
 const CSS_FONT_SIZE = /(?<![\w-])font-size\s*:\s*([^;}\n]+)/g

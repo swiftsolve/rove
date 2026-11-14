@@ -34,16 +34,20 @@ import type { NetworkDiagnostics, NetworkInfo, SpeedHistoryEntry, WifiNetworkInf
 import { isWifiNetwork } from '@/types'
 import { formatBand, splitSpeedMbps } from '@/utils/format'
 
-// The two ends are the accent: the computer Rove runs on, as on the Devices
-// tab, and the internet it measures. The router between them takes the
-// network colour.
+/**
+ * The two ends are the accent: the computer Rove runs on, as on the Devices
+ * tab, and the internet it measures. The router between them takes the
+ * network colour.
+ */
 const COMPUTER_COLOR = 'var(--accent-default)'
 const ROUTER_COLOR = 'var(--device-network)'
 const INTERNET_COLOR = 'var(--accent-default)'
 
-// A link's line says how it's doing: green when it works, the accent while a
-// test runs on it, grey before it's known, red when it's down. Its box sets
-// the colour, for the line and the glint over it.
+/**
+ * A link's line says how it's doing: green when it works, the accent while a
+ * test runs on it, grey before it's known, red when it's down. Its box sets
+ * the colour, for the line and the glint over it.
+ */
 const lineBoxVariants = cva('relative flex w-full', {
   variants: {
     tone: {
@@ -57,22 +61,26 @@ const lineBoxVariants = cva('relative flex w-full', {
 
 type LineTone = 'working' | 'testing' | 'unknown' | 'down'
 
-// A change of state sweeps the new colour across from the computer.
+/** A change of state sweeps the new colour across from the computer. */
 const lineVariants = cva('h-px w-full overflow-visible', {
   variants: {
     isSweeping: { true: 'animate-line-sweep' },
   },
 })
 
-// When the card opens and when a check finishes, a soft highlight runs along
-// the working lines, computer to internet, to show the path answered. Only a
-// green line glints, so a link that's down, unknown or under test stays still.
+/**
+ * When the card opens and when a check finishes, a soft highlight runs along
+ * the working lines, computer to internet, to show the path answered. Only a
+ * green line glints, so a link that's down, unknown or under test stays still.
+ */
 const GLINTING_TONES: ReadonlySet<LineTone> = new Set(['working'])
 
-// The line's own green, brighter: lighter and a touch more saturated in OKLCH,
-// so the highlight stays green rather than washing toward white, with no glow.
-// A webview without relative colours drops the rule, and the glint takes the
-// line's colour: the sweep goes unseen, nothing else changes.
+/**
+ * The line's own green, brighter: lighter and a touch more saturated in OKLCH,
+ * so the highlight stays green rather than washing toward white, with no glow.
+ * A webview without relative colours drops the rule, and the glint takes the
+ * line's colour: the sweep goes unseen, nothing else changes.
+ */
 const GLINT_STYLE: CSSProperties = {
   color: 'oklch(from currentColor calc(l + 0.12) calc(c + 0.04) h)',
   maskImage: 'linear-gradient(90deg, transparent, black, transparent)',
@@ -81,15 +89,19 @@ const GLINT_STYLE: CSSProperties = {
   maskPosition: GLINT_HIDDEN_POSITION,
 }
 
-// The second line's glint starts as the first one's head clears the router
-// tile, about 70% into the first line's run plus the tile's width.
+/**
+ * The second line's glint starts as the first one's head clears the router
+ * tile, about 70% into the first line's run plus the tile's width.
+ */
 const GLINT_SECOND_LINE_DELAY_MS = 540
 
-// Above and below each line, a row as tall as the caption, so both lines sit
-// at the tiles' centre whatever the rows hold.
+/**
+ * Above and below each line, a row as tall as the caption, so both lines sit
+ * at the tiles' centre whatever the rows hold.
+ */
 const CAPTION_ROW = 'type-caption flex h-16 items-center whitespace-nowrap text-primary'
 
-// The caption itself, inside its row: it rises into place when a result lands.
+/** The caption itself, inside its row: it rises into place when a result lands. */
 const captionVariants = cva('flex items-center gap-2', {
   variants: {
     isEntering: { true: 'animate-fade-up' },
@@ -323,7 +335,7 @@ function GlintLine({
   )
 }
 
-// Wi‑Fi's dashes: 3px on, about 3px off.
+/** Wi‑Fi's dashes: 3px on, about 3px off. */
 const WIFI_DASH_PX = 3
 const WIFI_GAP_PX = 3
 
@@ -358,8 +370,10 @@ function WifiSignal({ info }: { info: WifiNetworkInfo }) {
   return <InlineMeta items={[strength, formatBand(info.frequency)]} />
 }
 
-// Off a router, nothing past it can be known: the internet line greys out
-// rather than doubling the red of the link that actually failed.
+/**
+ * Off a router, nothing past it can be known: the internet line greys out
+ * rather than doubling the red of the link that actually failed.
+ */
 function internetLineTone(isConnected: boolean, isTesting: boolean, state: InternetLinkState): LineTone {
   if (!isConnected) return 'unknown'
   if (isTesting) return 'testing'

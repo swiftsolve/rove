@@ -7,7 +7,7 @@ import { DeviceIcon, UnknownDeviceIcon, VideoCallIcon, WifiIcon, WifiOffIcon } f
 import { IconTile, IconTileButton } from './IconTile'
 
 const SIZES = ['sm', 'md', 'lg'] as const
-// The colours the app's tiles use. The tile takes any CSS colour.
+/** The colours the app's tiles use. The tile takes any CSS colour. */
 const COLORS = [
   'var(--status-positive)',
   'var(--status-good)',
@@ -23,8 +23,10 @@ const COLORS = [
   'neutral',
 ]
 
-// Every icon the library exports (the types are gone at runtime), by name, for
-// the icon control, as Figma's Icon swap offers.
+/**
+ * Every icon the library exports (the types are gone at runtime), by name, for
+ * the icon control, as Figma's Icon swap offers.
+ */
 const ICONS = Object.fromEntries(
   Object.entries(Icons)
     .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')

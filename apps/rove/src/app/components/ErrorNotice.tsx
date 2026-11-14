@@ -2,8 +2,10 @@ import { Button, RefreshIcon } from '@swiftsolve/rove-ui'
 import { cva } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 
-// A failure that fills its space: a red icon chip, a short title, the reason,
-// and Try again, so it reads as recoverable rather than a stray grey line.
+/**
+ * A failure that fills its space: a red icon chip, a short title, the reason,
+ * and Try again, so it reads as recoverable rather than a stray grey line.
+ */
 const chipVariants = cva(
   [
     'inline-flex items-center justify-center rounded-full text-status-negative',

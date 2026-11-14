@@ -5,12 +5,16 @@ import type { JSX } from 'react'
 import { reachabilityStatus } from '@/features/services/utils/service-status'
 import { type InternetStatus, isInternetDown, type ServiceReachability } from '@/types'
 
-// Inherits the header subtitle's size and colour. Wraps between the two halves
-// rather than squeezing either: below ~390px of header width both don't fit.
+/**
+ * Inherits the header subtitle's size and colour. Wraps between the two halves
+ * rather than squeezing either: below ~390px of header width both don't fit.
+ */
 const ROOT = 'inline-flex flex-wrap items-center gap-x-6 gap-y-2'
 
-// `nowrap` because as a flex item the text shrinks to min-content, which would
-// break "5 Up" across two lines.
+/**
+ * `nowrap` because as a flex item the text shrinks to min-content, which would
+ * break "5 Up" across two lines.
+ */
 const halfVariants = cva('whitespace-nowrap', {
   variants: {
     /** The half's colour: green for up, red for any down. */

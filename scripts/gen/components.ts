@@ -65,11 +65,11 @@ const UI_DIR = join(ROOT, 'packages/ui/src')
 const UI_INDEX = join(UI_DIR, 'index.ts')
 const CATALOG_DIR = join(ROOT, 'packages/ui/catalog')
 const COMPONENT_LIST = join(CATALOG_DIR, 'components.gen.json')
-// Exported from Figma by `npm run figma:export`, and kept by hand beside them.
+/** Exported from Figma by `npm run figma:export`, and kept by hand beside them. */
 const FIGMA_COMPONENTS_JSON = join(CATALOG_DIR, 'figma/components.json')
 const FIGMA_GUIDES_JSON = join(CATALOG_DIR, 'figma/guides.json')
 const FIGMA_DIFFERENCES_JSON = join(CATALOG_DIR, 'figma-differences.json')
-// Each file's schema says what every key means; every file is held to its own.
+/** Each file's schema says what every key means; every file is held to its own. */
 const COMPONENT_LIST_SCHEMA = join(ROOT, 'schemas/components.schema.json')
 const FIGMA_COMPONENTS_SCHEMA = join(ROOT, 'schemas/figma-components.schema.json')
 const FIGMA_GUIDES_SCHEMA = join(ROOT, 'schemas/figma-guides.schema.json')
@@ -93,8 +93,10 @@ type GuidanceData = string | GuidanceData[] | { [key: string]: GuidanceData }
 const problems: string[] = []
 const relativeToRoot = (path: string) => relative(ROOT, path)
 
-// The index's grouped exports: a `// Group` line starts a group, a blank line
-// ends it. Exports outside a group (icons, hooks, helpers) aren't components.
+/**
+ * The index's grouped exports: a `// Group` line starts a group, a blank line
+ * ends it. Exports outside a group (icons, hooks, helpers) aren't components.
+ */
 async function readIndex(): Promise<LibraryComponent[]> {
   const components: LibraryComponent[] = []
   let group: string | null = null
@@ -149,9 +151,11 @@ function describeProp(prop: PropItem): PropEntry {
   return { ...entry, description: prop.description }
 }
 
-// An object literal property in a stories file, as plain data: its string
-// arrays and nested objects. Null when the file sets none. `guidance` is the
-// page's own guide; `partGuidance` holds its parts' guides by name.
+/**
+ * An object literal property in a stories file, as plain data: its string
+ * arrays and nested objects. Null when the file sets none. `guidance` is the
+ * page's own guide; `partGuidance` holds its parts' guides by name.
+ */
 function readGuideProperty(file: string, text: string, key: 'guidance' | 'partGuidance'): GuidanceData | null {
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   const toData = (node: ts.Expression): GuidanceData => {
@@ -182,9 +186,11 @@ function ownStoriesFile(source: string, name: string): string {
   return join(dirname(source), `${name}.stories.tsx`)
 }
 
-// A part in `components/`, `context/` or `hooks/` inside a family's folder
-// takes the stories of the family's main component, named for the folder
-// (title-bar/ ↔ TitleBar.stories.tsx). Null for a module at a family's top.
+/**
+ * A part in `components/`, `context/` or `hooks/` inside a family's folder
+ * takes the stories of the family's main component, named for the folder
+ * (title-bar/ ↔ TitleBar.stories.tsx). Null for a module at a family's top.
+ */
 function familyStoriesFile(source: string): string | null {
   const partFolder = dirname(source)
   if (!['components', 'context', 'hooks'].includes(basename(partFolder))) return null
@@ -196,10 +202,12 @@ function familyStoriesFile(source: string): string | null {
   return join(familyFolder, `${familyName}.stories.tsx`)
 }
 
-// Story ids, from a component's own stories file (CardBody.stories.tsx), or
-// else its module's (Badge.stories.tsx), or else its family's (Menu.stories.tsx
-// for MenuItem). The usage guide is the file's `guidance` when the page is the
-// component's own (the title ends in its name), else its `partGuidance` entry.
+/**
+ * Story ids, from a component's own stories file (CardBody.stories.tsx), or
+ * else its module's (Badge.stories.tsx), or else its family's (Menu.stories.tsx
+ * for MenuItem). The usage guide is the file's `guidance` when the page is the
+ * component's own (the title ends in its name), else its `partGuidance` entry.
+ */
 async function readStories(source: string, name: string): Promise<StoriesInfo> {
   const candidates = [ownStoriesFile(source, name), source.replace(/\.tsx$/, '.stories.tsx'), familyStoriesFile(source)]
   const file = candidates.find((candidate): candidate is string => candidate !== null && existsSync(candidate))
@@ -229,9 +237,11 @@ async function readStories(source: string, name: string): Promise<StoriesInfo> {
   return { ids, file, hasInteraction, guidance, partOf: pageName }
 }
 
-// Whether a stories file has a story that drives the component: an exported
-// story object with a `play` function, tagged `!autodocs` so it stays off the
-// Docs page.
+/**
+ * Whether a stories file has a story that drives the component: an exported
+ * story object with a `play` function, tagged `!autodocs` so it stays off the
+ * Docs page.
+ */
 function hasInteractionStory(file: string, text: string): boolean {
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   return sourceFile.statements.some((statement) => {
@@ -293,7 +303,7 @@ function guideMismatches(
   return mismatches
 }
 
-// Every other export of the index, with its doc comment, through the compiler.
+/** Every other export of the index, with its doc comment, through the compiler. */
 function readOtherExports(componentNames: Set<string>): Pick<ComponentListJson, 'iconNames' | 'otherExports'> {
   const program = ts.createProgram([UI_INDEX], {
     jsx: ts.JsxEmit.ReactJSX,
@@ -330,7 +340,7 @@ const figmaDifferences = figmaDifferencesFile.components
 const figmaGuidesFile = JSON.parse(await readFile(FIGMA_GUIDES_JSON, 'utf8')) as FigmaGuidesJson
 problems.push(...(await schemaProblems(FIGMA_GUIDES_SCHEMA, figmaGuidesFile, relativeToRoot(FIGMA_GUIDES_JSON))))
 const figmaGuides = figmaGuidesFile.guides
-// An alternative is named in Figma by its Figma name, or its own for one Figma lacks.
+/** An alternative is named in Figma by its Figma name, or its own for one Figma lacks. */
 const figmaNameOf = (component: string) => figmaExport.components[component]?.figmaName ?? component
 const hasFigmaComponent = (component: string | undefined) =>
   component !== undefined && component in figmaExport.components
@@ -427,7 +437,7 @@ for (const [file, names] of [
     problems.push(`${relativeToRoot(file)}: ${name} isn't a component in packages/ui/src/index.ts`)
 }
 
-// Figma's variant properties against the props, now both are here.
+/** Figma's variant properties against the props, now both are here. */
 const propsByComponent = new Map(Object.entries(componentEntries).map(([name, { props }]) => [name, props]))
 for (const problem of variantProblems(figmaExport.components, figmaDifferences, propsByComponent))
   problems.push(`${relativeToRoot(FIGMA_DIFFERENCES_JSON)}: ${problem}`)

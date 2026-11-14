@@ -5,8 +5,10 @@ import { ChevronRightIcon } from '../icons/Icons'
 import { cn } from '../utils/cn'
 import { pressableProps, STATE_CLASSES } from '../utils/pressable'
 
-// The hover wash bleeds 8px into the card's padding while the content stays on
-// the 16px edge, so the focus ring (the ring alone, no wash) goes inside it.
+/**
+ * The hover wash bleeds 8px into the card's padding while the content stays on
+ * the 16px edge, so the focus ring (the ring alone, no wash) goes inside it.
+ */
 const ROW = cx(
   'group/row flex items-center gap-12 rounded-sm text-left',
   '-mx-8 w-[calc(100%+16px)] px-8 py-(--row-padding-y)',
@@ -16,8 +18,10 @@ const ROW = cx(
   STATE_CLASSES,
 )
 
-// Always faintly there, so the right edge is consistent and rows read as
-// tappable; brighter on hover (unless disabled) and focus.
+/**
+ * Always faintly there, so the right edge is consistent and rows read as
+ * tappable; brighter on hover (unless disabled) and focus.
+ */
 const CHEVRON = cx(
   'shrink-0 text-tertiary opacity-30',
   'transition-opacity duration-(--duration-fast) ease-in-out',

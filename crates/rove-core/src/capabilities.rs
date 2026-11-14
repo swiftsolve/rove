@@ -29,10 +29,10 @@ struct CapabilityDef {
     can_be_unsupported: bool,
 }
 
-// Each limit comes from the provider or guide named beside it; the rest are
-// Rove's own rules of thumb, marked so. Buffered video and browsing set no
-// latency or jitter limit: a buffer absorbs delay, and no provider names one.
-// Keep in step with CAPABILITY_DEFINITIONS in src/types/capabilities.ts.
+/// Each limit comes from the provider or guide named beside it; the rest are
+/// Rove's own rules of thumb, marked so. Buffered video and browsing set no
+/// latency or jitter limit: a buffer absorbs delay, and no provider names one.
+/// Keep in step with `CAPABILITY_DEFINITIONS` in `src/types/capabilities.ts`.
 const CAPABILITY_DEFS: [CapabilityDef; 8] = [
     // Down: FCC broadband speed guide, browsing, email and social media (1 Mbps).
     CapabilityDef {
@@ -158,11 +158,11 @@ enum Band {
     Unusable,
 }
 
-// A speed or delay within half again of its limit is fair; past double, unusable.
+/// A speed or delay within half again of its limit is fair; past double, unusable.
 const FAIR_FACTOR: f64 = 1.5;
 const UNUSABLE_FACTOR: f64 = 2.0;
-// The test's ten pings measure loss in 10% steps, so one lost ping (10% against
-// a 1% limit) is fair, two poor, and three or more unusable.
+/// The test's ten pings measure loss in 10% steps, so one lost ping (10% against
+/// a 1% limit) is fair, two poor, and three or more unusable.
 const LOSS_FAIR_FACTOR: f64 = 10.0;
 const LOSS_UNUSABLE_FACTOR: f64 = 20.0;
 

@@ -35,7 +35,7 @@ Each file's opening comment says what it guards. In short:
 | File | Fails on |
 | --- | --- |
 | [eslint.config.js](../../../eslint.config.js) | A feature importing inside `packages/ui/`, the library importing app code, a context read without its hook; a boolean not named as a question; `interface`; a bare `<button>` outside the library; a typed `·`, `•` or lone `—`; an em dash in copy; a lint exception with no reason |
-| [eslint/comments.ts](../../../scripts/eslint/comments.ts) | A `//` note over 6 lines, a `/** */` doc over 10 |
+| [eslint/comments.ts](../../../scripts/eslint/comments.ts) | A `//` note over 6 lines, a `/** */` doc over 10, a `//` comment right above a declaration |
 | [checks/raw-values.ts](../../../scripts/checks/raw-values.ts) | A raw colour or easing, a value that has a token (`p-[12px]`), spacing or a corner off the scale |
 | [checks/text-styles.ts](../../../scripts/checks/text-styles.ts) | A font size with no text style |
 | [checks/ui-classname.ts](../../../scripts/checks/ui-classname.ts) | A `className` that restyles a library component instead of placing it |

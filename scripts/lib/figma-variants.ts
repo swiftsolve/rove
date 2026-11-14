@@ -25,10 +25,10 @@ import type {
   VariantProperties,
 } from './library-json-types.ts'
 
-// How a component looks under the pointer or keyboard, drawn as a variant in Figma.
+/** How a component looks under the pointer or keyboard, drawn as a variant in Figma. */
 const INTERACTION_STATE = 'State'
 const BOOLEAN_PREFIX = /^(is|has|can|should|was)(?=[A-Z])/
-// Figma's option for an optional prop left unset (Metric value's Status=None).
+/** Figma's option for an optional prop left unset (Metric value's Status=None). */
 const UNSET_OPTION = 'none'
 const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
 

@@ -132,8 +132,10 @@ export type WindowControls = {
 declare global {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Window merges only into an interface.
   interface Window {
-    // Optional: the plain web build (`build:web`) ships without a bridge, so
-    // every consumer must guard. Use `getNetworkApi()` where a throw is fine.
+    /**
+     * Optional: the plain web build (`build:web`) ships without a bridge, so
+     * every consumer must guard. Use `getNetworkApi()` where a throw is fine.
+     */
     networkAPI?: NetworkAPI
     windowControls?: WindowControls
   }

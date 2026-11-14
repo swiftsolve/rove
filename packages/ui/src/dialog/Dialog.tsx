@@ -11,32 +11,38 @@ import { cn } from '../utils/cn'
 import { LAYER_DIALOG } from '../utils/layers'
 import { useDialogState } from './hooks/useDialogState'
 
-// Absolute (not fixed) in the PortalProvider's container, so the scrim covers
-// and the dialog centres over that area (the app's content column), not the
-// whole window. The two fade together, as one layer.
+/**
+ * Absolute (not fixed) in the PortalProvider's container, so the scrim covers
+ * and the dialog centres over that area (the app's content column), not the
+ * whole window. The two fade together, as one layer.
+ */
 const LAYER = cx(
   'absolute inset-0',
   LAYER_DIALOG,
   'data-closed:pointer-events-none data-closed:animate-overlay-out data-open:animate-overlay-in',
 )
 
-// No padding on the shell: the header, body and footer own their insets, and
-// the shell clips the body's square corners to its radius. No lines between
-// the sections; the body's darker well sets them apart.
-// It takes focus itself when no field does, and isn't a control: no ring.
+/**
+ * No padding on the shell: the header, body and footer own their insets, and
+ * the shell clips the body's square corners to its radius. No lines between
+ * the sections; the body's darker well sets them apart.
+ * It takes focus itself when no field does, and isn't a control: no ring.
+ */
 const PANEL = cx(
   'w-full max-w-[340px] overflow-hidden rounded-lg border border-line bg-surface shadow-raised outline-none',
   'data-closed:animate-dialog-out data-open:animate-dialog-in',
 )
 
-// Clips the panel's contents while it springs to their height, so a body that
-// swaps state (a spinner for a QR code) or a description that comes and goes
-// resizes the panel instead of snapping.
+/**
+ * Clips the panel's contents while it springs to their height, so a body that
+ * swaps state (a spinner for a QR code) or a description that comes and goes
+ * resizes the panel instead of snapping.
+ */
 const SIZER = 'overflow-hidden transition-[height] duration-(--duration-spring) ease-spring'
 
 const HEADER = 'flex items-start justify-between gap-8 p-16'
 
-// Pulled toward the panel's corner without cramping the title.
+/** Pulled toward the panel's corner without cramping the title. */
 const CLOSE = 'shrink-0 self-start -mt-4 -mr-4'
 
 /**

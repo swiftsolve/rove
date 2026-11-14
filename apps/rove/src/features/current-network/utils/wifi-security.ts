@@ -1,4 +1,4 @@
-// Strongest first: the collapsed strip names the best protocol the network offers.
+/** Strongest first: the collapsed strip names the best protocol the network offers. */
 const SECURITY_PROTOCOLS = ['WPA3', 'WPA2', 'WPA', 'OWE', 'WEP']
 
 /** The OS's security string with runs of spaces collapsed: Windows reports e.g. "WPA3-Personal  (H2E)". */
@@ -16,7 +16,7 @@ export function shortSecurityLabel(security: string): string {
   return SECURITY_PROTOCOLS.find((protocol) => tokens.includes(protocol)) ?? security
 }
 
-// Broken protocols: WEP's key falls in minutes, and WPA's TKIP is retired.
+/** Broken protocols: WEP's key falls in minutes, and WPA's TKIP is retired. */
 const WEAK_PROTOCOLS = new Set(['WEP', 'WPA'])
 
 /** True when the strongest protocol a secured network offers is a broken one, so "WPA/WPA2" isn't weak. */

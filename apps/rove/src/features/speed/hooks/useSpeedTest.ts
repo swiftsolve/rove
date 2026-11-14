@@ -71,9 +71,11 @@ function isCancellation(cause: unknown): boolean {
   return cause instanceof Error && cause.message.includes('SPEED_TEST_CANCELLED')
 }
 
-// A module-level store, not component state: the last result and an in-flight
-// test must survive the Speed and Home views unmounting when you switch tabs,
-// so they're still there when you switch back.
+/**
+ * A module-level store, not component state: the last result and an in-flight
+ * test must survive the Speed and Home views unmounting when you switch tabs,
+ * so they're still there when you switch back.
+ */
 let state: SpeedTestState = {
   internetSpeed: null,
   capabilities: [],
@@ -88,9 +90,11 @@ let state: SpeedTestState = {
   livePeakUploadMbps: 0,
 }
 
-// What `useSpeedTest` selects from: rebuilt only when the state changes, so a
-// selector that returns it whole (or any field of it) returns the same value
-// until then. The actions are function declarations, hoisted above this.
+/**
+ * What `useSpeedTest` selects from: rebuilt only when the state changes, so a
+ * selector that returns it whole (or any field of it) returns the same value
+ * until then. The actions are function declarations, hoisted above this.
+ */
 let snapshot: SpeedTest = { ...state, runTest, cancelTest }
 
 const listeners = new Set<() => void>()
@@ -121,11 +125,15 @@ subscribeLiveThroughput(() => {
   setState({ ...state, livePeakDownloadMbps: peakDownloadMbps, livePeakUploadMbps: peakUploadMbps })
 })
 
-// Monotonic run id: a late progress event, a stopped run or a superseded one can
-// never write over a newer one's state, or save its result.
+/**
+ * Monotonic run id: a late progress event, a stopped run or a superseded one can
+ * never write over a newer one's state, or save its result.
+ */
 let latestRunId = 0
-// The backend's name for the run in flight, unique across reloads, so a Stop
-// reaches the right run even before it has started there.
+/**
+ * The backend's name for the run in flight, unique across reloads, so a Stop
+ * reaches the right run even before it has started there.
+ */
 let runToken = ''
 
 async function runTest(): Promise<void> {

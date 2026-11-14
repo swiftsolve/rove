@@ -44,7 +44,7 @@ const entry = (timestamp: number, connectionType: string, networkName: string | 
   packetLoss: 0,
 })
 
-// Newest first, as the history returns it.
+/** Newest first, as the history returns it. */
 const HISTORY = [entry(3, 'wifi', 'Cafe'), entry(2, 'ethernet', null), entry(1, 'wifi', 'Home')]
 
 describe('path', () => {

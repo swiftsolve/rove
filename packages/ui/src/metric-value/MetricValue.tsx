@@ -6,7 +6,7 @@ import { cn } from '../utils/cn'
 import { STATUS_TEXT } from '../utils/status'
 import type { VariantOf } from '../utils/variants'
 
-// Tabular figures, so the width holds while it eases.
+/** Tabular figures, so the width holds while it eases. */
 const metricVariants = cva('num', {
   variants: {
     status: STATUS_TEXT,

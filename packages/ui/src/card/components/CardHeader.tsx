@@ -5,11 +5,13 @@ import { ChevronRightIcon } from '../../icons/Icons'
 import { cn } from '../../utils/cn'
 import { useCardContext } from '../hooks/useCardContext'
 
-// A fixed height, so a header with a button is no taller than one without.
+/** A fixed height, so a header with a button is no taller than one without. */
 const HEADER = cx('flex items-center justify-between gap-12', 'h-(--card-header-height) px-(--card-header-padding-x)')
 
-// The openable card's caret: always shown, brightening while the card is
-// hovered or its link has keyboard focus.
+/**
+ * The openable card's caret: always shown, brightening while the card is
+ * hovered or its link has keyboard focus.
+ */
 const CARET = cx(
   'shrink-0 text-tertiary transition-[color] duration-(--duration-fast) ease-in-out',
   'group-hover/card:text-secondary group-has-[[data-stretched-link]:focus-visible]/card:text-secondary',

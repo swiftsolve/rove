@@ -18,8 +18,10 @@ type EmptyStateProps = {
   actions?: ReactNode
 }
 
-// Widths of each placeholder row's title and meta bars, so the two rows don't
-// read as one shape stamped twice.
+/**
+ * Widths of each placeholder row's title and meta bars, so the two rows don't
+ * read as one shape stamped twice.
+ */
 const PLACEHOLDER_ROWS = [
   ['w-[58%]', 'w-[32%]'],
   ['w-[66%]', 'w-[26%]'],

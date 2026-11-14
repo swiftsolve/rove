@@ -9,10 +9,10 @@ import comments from './scripts/eslint/comments.ts'
 
 // ── Import boundaries ──────────────────────────────────────────────────────
 
-// The app's source and the library's, the two workspaces' `src`.
+/** The app's source and the library's, the two workspaces' `src`. */
 const APP = 'apps/rove/src'
 const UI = 'packages/ui/src'
-// The library's CLI, which Node runs as .ts like the scripts.
+/** The library's CLI, which Node runs as .ts like the scripts. */
 const UI_CLI = 'packages/ui/cli'
 
 const UI_INTERNALS = {
@@ -34,29 +34,35 @@ const APP_CODE = {
 // Like the import patterns, `no-restricted-syntax` doesn't merge across
 // blocks, so the raw-button block repeats these.
 
-// A typed dot sits on the baseline and scales with the font, so it never
-// matches the designed one.
+/**
+ * A typed dot sits on the baseline and scales with the font, so it never
+ * matches the designed one.
+ */
 const NO_DOT_GLYPH_MESSAGE =
   'Separate inline items with DotSeparator or InlineMeta from @swiftsolve/rove-ui, not a typed "·" or "•".'
 const NO_DOT_GLYPH = ['Literal[value=/[·•]/]', 'TemplateElement[value.raw=/[·•]/]', 'JSXText[value=/[·•]/]'].map(
   (selector) => ({ selector, message: NO_DOT_GLYPH_MESSAGE }),
 )
-// A missing value is a drawn bar that scales with its line, so a lone typed
-// dash standing in for one is out too.
+/**
+ * A missing value is a drawn bar that scales with its line, so a lone typed
+ * dash standing in for one is out too.
+ */
 const NO_DASH_VALUE_MESSAGE = 'Show a missing value with NoValue from @swiftsolve/rove-ui, not a typed "—".'
 const NO_DASH_VALUE = ['Literal[value=/^\\s*—\\s*$/]', 'JSXText[value=/^\\s*—\\s*$/]'].map((selector) => ({
   selector,
   message: NO_DASH_VALUE_MESSAGE,
 }))
-// Copy never punctuates with an em dash: two short sentences read better. The
-// lookahead leaves a lone dash to the rule above.
+/**
+ * Copy never punctuates with an em dash: two short sentences read better. The
+ * lookahead leaves a lone dash to the rule above.
+ */
 const NO_EM_DASH_MESSAGE = 'No em dash in copy: write two short sentences or rephrase.'
 const NO_EM_DASH = [
   'Literal[value=/(?=[\\s\\S]*[^\\s—])[\\s\\S]*—/]',
   'TemplateElement[value.raw=/—/]',
   'JSXText[value=/(?=[\\s\\S]*[^\\s—])[\\s\\S]*—/]',
 ].map((selector) => ({ selector, message: NO_EM_DASH_MESSAGE }))
-// An event handler is onX as a local too, the name its prop takes.
+/** An event handler is onX as a local too, the name its prop takes. */
 const NO_HANDLE_PREFIX_MESSAGE = 'Name an event handler onX (onClick), as a local and as a prop, not handleX.'
 const NO_HANDLE_PREFIX = [
   'VariableDeclarator[id.name=/^handle[A-Z]/]',
@@ -83,11 +89,13 @@ const BOOLEAN_PREFIXES = [
   'may',
 ]
 const BOOLEAN_EXEMPT = '^(_|aria-|data-)|^(value|fallback)$'
-// A boolean reads as a yes/no question (isOpen, canRunTest) or a verb phrase
-// (needsNetworkInfo). Left alone: object keys and names taken from an object by
-// destructuring (other APIs' options); array destructuring, like a useState
-// pair, is covered. Also `aria-*` and `data-*`, and useSetting's generic
-// `value` and `fallback`.
+/**
+ * A boolean reads as a yes/no question (isOpen, canRunTest) or a verb phrase
+ * (needsNetworkInfo). Left alone: object keys and names taken from an object by
+ * destructuring (other APIs' options); array destructuring, like a useState
+ * pair, is covered. Also `aria-*` and `data-*`, and useSetting's generic
+ * `value` and `fallback`.
+ */
 const BOOLEAN_NAMING = [
   'error',
   {
@@ -135,11 +143,12 @@ export default tseslint.config(
     rules: { 'simple-import-sort/imports': 'error' },
   },
   {
-    // Comments: short (scripts/eslint/comments.ts), and a lint exception says
-    // why.
+    // Comments: short, a declaration's comment is a `/** */` doc
+    // (scripts/eslint/comments.ts), and a lint exception says why.
     plugins: { comments, 'eslint-comments': eslintComments },
     rules: {
       'comments/max-lines': 'error',
+      'comments/doc-on-declarations': 'error',
       'eslint-comments/require-description': 'error',
       // Named steps over dense expressions: a third case is an if or a lookup.
       'no-nested-ternary': 'error',

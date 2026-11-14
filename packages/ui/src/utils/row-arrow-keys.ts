@@ -1,7 +1,9 @@
 import type { KeyboardEvent } from 'react'
 
-// A row's own control: the first button or link in it. A menu trigger is left
-// out, since its arrow keys open its menu.
+/**
+ * A row's own control: the first button or link in it. A menu trigger is left
+ * out, since its arrow keys open its menu.
+ */
 const ROW_CONTROL = 'button:not([aria-haspopup]), a[href]'
 
 /** The row index an arrow, Home or End moves to from `index`, stopping at the ends; null for any other key. */

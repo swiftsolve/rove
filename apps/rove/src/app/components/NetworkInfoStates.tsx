@@ -18,8 +18,10 @@ const loadingVariants = cva(['flex flex-1 flex-col items-center justify-center',
   defaultVariants: { isError: false },
 })
 
-// The lines under the spinner: the label and, when detection runs slow, a
-// second note in the same style.
+/**
+ * The lines under the spinner: the label and, when detection runs slow, a
+ * second note in the same style.
+ */
 const LOADING_LINE = 'type-body text-secondary'
 
 type NetworkErrorDescription = {
@@ -28,8 +30,10 @@ type NetworkErrorDescription = {
   description: string
 }
 
-// A timeout isn't "no network": the OS query may just be slow, so it gets a
-// calmer framing of its own.
+/**
+ * A timeout isn't "no network": the OS query may just be slow, so it gets a
+ * calmer framing of its own.
+ */
 function describeNetworkError({ kind, message }: NetworkError): NetworkErrorDescription {
   if (kind === 'timeout') {
     return {
@@ -99,7 +103,7 @@ export function NetworkErrorBanner(): JSX.Element | null {
   return <StaleNetworkBanner error={error} lastReadAt={lastReadAt} onRetry={refresh} />
 }
 
-// Its own component so only a shown banner reads the clock.
+/** Its own component so only a shown banner reads the clock. */
 function StaleNetworkBanner({
   error,
   lastReadAt,

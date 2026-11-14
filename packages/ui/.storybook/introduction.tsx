@@ -9,14 +9,14 @@ import { BRAND_ICONS } from './brand-icons'
 import { GROUPS } from './introduction-specimens'
 
 const REPO = 'https://github.com/swiftsolve/rove'
-// The Rove Tokens Storybook, whose tokens these components are built from.
+/** The Rove Tokens Storybook, whose tokens these components are built from. */
 const TOKENS = 'https://nabilr.com/rove/storybook/tokens/'
 
 const COMPONENTS_BY_NAME: ComponentListJson['components'] = componentList.components
 const components = Object.values(COMPONENTS_BY_NAME)
-// Every figure on the page is counted from the component list, so none can go stale.
+/** Every figure on the page is counted from the component list, so none can go stale. */
 const storyCount = components.reduce((sum, { storyIds }) => sum + storyIds.length, 0)
-// The rest only add behaviour or layout, so Figma has no component for them.
+/** The rest only add behaviour or layout, so Figma has no component for them. */
 const behaviourOnlyCount = components.filter(
   (component) => !(component.figmaComponent && 'figmaNodeId' in component.figmaComponent),
 ).length
@@ -24,9 +24,11 @@ const behaviourOnlyCount = components.filter(
 /** A Docs page, from inside the preview iframe: `./?path=` is the manager. */
 const docsHref = (id: string): string => `./?path=/docs/${id}`
 
-// Backticks in the copy below become inline code. A code chip may break only
-// after a slash (`src/` | `ui/`), never at a hyphen, so a narrow column wraps a
-// path without splitting a name.
+/**
+ * Backticks in the copy below become inline code. A code chip may break only
+ * after a slash (`src/` | `ui/`), never at a hyphen, so a narrow column wraps a
+ * path without splitting a name.
+ */
 const codeParts = (code: string): ReactNode[] =>
   code.split(/(?<=\/)/).map((segment, index) => (
     <span key={index} className="intro-code-part">
@@ -66,7 +68,7 @@ function FigmaMark(): JSX.Element {
   )
 }
 
-// The Rove mark in the accent, as Rove's own title bar draws it, so it deepens in Light.
+/** The Rove mark in the accent, as Rove's own title bar draws it, so it deepens in Light. */
 function RoveMark({ className = 'intro-icon' }: { className?: string }): JSX.Element {
   return (
     <svg className={`${className} intro-rove-mark`} viewBox="4.5 4.5 39 34.5" aria-hidden="true">
@@ -171,8 +173,10 @@ function Icon({ name }: { name: IconName }): JSX.Element {
   )
 }
 
-// The pipeline, step by step: a step's `column` places it under its stage heading.
-// The sources come first and stack in the first column; every later step spans them all.
+/**
+ * The pipeline, step by step: a step's `column` places it under its stage heading.
+ * The sources come first and stack in the first column; every later step spans them all.
+ */
 const STAGES = ['Written in', 'Read by', 'Listed in', 'Read through']
 
 type Item = { name: string; body: string; href?: string }
@@ -437,7 +441,7 @@ const groups = [...new Set(components.map(({ libraryGroup }) => libraryGroup))].
   return { group, count: members.length, docsId: firstStory?.replace(/--.*$/, '--docs') }
 })
 
-// Line icons in the link's accent, so they read as one row.
+/** Line icons in the link's accent, so they read as one row. */
 const LINKS: { icon: IconName; label: string; href: string }[] = [
   { icon: 'figmaLine', label: 'Figma file', href: componentList.figmaFileUrl },
   { icon: 'rove', label: 'Rove Tokens', href: TOKENS },

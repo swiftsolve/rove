@@ -17,9 +17,11 @@ function roundNiceScale(mbps: number): number {
   return step ?? Math.ceil(safe / 1000) * 1000
 }
 
-// The highest of the rates passed in. Callers pass the heights of the line
-// in view, so nothing drawn is cut off and a burst leaves the scale as it
-// scrolls out on the left.
+/**
+ * The highest of the rates passed in. Callers pass the heights of the line
+ * in view, so nothing drawn is cut off and a burst leaves the scale as it
+ * scrolls out on the left.
+ */
 function trafficPeak(download: readonly number[], upload: readonly number[]): number {
   let peak = 0
   for (const mbps of [...download, ...upload]) peak = Math.max(peak, sanitizeRate(mbps))

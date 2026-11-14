@@ -36,11 +36,13 @@ export function firstPointX(count: number, plotWidth: number): number {
   return plotWidth + 2 * slot - (count - 1) * slot
 }
 
-// An adaptive average, after the One Euro filter (Casiez et al., 2012): it
-// follows slowly while the rate holds steady, which irons out jitter, and
-// quickly once the rate really moves, so a jump shows within a few seconds.
-// The rate of change is measured relative to the rate itself, so a step from
-// 1 to 2 Mbps counts as much as one from 100 to 200.
+/**
+ * An adaptive average, after the One Euro filter (Casiez et al., 2012): it
+ * follows slowly while the rate holds steady, which irons out jitter, and
+ * quickly once the rate really moves, so a jump shows within a few seconds.
+ * The rate of change is measured relative to the rate itself, so a step from
+ * 1 to 2 Mbps counts as much as one from 100 to 200.
+ */
 const STEADY_CUTOFF_HZ = 0.05
 const CHANGE_CUTOFF_HZ = 0.1
 /** How much faster it follows per unit of relative change past the jitter threshold. */
@@ -49,7 +51,7 @@ const RESPONSE = 5
 const JITTER_THRESHOLD = 0.2
 /** Below this rate (Mbps), changes count against it, so background chatter stays jitter. */
 const RATE_FLOOR_MBPS = 0.5
-// Then a light binomial bell, which rounds the result into soft hills.
+/** Then a light binomial bell, which rounds the result into soft hills. */
 const BELL_WEIGHTS = [1, 4, 6, 4, 1]
 const BELL_TOTAL = 16
 

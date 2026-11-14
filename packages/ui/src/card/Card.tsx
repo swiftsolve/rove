@@ -25,10 +25,12 @@ type CardProps = Omit<ComponentProps<'section'>, 'className' | 'children'> & {
   children?: ReactNode
 }
 
-// An openable card lifts on hover and presses in, and its body fills its
-// height. Hover sets box-shadow directly rather than through `shadow-raised`:
-// that composes a five-layer shadow list, which would cross-fade from the
-// card's shadow instead of morphing into it.
+/**
+ * An openable card lifts on hover and presses in, and its body fills its
+ * height. Hover sets box-shadow directly rather than through `shadow-raised`:
+ * that composes a five-layer shadow list, which would cross-fade from the
+ * card's shadow instead of morphing into it.
+ */
 const cardVariants = cva('overflow-hidden surface contain-content', {
   variants: {
     isOpenable: {

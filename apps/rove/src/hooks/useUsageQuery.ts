@@ -3,10 +3,12 @@ import { useEffect, useEffectEvent } from 'react'
 import { useBackendQuery } from '@/hooks/useBackendQuery'
 import type { NetworkAPI } from '@/types'
 
-// The per-app breakdowns' poll, faster than the daily summary's: their totals
-// climb continuously.
+/**
+ * The per-app breakdowns' poll, faster than the daily summary's: their totals
+ * climb continuously.
+ */
 const DEFAULT_POLL_INTERVAL_MS = 5_000
-// With a push, the poll is only a safety net for a missed event.
+/** With a push, the poll is only a safety net for a missed event. */
 const PUSHED_POLL_INTERVAL_MS = 15_000
 
 type UsageQueryOptions<T> = {

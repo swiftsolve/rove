@@ -100,8 +100,9 @@ what every key means, and the generators fail on a file that breaks it.
   (`live-throughput/`).
 - A comment says why: a reason, constraint or trap the code can't show, so a
   divider has nothing to say.
-  - Exports, props and type fields take `/** */`; implementation notes take
-    `//`.
+  - Exports, props and type fields take `/** */`, and so does any comment
+    right above a declaration; implementation notes take `//`.
+    [✓ CHECKED by `eslint/comments.ts`, for a comment above a declaration]
   - A `//` note runs at most 6 lines and a `/** */` doc at most 10; anything
     longer goes in `docs/`. [✓ CHECKED by `eslint/comments.ts`]
   - A lint exception is a line-level disable that says why after `--`.

@@ -4,28 +4,34 @@ import type { ComponentProps, ReactNode } from 'react'
 
 import { cn } from '../utils/cn'
 
-// The same 8px above the field as the feedback line below it.
+/** The same 8px above the field as the feedback line below it. */
 const LABEL = 'type-body-medium text-tertiary mb-8 block'
 
-// Explicit line-height pins the field to an even height (18 + 20 = 38px), so the
-// 30px action centred beside the text sits 4px from the top and bottom edges.
+/**
+ * Explicit line-height pins the field to an even height (18 + 20 = 38px), so the
+ * 30px action centred beside the text sits 4px from the top and bottom edges.
+ */
 const INPUT = cx(
   'type-body w-full rounded-sm px-12 py-10 leading-[18px] text-primary placeholder:text-tertiary',
   'transition-[border-color] duration-(--duration-fast) ease-in-out focus-visible:outline-none',
 )
 
-// On its own, the input draws the border.
+/** On its own, the input draws the border. */
 const BORDERED_INPUT = cx(
   INPUT,
   'border border-line bg-inset focus-visible:border-accent data-invalid:border-status-negative',
 )
 
-// With an action, the group draws the border and the input inside goes
-// borderless, so the two read as one control.
+/**
+ * With an action, the group draws the border and the input inside goes
+ * borderless, so the two read as one control.
+ */
 const GROUPED_INPUT = cx(INPUT, 'min-w-0 flex-auto border-none bg-transparent')
 
-// Invalid reads from the input's `data-invalid`, which Field sets. The right
-// padding matches the action's 4px above and below, so it's inset evenly.
+/**
+ * Invalid reads from the input's `data-invalid`, which Field sets. The right
+ * padding matches the action's 4px above and below, so it's inset evenly.
+ */
 const GROUP = cx(
   'flex items-center gap-4 rounded-sm border bg-inset pr-4',
   'border-line focus-within:border-accent has-data-invalid:border-status-negative',

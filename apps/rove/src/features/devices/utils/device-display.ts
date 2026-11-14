@@ -2,8 +2,10 @@ import { LAN_DEVICE_KIND_LABELS } from '@/features/devices/utils/device-kind-lab
 import type { LanDevice, LanDeviceKind } from '@/types'
 import { formatTimeAgo } from '@/utils/format'
 
-// Nouns for synthesizing a name. The category labels in LAN_DEVICE_KIND_LABELS
-// ("Mobile") don't read naturally after an OS ("Android Mobile").
+/**
+ * Nouns for synthesizing a name. The category labels in LAN_DEVICE_KIND_LABELS
+ * ("Mobile") don't read naturally after an OS ("Android Mobile").
+ */
 const KIND_NOUNS: Record<Exclude<LanDeviceKind, 'unknown'>, string> = {
   router: 'router',
   nas: 'NAS',
@@ -19,8 +21,10 @@ const KIND_NOUNS: Record<Exclude<LanDeviceKind, 'unknown'>, string> = {
   iot: 'smart home device',
 }
 
-// An offline device seen this recently is still in the ARP table but not
-// answering, so its age is suppressed (see lastSeenAge).
+/**
+ * An offline device seen this recently is still in the ARP table but not
+ * answering, so its age is suppressed (see lastSeenAge).
+ */
 const RECENTLY_SEEN_MS = 90_000
 
 function capitalize(text: string): string {
@@ -31,8 +35,10 @@ function kindNoun(device: LanDevice): string | null {
   return device.kind !== 'unknown' ? KIND_NOUNS[device.kind] : null
 }
 
-// A privacy-randomized phone often has no vendor or hostname, but the scan may
-// still know its OS or kind (DHCP fingerprint), so name it from those.
+/**
+ * A privacy-randomized phone often has no vendor or hostname, but the scan may
+ * still know its OS or kind (DHCP fingerprint), so name it from those.
+ */
 function unnamedDeviceName(device: LanDevice): string {
   const noun = kindNoun(device)
   if (device.os && noun) return `${device.os} ${noun}`

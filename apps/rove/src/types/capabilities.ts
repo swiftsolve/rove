@@ -66,10 +66,12 @@ export const CAPABILITY_MEASURES: readonly CapabilityMeasure[] = [
   },
 ]
 
-// Each limit comes from the provider or guide named beside it; the rest are
-// Rove's own rules of thumb, marked so. Buffered video and browsing set no
-// latency or jitter limit: a buffer absorbs delay, and no provider names one.
-// Keep in step with CAPABILITY_DEFS in crates/rove-core/src/capabilities.rs.
+/**
+ * Each limit comes from the provider or guide named beside it; the rest are
+ * Rove's own rules of thumb, marked so. Buffered video and browsing set no
+ * latency or jitter limit: a buffer absorbs delay, and no provider names one.
+ * Keep in step with CAPABILITY_DEFS in crates/rove-core/src/capabilities.rs.
+ */
 export const CAPABILITY_DEFINITIONS = [
   {
     id: 'browsing',

@@ -32,9 +32,9 @@ const SECS_PER_DAY: i64 = 86_400;
 /// `meta` key holding the epoch-ms of the first-ever usage sample.
 const FIRST_SAMPLE_KEY: &str = "usage_first_sample_at";
 
-// Local dates without chrono: add the UTC offset to the UNIX clock and bucket
-// by day. The offset is re-derived hourly so a DST change or a new timezone
-// moves the day boundary within the hour.
+/// Local dates without chrono: add the UTC offset to the UNIX clock and bucket
+/// by day. The offset is re-derived hourly so a DST change or a new timezone
+/// moves the day boundary within the hour.
 static LOCAL_OFFSET: std::sync::Mutex<Option<(i64, u64)>> = std::sync::Mutex::new(None);
 const OFFSET_TTL_SECS: u64 = 3600;
 

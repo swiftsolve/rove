@@ -2,11 +2,13 @@ import { useEffect, useEffectEvent, useState } from 'react'
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
-// One steady speed, so the run across both lines reads as one trip.
+/** One steady speed, so the run across both lines reads as one trip. */
 export const GLINT_DURATION_MS = 700
 
-// The glint is a mask 40% of the line wide: at -67% it sits just off the
-// line's start, at 167% just past its end.
+/**
+ * The glint is a mask 40% of the line wide: at -67% it sits just off the
+ * line's start, at 167% just past its end.
+ */
 export const GLINT_HIDDEN_POSITION = '-67% 0'
 const GLINT_KEYFRAMES: Keyframe[] = [{ maskPosition: GLINT_HIDDEN_POSITION }, { maskPosition: '167% 0' }]
 

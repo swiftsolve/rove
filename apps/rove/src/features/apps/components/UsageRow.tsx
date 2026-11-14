@@ -7,8 +7,10 @@ import { RowName } from '@/features/apps/components/RowName'
 import { TransferFigures } from '@/features/apps/components/TransferFigures'
 import { totalBytes, type Transfer, transferLabel } from '@/features/apps/utils/transfer'
 
-// The row, not the list, owns the inset, so the hairlines between rows span the
-// full width.
+/**
+ * The row, not the list, owns the inset, so the hairlines between rows span the
+ * full width.
+ */
 const rowVariants = cva('flex flex-col gap-8 px-(--card-body-padding) py-12', {
   variants: {
     isLink: {
@@ -20,17 +22,21 @@ const rowVariants = cva('flex flex-col gap-8 px-(--card-body-padding) py-12', {
   },
 })
 
-// In a link row the visual layers are click-through, so the overlay button owns
-// every pointer interaction.
+/**
+ * In a link row the visual layers are click-through, so the overlay button owns
+ * every pointer interaction.
+ */
 const mainLineVariants = cva('flex items-center justify-between gap-12', {
   variants: {
     isLink: { true: 'pointer-events-none' },
   },
 })
 
-// The bar and figures start at the icon's drawn left edge. A tile fills its box,
-// so only the figures pull left, by the arrow's side bearing (~2px at 11px). A
-// line icon is inset by its own bearing, so the bar moves in to match.
+/**
+ * The bar and figures start at the icon's drawn left edge. A tile fills its box,
+ * so only the figures pull left, by the arrow's side bearing (~2px at 11px). A
+ * line icon is inset by its own bearing, so the bar moves in to match.
+ */
 const barVariants = cva(null, {
   variants: {
     iconKind: { tile: null, line: 'ml-[3px]' },
@@ -44,8 +50,10 @@ const figuresVariants = cva(null, {
   },
 })
 
-// A StretchedLink, so the block content needn't nest inside a button. Its focus
-// ring rounds only where the first and last rows meet the card's corners.
+/**
+ * A StretchedLink, so the block content needn't nest inside a button. Its focus
+ * ring rounds only where the first and last rows meet the card's corners.
+ */
 const ROW_LINK = 'group-first/row:rounded-t-lg group-last/row:rounded-b-lg'
 
 const CARET = cx(

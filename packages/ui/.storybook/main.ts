@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import type { StorybookConfig } from '@storybook/react-vite'
 
-// Storybook builds with the library's vite.config.ts: React and Tailwind.
+/** Storybook builds with the library's vite.config.ts: React and Tailwind. */
 const config: StorybookConfig = {
   stories: ['./introduction.stories.tsx', '../src/**/*.stories.tsx'],
   addons: [

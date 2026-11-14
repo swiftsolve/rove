@@ -63,7 +63,7 @@ const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6'
   defaultVariants: { isReachable: false },
 })
 
-// On Heading, the card titles' style.
+/** On Heading, the card titles' style. */
 const DEVICE_NAME = cx(
   'type-heading min-w-0 flex-1 leading-title text-primary',
   'line-clamp-2 wrap-anywhere [line-clamp:2]',
@@ -89,8 +89,10 @@ const KIND_ICONS: Record<LanDeviceKind, IconComponent> = {
   unknown: UnknownDeviceIcon,
 }
 
-// Coarse on purpose: a last-seen age only ever renders whole minutes, and a
-// row's clock ticks in a list that can be long.
+/**
+ * Coarse on purpose: a last-seen age only ever renders whole minutes, and a
+ * row's clock ticks in a list that can be long.
+ */
 const ROW_CLOCK_INTERVAL_MS = 30_000
 
 function KindIcon({ kind }: { kind: LanDeviceKind }) {

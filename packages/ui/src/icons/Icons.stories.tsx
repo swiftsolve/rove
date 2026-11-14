@@ -11,8 +11,10 @@ import { PathIcon } from './PathIcon'
 import { SmartHomeIcon } from './SmartHomeIcon'
 import { UltraHdStreamIcon } from './UltraHdStreamIcon'
 
-// Drawn for Rove where Lucide has nothing fitting, on the same grid and stroke.
-// The brand mark has its own story.
+/**
+ * Drawn for Rove where Lucide has nothing fitting, on the same grid and stroke.
+ * The brand mark has its own story.
+ */
 const CUSTOM = {
   CloudGamingIcon,
   ConnectionIcon,
@@ -24,15 +26,17 @@ const CUSTOM = {
   SmartHomeIcon,
   UltraHdStreamIcon,
 }
-// Each group's icons by name (the module's types are gone at runtime, so only
-// icons are left).
+/**
+ * Each group's icons by name (the module's types are gone at runtime, so only
+ * icons are left).
+ */
 function byName(icons: Record<string, unknown>): [string, Icons.IconComponent][] {
   return Object.entries(icons)
     .filter((entry): entry is [string, Icons.IconComponent] => typeof entry[1] === 'function')
     .sort(([a], [b]) => a.localeCompare(b))
 }
 
-// Lucide first, then the custom ones, as Figma's Icons page splits them.
+/** Lucide first, then the custom ones, as Figma's Icons page splits them. */
 const GROUPS = [
   { title: 'Lucide', icons: byName(Icons) },
   { title: 'Custom', icons: byName(CUSTOM) },
@@ -53,7 +57,7 @@ const meta = {
 } satisfies Meta<IconProps>
 
 export default meta
-// No `component` to take the args from: the stories take an icon's props.
+/** No `component` to take the args from: the stories take an icon's props. */
 type Story = StoryObj<IconProps>
 
 /** Every icon, named: Lucide's, then Rove's own. Set `size` to see them all at one size. */

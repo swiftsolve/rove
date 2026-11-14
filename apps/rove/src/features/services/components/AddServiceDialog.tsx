@@ -10,9 +10,11 @@ import { latencyBand } from '@/features/services/utils/service-status'
 import type { ServiceDefinition } from '@/types'
 import { formatLatencyMs } from '@/utils/format'
 
-// The tested result swaps in for the field's hint as a taller inset row, at the
-// address field's outer height (line-height 18 + 20 padding + 2 border), so it
-// reads as a same-sized box.
+/**
+ * The tested result swaps in for the field's hint as a taller inset row, at the
+ * address field's outer height (line-height 18 + 20 padding + 2 border), so it
+ * reads as a same-sized box.
+ */
 const RESULT_ROW = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
 
 const resultStatusVariants = cva('type-body shrink-0 font-sans', {

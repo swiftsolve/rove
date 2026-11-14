@@ -33,9 +33,11 @@ function signatureOf(element: Element): string {
   return [element.tagName, element.getAttribute('aria-label') ?? '', element.textContent.trim()].join('|')
 }
 
-// The element a click is being dispatched to, until the event is over. A
-// click doesn't focus a button in WebKit, so the opener can't be read from
-// `document.activeElement` alone.
+/**
+ * The element a click is being dispatched to, until the event is over. A
+ * click doesn't focus a button in WebKit, so the opener can't be read from
+ * `document.activeElement` alone.
+ */
 let clickedElement: Element | null = null
 
 /** Remembers each click's target while its handlers run, for `captureReturnPoint`. */

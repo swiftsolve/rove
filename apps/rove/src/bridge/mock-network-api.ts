@@ -43,19 +43,21 @@ type CapabilityDefinitionEntry = (typeof CAPABILITY_DEFINITIONS)[number]
 const MINUTE_MS = 60_000
 const HOUR_MS = 60 * MINUTE_MS
 const DAY_MS = 24 * HOUR_MS
-// Decimal units, as the usage views format bytes.
+/** Decimal units, as the usage views format bytes. */
 const MB = 1_000_000
 const GB = 1_000_000_000
 
-// How far one measure is from its limit, worst last so the worst one wins.
+/** How far one measure is from its limit, worst last so the worst one wins. */
 const BANDS = ['meets', 'fair', 'poor', 'unusable'] as const
 type Band = (typeof BANDS)[number]
 
-// A speed or delay within half again of its limit is fair; past double, unusable.
+/** A speed or delay within half again of its limit is fair; past double, unusable. */
 const FAIR_FACTOR = 1.5
 const UNUSABLE_FACTOR = 2
-// Ten pings measure loss in 10% steps, so one lost ping (10% against a 1%
-// limit) is fair, two poor, and three or more unusable.
+/**
+ * Ten pings measure loss in 10% steps, so one lost ping (10% against a 1%
+ * limit) is fair, two poor, and three or more unusable.
+ */
 const LOSS_FAIR_FACTOR = 10
 const LOSS_UNUSABLE_FACTOR = 20
 
@@ -107,8 +109,10 @@ function assessCapabilities(speed: SpeedResult): CapabilityRating[] {
   }))
 }
 
-// A modern Wi-Fi 6 home connection. One subnet (192.168.1.0/24) is shared by
-// the connection card, diagnostics and the device scan so the demo is coherent.
+/**
+ * A modern Wi-Fi 6 home connection. One subnet (192.168.1.0/24) is shared by
+ * the connection card, diagnostics and the device scan so the demo is coherent.
+ */
 const MOCK_LINK_CAPACITY_MBPS = 1200
 const MOCK_SSID = 'Starlight_5G'
 const MOCK_FREQUENCY = 5745
@@ -116,7 +120,7 @@ const MOCK_SELF_IP = '192.168.1.42'
 const MOCK_SELF_MAC = 'a4:c3:f0:1b:2d:9e'
 const MOCK_GATEWAY = '192.168.1.1'
 const MOCK_ETHERNET_ADAPTER = 'en5'
-// Realtek's prefix: the chip in most USB-C Ethernet adapters.
+/** Realtek's prefix: the chip in most USB-C Ethernet adapters. */
 const MOCK_ETHERNET_MAC = '00:e0:4c:68:12:7a'
 
 const MOCK_NETWORK_INFO: NetworkInfo = {
@@ -139,10 +143,12 @@ const MOCK_NETWORK_INFO: NetworkInfo = {
   linkSpeedMbps: MOCK_LINK_CAPACITY_MBPS,
 }
 
-// The real QR code for the mock network's join URI
-// (`WIFI:T:WPA;S:Starlight_5G;P:correct-horse-battery;;`), as the backend
-// encodes it: version 6 at high error correction, 41x41 modules. A row per
-// line, its modules as bits, most significant first, padded to 44.
+/**
+ * The real QR code for the mock network's join URI
+ * (`WIFI:T:WPA;S:Starlight_5G;P:correct-horse-battery;;`), as the backend
+ * encodes it: version 6 at high error correction, 41x41 modules. A row per
+ * line, its modules as bits, most significant first, padded to 44.
+ */
 const MOCK_QR_ROWS = [
   'febdd5f0bf8',
   '826e070ca08',
@@ -186,7 +192,7 @@ const MOCK_QR_ROWS = [
   '82666ebd700',
   'fe15c497850',
 ]
-// Each row's width in bits: its 41 modules, padded.
+/** Each row's width in bits: its 41 modules, padded. */
 const QR_ROW_BITS = 44
 
 /**
@@ -234,7 +240,7 @@ export function mockQrSvg(): string {
   )
 }
 
-// A rounded finder or alignment pattern, as the backend's `eye_svg` draws it.
+/** A rounded finder or alignment pattern, as the backend's `eye_svg` draws it. */
 function eyeSvg(x: number, y: number, size: number): string {
   const pupilSide = size - 4
   const ring = roundedSquare(x, y, size, size * 0.3) + roundedSquare(x + 1, y + 1, size - 2, (size - 2) * 0.2)
@@ -304,9 +310,11 @@ const MOCK_INTERFACES: NetworkInterfaceSummary[] = [
   },
 ]
 
-// An Apple hardware model identifier: a product family followed by a
-// "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3".
-// Mirrors is_apple_model in crates/rove-core/src/devices.rs.
+/**
+ * An Apple hardware model identifier: a product family followed by a
+ * "<generation>,<revision>" suffix, e.g. "iPhone15,2" or "MacBookPro18,3".
+ * Mirrors is_apple_model in crates/rove-core/src/devices.rs.
+ */
 const APPLE_MODEL_FAMILIES = [
   'iphone',
   'ipad',
@@ -323,9 +331,11 @@ function isAppleModel(model: string): boolean {
   return lower.includes(',') && /\d/.test(lower) && APPLE_MODEL_FAMILIES.some((family) => lower.startsWith(family))
 }
 
-// The backend humanizes Apple mDNS/UPnP identifiers before they reach the UI,
-// so the mock does too. Mirrors humanize_model in
-// crates/rove-core/src/devices.rs so the demo reads like production.
+/**
+ * The backend humanizes Apple mDNS/UPnP identifiers before they reach the UI,
+ * so the mock does too. Mirrors humanize_model in
+ * crates/rove-core/src/devices.rs so the demo reads like production.
+ */
 function humanizeModel(model: string | null): string | null {
   if (model === null || !isAppleModel(model)) return model
   // Everything before the "<gen>,<rev>" suffix is the product family.
@@ -352,14 +362,18 @@ function humanizeModel(model: string | null): string | null {
   }
 }
 
-// Rows omit kindConfidence except where the hedge is the point (the vendor-only
-// TP-Link plug); the map below fills in the common 'high'.
+/**
+ * Rows omit kindConfidence except where the hedge is the point (the vendor-only
+ * TP-Link plug); the map below fills in the common 'high'.
+ */
 type MockLanDevice = Omit<LanDevice, 'kindConfidence' | 'lastSeen'> &
   Partial<Pick<LanDevice, 'kindConfidence' | 'lastSeen'>>
 
-// A lived-in home network: mostly named and classified, with one offline
-// camera, two privacy-randomized phones and one low-confidence guess, the
-// messiness a real scan turns up. Self matches the connection card (IP and MAC).
+/**
+ * A lived-in home network: mostly named and classified, with one offline
+ * camera, two privacy-randomized phones and one low-confidence guess, the
+ * messiness a real scan turns up. Self matches the connection card (IP and MAC).
+ */
 const MOCK_DEVICE_SCAN: LanDeviceScan = {
   subnet: '192.168.1.0/24',
   interfaceName: 'en0',
@@ -607,9 +621,11 @@ const MOCK_DEVICE_SCAN: LanDeviceScan = {
   })),
 }
 
-// A few days of change history, one of each kind so the feed's grouping, icons
-// and severities all show. Timestamps are relative to now so the day headers
-// ("Today", "Yesterday") stay meaningful in the demo.
+/**
+ * A few days of change history, one of each kind so the feed's grouping, icons
+ * and severities all show. Timestamps are relative to now so the day headers
+ * ("Today", "Yesterday") stay meaningful in the demo.
+ */
 function seedNetworkEvents(): NetworkEvent[] {
   const rows: (Omit<NetworkEvent, 'id' | 'ts'> & { ago: number })[] = [
     {
@@ -753,10 +769,12 @@ function seedNetworkEvents(): NetworkEvent[] {
   return ordered.map(({ ago, ...rest }, i) => ({ ...rest, id: ordered.length - i, ts: Date.now() - ago }))
 }
 
-// A believable session: a browser dominating, a music stream, a couple of
-// background sync and update daemons, busiest first as the real sampler
-// returns them. Every name needs an entry in getHostUsage:
-// each Apps row links into that app's host group.
+/**
+ * A believable session: a browser dominating, a music stream, a couple of
+ * background sync and update daemons, busiest first as the real sampler
+ * returns them. Every name needs an entry in getHostUsage:
+ * each Apps row links into that app's host group.
+ */
 const MOCK_APP_ROWS: [name: string, downMb: number, upMb: number][] = [
   ['firefox', 842, 63],
   ['Spotify', 214, 8],
@@ -767,9 +785,11 @@ const MOCK_APP_ROWS: [name: string, downMb: number, upMb: number][] = [
   ['ssh', 4, 27],
 ]
 
-// The user's editable service list, seeded with the built-in defaults. The
-// add, update and delete calls mutate it in place so listServices and the
-// probes below read one source of truth, as the SQLite store does.
+/**
+ * The user's editable service list, seeded with the built-in defaults. The
+ * add, update and delete calls mutate it in place so listServices and the
+ * probes below read one source of truth, as the SQLite store does.
+ */
 const mockServices: ServiceDefinition[] = [
   { name: 'Google', host: 'google.com' },
   { name: 'Cloudflare', host: 'cloudflare.com' },
@@ -787,9 +807,11 @@ function upsertMockService(name: string, host: string): void {
   else mockServices.push({ name, host })
 }
 
-// A seeded timeline reaching about two days back, so the Services timeline has
-// days to group and durations to render. The backend's heartbeat records the
-// real one.
+/**
+ * A seeded timeline reaching about two days back, so the Services timeline has
+ * days to group and durations to render. The backend's heartbeat records the
+ * real one.
+ */
 const mockServiceHistory: ServiceEvent[] = (() => {
   const now = Date.now()
   // Newest first, as `get_service_history` returns it. Home Server never
@@ -805,12 +827,14 @@ const mockServiceHistory: ServiceEvent[] = (() => {
   ]
 })()
 
-// A latency character per built-in host: the probe's DNS + TCP + TLS time
-// (about three round trips, see crates/rove-core/src/services.rs) from San
-// Francisco on the connection above, so it scales with each host's distance.
-// Zoom's site is the farthest and noisiest, and now and then drifts past
-// GOOD_LATENCY_MAX_MS (120) into the warn band. `spread` is how far a poll can
-// wander.
+/**
+ * A latency character per built-in host: the probe's DNS + TCP + TLS time
+ * (about three round trips, see crates/rove-core/src/services.rs) from San
+ * Francisco on the connection above, so it scales with each host's distance.
+ * Zoom's site is the farthest and noisiest, and now and then drifts past
+ * GOOD_LATENCY_MAX_MS (120) into the warn band. `spread` is how far a poll can
+ * wander.
+ */
 const MOCK_LATENCY_PROFILES: Record<string, { base: number; spread: number }> = {
   'cloudflare.com': { base: 38, spread: 8 }, // anycast edge in the Bay Area
   'google.com': { base: 52, spread: 10 },
@@ -825,8 +849,10 @@ function latencyProfile(host: string): { base: number; spread: number } {
   return MOCK_LATENCY_PROFILES[host] ?? FALLBACK_PROFILE
 }
 
-// Where each host's walk currently sits, so successive polls continue the line
-// rather than teleporting.
+/**
+ * Where each host's walk currently sits, so successive polls continue the line
+ * rather than teleporting.
+ */
 const mockLatencyWalk = new Map<string, number>()
 
 /**
@@ -849,23 +875,29 @@ function mockLatencyFor(host: string): number {
   return Math.round(stepLatency(host) * 10) / 10
 }
 
-// With no network to probe, the mock only vouches for the public services it
-// ships with. Anything else (the seeded self-hosted box, any host the user
-// adds) reads as Down rather than pretending an arbitrary name answered. The
-// services list and the "test before add" dialog both consult this, so they
-// always agree.
+/**
+ * With no network to probe, the mock only vouches for the public services it
+ * ships with. Anything else (the seeded self-hosted box, any host the user
+ * adds) reads as Down rather than pretending an arbitrary name answered. The
+ * services list and the "test before add" dialog both consult this, so they
+ * always agree.
+ */
 const MOCK_REACHABLE_HOSTS = new Set(['google.com', 'cloudflare.com', 'youtube.com', 'netflix.com', 'zoom.us'])
 
 function isMockReachable(host: string): boolean {
   return MOCK_REACHABLE_HOSTS.has(host.trim().toLowerCase())
 }
 
-// SERVICE_POLL_INTERVAL_MS in useServiceReachability, so seeded samples are
-// spaced like the live ones that continue the line.
+/**
+ * SERVICE_POLL_INTERVAL_MS in useServiceReachability, so seeded samples are
+ * spaced like the live ones that continue the line.
+ */
 const MOCK_POLL_INTERVAL_MS = 15_000
 
-// One brief outage in the seeded window, a few polls back, so the sparkline's gap
-// and baseline tick are visible during design work without a row being down.
+/**
+ * One brief outage in the seeded window, a few polls back, so the sparkline's gap
+ * and baseline tick are visible during design work without a row being down.
+ */
 const MOCK_SEEDED_BLIP: Record<string, number> = { 'youtube.com': 5 }
 
 /**
@@ -919,11 +951,13 @@ const MOCK_DIAGNOSTICS: NetworkDiagnostics = {
   },
 }
 
-// Comcast's 200 Mbps cable tier over a busy apartment-block 5 GHz channel. The
-// upload is the tier's 5 Mbps, which falls short of live streaming's 6, and the
-// contended channel's jitter goes past cloud gaming's 10 ms (see
-// `rateCapability`), so those two read Fair and the rest Excellent. The ping
-// is to 1.1.1.1, so it sits near the Cloudflare service's round trip.
+/**
+ * Comcast's 200 Mbps cable tier over a busy apartment-block 5 GHz channel. The
+ * upload is the tier's 5 Mbps, which falls short of live streaming's 6, and the
+ * contended channel's jitter goes past cloud gaming's 10 ms (see
+ * `rateCapability`), so those two read Fair and the rest Excellent. The ping
+ * is to 1.1.1.1, so it sits near the Cloudflare service's round trip.
+ */
 const MOCK_SPEED_RESULT: SpeedResult = {
   downloadMbps: 186.4,
   uploadMbps: 5.4,
@@ -932,7 +966,7 @@ const MOCK_SPEED_RESULT: SpeedResult = {
   packetLoss: 0,
 }
 
-// Context stamped onto every recorded/seeded result, matching the connection.
+/** Context stamped onto every recorded/seeded result, matching the connection. */
 const MOCK_SPEED_CONTEXT = {
   connectionType: 'wifi',
   networkName: MOCK_SSID,
@@ -940,8 +974,10 @@ const MOCK_SPEED_CONTEXT = {
   frequency: MOCK_FREQUENCY,
 } as const
 
-// A couple of weeks of history so the "View history" trend isn't empty. Newest
-// first; values wobble around the current result the way a real link does.
+/**
+ * A couple of weeks of history so the "View history" trend isn't empty. Newest
+ * first; values wobble around the current result the way a real link does.
+ */
 function seedSpeedHistory(): SpeedHistoryEntry[] {
   const points: (SpeedResult & { agoHours: number })[] = [
     { downloadMbps: 181.9, uploadMbps: 5.3, latencyMs: 17, jitterMs: 12.1, packetLoss: 0, agoHours: 6 },
@@ -967,11 +1003,13 @@ function wobble(base: number, spread: number): number {
   return Math.round((base + (Math.random() - 0.5) * spread) * 10) / 10
 }
 
-// How far back the usage views claim tracking started. The megabyte figures in
-// the usage rows are what each row had moved by then; from there they keep
-// climbing at the same average rate (see usageBytesSoFar).
+/**
+ * How far back the usage views claim tracking started. The megabyte figures in
+ * the usage rows are what each row had moved by then; from there they keep
+ * climbing at the same average rate (see usageBytesSoFar).
+ */
 const MOCK_TRACKING_SINCE_AGO_MS = 42 * MINUTE_MS
-// Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store/speed.rs.
+/** Mirrors SPEED_HISTORY_LIMIT in crates/rove-core/src/store/speed.rs. */
 const MOCK_SPEED_HISTORY_LIMIT = 50
 
 /** Smoothstep easing over 0..1, for ramps that start and land softly. */

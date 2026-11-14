@@ -15,7 +15,7 @@ function transition(host: string, status: 'up' | 'down', ts: number): ServiceTra
   return { type: 'transition', host, name: host, status, ts }
 }
 
-// Newest first, as the backend returns the log.
+/** Newest first, as the backend returns the log. */
 const LOG: ServiceEvent[] = [
   transition('a.com', 'down', 900),
   { type: 'connection', status: 'restored', ts: 800 },

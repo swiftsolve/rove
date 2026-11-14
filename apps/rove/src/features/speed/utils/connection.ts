@@ -5,7 +5,7 @@ import { formatBand } from '@/utils/format'
 /** The medium a speed test ran over; `unknown` for anything else a result recorded. */
 export type ConnectionKind = SpeedTestConnection['type'] | 'unknown'
 
-// Shown in place of a network name the result doesn't have.
+/** Shown in place of a network name the result doesn't have. */
 const FALLBACK_NAMES: Record<ConnectionKind, string> = { wifi: 'Wi‑Fi', ethernet: 'Ethernet', unknown: 'Unknown' }
 
 /** The medium a recorded connection type names. */

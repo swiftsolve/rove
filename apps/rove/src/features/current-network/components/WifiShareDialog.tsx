@@ -7,7 +7,7 @@ import { useWifiShare } from '@/features/current-network/hooks/useWifiShare'
 import { type ShareNotice, shareNotice } from '@/features/current-network/utils/wifi-share-notice'
 import type { WifiShare } from '@/types'
 
-// Each state fades in as it replaces the last, while the dialog eases to its height.
+/** Each state fades in as it replaces the last, while the dialog eases to its height. */
 const STATE = 'flex animate-fade-in flex-col items-center gap-12 py-16 text-center'
 
 const NOTICE_ICONS = {

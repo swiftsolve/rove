@@ -44,7 +44,7 @@ import { flag, freePort, readWindowSize, type RunningServer, startDevServer } fr
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-// The shots are only useful at the size the window actually is.
+/** The shots are only useful at the size the window actually is. */
 const { width, height } = await readWindowSize()
 
 /** One shot of the app: where it goes, and for a scene, what to do once the screen has settled. */
@@ -116,16 +116,20 @@ const out = resolve(ROOT, flag('out') ?? 'docs/screenshots')
 const theme = flag('theme') ?? 'dark'
 const existingUrl = flag('url')
 const existingStorybookUrl = flag('storybook-url')
-// A fake clock, seeded randomness, paused CSS animations and reduced motion, so
-// two runs of the same code give the same pixels: live charts, relative times
-// and pulses all hold still, and what moves on timers or animation frames (the
-// live chart's glide, the Introduction's looping specimens) rests instead. The
-// shots then show a fixed moment, not a live app.
+/**
+ * A fake clock, seeded randomness, paused CSS animations and reduced motion, so
+ * two runs of the same code give the same pixels: live charts, relative times
+ * and pulses all hold still, and what moves on timers or animation frames (the
+ * live chart's glide, the Introduction's looping specimens) rests instead. The
+ * shots then show a fixed moment, not a live app.
+ */
 const isStable = process.argv.includes('--stable')
 const STABLE_TIME = new Date('2026-06-15T10:30:00Z')
-// Half the cores, up to 8: each page is a Chrome renderer, and one Vite server
-// and one Storybook serve them all, so more pages stop helping well before
-// every core is busy.
+/**
+ * Half the cores, up to 8: each page is a Chrome renderer, and one Vite server
+ * and one Storybook serve them all, so more pages stop helping well before
+ * every core is busy.
+ */
 const jobs = Number(flag('jobs') ?? Math.min(8, Math.max(1, Math.floor(availableParallelism() / 2))))
 
 /** Runs `work` on every item, `jobs` at a time. */
@@ -195,9 +199,11 @@ console.log(`${existingUrl ? 'using' : 'started'} ${server.url}`)
 
 await mkdir(out, { recursive: true })
 
-// `channel: 'chrome'` uses the Chrome that's already installed, so playwright-core
-// stays a ~3 MB dependency with no browser download behind it. CHROME_PATH
-// points it at another Chromium, as in a11y-audit.ts.
+/**
+ * `channel: 'chrome'` uses the Chrome that's already installed, so playwright-core
+ * stays a ~3 MB dependency with no browser download behind it. CHROME_PATH
+ * points it at another Chromium, as in a11y-audit.ts.
+ */
 const browser = await chromium.launch(
   process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' },
 )
@@ -259,9 +265,11 @@ async function shootApp(shot: Shot): Promise<void> {
   }
 }
 
-// The UI library, from Storybook: the states no screen shows. Without the fake
-// clock, which would stall Storybook's startup; paused animations and reduced
-// motion hold it still.
+/**
+ * The UI library, from Storybook: the states no screen shows. Without the fake
+ * clock, which would stall Storybook's startup; paused animations and reduced
+ * motion hold it still.
+ */
 async function shootStory(storybookUrl: string, story: IndexEntry): Promise<void> {
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2, reducedMotion: 'reduce' })
   try {

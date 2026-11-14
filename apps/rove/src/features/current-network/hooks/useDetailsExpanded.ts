@@ -1,6 +1,6 @@
 import { useSetting } from '@/hooks/useSetting'
 
-// Its key before it became a setting; still read, so an open panel stays open.
+/** Its key before it became a setting; still read, so an open panel stays open. */
 const LEGACY_KEY = 'rove.connection-details-expanded'
 
 function wasExpandedBefore(): boolean {

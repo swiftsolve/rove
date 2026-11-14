@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type Guidance, GUIDANCE_TOC } from '../../.storybook/docs-page'
 import { BarMeter } from './BarMeter'
 
-// A rating's colour by how many bars it lights.
+/** A rating's colour by how many bars it lights. */
 const COLORS = [
   'var(--text-tertiary)',
   'var(--status-poor)',

@@ -20,9 +20,11 @@ const INITIAL_STATE: LiveThroughputState = {
   history: EMPTY_THROUGHPUT_HISTORY,
 }
 
-// One module-level store with a single owner (`useLiveThroughputSource`), so the
-// history keeps sampling while another tab is open and a view swap never toggles
-// the backend subscription, which raced two IPC calls and could stick the feed.
+/**
+ * One module-level store with a single owner (`useLiveThroughputSource`), so the
+ * history keeps sampling while another tab is open and a view swap never toggles
+ * the backend subscription, which raced two IPC calls and could stick the feed.
+ */
 let storeState: LiveThroughputState = INITIAL_STATE
 const listeners = new Set<() => void>()
 
@@ -41,14 +43,18 @@ function ingestSample(sample: LiveThroughput): void {
   setStoreState({ throughput, history })
 }
 
-// Once the feed has paused, drop the stale trace so the chart refills from now
-// instead of resuming minutes-old data.
+/**
+ * Once the feed has paused, drop the stale trace so the chart refills from now
+ * instead of resuming minutes-old data.
+ */
 function resetHistory(): void {
   setStoreState(INITIAL_STATE)
 }
 
-// The backend subscription is a global switch with no ref-count, so a brief
-// hidden blip or StrictMode's remount must not toggle it: teardown waits this long.
+/**
+ * The backend subscription is a global switch with no ref-count, so a brief
+ * hidden blip or StrictMode's remount must not toggle it: teardown waits this long.
+ */
 const SUBSCRIPTION_GRACE_MS = 2_000
 let isSourceActive = false
 let detachEvents: (() => void) | null = null
