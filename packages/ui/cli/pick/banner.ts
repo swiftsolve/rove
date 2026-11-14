@@ -39,20 +39,25 @@ function trueColorText(text: string, color: Rgb): string {
   return `\x1b[38;2;${color.red};${color.green};${color.blue}m${text}\x1b[39m`
 }
 
+const TITLE = 'Rove UI CLI'
+const SUBTITLE = 'Props, usage and Figma for every component'
+
 /** What the banner says beside the mark, a line per mark row, centred on it. */
-const BANNER_WORDS = [
-  '',
-  '',
-  styleText('bold', 'Rove UI CLI'),
-  styleText('gray', 'Props, usage and Figma for every component'),
-  '',
-]
+const BANNER_WORDS = ['', '', styleText('bold', TITLE), styleText('gray', SUBTITLE), '']
+
+/** The columns the mark and its words take side by side: margin, mark, gap, subtitle. */
+const FULL_BANNER_WIDTH = 2 + 14 + 2 + SUBTITLE.length
 
 /**
  * The mark and the words beside it. With `hasTrueColor` the mark takes the
  * gradient; without, the terminal's own blue, which NO_COLOR turns off too.
+ * A terminal too narrow for both gets the words alone, so nothing wraps.
  */
-export function bannerText(hasTrueColor: boolean): string {
+export function bannerText(hasTrueColor: boolean, columns: number): string {
+  if (columns < FULL_BANNER_WIDTH) {
+    const subtitleLine = columns >= 2 + SUBTITLE.length ? `\n  ${styleText('gray', SUBTITLE)}` : ''
+    return `\n  ${styleText('bold', TITLE)}${subtitleLine}\n\n`
+  }
   const lastRow = ROVE_MARK_ROWS.length - 1
   const lines = ROVE_MARK_ROWS.map((markRow, rowIndex) => {
     const rowColor = mixColor(MARK_TOP_COLOR, MARK_BOTTOM_COLOR, rowIndex / lastRow)

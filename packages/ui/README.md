@@ -95,6 +95,10 @@ library imports only itself (by relative path) and packages, never app code.
   entries. For a person at a terminal, `pick` is a list that narrows as you
   type (`crdhdr` finds CardHeader), then a menu to show the component, copy
   its import, or open its Docs page or Figma component, from @clack/prompts.
+  `rove-ui` alone opens `pick` in a terminal and prints the help in a pipe.
+  `pick` needs at least 40x16; text keeps a two-column margin, drops prop
+  descriptions under their names below 64 columns, and drops its colour with
+  `--no-color` or NO_COLOR.
   It lives in `cli/`, built on Commander: `rove-ui.ts` starts it,
   `program.ts` holds the commands, `catalog/` reads the file and builds the
   links, `output/` writes text and Markdown, and `pick/` holds the prompts.

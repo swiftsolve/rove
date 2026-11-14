@@ -1,9 +1,9 @@
 /**
- * Turns catalog entries into the text the rove-ui CLI prints: short enough for
- * an agent to read in one go, laid out for a person in a terminal. Colour
- * shows only on a terminal that shows it: `styleText` drops it when stdout is
- * piped, as an agent reads it, or NO_COLOR is set. The layout is the same
- * either way.
+ * Turns catalog entries into the text the rove-ui CLI prints, laid out for a
+ * person in a terminal. Four colours at most: blue for the component's name,
+ * gray for what supports it, green and red beside ✓ and ✗, so no colour
+ * carries meaning alone. `styleText` drops them when stdout is piped or
+ * NO_COLOR is set; the layout is the same either way.
  */
 import { styleText } from 'node:util'
 
@@ -14,22 +14,23 @@ import { figmaNodeUrl, storybookDocsUrl } from '../catalog/links.ts'
 
 const INDENT = '  '
 
+/** The blank columns every line keeps from the terminal's left edge. */
+const MARGIN = '  '
+
 /** The widest a line runs, however wide the terminal: long lines read badly. */
 export const MAX_LINE_WIDTH = 100
 
-/** A section's title, in capitals so it stands out without colour: "PROPS". */
+/** Below this width, a prop's description drops under its name instead of beside it. */
+const PROP_COLUMNS_MIN_WIDTH = 64
+
+/** A section's title, bold capitals that stand out without colour: "PROPS". */
 function headingText(text: string): string {
-  return styleText(['bold', 'blueBright'], text.toUpperCase())
+  return styleText('bold', text.toUpperCase())
 }
 
 /** Text that supports what's beside it: a type, a default, a link. */
 function quietText(text: string): string {
   return styleText('gray', text)
-}
-
-/** Code in backticks, picked out in colour; the backticks stay, so piped text reads the same. */
-function withCodeHighlighted(text: string): string {
-  return text.replace(/`[^`]+`/g, (code) => styleText('cyan', code))
 }
 
 /** A doc comment on one line, its wrapped lines joined. */
@@ -74,17 +75,19 @@ function propsSection(component: NamedComponent, lineWidth: number): string[] {
     return [`${headingText('Props')}  ${quietText('none')}`]
   }
   const nameWidth = Math.max(...props.map(([name]) => name.length)) + 2
-  const descriptionIndent = INDENT + ' '.repeat(nameWidth)
+  // A narrow terminal can't spare the name column for every description line.
+  const hasRoomForColumns = lineWidth >= PROP_COLUMNS_MIN_WIDTH
+  const descriptionIndent = hasRoomForColumns ? INDENT + ' '.repeat(nameWidth) : INDENT + INDENT
   const descriptionWidth = lineWidth - descriptionIndent.length
   const rows = props.map(([name, prop]) => {
     let typeLine = styleText('bold', name.padEnd(nameWidth)) + propTypeText(prop)
     if (prop.isRequired) {
-      typeLine += `  ${styleText('yellow', 'required')}`
+      typeLine += `  ${styleText('bold', 'required')}`
     }
     if (prop.default !== undefined) {
       typeLine += `  ${quietText(`default ${prop.default}`)}`
     }
-    const description = withCodeHighlighted(wrapText(prop.description, descriptionWidth, descriptionIndent))
+    const description = wrapText(prop.description, descriptionWidth, descriptionIndent)
     return `${INDENT}${typeLine}\n${descriptionIndent}${description}`
   })
   if (component.passesExtraPropsToElement) {
@@ -100,7 +103,7 @@ function listSection(title: string, marker: string, items: string[], lineWidth: 
   }
   const itemIndent = `${INDENT}  `
   const itemWidth = lineWidth - itemIndent.length
-  const lines = items.map((item) => `${INDENT}${marker} ${withCodeHighlighted(wrapText(item, itemWidth, itemIndent))}`)
+  const lines = items.map((item) => `${INDENT}${marker} ${wrapText(item, itemWidth, itemIndent)}`)
   return [headingText(title), ...lines]
 }
 
@@ -185,10 +188,18 @@ export function componentListText(components: NamedComponent[]): string {
   return groupBlocks.join('\n\n')
 }
 
-/** Everything the catalog knows about one component, section by section, lines at most `lineWidth`. */
-export function componentDetailsText(catalog: ComponentListJson, component: NamedComponent, lineWidth: number): string {
+/**
+ * Everything the catalog knows about one component, section by section, each
+ * line kept off the left edge by MARGIN and within `terminalWidth` (but a link).
+ */
+export function componentDetailsText(
+  catalog: ComponentListJson,
+  component: NamedComponent,
+  terminalWidth: number,
+): string {
+  const lineWidth = Math.min(terminalWidth, MAX_LINE_WIDTH) - MARGIN.length
   const title = `${styleText(['bold', 'blueBright'], component.name)}  ${quietText(component.libraryGroup)}`
-  const header = [title, withCodeHighlighted(wrapText(component.description, lineWidth, ''))]
+  const header = [title, wrapText(component.description, lineWidth, '')]
   if (component.partOf) {
     header.push(quietText(`Part of ${component.partOf}: rove-ui show ${component.partOf}`))
   }
@@ -210,8 +221,12 @@ export function componentDetailsText(catalog: ComponentListJson, component: Name
     figmaDifferencesSection(component, lineWidth),
     storiesSection(component, lineWidth),
   ]
-  return sections
+  const text = sections
     .filter((section) => section.length > 0)
     .map((section) => section.join('\n'))
     .join('\n\n')
+  return text
+    .split('\n')
+    .map((line) => (line === '' ? '' : MARGIN + line))
+    .join('\n')
 }

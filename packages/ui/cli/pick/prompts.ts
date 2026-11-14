@@ -59,16 +59,16 @@ function isMatch(typedText: string, component: NamedComponent): boolean {
 export async function askForComponentName(components: NamedComponent[], isFirstPick: boolean): Promise<string | null> {
   if (isFirstPick) {
     const hasTrueColor = process.stdout.getColorDepth() >= TRUE_COLOR_DEPTH
-    process.stdout.write(bannerText(hasTrueColor))
+    process.stdout.write(bannerText(hasTrueColor, process.stdout.columns))
   }
-  intro(styleText(['bgBlue', 'white', 'bold'], ' rove-ui pick '))
+  intro(styleText('bold', 'Find a component'))
 
   // Each row says what the component is in a column after its name, cut to the terminal's width.
   const nameWidth = Math.max(...components.map((component) => component.name.length)) + 2
   const descriptionWidth = process.stdout.columns - ROW_PREFIX_WIDTH - nameWidth
   const componentsByName = new Map(components.map((component) => [component.name, component]))
   const choice = await autocomplete({
-    message: 'Which component?',
+    message: `Which component? ${styleText('gray', 'Esc quits')}`,
     maxItems: 12,
     options: components.map((component) => ({
       value: component.name,
@@ -89,7 +89,7 @@ export async function askForComponentName(components: NamedComponent[], isFirstP
 /** Asks what to do with the picked component; null when the person is done (Escape or Ctrl+C). */
 export async function askForAction(componentName: string, actions: PickAction[]): Promise<PickActionId | null> {
   const actionId = await select({
-    message: `${styleText('bold', componentName)}: what next?`,
+    message: `${styleText('bold', componentName)}: what next? ${styleText('gray', 'Esc quits')}`,
     options: actions.map((action) => ({ value: action.id, label: action.label, hint: action.hint })),
   })
   if (isCancel(actionId)) {

@@ -1,5 +1,5 @@
 import { CommanderError } from 'commander'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { ComponentEntry } from './catalog/catalog.ts'
 import { readCatalog, similarComponentNames } from './catalog/catalog.ts'
@@ -28,6 +28,8 @@ type TerminalStandIn = {
   pickedNames?: (string | null)[]
   chosenActions?: (PickActionId | null)[]
   hasClipboard?: boolean
+  columns?: number
+  rows?: number
 }
 
 /** Runs rove-ui with these arguments against the real catalog. */
@@ -42,7 +44,8 @@ async function runCli(args: string[], terminal: TerminalStandIn = {}): Promise<R
   const program = createProgram(catalog, {
     write: (text) => (printed += text),
     writeError: (text) => (errors += text),
-    lineWidth: 100,
+    columns: terminal.columns ?? 100,
+    rows: terminal.rows ?? 40,
     isInteractive: terminal.isInteractive ?? false,
     askForComponentName: () => Promise.resolve(pickedNames.shift() ?? null),
     askForAction: () => Promise.resolve(chosenActions.shift() ?? null),
@@ -70,12 +73,12 @@ async function runCli(args: string[], terminal: TerminalStandIn = {}): Promise<R
 describe('rove-ui show', () => {
   it("prints a component's props, usage guide, Figma component and stories", async () => {
     const { printed } = await runCli(['show', 'Button'])
-    expect(printed).toContain('Button  Actions')
-    expect(printed).toMatch(/ {2}variant +'solid' \| 'soft' {2}default soft\n/)
-    expect(printed).toContain('WHEN NOT TO USE\n  ✗ Opening another view')
+    expect(printed.startsWith('  Button  Actions\n')).toBe(true)
+    expect(printed).toMatch(/\n {4}variant +'solid' \| 'soft' {2}default soft\n/)
+    expect(printed).toContain('  WHEN NOT TO USE\n    ✗ Opening another view')
     expect(printed).toMatch(/ {2}Figma +Button {2}https:\/\/www\.figma\.com\/design\//)
     expect(printed).toContain('?path=/docs/actions-button--docs')
-    expect(printed).toContain('STORIES (9)\n  solid, solid-negative,')
+    expect(printed).toContain('  STORIES (9)\n    solid, solid-negative,')
   })
 
   it('finds a component whatever its case', async () => {
@@ -86,7 +89,7 @@ describe('rove-ui show', () => {
 
   it("lists a family's parts", async () => {
     const { printed } = await runCli(['show', 'Card'])
-    expect(printed).toMatch(/PARTS\n {2}- CardBody: /)
+    expect(printed).toMatch(/PARTS\n {4}- CardBody: /)
   })
 
   it('says why a component has no Figma component', async () => {
@@ -100,6 +103,26 @@ describe('rove-ui show', () => {
     const linesOfWords = printed.split('\n').filter((line) => !line.includes('https://'))
     const longestLine = Math.max(...linesOfWords.map((line) => line.length))
     expect(longestLine).toBeLessThanOrEqual(100)
+  })
+
+  it('drops prop descriptions under their names on a narrow terminal', async () => {
+    const { printed } = await runCli(['show', 'Toggle'], { columns: 50 })
+    expect(printed).toMatch(/\n {4}isDisabled {2}boolean {2}default false\n {6}Drops input/)
+  })
+
+  describe('colour', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    it('colours a terminal that shows colour, and drops it with --no-color', async () => {
+      vi.stubEnv('NO_COLOR', undefined)
+      vi.stubEnv('FORCE_COLOR', '1')
+      const colored = await runCli(['show', 'Button'])
+      expect(colored.printed).toContain('\x1b[')
+      const plain = await runCli(['--no-color', 'show', 'Button'])
+      expect(plain.printed).not.toContain('\x1b[')
+    })
   })
 
   it('prints Markdown with --md, without columns', async () => {
@@ -213,6 +236,12 @@ describe('rove-ui pick', () => {
     const { printed, exitCode } = await runCli(['pick'], { isInteractive: true, pickedNames: [null] })
     expect(printed).toBe('')
     expect(exitCode).toBe(0)
+  })
+
+  it('refuses a terminal smaller than it fits, and says how small', async () => {
+    const { errors, exitCode } = await runCli(['pick'], { isInteractive: true, columns: 30, rows: 40 })
+    expect(exitCode).toBe(1)
+    expect(errors).toContain('at least 40x16; this one is 30x40')
   })
 
   it('refuses without a terminal, and points at list and show', async () => {

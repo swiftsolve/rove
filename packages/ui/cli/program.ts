@@ -17,8 +17,9 @@ export type CliTerminal = {
   write: (text: string) => void
   /** Prints why a command failed. */
   writeError: (text: string) => void
-  /** How wide a line of `show` may run: the terminal's width, at most MAX_LINE_WIDTH. */
-  lineWidth: number
+  /** The terminal's size in cells; a pipe has none, so it reports the widest line and unlimited rows. */
+  columns: number
+  rows: number
   /** Whether a person is at a terminal to answer a prompt: stdin and stdout are both one. */
   isInteractive: boolean
   /** Asks which component to pick, with the banner the first time; null when the person cancels. */
@@ -32,6 +33,10 @@ export type CliTerminal = {
   /** Says what an action did, in line with the prompts. */
   writeNote: (text: string) => void
 }
+
+/** The smallest terminal `pick` fits: its list, a few rows of it, and the hints beneath. */
+export const PICK_MIN_COLUMNS = 40
+export const PICK_MIN_ROWS = 16
 
 /** What `pick` can do with the component picked. */
 export type PickActionId = 'show' | 'copyImport' | 'openDocs' | 'openFigma' | 'pickAnother'
@@ -61,6 +66,9 @@ type GlobalOptions = {
   json?: boolean
   // eslint-disable-next-line @typescript-eslint/naming-convention -- Commander names it after the `--md` flag
   md?: boolean
+  /** False with `--no-color`. */
+  // eslint-disable-next-line @typescript-eslint/naming-convention -- Commander names it after the `--no-color` flag
+  color: boolean
 }
 
 /** How a command prints: laid out for a person, as Markdown for an agent, or the raw entries. */
@@ -77,6 +85,7 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
   const program: Command = new Command('rove-ui')
     .description("Look up Rove's UI library components: their props, usage guide, Figma component and stories.")
     .option('--json', 'print the catalog entries as JSON')
+    .option('--no-color', 'print without colour, as NO_COLOR does')
     .addOption(
       new Option('--md', 'print Markdown: no colour or columns, the fewest tokens for an agent').conflicts('json'),
     )
@@ -84,6 +93,14 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
     .showHelpAfterError('Run `rove-ui --help` for the commands.')
     // Throws a CommanderError instead of exiting, so the caller sets the exit code.
     .exitOverride()
+    // `styleText` reads the environment each time it styles, so this turns colour off everywhere.
+    // FORCE_COLOR would win over NO_COLOR, so it goes.
+    .hook('preAction', () => {
+      if (!program.opts<GlobalOptions>().color) {
+        process.env.NO_COLOR = '1'
+        delete process.env.FORCE_COLOR
+      }
+    })
 
   function outputFormat(): OutputFormat {
     const options = program.opts<GlobalOptions>()
@@ -99,7 +116,7 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
   /** Prints one component in full, in the chosen format. */
   function writeComponent(component: NamedComponent): void {
     const textByFormat: Record<OutputFormat, () => string> = {
-      text: () => componentDetailsText(catalog, component, terminal.lineWidth),
+      text: () => componentDetailsText(catalog, component, terminal.columns),
       md: () => componentDetailsMarkdown(catalog, component),
       json: () => jsonText(component),
     }
@@ -178,6 +195,13 @@ export function createProgram(catalog: ComponentListJson, terminal: CliTerminal)
     .action(async () => {
       if (!terminal.isInteractive) {
         program.error('`rove-ui pick` needs a terminal to type in. Use `rove-ui list`, then `rove-ui show <name>`.')
+      }
+      if (terminal.columns < PICK_MIN_COLUMNS || terminal.rows < PICK_MIN_ROWS) {
+        const size = `${terminal.columns}x${terminal.rows}`
+        const minimum = `${PICK_MIN_COLUMNS}x${PICK_MIN_ROWS}`
+        program.error(
+          `\`rove-ui pick\` needs a terminal of at least ${minimum}; this one is ${size}. \`rove-ui show <name>\` works at any size.`,
+        )
       }
       let isFirstPick = true
       // Each pass picks a component, then offers actions on it until the person picks another or is done.
