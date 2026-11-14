@@ -7,8 +7,6 @@
 The design tokens behind Rove, designed in Figma<br>
 and shipped as CSS, a Tailwind theme and DTCG.
 
-**Dark and Light themes, WCAG 2.2 AA in both, and a [`DESIGN.md`](DESIGN.md) that tells people and coding agents which token to use for what.**
-
 [![npm](https://img.shields.io/npm/v/@swiftsolve/rove-tokens?logo=npm&logoColor=white&label=npm&labelColor=17181b&color=5b8cff)](https://www.npmjs.com/package/@swiftsolve/rove-tokens)
 [![Release](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/publish.yml?label=release&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/publish.yml)
 [![DTCG](https://img.shields.io/badge/DTCG-2025.10-5b8cff?labelColor=17181b)](https://www.designtokens.org/tr/2025.10/format/)
