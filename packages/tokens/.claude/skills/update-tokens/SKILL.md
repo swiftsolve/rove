@@ -6,7 +6,7 @@ description: Add or change a Rove design token, text style or shadow end to end 
 # Update the tokens
 
 Tokens flow one way: Figma, then this repo, then npm, then Rove. Nothing
-writes back to Figma. README.md (Update the tokens, Release) has the human
+writes back to Figma. CONTRIBUTING.md (Update the tokens, Release) has the human
 version; this is the whole run.
 
 ## 1. In Figma
@@ -26,12 +26,12 @@ The file key is in `src/figma/variables.json`. What you need:
   both before the first `use_figma` call.
 
 Without the server, a person makes the Figma change and exports with the
-plugin in `figma-plugin/` (README.md: Update the tokens); continue from step 2.
+plugin in `figma-plugin/` (CONTRIBUTING.md: Update the tokens); continue from step 2.
 
 **A new token** first has to earn its place: a value two or more places need,
 that no existing token names. A one-off (a corner copied from the app icon, a
 gap set by an icon's ink) stays a raw value in the code that uses it, with its
-reason in Rove's `scripts/checks/raw-values.mjs` `ALLOWED` list. If it does
+reason in Rove's `scripts/checks/raw-values.ts` `ALLOWED` list. If it does
 earn one, create it in Figma like its neighbours:
 
 - In the collection its siblings are in, with a value for every mode (Dark

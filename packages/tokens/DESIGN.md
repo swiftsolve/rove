@@ -240,9 +240,10 @@ Dark is the default, on `:root`. Add the `theme-light` class to the root element
 for Light. Every token has both values, so a screen that only uses tokens themes
 itself.
 
-Tokens are designed in Figma and only exported here: to change one, follow the
-[README](README.md#update-the-tokens) (or the `update-tokens` skill), never edit
-`tokens.css`, `tokens/` or `src/figma/` directly.
+Tokens are designed in Figma and only exported here: to change one, follow
+[Update the tokens](https://github.com/swiftsolve/rove-tokens/blob/main/CONTRIBUTING.md#update-the-tokens)
+(or the `update-tokens` skill), never edit `tokens.css`, `tokens/` or
+`src/figma/` directly.
 
 ## Colors
 
@@ -283,7 +284,7 @@ Tokens are designed in Figma and only exported here: to change one, follow the
   surface or on `--accent-muted` (a selected item, a tinted button).
 - Each text, status and accent token clears WCAG AA (words 4.5:1, icons and
   lines 3:1) on every background this page puts it on, in both themes.
-  [✓ CHECKED by `checks/contrast.mjs`]. Picking the token for the job is still
+  [✓ CHECKED by `checks/contrast.ts`]. Picking the token for the job is still
   judgment: a `--status-*` shade under words passes no check.
 
 ### Accent
@@ -300,7 +301,7 @@ Tokens are designed in Figma and only exported here: to change one, follow the
   dots.
 - Words in a status colour use `--text-*` of the same name, which also clear a
   tint of their hue (a badge). The `--status-*` shades are too light for text in
-  Light mode. [✓ CHECKED by `checks/contrast.mjs`], for the tokens.
+  Light mode. [✓ CHECKED by `checks/contrast.ts`], for the tokens.
 - Download and upload in charts are `--series-down` and `--series-up`.
 
 ### Devices
@@ -341,7 +342,7 @@ should stay nearly solid, like a chart line behind another.
   (`.type-title`), or all four of its `--type-<style>-*` variables,
   never a font size alone. Each style's use is beside it in the front matter's
   `typography`.
-  [✓ CHECKED by Rove's `checks/text-styles.mjs`].
+  [✓ CHECKED by Rove's `checks/text-styles.ts`].
 - Nine styles, each with one job. Title and Heading are Urbanist Bold;
   everything else, numbers included, is Hanken Grotesk. Display and Stat are
   for the large figures only: a number anywhere else takes the text style
@@ -352,7 +353,7 @@ should stay nearly solid, like a chart line behind another.
 ## Layout
 
 - Every gap, padding and margin is a `--spacing-*` step.
-  [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+  [✓ CHECKED by Rove's `checks/raw-values.ts`].
 - Cards use `--card-padding` on every side. The rail and the content column
   share the side inset `--spacing-12`.
 - A card header is `--card-header-height` tall. A header-like strip that can
@@ -367,7 +368,7 @@ should stay nearly solid, like a chart line behind another.
     ([Shapes](#shapes)).
 
   A value that's just "a bit more" isn't an exception: take the nearest step, or
-  propose a token in Figma. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it
+  propose a token in Figma. [✓ CHECKED by Rove's `checks/raw-values.ts`]: it
   fails an off-scale value until its reason is in its `ALLOWED` list.
 - Sizes (widths, heights, icon sizes) and line heights have no scale, so a typed
   one is fine.
@@ -383,7 +384,7 @@ should stay nearly solid, like a chart line behind another.
 
 ## Shapes
 
-- Corners are `--radius-*`. [✓ CHECKED by Rove's `checks/raw-values.mjs`].
+- Corners are `--radius-*`. [✓ CHECKED by Rove's `checks/raw-values.ts`].
   - `xs` for small controls inside others (menu items, segments, window
     buttons);
   - `sm` for controls;
@@ -398,7 +399,7 @@ should stay nearly solid, like a chart line behind another.
 
 - Solid buttons use `--accent-solid`, hovering to `--accent-solid-hover`. Hovers
   deepen, never lighten, so the white label keeps its contrast.
-  [✓ CHECKED by `checks/contrast.mjs`].
+  [✓ CHECKED by `checks/contrast.ts`].
 - A solid red control (a solid negative button, the window close hover) uses
   `--status-negative-solid` and `--status-negative-solid-hover`.
 
@@ -421,7 +422,7 @@ should stay nearly solid, like a chart line behind another.
 ## Motion
 
 - Animate with `--ease-out` (or `--ease-in-out`) over `--duration-fast` or
-  `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.mjs`]: it fails a
+  `--duration-normal`. [✓ CHECKED by Rove's `checks/raw-values.ts`]: it fails a
   raw curve, and a duration typed where a token has the value.
   - A panel resizing to its content springs, with
     `var(--duration-spring) var(--ease-spring)`: it arrives within
@@ -435,12 +436,12 @@ should stay nearly solid, like a chart line behind another.
   sizes typed in. If nothing fits, the design needs a new token in Figma, not a
   one-off in code. The only exceptions are the off-scale lengths in
   [Layout](#layout).
-  [✓ CHECKED by Rove's `checks/raw-values.mjs`, `checks/custom-properties.mjs`],
+  [✓ CHECKED by Rove's `checks/raw-values.ts`, `checks/custom-properties.ts`],
   the second for a misspelt name.
 - **Every token says what it's for.** Its Figma description is its use, listed
   beside it in the front matter and in `tokens.css`. Pick by that, not by the
   value.
-  [✓ CHECKED by `tokens/build.mjs`].
+  [✓ CHECKED by `tokens/build.ts`].
 - **Name by job, not by look.** Pick `--bg-surface` because it's content on the
   backdrop, not because it's the right grey. The Palette shades (`neutral/850`)
   aren't CSS variables, on purpose.

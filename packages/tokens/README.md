@@ -4,99 +4,94 @@
 
 # Rove Tokens
 
-Tokens for Rove, straight from the Rove Design System in Figma.
+The design tokens behind Rove, designed in Figma<br>
+and shipped as CSS, a Tailwind theme and DTCG.
 
-[`@swiftsolve/rove-tokens`](https://www.npmjs.com/package/@swiftsolve/rove-tokens)
+**Dark and Light themes, WCAG 2.2 AA in both, and a [`DESIGN.md`](DESIGN.md) that tells people and coding agents which token to use for what.**
 
-[![Release](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/publish.yml?label=release&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/publish.yml)
 [![npm](https://img.shields.io/npm/v/@swiftsolve/rove-tokens?logo=npm&logoColor=white&label=npm&labelColor=17181b&color=5b8cff)](https://www.npmjs.com/package/@swiftsolve/rove-tokens)
-[![Figma](https://img.shields.io/badge/Figma-source_of_truth-5b8cff?logo=figma&logoColor=white&labelColor=17181b)](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-
+[![Release](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/publish.yml?label=release&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/publish.yml)
 [![DTCG](https://img.shields.io/badge/DTCG-2025.10-5b8cff?labelColor=17181b)](https://www.designtokens.org/tr/2025.10/format/)
-[![Style Dictionary](https://img.shields.io/badge/Style_Dictionary-5-5b8cff?labelColor=17181b)](https://styledictionary.com/)
-[![WCAG](https://img.shields.io/badge/WCAG_2.2-AA-5b8cff?labelColor=17181b)](#contrast)
-[![Themes](https://img.shields.io/badge/themes-Dark_·_Light-5b8cff?labelColor=17181b)](#use)
+[![WCAG](https://img.shields.io/badge/WCAG_2.2-AA-5b8cff?labelColor=17181b)](docs/rationale.md)
 
-🎨 [Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System) &nbsp;·&nbsp;
-📐 [DESIGN.md](DESIGN.md) &nbsp;·&nbsp;
-💡 [Rationale](docs/rationale.md)
-
-📖 [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/) &nbsp;·&nbsp;
-🧱 [Components Storybook](https://nabilr.com/rove/storybook/)
+**[Figma file](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)** &nbsp;·&nbsp;
+**[Tokens Storybook](https://nabilr.com/rove/storybook/tokens/)** &nbsp;·&nbsp;
+**[Components Storybook](https://nabilr.com/rove/storybook/)** &nbsp;·&nbsp;
+**[DESIGN.md](DESIGN.md)** &nbsp;·&nbsp;
+**[Rationale](docs/rationale.md)**
 
 </div>
 
 ---
 
-Tokens are designed in the Rove Design System in Figma and released from git, one way. A [Figma plugin](figma-plugin/) exports the file's variables, text styles and shadows into this repo; `npm run build` turns them into DTCG token files, and those into CSS with [Style Dictionary](https://styledictionary.com/); a release puts them on npm. Nothing here writes to Figma, and the plugin's check lists anything in the repo that no longer matches the file.
+## Overview
 
-> [!TIP]
-> **Building Rove UI?** [`DESIGN.md`](DESIGN.md) says which token to use for what, in the [DESIGN.md format](https://github.com/google-labs-code/design.md), and its front matter lists every token with its value and use. It ships in the package, so coding agents in Rove can read it from `node_modules/@swiftsolve/rove-tokens/DESIGN.md`.
+Rove is a desktop network monitor, and every colour, space, type style, shadow and motion curve in its UI comes from this package. The tokens are designed in the Rove Design System in Figma, exported into this repo by a Figma plugin, and built into CSS variables, a Tailwind v4 theme and [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (DTCG) files.
 
-## Use
+They flow one way. Figma is the source of truth and git is the record: nothing here writes back to Figma, and a check lists anything in the repo that no longer matches the file.
 
-### Install
+**What sets it apart:**
+
+- **One source, four outputs.** `tokens.css`, a class per text style, a Tailwind theme with Tailwind's own scales cleared, and DTCG for other tools, all from one Figma export.
+- **Accessible by construction.** Every text and graphic colour is measured against what it sits on, in both themes, and the build fails below WCAG 2.2 AA.
+- **Written for agents too.** [`DESIGN.md`](DESIGN.md) ships in the package, in the [DESIGN.md format](https://github.com/google-labs-code/design.md): every token with its value and its use.
+- **Checked against Figma.** `npm run figma:check` compares the repo with the Figma file, token by token, and reports every difference.
+
+## Getting started
+
+Install the package:
 
 ```bash
 npm install @swiftsolve/rove-tokens
 ```
 
-The package ships the tokens built, in `dist/`; the import paths below point there. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v3.2.0`); then npm builds them on install, which needs Node 24 (see `.nvmrc`).
-
-### CSS variables
+Import the tokens, and the Tailwind theme if you use Tailwind v4:
 
 ```css
 @import '@swiftsolve/rove-tokens/tokens.css';
 @import '@swiftsolve/rove-tokens/text-styles.css'; /* optional: a class per text style */
+@import '@swiftsolve/rove-tokens/tailwind-theme.css'; /* optional: Tailwind v4 */
 ```
 
-Dark values sit on `:root`, Light values on `:root.theme-light`. CSS names follow the Figma names: `bg/base` is `--bg-base`, `spacing/12` is `--spacing-12`.
+Dark is the default, on `:root`. Add `theme-light` to the root element for Light:
 
-Every colour lives once in the Palette collection (`neutral/850`, `blue/450`; higher numbers are darker; a see-through shade adds `-a` and its opacity, `neutral/850-a10`), and the Color tokens point at it. The Palette isn't in `tokens.css`: a token that points at a shade gets the shade's value there. Figma-only collections (Icon tone, Capability level) and variables without a code syntax aren't in `tokens.css` either.
+```html
+<html class="theme-light"></html>
+```
 
-### Text styles
-
-Each Figma text style becomes four tokens: `--type-<style>-size`, `-weight`, `-line-height` (a unitless ratio) and `-letter-spacing` (in `em`). `Body/Medium` gives `--type-body-medium-size` and so on. A size bound to a variable comes through as that variable (`var(--font-size-3xl)`).
-
-`text-styles.css` applies a style whole: `.type-title` sets the font family and all four, plus the text case (Badge is uppercase). The classes set no colour and sit in `@layer components`, so Tailwind utilities on the same element still win.
-
-### Tailwind
-
-`tailwind-theme.css` is a [Tailwind v4](https://tailwindcss.com/docs/theme) theme made of the tokens and nothing else: it clears Tailwind's own scales, so `p-12` is `--spacing-12`, `text-md` is `--font-size-md`, `bg-surface` is `--bg-surface`, and there's no `p-7` or `text-blue-500` to reach for. Import it with the tokens in the CSS file that sets Tailwind up:
+Then style with the tokens, never raw values:
 
 ```css
-@import '@swiftsolve/rove-tokens/tokens.css';
-@import '@swiftsolve/rove-tokens/tailwind-theme.css';
+.card {
+  padding: var(--card-padding);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+}
 ```
 
-Each utility uses the token itself (`padding: var(--spacing-12)`), so the theme switch flows through. Colours drop the group the utility already says: `bg/surface` is `bg-surface`, `text/primary` is `text-primary`, `border/default` is `border-line`, `text/accent` is `text-accent-text`; status, series, overlay and focus keep theirs (`bg-status-positive`). Each text style also gives `leading-<style>` and `tracking-<style>`.
+```html
+<p class="type-body text-secondary p-12">Signal is strong.</p>
+```
 
-### DTCG files
+[Using the tokens](docs/using-the-tokens.md) covers the naming, the text style variables, the Tailwind mapping and the DTCG files.
 
-`dist/tokens/` (imported as `@swiftsolve/rove-tokens/tokens/*`) holds the same tokens in the [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (2025.10), for Style Dictionary, Tokens Studio and similar tools:
+## What's in the package
 
-| File | What |
+| Import | What |
 | --- | --- |
-| `palette.tokens.json` | Every colour, once |
-| `color.dark.tokens.json`, `color.light.tokens.json` | The Color tokens in each theme, pointing at the palette (`{neutral.850}`) |
-| `spacing.tokens.json`, `typography.tokens.json`, `opacity.tokens.json`, `layout.tokens.json`, `motion.tokens.json` | The other Figma collections |
-| `text-styles.tokens.json` | Each text style as a `typography` token |
-| `code.tokens.json` | The code-only tokens (shadows, the focus outline) |
+| `@swiftsolve/rove-tokens/tokens.css` | Every token as a CSS variable: Dark on `:root`, Light on `:root.theme-light`. |
+| `@swiftsolve/rove-tokens/text-styles.css` | A `.type-<style>` class per Figma text style, in `@layer components`. |
+| `@swiftsolve/rove-tokens/tailwind-theme.css` | A Tailwind v4 theme made of the tokens and nothing else. |
+| `@swiftsolve/rove-tokens/tokens/*` | The DTCG files, for Style Dictionary, Tokens Studio and similar tools. |
+| `DESIGN.md` | Which token to use for what, with every token's value and use. Agents read it from `node_modules/@swiftsolve/rove-tokens/DESIGN.md`. |
 
-A theme is every file plus one of the two color files. Paths follow the Figma names (`bg/base` is `bg.base`). Tokens that other tokens point at but that aren't CSS variables (the palette, the shadow colours) are marked `"$extensions": { "net.swiftsolve.rove-tokens": { "css": false } }`. CSS-only expressions (`--focus-inset`, a `calc()`) aren't in them.
+## Principles
 
-## Contrast
-
-The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both themes, on the surfaces they sit on: text clears 4.5:1 ([1.4.3 Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)), and icons, bars and dots 3:1 ([1.4.11 Non-text Contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)). AAA (7:1) isn't a target. [Rationale](docs/rationale.md) has the close calls. `scripts/checks/contrast.mjs` measures every pair, so a release can't break this.
-
-## Storybook
-
-Two Storybooks are hosted on nabilr.com:
-
-- [**Rove Tokens**](https://nabilr.com/rove/storybook/tokens/): every token in both themes (colour, palette, type, spacing, radius, effects, motion and layout), built from this repo's `main`.
-- [**Rove Components**](https://nabilr.com/rove/storybook/): the Rove app's UI library, built from the tokens.
-
-To run Rove Tokens locally, `npm run storybook`. It opens on <http://localhost:6007>; the Theme menu in the toolbar switches Dark and Light. The pages read the DTCG files in `dist/tokens/` and are styled with `dist/tokens.css`, so a new build shows up without editing them.
+- **Figma is the source of truth.** A token changes in Figma first, then is exported and built. Nothing in `dist/` or `src/figma/` is edited by hand.
+- **A scale, then a role.** `spacing/12` is a step on a scale; `card/padding` names a job and points at a step. Use the job when there is one.
+- **Every colour lives once.** The Palette holds each shade, and the Color tokens point at it by role, so a theme is a different set of pointers.
+- **Readable in both themes.** Text clears 4.5:1 and icons, bars and dots 3:1, in Dark and Light. [Rationale](docs/rationale.md) has the close calls, and the [decision records](docs/adr/) say why the system is shaped this way.
 
 ## How it works
 
@@ -105,97 +100,43 @@ To run Rove Tokens locally, `npm run storybook`. It opens on <http://localhost:6
   <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by npm run build, and ship as @swiftsolve/rove-tokens (tokens.css, text-styles.css, the Tailwind theme and DTCG) and DESIGN.md. Checked by npm run check, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
 </picture>
 
-The diagram is the [Storybook's Introduction](https://nabilr.com/rove/storybook/tokens/). [What's where](#whats-where) lists the scripts behind each step.
+### Tokens
 
-## Update the tokens
+The Rove Tokens plugin exports the file's variables, text styles and `Shadow/*` effect styles to `src/figma/`. `npm run build` turns them into DTCG, then into CSS with [Style Dictionary](https://styledictionary.com/), the Tailwind theme and `DESIGN.md`'s token list. A release puts them on npm.
 
-Every change starts in Figma. It ships once it's exported, built, committed and released, and `figma:check` finds no difference between Figma and the repo. Coding agents follow the same steps in the [`update-tokens` skill](.claude/skills/update-tokens/SKILL.md).
+### Checked by
 
-1. Change the variables, text styles or `Shadow/*` effect styles in Figma. A new token takes its siblings' collection, modes, scopes and code syntax, and a description.
-2. Export them to `src/figma/variables.json`, `src/figma/text-styles.json` and `src/figma/effect-styles.json`, either with the plugin in `figma-plugin/` (Figma desktop: Plugins → Development → Import plugin from manifest; then **Export**) or through the Figma MCP (`npm run figma:export`, then `npm run figma:save <result.json>`).
-3. Run `npm run check` (Node 24). It builds, so check `dist/tokens.css` too. The build stops if a token has no description, a variable's code syntax doesn't match its name, or a DTCG reference doesn't resolve. It rewrites `DESIGN.md`'s front matter: commit it with the change.
-4. Check that the repo matches Figma: the plugin's **Check** tab (against the files you choose from a checkout) or `npm run figma:check` lists every difference in values, code syntax, descriptions, scopes, text styles and shadows. A difference means the repo is behind Figma (export again) or was edited directly (undo it, and make the change in Figma).
-5. Commit the change.
+`npm run check` builds, typechecks and lints, then holds every colour to WCAG AA and `DESIGN.md` to its format. `npm run figma:check` compares the repo with Figma. In Rove, a lint fails a raw colour or spacing where a token belongs.
 
-**Only what Figma can't hold** (font stacks, the focus expressions) is edited here, in `src/code-tokens.json`; then check and commit. `src/figma/*.json` changes only by export, since the next export undoes a direct edit.
+### Used by
 
-## Release
+Rove and its component library, the coding agents that work on them, and the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/), which reads the DTCG files and follows every build.
 
-Changes collect on `main` and go out together, when Rove needs them.
+## Project structure
 
-1. On the Figma cover (`COVER` page), set **Version** to the one you're about to release and **Updated** to today's date (`27 Oct 2026`). They're the one place a release can't be stamped from here: Figma's API can't edit canvas text on this plan, so edit them in Figma, or have an agent do it through the Figma connection.
-2. Bump, commit and tag in one step, then push both:
-
-   ```bash
-   npm version minor
-   git push --follow-tags
-   ```
-
-   Pick the bump by what Rove sees: `patch` when no CSS variable is added, removed or renamed; `minor` for a new token; `major` for a rename or removal.
-3. The tag runs the **Release** workflow: it runs `npm run check`, and only if that passes puts the version on [npm](https://www.npmjs.com/package/@swiftsolve/rove-tokens) through npm trusted publishing (`npx npm@11 trust list @swiftsolve/rove-tokens` shows the link to `publish.yml`; if it fails to publish, `npm publish` from a checkout works too).
-4. In Rove, once npm serves it: `npm install @swiftsolve/rove-tokens@<version>`, run its `npm run check`, and commit. Then resync the sites that embed Rove, with Rove's `resync-sites` skill.
-
-## Scripts
-
-| Script | What it does |
+| Directory | Purpose |
 | --- | --- |
-| `npm run build` | Figma export → DTCG → `tokens.css`, `text-styles.css`, `tailwind-theme.css` and `DESIGN.md`'s front matter. `npm install` and `npm publish` run it too. |
-| `npm run check` | Builds, lints, then runs the contrast and DESIGN.md format checks and `npm test`. Run it before every commit; CI runs it on every release tag, before publishing. |
-| `npm test` | The Figma plugin's test: Export and Check against a stand-in file made from the repo. |
-| `npm run lint` | ESLint and Prettier over the repo. `npm run format` fixes what Prettier reports. |
-| `npm run figma:export` | Prints a script for the Figma MCP's `use_figma` that exports the file; `figma:save <result.json>` writes its result into `src/figma/`. |
-| `npm run figma:check` | Prints a script for `use_figma` that lists every difference between the Figma file and the repo. |
-| `npm run storybook` | The Rove Tokens Storybook on port 6007; `build:storybook` writes a static copy to `storybook-static/`. |
+| `src/` | The Figma export (`src/figma/`) and what Figma can't hold (`code-tokens.json`). |
+| `scripts/` | The build, the checks and the Figma scripts, in TypeScript that Node runs directly. |
+| `figma-plugin/` | Rove Tokens, the Figma plugin that exports the file and checks it against the repo. |
+| `stories/`, `.storybook/` | The Tokens Storybook. |
+| `docs/` | Usage, rationale and decision records. |
+| `dist/` | The built package. Generated, never edited. |
 
-## What's where
+## Contributing
 
-**Sources**
+Every token change starts in Figma. [CONTRIBUTING.md](CONTRIBUTING.md) walks through exporting, checking and releasing, lists every script, and says what each file does. Coding agents follow the same steps in the [`update-tokens` skill](.claude/skills/update-tokens/SKILL.md), under the rules in [AGENTS.md](AGENTS.md).
 
-| Path | What |
-| --- | --- |
-| `src/figma/variables.json` | Raw Figma export. Every variable with a Web code syntax becomes that CSS variable. |
-| `src/figma/text-styles.json` | Raw export of the local text styles: font, size, weight, line height, letter spacing, text case (when set) and the variables bound to them. Each style becomes a `--type-*` group. |
-| `src/figma/effect-styles.json` | Raw export of the `Shadow/*` effect styles: each layer's offset, blur, spread and the colour variable bound to it. Each style becomes a `--shadow-*` token. |
-| `src/code-tokens.json` | What Figma can't hold: font stacks for the font-family variables and the CSS expressions built on variables (`--focus-outline`). `{figma/name}` pulls a Figma value in per theme. |
-| `figma-plugin/` | Rove Tokens, the Figma plugin. **Export** writes the three exports: every local variable by collection and mode (aliases and scopes kept, in the variables panel's order), every local text style with the variables bound to it, and the `Shadow/*` effect styles. **Check** compares the file with the three files you choose from a checkout and lists every difference. It never writes to the file, and needs no network access. |
-| `scripts/figma/use-figma.mjs` | `npm run figma:export` and `figma:check`: the plugin's own code, wrapped for the Figma MCP's `use_figma`, so an agent exports and checks the same way. |
+To work on the repo:
 
-**Build**
+```bash
+nvm use 24
+npm install
+npm run check
+```
 
-| Path | What |
-| --- | --- |
-| `scripts/tokens/build.mjs` | `npm run build`: runs the steps below, writing everything to `dist/`, where `package.json`'s `exports` points the import paths. |
-| `scripts/tokens/figma-to-dtcg.mjs` | Figma export → the DTCG files in `dist/tokens/`, checking that every reference resolves in both themes. |
-| `scripts/tokens/dtcg-to-css.mjs` | DTCG files → `tokens.css`, with Style Dictionary and a `rove/css` format: Dark on `:root`, what differs in Light on `:root.theme-light`, each text style as four `--type-*` variables (letter spacing included). |
-| `scripts/tokens/tailwind-theme.mjs` | Figma export → `tailwind-theme.css`: the Tailwind v4 `@theme` that maps each token to its utility, with Tailwind's defaults cleared. |
-| `scripts/tokens/dtcg-to-text-styles.mjs` | DTCG text styles → `text-styles.css`: a `.type-<style>` class per style that reads its `--type-*` variables. |
-| `scripts/tokens/design-front-matter.mjs` | Figma export and `tokens.css` → `DESIGN.md`'s front matter: every token at its Dark value, with its Figma description as a comment. The format's groups (colours, with its `primary` as the accent; text styles; radius; spacing) come first, then Rove's own (`EXTRA_GROUPS`: font sizes, opacity, layout, shadows, focus, motion…), then `light`: every token whose value differs in Light. The build fails if a token fits no group. |
-| `scripts/tokens/shared.mjs` | Helpers the steps share, so they all write a colour and name a text style the same way. |
-| `DESIGN.md` | How to build Rove UI with the tokens, in the [DESIGN.md format](https://github.com/google-labs-code/design.md). The front matter (the tokens, at their Dark values) is generated by the build; the prose below it is edited directly. |
+`npm install` builds the tokens and turns on the git hooks. `npm run storybook` opens the Tokens Storybook on <http://localhost:6007>.
 
-**Checks and tests**
+## License
 
-| Path | What |
-| --- | --- |
-| `scripts/checks/design-md-format.mjs` | Runs Google's DESIGN.md linter on `DESIGN.md` and fails on any error or warning (the linter itself exits 0 on a warning), except that the format's exports skip Rove's own groups. |
-| `scripts/checks/contrast.mjs` | Measures every text and graphic colour on what DESIGN.md lets it sit on, in both themes, against [Contrast](#contrast)'s targets. |
-| `figma-plugin/code.test.mjs` | `npm test`: runs the plugin against a stand-in Figma file made from the repo. Export must give back `src/figma/*.json`, and Check must find nothing, then each planted difference. |
-
-**Storybook**
-
-| Path | What |
-| --- | --- |
-| `.storybook/` | The Rove Tokens Storybook's config, and the Hanken Grotesk, Urbanist and Geist Mono files it bundles. |
-| `stories/` | Its pages, one file per sidebar group, each with its own CSS (`stories.css` is what they share; images in `assets/`). `tokens.js` reads the DTCG files. |
-
-**Repo**
-
-A release tag is the `v1.2.0`-style git tag that `npm version` creates and `git push --follow-tags` pushes (see [Release](#release)).
-
-| Path | What |
-| --- | --- |
-| `.github/workflows/publish.yml` | On each release tag, runs `npm run check`, then publishes that version to npm with trusted publishing, so the repo holds no npm token. Run it on demand from Actions to check `main`: it publishes only from a tag. |
-| `scripts/hooks/git/` | Git hooks, on after `npm install`: `pre-commit` lints and format-checks the staged files, `commit-msg` refuses an agent attribution line. |
-| `scripts/hooks/claude/`, `.claude/settings.json` | Claude Code hooks: each edited file is formatted and linted, and commands that skip a hook or throw away work are refused. |
-| `AGENTS.md`, `.claude/skills/` | The rules and procedures for coding agents. |
-| `docs/rationale.md` | Why the values are what they are (contrast targets, theme choices). |
+UNLICENSED. All rights reserved.

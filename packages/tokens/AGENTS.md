@@ -11,9 +11,11 @@ shadows into `src/figma/`, and `npm run build` turns them into `dist/`
 | Task | Read |
 | --- | --- |
 | Which token to use for what, and every value | `DESIGN.md` |
-| Why a value is what it is | `docs/rationale.md` |
-| How the export, build and checks work, and where each file is | `README.md`: How it works, What's where |
-| Updating and releasing, step by step | `README.md`: Update the tokens, Release |
+| How the package's files name and hold the tokens | `docs/using-the-tokens.md` |
+| Why a value is what it is | `docs/rationale.md`, `docs/adr/` |
+| How the export, build and checks work | `README.md`: How it works |
+| Where each file is, and every script | `CONTRIBUTING.md`: What's where, Scripts |
+| Updating and releasing, step by step | `CONTRIBUTING.md`: Update the tokens, Release |
 
 ## Procedures
 
@@ -56,7 +58,8 @@ are.
 ### Check your work
 
 Run `npm run check` before you commit: the build (which refuses a token
-without a description), lint (ESLint and Prettier), the WCAG AA contrast check, the
+without a description), the typecheck of the scripts (`tsc`, as Node runs the
+`.ts` files without checking types), lint (ESLint and Prettier), the WCAG AA contrast check, the
 DESIGN.md format check (Google's linter) and the Figma plugin's test
 (`npm test`). Commit the rebuilt `DESIGN.md` with the change. Fix what a hook reports.
 
