@@ -1,6 +1,6 @@
 ---
 name: resync-sites
-description: Resync nabilr.com/rove, which embeds Rove's UI as a live demo and hosts both Storybooks. Use after committing a Rove change a user would see (anything under src/ that renders, or a @swiftsolve/rove-tokens bump); not for backend-only, test or tooling changes.
+description: Resync nabilr.com/rove, which embeds Rove's UI as a live demo and hosts both Storybooks. Use after committing a Rove change a user would see (anything under apps/rove/src or packages/ui that renders, or a @swiftsolve/rove-tokens bump); not for backend-only, test or tooling changes.
 ---
 
 # Resync the site
@@ -14,7 +14,7 @@ rove.swiftsolve.net only redirects there, so it never needs a resync.
 
 | Change | Demo | Storybooks |
 | --- | --- | --- |
-| Anything under `src/` that renders | yes | if under `src/ui` |
+| Anything under `apps/rove/src` or `packages/ui` that renders | yes | if under `packages/ui/` |
 | A `@swiftsolve/rove-tokens` bump | yes | yes |
 | Only stories or library docs pages | no | yes |
 | Backend, tests, tooling, docs | no | no |

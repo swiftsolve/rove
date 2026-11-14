@@ -9,9 +9,15 @@ import comments from './scripts/eslint/comments.ts'
 
 // ── Import boundaries ──────────────────────────────────────────────────────
 
+// The app's source and the library's, the two workspaces' `src`.
+const APP = 'apps/rove/src'
+const UI = 'packages/ui/src'
+
 const UI_INTERNALS = {
-  group: ['@/ui/**', '**/ui/*/**'],
-  message: "Import the UI library from '@/ui', its public entry.",
+  // A path into the package or its folder. The app's test setup is the one
+  // file that takes the library's own.
+  regex: String.raw`^@swiftsolve/rove-ui/(?!testing/setup$)|/packages/ui/`,
+  message: "Import the UI library from '@swiftsolve/rove-ui', its public entry.",
 }
 const CONTEXT_OBJECTS = {
   group: ['**/context/*-context'],
@@ -28,13 +34,14 @@ const APP_CODE = {
 
 // A typed dot sits on the baseline and scales with the font, so it never
 // matches the designed one.
-const NO_DOT_GLYPH_MESSAGE = 'Separate inline items with DotSeparator or InlineMeta from @/ui, not a typed "·" or "•".'
+const NO_DOT_GLYPH_MESSAGE =
+  'Separate inline items with DotSeparator or InlineMeta from @swiftsolve/rove-ui, not a typed "·" or "•".'
 const NO_DOT_GLYPH = ['Literal[value=/[·•]/]', 'TemplateElement[value.raw=/[·•]/]', 'JSXText[value=/[·•]/]'].map(
   (selector) => ({ selector, message: NO_DOT_GLYPH_MESSAGE }),
 )
 // A missing value is a drawn bar that scales with its line, so a lone typed
 // dash standing in for one is out too.
-const NO_DASH_VALUE_MESSAGE = 'Show a missing value with NoValue from @/ui, not a typed "—".'
+const NO_DASH_VALUE_MESSAGE = 'Show a missing value with NoValue from @swiftsolve/rove-ui, not a typed "—".'
 const NO_DASH_VALUE = ['Literal[value=/^\\s*—\\s*$/]', 'JSXText[value=/^\\s*—\\s*$/]'].map((selector) => ({
   selector,
   message: NO_DASH_VALUE_MESSAGE,
@@ -104,7 +111,7 @@ export default tseslint.config(
   // ── Not ours to lint ─────────────────────────────────────────────────────
   // The Rust backend and build outputs, and .claude's agent worktrees (other
   // checkouts, not this one's code).
-  { ignores: ['dist', 'storybook-static', 'src-tauri', 'crates', 'target', '.claude'] },
+  { ignores: ['**/dist', '**/storybook-static', 'apps/rove/src-tauri', 'crates', 'target', '.claude', '.turbo'] },
 
   // ── Presets ──────────────────────────────────────────────────────────────
   js.configs.recommended,
@@ -113,10 +120,10 @@ export default tseslint.config(
   // the strict, type-aware sets.
   ...[...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked].map((config) => ({
     ...config,
-    files: ['src/**/*.{ts,tsx}', 'scripts/**/*.ts'],
+    files: [`${APP}/**/*.{ts,tsx}`, `${UI}/**/*.{ts,tsx}`, 'scripts/**/*.ts'],
   })),
   reactHooks.configs.flat.recommended,
-  { ...jsxA11y.configs.strict, files: ['src/**/*.tsx'] },
+  { ...jsxA11y.configs.strict, files: [`${APP}/**/*.tsx`, `${UI}/**/*.tsx`] },
 
   // ── Every file ───────────────────────────────────────────────────────────
   {
@@ -154,7 +161,7 @@ export default tseslint.config(
   // ── The app's source, and the tooling scripts ───────────────────────────
   {
     // Node runs the scripts as .ts; scripts/tsconfig.json types them.
-    files: ['src/**/*.{ts,tsx}', 'scripts/**/*.ts'],
+    files: [`${APP}/**/*.{ts,tsx}`, `${UI}/**/*.{ts,tsx}`, 'scripts/**/*.ts'],
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
@@ -177,20 +184,20 @@ export default tseslint.config(
   },
   {
     // invoke<void> types a Tauri command that returns nothing.
-    files: ['src/bridge/**'],
+    files: [`${APP}/bridge/**`],
     rules: { '@typescript-eslint/no-invalid-void-type': 'off' },
   },
   {
     // The dev mock implements the async bridge with synchronous bodies, and its
     // flags flip inside callbacks that narrowing can't see.
-    files: ['src/bridge/mock-network-api.ts'],
+    files: [`${APP}/bridge/mock-network-api.ts`],
     rules: {
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   {
-    files: ['src/**/*.tsx'],
+    files: [`${APP}/**/*.tsx`, `${UI}/**/*.tsx`],
     // Safari drops a list's role once its markers are styled away, so a
     // styled <ul> says role="list" on purpose.
     rules: { 'jsx-a11y-x/no-redundant-roles': ['error', { ul: ['list'] }] },
@@ -202,26 +209,25 @@ export default tseslint.config(
   // its files.
   {
     // Outside the library, the UI comes through its one public entry.
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/ui/**'],
+    files: [`${APP}/**/*.{ts,tsx}`],
     rules: { 'no-restricted-imports': ['error', { patterns: [UI_INTERNALS] }] },
   },
   {
     // A context object is read only through its hook (useTheme, useNetwork…),
     // which also fails loudly outside the provider. Its provider and hook are
     // the only code that imports it.
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/ui/**', 'src/**/context/**', 'src/**/hooks/**'],
+    files: [`${APP}/**/*.{ts,tsx}`],
+    ignores: [`${APP}/**/context/**`, `${APP}/**/hooks/**`],
     rules: { 'no-restricted-imports': ['error', { patterns: [UI_INTERNALS, CONTEXT_OBJECTS] }] },
   },
   {
     // The library knows nothing about the app: no screens, no data, no bridge.
     // It follows the same context rule inside itself.
-    files: ['src/ui/**/*.{ts,tsx}'],
+    files: [`${UI}/**/*.{ts,tsx}`],
     rules: { 'no-restricted-imports': ['error', { patterns: [APP_CODE, CONTEXT_OBJECTS] }] },
   },
   {
-    files: ['src/ui/**/context/**', 'src/ui/**/hooks/**'],
+    files: [`${UI}/**/context/**`, `${UI}/**/hooks/**`],
     rules: { 'no-restricted-imports': ['error', { patterns: [APP_CODE] }] },
   },
 
@@ -230,15 +236,16 @@ export default tseslint.config(
     // Every button outside the library is one of its components (Button,
     // IconButton, Link, ListRow, StretchedLink), so focus, disabled and
     // loading behave the same everywhere.
-    files: ['src/**/*.tsx'],
+    files: [`${APP}/**/*.tsx`],
     // Tests build their own harnesses.
-    ignores: ['src/ui/**', 'src/**/*.test.tsx'],
+    ignores: [`${APP}/**/*.test.tsx`],
     rules: {
       'no-restricted-syntax': [
         'error',
         {
           selector: "JSXOpeningElement[name.name='button']",
-          message: 'Use a button from @/ui (Button, IconButton, Link, ListRow, StretchedLink), not a raw <button>.',
+          message:
+            'Use a button from @swiftsolve/rove-ui (Button, IconButton, Link, ListRow, StretchedLink), not a raw <button>.',
         },
         ...CODE_STYLE,
       ],

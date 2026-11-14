@@ -140,3 +140,5 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+          # The app's workspace, where its tauri script and src-tauri live.
+          projectPath: apps/rove

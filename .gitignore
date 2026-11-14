@@ -2,7 +2,7 @@ node_modules/
 dist/
 target/
 # Tauri rewrites these JSON Schemas on every build.
-src-tauri/gen/schemas/
+apps/rove/src-tauri/gen/schemas/
 *.log
 .env.local
 .claude/*
@@ -12,3 +12,4 @@ src-tauri/gen/schemas/
 !.vscode/settings.json
 !.vscode/extensions.json
 storybook-static/
+.turbo/

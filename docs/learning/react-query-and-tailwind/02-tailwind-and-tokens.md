@@ -10,7 +10,7 @@ Part 2 of [Learning Rove's UI](README.md).
 Figma variables          (the source of truth: colours, spacing, radii, type)
       ↓ exported and built by @swiftsolve/rove-tokens
 tokens.css               --spacing-12: 12px;  --bg-surface: #151618;
-      ↓ mapped by src/styles/tailwind.css (@theme)
+      ↓ mapped by packages/ui/src/styles/tailwind.css (@theme)
 Tailwind utilities       p-12   bg-surface   rounded-md
       ↓ used in components
 <div className="p-12 bg-surface">
@@ -28,7 +28,7 @@ writing a CSS file per component.
 
 ## Joining the two: `@theme`
 
-[tailwind.css](../../../src/styles/tailwind.css) tells Tailwind which classes
+[tailwind.css](../../../packages/ui/src/styles/tailwind.css) tells Tailwind which classes
 exist, using the tokens:
 
 ```css
@@ -89,7 +89,7 @@ rather than combining `text-md leading-… tracking-…` by hand.
 
 Some layouts repeat across screens, like a page's column with its gap and
 entrance animation. Those live in
-[utilities.css](../../../src/styles/utilities.css) as Tailwind utilities:
+[utilities.css](../../../packages/ui/src/styles/utilities.css) as Tailwind utilities:
 
 ```css
 @utility page {

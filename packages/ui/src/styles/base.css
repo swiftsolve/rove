@@ -1,0 +1,428 @@
+/*
+ * The app's base: fonts and the base layer of element resets and app-wide
+ * behaviour. Imported by tailwind.css, after the tokens.
+ */
+
+/* Hanken Grotesk sets text and numbers, Urbanist the headings. Each comes as
+   Latin and Latin Extended files; other scripts fall through to the system font. */
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/HankenGrotesk-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/HankenGrotesk-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Urbanist-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Urbanist-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Country-flag glyphs for the Hosts view. Windows ships no flag emoji (Segoe UI
+   Emoji omits them), so the regional-indicator pairs `flag.ts` emits render as
+   blank/boxed letters in WebView2. This Twemoji subset supplies only the flag
+   glyphs: ahead of the UI font on the flag slot, it draws the flags on
+   Windows while every other character falls through to the normal font. macOS
+   and Linux already have their own flags; the font just makes the artwork
+   consistent. Twemoji art, CC BY 4.0 (see README). */
+@font-face {
+  font-family: 'Twemoji Country Flags';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/TwemojiCountryFlags.woff2') format('woff2');
+}
+
+/* Element resets and app-wide behaviour, under every component and utility. */
+@layer base {
+  /* The reset. Border utilities set only a width; they need a solid style to
+     show, the one piece of Tailwind's preflight the app uses. */
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+  }
+
+  /* The theme swap (app/utils/theme-transition.ts) runs in a View Transition
+     and drives a clip-path circle from the window's centre. The built-in
+     cross-fade is off so only the circular reveal plays. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  /* Dark → light: the incoming light snapshot grows outward on top. */
+  ::view-transition-old(root) {
+    z-index: 0;
+  }
+  ::view-transition-new(root) {
+    z-index: 1;
+  }
+  /* Light → dark mirrors it: the outgoing light snapshot stays on top and
+     collapses to the centre, revealing the dark snapshot beneath. */
+  :root.theme-to-dark::view-transition-old(root) {
+    z-index: 1;
+  }
+  :root.theme-to-dark::view-transition-new(root) {
+    z-index: 0;
+  }
+  /* While the theme class flips, every control takes its new colours at once
+     rather than playing its hover transition (see applyThemeClass). Motion the
+     theme doesn't touch opts out with `data-keeps-transition`: the theme
+     SegmentedControl's thumb slides in the same moment the theme flips. */
+  :root.theme-switching *:not([data-keeps-transition]),
+  :root.theme-switching *::before,
+  :root.theme-switching *::after {
+    transition: none !important;
+  }
+
+  html {
+    height: 100%;
+    overflow: hidden;
+    /* iOS Safari enlarges some text in a page wider than the phone, like the
+       sites' scaled-down demo iframe, so a 12px day heading outgrew 14px titles. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-family-sans);
+    /* The app shell paints the background (AppShell.tsx); the window itself is
+       opaque, with square corners. */
+    background: transparent;
+    color: var(--text-primary);
+    /* Body. */
+    font-size: var(--type-body-size);
+    font-weight: var(--type-body-weight);
+    line-height: var(--type-body-line-height);
+    letter-spacing: var(--type-body-letter-spacing);
+    font-optical-sizing: auto;
+    font-feature-settings:
+      'cv11' 1,
+      'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    user-select: none;
+    cursor: default;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* <body>'s `user-select: none` inherits into form controls, and WebView2
+     (Windows) honours it there, so <input> and <textarea> can't be typed in.
+     WebKit exempts form controls, so only Windows breaks without this. */
+  input,
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  ::selection {
+    background: var(--overlay-selection);
+  }
+
+  /* Firefox only: Chromium honours these too, and either one makes it drop the
+     5px ::-webkit-scrollbar below for its own 10px thin bar, which the content
+     column's always-on scrollbar then takes from its right inset. */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--overlay-strong) transparent;
+    }
+  }
+
+  /* Native controls, carets and autofill follow the theme, not index.html's
+     dark. The content column's right inset is 12px like the left, its
+     always-on scrollbar included: padding makes up what the bar doesn't. */
+  :root {
+    color-scheme: dark;
+    --scrollbar-size: 5px;
+    --content-inset-right: calc(var(--spacing-12) - var(--scrollbar-size));
+  }
+
+  :root.theme-light {
+    color-scheme: light;
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--overlay-strong);
+    border-radius: var(--radius-full);
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    background: none;
+    white-space: nowrap;
+  }
+
+  /* The one default focus ring: outside the control, following its border-radius.
+     :where() keeps it at zero specificity so a component can restyle it (e.g. draw
+     it inset) with a single class. */
+  :where(button, a[href], input, select, textarea, [tabindex], [role='button'], svg):focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* Headings and <main> only take focus programmatically, on navigation, to
+     announce the new page. They aren't controls, so they get no focus ring. */
+  h1[tabindex='-1']:focus,
+  main[tabindex='-1']:focus {
+    outline: none;
+  }
+
+  /* Lists are markup for meaning, not bullets: no markers (the reset above
+     drops the indent). They carry role="list" because WebKit stops announcing a
+     list once its markers are off. :where() keeps this at zero specificity, so
+     a list's own class always wins. */
+  :where(ul[role='list'], ol[role='list']) {
+    list-style: none;
+  }
+
+  /* Every keyframe the app uses: the `animate-*` utilities (tailwind.css) and
+     the utilities in utilities.css name these. */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* The arc of ButtonSpinner's ring, on a 100-unit path. */
+  @keyframes ring-stretch {
+    0% {
+      stroke-dasharray: 0, 150;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 75, 150;
+      stroke-dashoffset: -25;
+    }
+    100% {
+      stroke-dashoffset: -99;
+    }
+  }
+
+  /* StatusDot's pulses, one shape each so they read apart side by side. */
+  /* Calm: a slow, shallow breath, for a steady state. */
+  @keyframes status-breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  /* Live: a deeper breath, run once per update so the dot is at its brightest
+     as each new reading lands. */
+  @keyframes status-breathe-deep {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  /* Live, once the updates stop: the dot fades to dim and stays there. */
+  @keyframes status-stall {
+    to {
+      opacity: 0.35;
+    }
+  }
+
+  /* Busy: a deep, quick throb, for work under way. */
+  @keyframes status-throb {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* TitleBarStatus's words, rising a few pixels into place as they change. */
+  @keyframes status-flip {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes overlay-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes dialog-out {
+    to {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes scan-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes scan-slide-out {
+    to {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+
+  /* One dash period (2 on, 4 off) per loop, so the flow never jumps. */
+  @keyframes line-flow {
+    to {
+      stroke-dashoffset: -6;
+    }
+  }
+
+  @keyframes line-sweep {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+
+  @keyframes wavy-scroll {
+    to {
+      transform: translateX(var(--wave-length));
+    }
+  }
+
+  /* The ring around an item a navigation just scrolled to (the nav-flash
+     utility). */
+  @keyframes nav-flash {
+    0% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      background-image: linear-gradient(transparent, transparent);
+    }
+    15%,
+    55% {
+      outline: 1px solid var(--accent-default);
+      outline-offset: -1px;
+      background-image: linear-gradient(var(--accent-muted), var(--accent-muted));
+    }
+    100% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+      background-image: linear-gradient(transparent, transparent);
+    }
+  }
+
+  /* Recharts renders its own <svg>. A chart that's keyboard-navigable (its tooltip
+     follows the arrow keys) still needs a visible ring; one that isn't never gets
+     focus. Only the wrapper's own outline goes. */
+  .recharts-wrapper {
+    outline: none;
+  }
+
+  .recharts-surface:focus-visible {
+    border-radius: var(--radius-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

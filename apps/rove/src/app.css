@@ -1,0 +1,7 @@
+/*
+ * The app's stylesheet: the library's (tokens, the Tailwind theme, base and
+ * utilities), plus a scan of the app's own source for its class names. The
+ * library's stylesheet scans only the library.
+ */
+@import '@swiftsolve/rove-ui/styles.css';
+@source './';

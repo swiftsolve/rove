@@ -10,7 +10,7 @@ Three small helpers for building `className` strings.
 
 `cva` (from `class-variance-authority`) describes a component's looks as data:
 the classes every version shares, plus the classes for each option. From
-[Badge.tsx](../../../src/ui/badge/Badge.tsx):
+[Badge.tsx](../../../packages/ui/src/badge/Badge.tsx):
 
 ```ts
 const badgeVariants = cva('inline-flex items-center rounded-full px-8 py-4 type-badge', {
@@ -30,7 +30,7 @@ badgeVariants({ tone: 'warning' })
 Why bother: every option is listed in one place, TypeScript knows the allowed
 values (`'positive' | 'warning' | 'negative'`), and the props match the Figma
 component's variants one to one. Rove's component list
-([components.gen.json](../../../src/ui/components.gen.json)) reads these to document every
+([components.gen.json](../../../packages/ui/catalog/components.gen.json)) reads these to document every
 component.
 
 ## `cx`: just join
@@ -49,7 +49,7 @@ which you wrote last.
 
 ## `cn`: join, and let the last one win
 
-[`cn`](../../../src/ui/utils/cn.ts) is `cx` plus **tailwind-merge**, which
+[`cn`](../../../packages/ui/src/utils/cn.ts) is `cx` plus **tailwind-merge**, which
 knows that `px-12` and `px-8` both set horizontal padding and keeps only the
 last:
 

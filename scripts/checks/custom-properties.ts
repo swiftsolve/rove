@@ -15,12 +15,11 @@
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SRC = join(ROOT, 'src')
-const SKIPPED = [join(SRC, 'assets')]
+import { APP_SRC, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
+
+const SKIPPED = [join(APP_SRC, 'assets')]
 const require = createRequire(import.meta.url)
 const TOKEN_FILES = ['tokens.css', 'text-styles.css'].map((f) => require.resolve(`@swiftsolve/rove-tokens/${f}`))
 
@@ -43,7 +42,8 @@ async function listFiles(dir: string): Promise<string[]> {
   return nested.flat()
 }
 
-const files = (await listFiles(SRC)).filter((file) => /\.(?:css|tsx?)$/.test(file))
+const sourceFiles = (await Promise.all(SOURCE_DIRS.map(listFiles))).flat()
+const files = sourceFiles.filter((file) => /\.(?:css|tsx?)$/.test(file))
 const sources = await Promise.all(
   files.map(async (file): Promise<[file: string, text: string]> => [file, await readFile(file, 'utf8')]),
 )

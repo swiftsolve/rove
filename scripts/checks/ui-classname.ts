@@ -6,11 +6,11 @@
  * or grid item, its own text alignment, rounding to fit its container, and
  * showing or hiding it. A class that changes how the component looks inside
  * (padding, its own layout, type, colour, surface, or a utility from
- * src/styles/utilities.css) is flagged: that's a variant the component is
+ * packages/ui/src/styles/utilities.css) is flagged: that's a variant the component is
  * missing, or a style for an element the view owns.
  *
- * It reads every `className` passed to a component imported from `@/ui` in
- * src/app and src/features, following constants, `cx`/`cn`/`cva` calls and
+ * It reads every `className` passed to a component imported from `@swiftsolve/rove-ui` in
+ * apps/rove/src/app and apps/rove/src/features, following constants, `cx`/`cn`/`cva` calls and
  * imported constants to their strings. A prop passed through or a CSS module
  * class can't be read, so it isn't checked.
  *
@@ -24,8 +24,8 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SCANNED_DIRS = ['src/app', 'src/features']
-const UTILITIES_CSS = 'src/styles/utilities.css'
+const SCANNED_DIRS = ['apps/rove/src/app', 'apps/rove/src/features']
+const UTILITIES_CSS = 'packages/ui/src/styles/utilities.css'
 
 /** Components whose className is their whole look, by design. */
 function isExempt(name: string): boolean {
@@ -115,7 +115,7 @@ function parsedSource(file: string): ts.SourceFile {
 /** The file a relative or `@/` import points at, if it's in the repo. */
 function resolveImport(from: string, specifier: string): string | null {
   let base: string
-  if (specifier.startsWith('@/')) base = join('src', specifier.slice(2))
+  if (specifier.startsWith('@/')) base = join('apps/rove/src', specifier.slice(2))
   else if (specifier.startsWith('.')) base = join(dirname(from), specifier)
   else return null
   for (const candidate of [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')])
@@ -194,7 +194,7 @@ for (const file of (await Promise.all(SCANNED_DIRS.map(tsxFiles))).flat()) {
     const bindings =
       ts.isImportDeclaration(statement) &&
       ts.isStringLiteral(statement.moduleSpecifier) &&
-      statement.moduleSpecifier.text === '@/ui' &&
+      statement.moduleSpecifier.text === '@swiftsolve/rove-ui' &&
       statement.importClause?.namedBindings
     if (bindings && ts.isNamedImports(bindings)) bindings.elements.forEach((e) => uiNames.add(e.name.text))
   }
@@ -234,7 +234,7 @@ if (problems.length > 0) {
   console.error(
     `\n${problems.length} class${problems.length === 1 ? '' : 'es'} restyling a library component. ` +
       'className is only for its place in a layout: use a variant, or style an element the view owns. ' +
-      'The rule: src/README.md, Styles.',
+      'The rule: apps/rove/src/README.md, Styles.',
   )
   process.exit(1)
 }

@@ -25,7 +25,7 @@ unit / library or binary):
 - `crates/rove-core/`: pure logic. The doc comment on line 1 says it:
   *"Pure Rust (no Tauri/GTK dependency) so it compiles and tests anywhere."*
   This is where the actual network measuring lives.
-- `src-tauri/`: the "thin Tauri shell." Line 1: *"each command maps 1:1 to a
+- `apps/rove/src-tauri/`: the "thin Tauri shell." Line 1: *"each command maps 1:1 to a
   service."*
 
 That separation is a deliberate architecture lesson: keep your real logic free
@@ -75,7 +75,7 @@ Tauri hides the plumbing behind two directions of message flow:
   with `listen("event-name", handler)`. Rove uses this for anything streaming
   or unsolicited: `speed-test-progress` (progress bar updates during a speed
   test), `live-throughput` (a sample every second), and `network-changed`
-  (fired the instant a cable is pulled). See `src-tauri/src/lib.rs`:
+  (fired the instant a cable is pulled). See `apps/rove/src-tauri/src/lib.rs`:
   `run_speed_test` emits progress at line 168-170, and `spawn_throughput_broadcaster`
   emits at line 362.
 

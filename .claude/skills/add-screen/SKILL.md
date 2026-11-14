@@ -1,25 +1,25 @@
 ---
 name: add-screen
-description: Add a screen, tab or subpage to Rove's UI in src/features, with its navigation entry and its empty, loading and failed states. Use when a feature needs a new page in the app.
+description: Add a screen, tab or subpage to Rove's UI in apps/rove/src/features, with its navigation entry and its empty, loading and failed states. Use when a feature needs a new page in the app.
 ---
 
 # Add a screen or tab
 
 The rules a screen follows (where code goes, names and copy, styles) are in
-`src/README.md`, which loads with any file under `src/`. These are the steps.
+`apps/rove/src/README.md`, which loads with any file under `apps/rove/src/`. These are the steps.
 
 ## Steps
 
 1. **The view** in its feature's folder, rendering with no props: it reads
    context and its data hooks. Every page but Home starts with a `PageHeader`.
    New data comes first: the `add-backend-data` skill.
-2. **Navigation**: a new tab is its id in `APP_TABS` (`src/app/utils/tabs.ts`)
-   plus its entry in `TABS` (`src/app/utils/tab-registry.ts`): label, icon,
+2. **Navigation**: a new tab is its id in `APP_TABS` (`apps/rove/src/app/utils/tabs.ts`)
+   plus its entry in `TABS` (`apps/rove/src/app/utils/tab-registry.ts`): label, icon,
    `Screen`. A subpage is the tab's `subScreen`. Focus and scroll on
    navigating need no code.
-3. **Copy** follows `src/README.md`'s Names and copy. The empty, loading and
+3. **Copy** follows `apps/rove/src/README.md`'s Names and copy. The empty, loading and
    failed states use the library's `EmptyState`, `LoadingState` and `Banner`.
-4. **Markup** from the library (`src/ui/components.gen.json`). Markup no
+4. **Markup** from the library (`packages/ui/catalog/components.gen.json`). Markup no
    component covers is a new one: the `add-library-component` skill.
 
 ## Done

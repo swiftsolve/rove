@@ -13,7 +13,7 @@
       "pattern": "^https://www\\.figma\\.com/design/"
     },
     "components": {
-      "description": "Every component src/ui/index.ts exports, by its export name.",
+      "description": "Every component packages/ui/src/index.ts exports, by its export name.",
       "type": "object",
       "additionalProperties": {
         "oneOf": [{ "$ref": "#/definitions/figmaComponent" }, { "$ref": "#/definitions/noFigmaComponent" }]

@@ -47,7 +47,7 @@ jobs:
       - run: npm ci
 
       - name: Typecheck UI
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       # On every OS, so each platform's cfg-gated code (ETW on Windows,
       # CoreWLAN on macOS) is linted where it compiles. Lints: Cargo.toml.

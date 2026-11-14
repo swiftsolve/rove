@@ -19,19 +19,18 @@
  *
  * Text no style fits goes in ALLOWED, with why; each entry is a gap to settle
  * in Figma. The dev mock
- * (src/bridge/mock-network-api.ts), tests and assets aren't checked.
+ * (apps/rove/src/bridge/mock-network-api.ts), tests and assets aren't checked.
  *
  *   node scripts/checks/text-styles.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SRC = join(ROOT, 'src')
-const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')]
-// The Tailwind theme src/styles/tailwind.css imports.
+import { APP_SRC, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
+
+const SKIPPED = [join(APP_SRC, 'assets'), join(APP_SRC, 'bridge', 'mock-network-api.ts')]
+// The Tailwind theme packages/ui/src/styles/tailwind.css imports.
 const THEME = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tailwind-theme.css')
 
 type AllowedEntry = { file: string; value: string }
@@ -39,9 +38,9 @@ type AllowedEntry = { file: string; value: string }
 /** Sizes that stay, by file and the exact text flagged. */
 const ALLOWED: AllowedEntry[] = [
   // The About page's wordmark, at Display's size: no sans style is that large.
-  { file: 'src/features/about/AboutView.tsx', value: 'text-3xl' },
+  { file: 'apps/rove/src/features/about/AboutView.tsx', value: 'text-3xl' },
   // A flag emoji in a fixed slot, sized like an icon, not text.
-  { file: 'src/features/apps/components/HostRow.tsx', value: 'text-sm' },
+  { file: 'apps/rove/src/features/apps/components/HostRow.tsx', value: 'text-sm' },
 ]
 
 async function listFiles(dir: string): Promise<string[]> {
@@ -78,7 +77,8 @@ const FONT_SIZE_PROP = /\bfontSize\b/g
 const CSS_FONT_SIZE = /(?<![\w-])font-size\s*:\s*([^;}\n]+)/g
 const STYLE_SIZE_VARIABLE = /^var\(--type-[\w-]+-size\)$/
 
-const files = (await listFiles(SRC)).filter((file) => /\.(?:css|tsx?)$/.test(file) && !/\.test\.tsx?$/.test(file))
+const sourceFiles = (await Promise.all(SOURCE_DIRS.map(listFiles))).flat()
+const files = sourceFiles.filter((file) => /\.(?:css|tsx?)$/.test(file) && !/\.test\.tsx?$/.test(file))
 const problems: string[] = []
 const usedAllowedEntries = new Set<AllowedEntry>()
 
@@ -134,4 +134,4 @@ if (problems.length > 0) {
   )
   process.exit(1)
 }
-console.log(`Text styles OK (${files.length} files in src/)`)
+console.log(`Text styles OK (${files.length} files in apps/rove/src and packages/ui/src)`)

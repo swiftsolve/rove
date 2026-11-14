@@ -9,7 +9,8 @@
   },
   "tailwindCSS.classFunctions": ["cva", "cx", "cn"],
   "cssVariables.lookupFiles": [
-    "src/**/*.css",
+    "apps/rove/src/**/*.css",
+    "packages/ui/src/**/*.css",
     "node_modules/@swiftsolve/rove-tokens/dist/tokens.css",
     "node_modules/@swiftsolve/rove-tokens/dist/text-styles.css"
   ],

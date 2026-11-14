@@ -1,0 +1,41 @@
+[package]
+name = "rove"
+version = "0.0.3"
+description = "Rove — network monitor"
+edition = "2021"
+license = "MIT"
+
+[lints]
+workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+rove-core = { path = "../../../crates/rove-core" }
+tauri = { version = "2", features = ["macos-private-api", "tray-icon", "image-png"] }
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+serde_json = { workspace = true }
+tokio = { workspace = true }
+futures-util = "0.3"
+sysinfo = { version = "0.33", default-features = false, features = ["network"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Match the glib pulled in transitively by tauri's gtk stack (see Cargo.lock),
+# used only to silence libayatana-appindicator's runtime deprecation warning.
+glib = "0.18"
+
+[lib]
+name = "rove_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+# Name the binary "Rove" (uppercase) so macOS shows "Rove" in the Dock/menu bar
+# during `tauri dev`, which runs the raw executable rather than a bundled .app.
+# Matches `mainBinaryName` in tauri.conf.json, which only takes effect at bundle time.
+[[bin]]
+name = "Rove"
+path = "src/main.rs"

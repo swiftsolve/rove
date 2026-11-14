@@ -22,18 +22,17 @@
  * from @swiftsolve/rove-tokens, so a token update moves the rules with it.
  *
  * A raw value that has to stay goes in ALLOWED with its reason. The dev mock
- * (src/bridge/mock-network-api.ts), tests and assets aren't checked.
+ * (apps/rove/src/bridge/mock-network-api.ts), tests and assets aren't checked.
  *
  *   node scripts/checks/raw-values.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SRC = join(ROOT, 'src')
-const SKIPPED = [join(SRC, 'assets'), join(SRC, 'bridge', 'mock-network-api.ts')]
+import { APP_SRC, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
+
+const SKIPPED = [join(APP_SRC, 'assets'), join(APP_SRC, 'bridge', 'mock-network-api.ts')]
 const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tokens.css')
 
 type AllowedEntry = { file: string; value: string }
@@ -41,52 +40,55 @@ type AllowedEntry = { file: string; value: string }
 /** Raw values that stay, by file and the exact text flagged. */
 const ALLOWED: AllowedEntry[] = [
   // A scanner needs dark modules on white in both themes, and the mark's tile is that white.
-  { file: 'src/features/current-network/components/WifiQrCode.tsx', value: '#ffffff' },
+  { file: 'apps/rove/src/features/current-network/components/WifiQrCode.tsx', value: '#ffffff' },
   // The brand icon's gradient, the same as the app icon's.
-  { file: 'src/ui/icons/BrandIcon.tsx', value: '#7aa4ff' },
-  { file: 'src/ui/icons/BrandIcon.tsx', value: '#5484f5' },
+  { file: 'packages/ui/src/icons/BrandIcon.tsx', value: '#7aa4ff' },
+  { file: 'packages/ui/src/icons/BrandIcon.tsx', value: '#5484f5' },
   // The About tile redraws the dock icon, which looks the same in both themes.
-  { file: 'src/features/about/AboutView.tsx', value: 'rgba(' },
-  { file: 'src/features/about/AboutView.tsx', value: '#1f2125' },
-  { file: 'src/features/about/AboutView.tsx', value: '#16171a' },
+  { file: 'apps/rove/src/features/about/AboutView.tsx', value: 'rgba(' },
+  { file: 'apps/rove/src/features/about/AboutView.tsx', value: '#1f2125' },
+  { file: 'apps/rove/src/features/about/AboutView.tsx', value: '#16171a' },
   // The theme swap's circular reveal, tuned on its own.
-  { file: 'src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
+  { file: 'apps/rove/src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
-  { file: 'src/ui/empty-state/EmptyState.tsx', value: '#000' },
+  { file: 'packages/ui/src/empty-state/EmptyState.tsx', value: '#000' },
   // The Path card's glint is its line's own token colour, brightened in
   // OKLCH: derived from whichever token the line holds, with no fixed value.
-  { file: 'src/features/connection/components/PathCard.tsx', value: 'oklch(' },
+  { file: 'apps/rove/src/features/connection/components/PathCard.tsx', value: 'oklch(' },
 
   // Spacing off the scale. Set by an icon's ink, not its box: Lucide's arrows
   // leave ~2px empty each side at 11px, ~3px at 13px.
-  { file: 'src/features/apps/components/TransferFigures.tsx', value: 'gap-[5px]' },
-  { file: 'src/features/apps/components/UsageRow.tsx', value: 'ml-[3px]' },
-  { file: 'src/ui/link/Link.tsx', value: 'gap-[5px]' },
-  { file: 'src/ui/link/Link.tsx', value: '-mx-[3px]' },
+  { file: 'apps/rove/src/features/apps/components/TransferFigures.tsx', value: 'gap-[5px]' },
+  { file: 'apps/rove/src/features/apps/components/UsageRow.tsx', value: 'ml-[3px]' },
+  { file: 'packages/ui/src/link/Link.tsx', value: 'gap-[5px]' },
+  { file: 'packages/ui/src/link/Link.tsx', value: '-mx-[3px]' },
   // The pill's padding hangs outside the words, so they line up with the text around them.
-  { file: 'src/ui/link/Link.tsx', value: 'ml-[-9.5px]' },
-  { file: 'src/ui/link/Link.tsx', value: 'mr-[-9px]' },
+  { file: 'packages/ui/src/link/Link.tsx', value: 'ml-[-9.5px]' },
+  { file: 'packages/ui/src/link/Link.tsx', value: 'mr-[-9px]' },
   // A 1px border given back, so the content stays on the grid above.
   {
-    file: 'src/features/capabilities/components/CapabilityDetailCard.tsx',
+    file: 'apps/rove/src/features/capabilities/components/CapabilityDetailCard.tsx',
     value: 'px-[calc(var(--card-header-padding-x)-1px)]',
   },
-  { file: 'src/features/speed/components/HistoryCard.tsx', value: 'px-[calc(var(--card-body-padding)-1px)]' },
+  { file: 'apps/rove/src/features/speed/components/HistoryCard.tsx', value: 'px-[calc(var(--card-body-padding)-1px)]' },
   // Lined up with something that isn't spacing: an icon's width, a label column.
-  { file: 'src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-body-padding)+21px)]' },
-  { file: 'src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--spacing-12))]' },
-  { file: 'src/features/live-throughput/components/ThroughputChart.tsx', value: 'pr-[calc(28px+var(--spacing-12))]' },
-  { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pl-[5px]' },
-  { file: 'src/ui/timeline/TimelineNode.tsx', value: 'pb-[22px]' },
+  { file: 'apps/rove/src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-body-padding)+21px)]' },
+  { file: 'apps/rove/src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--spacing-12))]' },
+  {
+    file: 'apps/rove/src/features/live-throughput/components/ThroughputChart.tsx',
+    value: 'pr-[calc(28px+var(--spacing-12))]',
+  },
+  { file: 'packages/ui/src/timeline/TimelineNode.tsx', value: 'pl-[5px]' },
+  { file: 'packages/ui/src/timeline/TimelineNode.tsx', value: 'pb-[22px]' },
   // Lifts the empty state a little above centre, under the page header.
-  { file: 'src/ui/empty-state/EmptyState.tsx', value: 'pb-[56px]' },
+  { file: 'packages/ui/src/empty-state/EmptyState.tsx', value: 'pb-[56px]' },
 
   // Corners off the scale. The About tile redraws the app icon, whose corner is its own.
-  { file: 'src/features/about/AboutView.tsx', value: 'rounded-[16px]' },
+  { file: 'apps/rove/src/features/about/AboutView.tsx', value: 'rounded-[16px]' },
   // No reason recorded yet: check each against Figma, then snap it to a step or say why.
-  { file: 'src/features/apps/components/HostRow.tsx', value: 'gap-[7px]' },
-  { file: 'src/features/timeline/components/TimelineDay.tsx', value: 'mt-[18px]' },
-  { file: 'src/app/components/UpdateDialog.tsx', value: 'pl-[26px]' },
+  { file: 'apps/rove/src/features/apps/components/HostRow.tsx', value: 'gap-[7px]' },
+  { file: 'apps/rove/src/features/timeline/components/TimelineDay.tsx', value: 'mt-[18px]' },
+  { file: 'apps/rove/src/app/components/UpdateDialog.tsx', value: 'pl-[26px]' },
 ]
 
 async function listFiles(dir: string): Promise<string[]> {
@@ -188,7 +190,8 @@ function durationToken(amount: string, unit: string): string | undefined {
   return undefined
 }
 
-const files = (await listFiles(SRC)).filter((f) => /\.(?:tsx?|css)$/.test(f) && !/\.test\.tsx?$/.test(f))
+const sourceFiles = (await Promise.all(SOURCE_DIRS.map(listFiles))).flat()
+const files = sourceFiles.filter((f) => /\.(?:tsx?|css)$/.test(f) && !/\.test\.tsx?$/.test(f))
 const problems: string[] = []
 const usedAllowedEntries = new Set<AllowedEntry>()
 
@@ -332,4 +335,4 @@ if (problems.length > 0) {
   )
   process.exit(1)
 }
-console.log(`Raw values OK (${files.length} files in src/)`)
+console.log(`Raw values OK (${files.length} files in apps/rove/src and packages/ui/src)`)

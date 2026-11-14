@@ -6,7 +6,7 @@
 import { spawn } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { type AddressInfo, createServer } from 'node:net'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -15,16 +15,18 @@ const DEV_SERVER_START_TIMEOUT_MS = 30_000
 /** A server a script drives, and how to stop it (a no-op for one it didn't start). */
 export type RunningServer = { url: string; stop: () => void }
 
-/** The part of src-tauri/tauri.conf.json the scripts read: the app window's size. */
+/** The part of apps/rove/src-tauri/tauri.conf.json the scripts read: the app window's size. */
 type WindowSize = { width: number; height: number }
 type TauriConfig = { app: { windows: WindowSize[] } }
 
 /** The app window's size, from the Tauri config, so a page opens the size the window is. */
 export async function readWindowSize(): Promise<WindowSize> {
-  const { app } = JSON.parse(await readFile(resolve(ROOT, 'src-tauri/tauri.conf.json'), 'utf8')) as TauriConfig
+  const { app } = JSON.parse(
+    await readFile(resolve(ROOT, 'apps/rove/src-tauri/tauri.conf.json'), 'utf8'),
+  ) as TauriConfig
   // Rove has one window; its config lists it first.
   const [appWindow] = app.windows
-  if (!appWindow) throw new Error('src-tauri/tauri.conf.json lists no window')
+  if (!appWindow) throw new Error('apps/rove/src-tauri/tauri.conf.json lists no window')
   return { width: appWindow.width, height: appWindow.height }
 }
 
@@ -52,10 +54,10 @@ export function freePort(): Promise<number> {
 
 /** Start `vite` and resolve once it prints the URL it settled on. */
 export async function startDevServer(): Promise<RunningServer> {
-  const vite = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], {
-    cwd: ROOT,
+  const vite = spawn(process.execPath, [join(ROOT, 'node_modules/vite/bin/vite.js')], {
+    cwd: join(ROOT, 'apps/rove'),
     stdio: ['ignore', 'pipe', 'inherit'],
-    // vite.config.ts reads PORT; see its `server.port`.
+    // apps/rove/vite.config.ts reads PORT; see its `server.port`.
     env: { ...process.env, PORT: String(await freePort()) },
   })
   return new Promise((ok, fail) => {

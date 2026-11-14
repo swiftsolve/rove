@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/rove-core", "src-tauri"]
+members = ["crates/rove-core", "apps/rove/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

@@ -2,14 +2,14 @@
  * Check the library against the Figma file, so a design change that lands on
  * one side only fails here instead of waiting for review:
  *
- *   - every node src/ui/figma-components.json names exists and is still called the name
+ *   - every node packages/ui/catalog/figma-components.json names exists and is still called the name
  *     written beside it, and is a component or component set, not one variant;
  *   - every Figma variant property (Tone, Size) is a prop of a component mapped
  *     to it, with the same values: `Tone=Accent` is `tone="accent"`, a
  *     `true`/`false` variant is a boolean prop (`Disabled` is `isDisabled`), and
  *     a part's prop takes its part's name (`Body layout` is CardBody's `layout`);
  *   - every prop with a fixed set of values has a Figma variant property;
- *   - every usage guide in Figma matches src/ui/figma-guides.json, the copy
+ *   - every usage guide in Figma matches packages/ui/catalog/figma-guides.json, the copy
  *     `npm run gen` merges into components.gen.json and compares with the
  *     code's guides. A guide is the Guidance block in the component's docs
  *     section, or for a part with no Figma component of its own (CardBody,
@@ -55,8 +55,8 @@ import type {
 } from '../lib/library-json-types.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const FIGMA_COMPONENTS_JSON = join(ROOT, 'src/ui/figma-components.json')
-const COMPONENT_LIST = join(ROOT, 'src/ui/components.gen.json')
+const FIGMA_COMPONENTS_JSON = join(ROOT, 'packages/ui/catalog/figma-components.json')
+const COMPONENT_LIST = join(ROOT, 'packages/ui/catalog/components.gen.json')
 const FIGMA_API = 'https://api.figma.com/v1'
 const COMPONENT_TYPES = new Set(['COMPONENT', 'COMPONENT_SET'])
 // One variant of a set is a component named for its values: `Size=Md, State=Hover`.
@@ -70,7 +70,7 @@ const LITERAL_UNION = /^"[^"]+"( \| "[^"]+")*$/
 // Text inside these is a live component, not the docs around it.
 const INSTANCE_TYPES = new Set(['INSTANCE', 'COMPONENT', 'COMPONENT_SET'])
 // The guides as last exported, which `npm run gen` merges into components.gen.json.
-const FIGMA_GUIDES_JSON = join(ROOT, 'src/ui/figma-guides.json')
+const FIGMA_GUIDES_JSON = join(ROOT, 'packages/ui/catalog/figma-guides.json')
 const isExport = process.argv.includes('--export-guides')
 
 /** The part of a Figma node this check reads, from the REST API or `use_figma`. */

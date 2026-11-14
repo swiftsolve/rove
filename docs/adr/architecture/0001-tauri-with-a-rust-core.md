@@ -7,9 +7,9 @@ date: 2026-11-07
 
 Rove is a React UI in a Tauri v2 webview over Rust. Every probe, scan and
 measurement lives in `crates/rove-core`, a plain library with no Tauri
-dependency; `src-tauri` only wraps its services as commands, events and the
+dependency; `apps/rove/src-tauri` only wraps its services as commands, events and the
 window. Tauri gives a small binary with no Node runtime in the UI process and
-a deny-by-default capability list (`src-tauri/capabilities/default.json`),
+a deny-by-default capability list (`apps/rove/src-tauri/capabilities/default.json`),
 for an app that reads its user's network.
 
 ## Considered options

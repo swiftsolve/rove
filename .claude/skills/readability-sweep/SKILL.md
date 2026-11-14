@@ -1,13 +1,13 @@
 ---
 name: readability-sweep
-description: Sweep src/ and scripts/ for code a newcomer stumbles on (AGENTS.md: Write plain code), with screenshots proving nothing moved.
+description: Sweep apps/rove/src, packages/ui and scripts/ for code a newcomer stumbles on (AGENTS.md: Write plain code), with screenshots proving nothing moved.
 disable-model-invocation: true
 ---
 
 # Readability sweep
 
 A pass over the whole frontend and its scripts against AGENTS.md's "Write
-plain code" and src/README.md's "What review catches". The bar is a
+plain code" and apps/rove/src/README.md's "What review catches". The bar is a
 _newcomer_ reading each file once: they meet only plain names, named steps,
 comments that say why, and a why beside anything clever. Pixels and behaviour
 stay identical.
@@ -20,9 +20,9 @@ stay identical.
    it, then from there run `node scripts/screenshots.ts --stable --out
    <scratch>/before-dark` and again with `--theme light`. Done when both
    folders hold the full set (113 shots each as of 2026-11).
-2. **Review by folder.** Split into disjoint groups (`src/ui`;
-   `src/app` + `src/bridge`; `src/features/*` in two halves; `src/utils`,
-   `src/hooks`, `src/types`, `scripts/`) and give each to a subagent with one
+2. **Review by folder.** Split into disjoint groups (`packages/ui/`;
+   `apps/rove/src/app` + `apps/rove/src/bridge`; `apps/rove/src/features/*` in two halves; `apps/rove/src/utils`,
+   `apps/rove/src/hooks`, `apps/rove/src/types`, `scripts/`) and give each to a subagent with one
    shared brief: the bar above, the house rules (boolean prefixes, comment
    length, no em dash in copy), edit only, never stage or commit, rename
    callers repo-wide, regenerate `components.gen.json` with

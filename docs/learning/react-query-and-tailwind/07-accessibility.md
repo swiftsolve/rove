@@ -5,9 +5,9 @@ Part 7 of [Learning Rove's UI](README.md).
 [← Where code goes, and naming](06-where-code-goes.md) · [Checks and review →](08-checks-and-review.md)
 
 Four patterns you'll meet in Rove, for people using a screen reader or the
-keyboard. The rules: [src/ui/README.md: Every component](../../../src/ui/README.md#every-component),
-[Buttons](../../../src/ui/README.md#buttons), and
-[src/README.md: Names and copy](../../../src/README.md#names-and-copy).
+keyboard. The rules: [packages/ui/README.md: Every component](../../../packages/ui/README.md#every-component),
+[Buttons](../../../packages/ui/README.md#buttons), and
+[apps/rove/src/README.md: Names and copy](../../../apps/rove/src/README.md#names-and-copy).
 
 ## A status region stays mounted
 
@@ -18,7 +18,7 @@ read, because the reader only notices changes in regions it already knew
 about. So Rove's regions are always there, and only their text changes.
 
 TextField's feedback line (a hint, a result, an error) is one
-([TextField.tsx](../../../src/ui/text-field/TextField.tsx)):
+([TextField.tsx](../../../packages/ui/src/text-field/TextField.tsx)):
 
 ```tsx
       {/* Always mounted, so the first message is announced: a region that mounts
@@ -29,7 +29,7 @@ TextField's feedback line (a hint, a result, an error) is one
 ```
 
 PageHeader does the same for its `status` ("Checking…") with
-[ScreenReaderStatus](../../../src/ui/screen-reader/ScreenReaderStatus.tsx), a
+[ScreenReaderStatus](../../../packages/ui/src/screen-reader/ScreenReaderStatus.tsx), a
 hidden region for words only a screen reader hears:
 
 ```tsx
@@ -38,7 +38,7 @@ export function ScreenReaderStatus({ className, ...spanProps }: Omit<ComponentPr
 }
 ```
 
-[PageHeader.tsx](../../../src/ui/page-header/PageHeader.tsx) keeps one under
+[PageHeader.tsx](../../../packages/ui/src/page-header/PageHeader.tsx) keeps one under
 its title:
 
 ```tsx
@@ -58,7 +58,7 @@ and is often silent.
 A native `disabled` button leaves the Tab order and ignores the pointer, so
 its tooltip never shows, and that's where you'd say why it's off. Speed's Run
 test button with no network
-([SpeedView.tsx](../../../src/features/speed/SpeedView.tsx)):
+([SpeedView.tsx](../../../apps/rove/src/features/speed/SpeedView.tsx)):
 
 ```tsx
       <Tooltip content="Connect to a network first">
@@ -70,7 +70,7 @@ test button with no network
 
 `isDisabled` doesn't set `disabled`. It sets `aria-disabled`, so a screen
 reader says the button is unavailable, and `data-disabled` for the dimmed look,
-and [pressable.ts](../../../src/ui/utils/pressable.ts) swallows the click,
+and [pressable.ts](../../../packages/ui/src/utils/pressable.ts) swallows the click,
 Enter and Space ([chapter 5](05-library-components.md)). The button can still
 be reached, so a keyboard user lands on it and hears the reason. Loading works
 the same way, with `aria-busy`. Toggle gets the same through Base UI's
@@ -80,7 +80,7 @@ the same way, with `aria-busy`. Toggle gets the same through Base UI's
 
 `{isScanning && <ScanStatus />}` removes the element the moment scanning
 stops, so its slide-out never plays.
-[usePresence](../../../src/ui/hooks/usePresence.ts) keeps it mounted for as
+[usePresence](../../../packages/ui/src/hooks/usePresence.ts) keeps it mounted for as
 long as the animation runs:
 
 ```ts
@@ -98,7 +98,7 @@ export function usePresence(isActive: boolean, exitMs: number): boolean {
 }
 ```
 
-[ScanStatus.tsx](../../../src/features/devices/components/ScanStatus.tsx)
+[ScanStatus.tsx](../../../apps/rove/src/features/devices/components/ScanStatus.tsx)
 takes `isActive` instead of being rendered conditionally, and styles itself as
 leaving while it's false:
 
@@ -121,7 +121,7 @@ them.
 Two small components stand in for characters you might type.
 
 **NoValue** is a short drawn bar where a value is missing, with words for a
-screen reader ([NoValue.tsx](../../../src/ui/no-value/NoValue.tsx)):
+screen reader ([NoValue.tsx](../../../packages/ui/src/no-value/NoValue.tsx)):
 
 ```tsx
       <span className="sr-only">{label}</span>
@@ -131,7 +131,7 @@ A typed "—" is read as "dash", or skipped, which says nothing.
 `<NoValue label="Not measured" />` is heard as "Not measured", and the bar
 scales with its line. Formatters return `null` for a missing value, and the
 caller picks the words
-([HistoryCard.tsx](../../../src/features/speed/components/HistoryCard.tsx)):
+([HistoryCard.tsx](../../../apps/rove/src/features/speed/components/HistoryCard.tsx)):
 
 ```tsx
           <Metric label="Ping" value={ping?.value ?? <NoValue label="Not measured" />} unit={ping?.unit} />
@@ -141,7 +141,7 @@ caller picks the words
 it isn't read as "dot", and drawn to sit on the text's middle at any size,
 which a typed "·" doesn't. **InlineMeta** joins a list with it and drops empty
 items along with their dots
-([SpeedTestCard.tsx](../../../src/features/speed/components/SpeedTestCard.tsx)):
+([SpeedTestCard.tsx](../../../apps/rove/src/features/speed/components/SpeedTestCard.tsx)):
 
 ```tsx
       <InlineMeta items={[name, connection.band]} />

@@ -6,7 +6,7 @@ Part 2 of [Learning Rust & Tauri through Rove](README.md).
 
 ## 3. Your first Rust function, line by line
 
-Look at `get_public_ip` in `src-tauri/src/lib.rs:144`, the smallest complete
+Look at `get_public_ip` in `apps/rove/src-tauri/src/lib.rs:144`, the smallest complete
 command:
 
 ```rust
@@ -51,7 +51,7 @@ the language.
 
 Rust has no exceptions either. Operations that can *fail* return a
 **`Result<T, E>`**: either `Ok(value)` or `Err(error)`. Look at
-`get_speed_history` in `src-tauri/src/lib.rs:206`:
+`get_speed_history` in `apps/rove/src-tauri/src/lib.rs:206`:
 
 ```rust
 #[tauri::command]
@@ -75,7 +75,7 @@ onto a JS `try/catch`. That's the whole error story: `Option` for "might be
 absent," `Result` for "might fail." No hidden control flow.
 
 The `?` operator is the payoff. See `relaunch_as_admin` in
-`src-tauri/src/commands.rs`:
+`apps/rove/src-tauri/src/commands.rs`:
 
 ```rust
 let exe = std::env::current_exe().map_err(err_str)?;   // ← the ?

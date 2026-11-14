@@ -4,16 +4,16 @@ Part 5 of [Learning Rove's UI](README.md).
 
 [← State and context](04-state-and-context.md) · [Where code goes, and naming →](06-where-code-goes.md)
 
-`src/ui` is the library: Button, Card, Toggle and the rest, the Figma
-components in code. Features import them from `@/ui`. Inside, they follow a
+`packages/ui/` is the library: Button, Card, Toggle and the rest, the Figma
+components in code. Features import them from `@swiftsolve/rove-ui`. Inside, they follow a
 few patterns. The rules:
-[src/ui/README.md: Every component](../../../src/ui/README.md#every-component)
-and [Buttons](../../../src/ui/README.md#buttons).
+[packages/ui/README.md: Every component](../../../packages/ui/README.md#every-component)
+and [Buttons](../../../packages/ui/README.md#buttons).
 
 ## Pass the element's props and `ref` through
 
 Button's props start from everything a `<button>` takes
-([Button.tsx](../../../src/ui/button/Button.tsx)):
+([Button.tsx](../../../packages/ui/src/button/Button.tsx)):
 
 ```ts
 export type ButtonProps = Omit<ComponentProps<'button'>, 'disabled' | 'children' | 'onClick'> &
@@ -35,7 +35,7 @@ every tooltip put around it.
 `ref` is in that rest too. Before React 19 a function component couldn't take
 `ref` as a prop, and had to be wrapped in `forwardRef`. Now it's a plain prop,
 so it travels with `...buttonProps`. Card names it, because it renders one of
-three elements ([Card.tsx](../../../src/ui/card/Card.tsx)):
+three elements ([Card.tsx](../../../packages/ui/src/card/Card.tsx)):
 
 ```tsx
 export function Card({ as: Element = 'section', onOpen, linkLabel, className, children, ref, ...props }: CardProps) {
@@ -48,7 +48,7 @@ and the docs don't list both.
 ## Compound parts and slots
 
 A card is assembled from parts, each with its own props
-([TrafficCard.tsx](../../../src/features/live-throughput/TrafficCard.tsx)):
+([TrafficCard.tsx](../../../apps/rove/src/features/live-throughput/TrafficCard.tsx)):
 
 ```tsx
     <Card>
@@ -68,19 +68,19 @@ Card keeps it in a small context of its own that CardHeader reads, out of
 features' sight.
 
 Tooltip is the one exception, and its code says why
-([Tooltip.tsx](../../../src/ui/tooltip/Tooltip.tsx)):
+([Tooltip.tsx](../../../packages/ui/src/tooltip/Tooltip.tsx)):
 
 ```tsx
   // Base UI lets the trigger's own props win, so a trigger that already has a
   // description gets the joined one set on it directly: the library's one
-  // cloneElement (src/ui/README.md, The library).
+  // cloneElement (packages/ui/README.md, The library).
 ```
 
 ## State as data attributes
 
 Something that changes while you use it (on, open, invalid) is written on the
 element as a `data-*` attribute and styled with a variant of the same name.
-Toggle's track ([Toggle.tsx](../../../src/ui/toggle/Toggle.tsx)):
+Toggle's track ([Toggle.tsx](../../../packages/ui/src/toggle/Toggle.tsx)):
 
 ```ts
 const TRACK = cx(
@@ -144,7 +144,7 @@ screen. The library takes it from Base UI (`@base-ui/react`), which renders
 unstyled parts, and styles them with tokens. Toggle is Base UI's `Switch.Root`
 and `Switch.Thumb` with Rove's classes.
 
-Features never import Base UI: they get `Toggle` from `@/ui`. Why: one place
+Features never import Base UI: they get `Toggle` from `@swiftsolve/rove-ui`. Why: one place
 to upgrade it, and one place its quirks are handled, like this one in Toggle:
 
 ```tsx
@@ -157,7 +157,7 @@ to upgrade it, and one place its quirks are handled, like this one in Toggle:
 
 Every pressable in the library (Button, IconButton, Link, ListRow) treats
 disabled and loading the same way, through
-[pressable.ts](../../../src/ui/utils/pressable.ts). It marks the element and
+[pressable.ts](../../../packages/ui/src/utils/pressable.ts). It marks the element and
 swallows the click:
 
 ```ts
@@ -171,7 +171,7 @@ swallows the click:
 ```
 
 The button underneath stays enabled, so CSS `:hover` still fires on a disabled
-one. The `usable:` variant, from [tailwind.css](../../../src/styles/tailwind.css),
+one. The `usable:` variant, from [tailwind.css](../../../packages/ui/src/styles/tailwind.css),
 covers that:
 
 ```css

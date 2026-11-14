@@ -2,7 +2,7 @@
   // The tooling scripts run as .ts straight under Node (>= 24), which strips
   // the types without checking them: this config is what checks them. Only
   // syntax Node can erase is allowed, and a script's own imports name the .ts
-  // file. Bundler resolution lets a type come from src/ through its `@/`
+  // file. Bundler resolution lets a type come from the app's src/ through its `@/`
   // paths (`import type { AppLocation } from '@/app/utils/location'`): only
   // types, which Node erases before it resolves anything.
   "compilerOptions": {
@@ -12,7 +12,7 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "types": ["node"],
-    "paths": { "@/*": ["../src/*"] },
+    "paths": { "@/*": ["../apps/rove/src/*"] },
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,

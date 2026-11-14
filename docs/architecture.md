@@ -23,9 +23,9 @@ nothing above the line can tell which one did.
   <img src="assets/bridge-seam.svg" width="820" alt="React views and hooks sit above a dashed seam labelled window.networkAPI; below it the path splits into a Tauri bridge leading to the Rust backend, or a browser mock leading to nothing at all" />
 </div>
 
-`src/types/api.ts` declares the interface. Two files implement it:
-`src/bridge/tauri-network-api.ts` forwards each method to a Tauri command, and
-`src/bridge/mock-network-api.ts` answers from memory. `src/main.tsx` picks one at
+`apps/rove/src/types/api.ts` declares the interface. Two files implement it:
+`apps/rove/src/bridge/tauri-network-api.ts` forwards each method to a Tauri command, and
+`apps/rove/src/bridge/mock-network-api.ts` answers from memory. `apps/rove/src/main.tsx` picks one at
 startup:
 
 ```ts
@@ -72,7 +72,7 @@ desktop doesn't.*
 
 **Pull when React knows it needs something**: a tab opened, a button was
 pressed, a poll fired. That covers roughly thirty commands, registered in
-`src-tauri/src/lib.rs` and implemented in `src-tauri/src/commands.rs`.
+`apps/rove/src-tauri/src/lib.rs` and implemented in `apps/rove/src-tauri/src/commands.rs`.
 
 **Push when only Rust knows something happened.** Five events qualify, each
 because it is continuous, arrives mid-operation, or is triggered from outside
@@ -94,7 +94,7 @@ Two places the directions mix:
 
 - **Pull to turn push on.** `subscribe_live_throughput` / `unsubscribe_live_throughput`
   are ordinary commands that flip an atomic flag; the 1 Hz loop in
-  `src-tauri/src/monitors.rs` skips its work entirely while it's false, so an
+  `apps/rove/src-tauri/src/monitors.rs` skips its work entirely while it's false, so an
   unwatched window costs nothing.
 - **Push that triggers a pull**: the next section.
 
@@ -143,7 +143,7 @@ name is read from the URL path, the arguments are the JSON body, and a
 `Tauri-Response` header of `ok` or `error` is what decides whether the promise
 resolves or rejects. `Tauri-Invoke-Key` is checked so page content can't fire
 commands on its own, defence in depth alongside
-`src-tauri/capabilities/default.json`, which already limits the webview to our
+`apps/rove/src-tauri/capabilities/default.json`, which already limits the webview to our
 commands, event listening and the frameless-window controls.
 
 There is no local HTTP server and no open port; nothing else on the machine can
@@ -183,52 +183,62 @@ The whole repository, folder by folder.
 
 ```
 rove/
-├── src/                        React UI (Vite)
-│   ├── main.tsx                entry: installs the bridge, mounts the app
-│   ├── app/                    the shell, laid out like a feature: App.tsx
-│   │                           (providers) and AppShell.tsx at the top, then
-│   │                           components/ (title bar, nav rail,
-│   │                           CurrentScreen), context/ (navigation, theme,
-│   │                           network), hooks/ (useNetwork,
-│   │                           useInternetStatus, useConnectionStatus, …)
-│   │                           and utils/ (incl. the TanStack query client)
-│   ├── features/               one folder per area: home, speed,
-│   │   │                       capabilities, connection, live-throughput,
-│   │   │                       interfaces, devices, events, usage, apps,
-│   │   │                       diagnostics, services, settings, about
-│   │   └── <area>/             its views at the top
-│   │       ├── components/     parts of those views, when a view has them
-│   │       ├── context/        its own context, if it ever needs one
-│   │       ├── hooks/          that area's data and state hooks
-│   │       └── utils/          its plain helpers (no React)
-│   │                           (capabilities, connection and live-throughput
-│   │                           have no view, so their parts sit at the top)
-│   ├── ui/                     the component library, imported from @/ui:
-│   │                           a folder per component (with its stories)
-│   │                           and icons
-│   ├── hooks/                  shared hooks (useBackendQuery is the
-│   │                           useQuery shape every data hook builds on)
-│   ├── utils/                  shared helpers (format, platform, highlight)
-│   ├── styles/                 the global CSS: tailwind.css (the theme from
-│   │                           the tokens; imports the rest), base.css
-│   │                           (fonts, resets) and utilities.css (shared
-│   │                           type styles and layout, as utilities)
-│   ├── types/                  the UI↔backend contract (mirrored in Rust)
-│   └── bridge/                 the contract's two implementations: Tauri, and
-│                               the browser mock (npm run dev without Tauri)
+├── apps/rove/                  the app's workspace (npm package `rove`)
+│   ├── index.html              the page Vite serves; vite.config.ts beside it
+│   ├── src/                    React UI (Vite)
+│   │   ├── main.tsx            entry: installs the bridge, mounts the app
+│   │   ├── app.css             the library's styles plus a scan of the app
+│   │   ├── app/                the shell, laid out like a feature: App.tsx
+│   │   │                       (providers) and AppShell.tsx at the top, then
+│   │   │                       components/ (title bar, nav rail,
+│   │   │                       CurrentScreen), context/ (navigation, theme,
+│   │   │                       network), hooks/ (useNetwork,
+│   │   │                       useInternetStatus, useConnectionStatus, …)
+│   │   │                       and utils/ (incl. the TanStack query client)
+│   │   ├── features/           one folder per area: home, speed,
+│   │   │   │                   capabilities, connection, live-throughput,
+│   │   │   │                   interfaces, devices, events, usage, apps,
+│   │   │   │                   diagnostics, services, settings, about
+│   │   │   └── <area>/         its views at the top
+│   │   │       ├── components/ parts of those views, when a view has them
+│   │   │       ├── context/    its own context, if it ever needs one
+│   │   │       ├── hooks/      that area's data and state hooks
+│   │   │       └── utils/      its plain helpers (no React)
+│   │   │                       (capabilities, connection and live-throughput
+│   │   │                       have no view, so their parts sit at the top)
+│   │   ├── hooks/              shared hooks (useBackendQuery is the
+│   │   │                       useQuery shape every data hook builds on)
+│   │   ├── utils/              shared helpers (format, platform, highlight)
+│   │   ├── types/              the UI↔backend contract (mirrored in Rust)
+│   │   └── bridge/             the contract's two implementations: Tauri, and
+│   │                           the browser mock (npm run dev without Tauri)
+│   └── src-tauri/              thin Tauri shell: one #[tauri::command] per
+│       │                       service, events, capabilities, window config
+│       ├── linux/              .deb install/remove scripts, AppArmor profile
+│       └── macos/              the optional root DHCP helper's LaunchDaemon
+├── packages/ui/                the component library's workspace, imported
+│   │                           by the app as @swiftsolve/rove-ui
+│   ├── src/                    a folder per component (with its stories and
+│   │   │                       tests), icons, and index.ts, the public API
+│   │   ├── styles/             the global CSS: tailwind.css (the theme from
+│   │   │                       the tokens; imports the rest), base.css
+│   │   │                       (fonts, resets) and utilities.css (shared
+│   │   │                       type styles and layout, as utilities)
+│   │   └── fonts/              the faces base.css loads
+│   ├── catalog/                the library as data: components.gen.json
+│   │                           (written by npm run gen), figma-components.json
+│   │                           (by hand) and figma-guides.json (exported from
+│   │                           Figma)
+│   └── .storybook/             the library's Storybook and its Docs pages
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per
-│   │                           domain, named as in src/features: apps/,
+│   │                           domain, named as in apps/rove/src/features: apps/,
 │   │                           capabilities, connection, devices/, diagnostics,
 │   │                           interfaces, live_throughput, services, speed,
 │   │                           usage; plus platform/ (per-OS probes), store/
 │   │                           (SQLite, a file per domain) and utils/ (net,
 │   │                           shell, geoip, tls)
 │   └── data/                   bundled lookup tables (OUI, IP-to-country)
-├── src-tauri/                  thin Tauri shell: one #[tauri::command] per
-│   │                           service, events, capabilities, window config
-│   ├── linux/                  .deb install/remove scripts, AppArmor profile
-│   └── macos/                  the optional root DHCP helper's LaunchDaemon
 ├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
 │                               runs), gen/ (the *.gen.* files `npm run gen`
 │                               writes), hooks/ (git and Claude Code), eslint/,
@@ -237,7 +247,9 @@ rove/
 ├── schemas/                    a JSON Schema for each project JSON file
 │                               (figma-components, components, cn-theme): what
 │                               each key means; the generators validate against them
-└── docs/                       the deeper dives (index in docs/README.md),
-                                diagrams and screenshots
+├── docs/                       the deeper dives (index in docs/README.md),
+│                               diagrams and screenshots
+└── turbo.json                  the workspaces' tasks (typecheck, test, build),
+                                which turbo runs in dependency order and caches
 ```
 

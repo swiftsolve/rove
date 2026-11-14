@@ -1,6 +1,6 @@
 /**
  * The house rule for comments, as an ESLint plugin, so the editor flags it as
- * you type (src/README.md, Where code goes): short, a `//` note says why in at
+ * you type (apps/rove/src/README.md, Where code goes): short, a `//` note says why in at
  * most 6 lines, a `/** *\/` doc in at most 10, and anything longer belongs in
  * docs/. A file's opening comment, which documents the whole module, is exempt.
  */

@@ -209,7 +209,7 @@ fn every_comment_follows_the_house_rules() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut files = Vec::new();
     rust_files(&root.join("crates"), &mut files);
-    rust_files(&root.join("src-tauri/src"), &mut files);
+    rust_files(&root.join("apps/rove/src-tauri/src"), &mut files);
     assert!(files.len() > 50, "found only {} .rs files under {}", files.len(), root.display());
 
     let mut report = Vec::new();

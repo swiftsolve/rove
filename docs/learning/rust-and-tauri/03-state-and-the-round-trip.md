@@ -9,7 +9,7 @@ Part 3 of [Learning Rust & Tauri through Rove](README.md).
 Rove runs background loops (sampling usage every 30s, broadcasting throughput
 every 1s) *and* handles commands, all touching shared state. In most languages
 that's a minefield. Rust makes the danger visible in the types. Look at
-`AppState` (`src-tauri/src/lib.rs:16`):
+`AppState` (`apps/rove/src-tauri/src/lib.rs:16`):
 
 ```rust
 struct AppState {
@@ -38,7 +38,7 @@ Three concurrency primitives, each teaching something:
 - **`AtomicBool`**: a single bool you can flip from any thread without a lock,
   used for simple flags like `is_throughput_subscribed`.
 
-There's a lovely real-world detail at `lock()` (`src-tauri/src/lib.rs:34`):
+There's a lovely real-world detail at `lock()` (`apps/rove/src-tauri/src/lib.rs:34`):
 
 ```rust
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -63,9 +63,9 @@ Rove's actual files.
 
 Notice that Rove's React components **never call `invoke` directly.** They call
 `window.networkAPI.getDataUsage()`. That `window.networkAPI` object is installed
-at startup by `src/bridge/tauri-network-api.ts` (`installTauriBridge`), and it's the
+at startup by `apps/rove/src/bridge/tauri-network-api.ts` (`installTauriBridge`), and it's the
 *only* file that imports `invoke`. Why the indirection? Because there's a second
-implementation, `src/bridge/mock-network-api.ts`, used when the UI runs in a plain
+implementation, `apps/rove/src/bridge/mock-network-api.ts`, used when the UI runs in a plain
 browser (no Rust backend). The components are written against an interface
 (`NetworkAPI`); at runtime either the real Tauri bridge or the mock is slotted in.
 This is the same "program to an interface" idea as `rove-core` staying
@@ -84,7 +84,7 @@ Trace `get_data_usage`, the Home screen's usage numbers:
    object, empty here) into a message and hands it to the webview's IPC channel
    (Tauri exposes it on `window.__TAURI_INTERNALS__`). This crosses the *process
    boundary*. It returns a `Promise` immediately.
-4. **Rust receives it.** Back in `src-tauri/src/lib.rs:640`, the
+4. **Rust receives it.** Back in `apps/rove/src-tauri/src/lib.rs:640`, the
    `tauri::generate_handler![...]` macro built a dispatcher at compile time: it
    takes the incoming command name string and routes `"get_data_usage"` to your
    `get_data_usage` function.
@@ -106,7 +106,7 @@ Trace `get_data_usage`, the Home screen's usage numbers:
    serde turns it into JSON, and Tauri sends it back across the boundary.
 7. **The Promise resolves** with that JSON, now typed as `DataUsageSummary` on the
    JS side. If the command had returned `Result::Err`, the Promise would **reject**
-   instead. The bridge (`src/bridge/tauri-network-api.ts`) turns the error
+   instead. The bridge (`apps/rove/src/bridge/tauri-network-api.ts`) turns the error
    string into an `Error`, and `useBackendQuery` shows its message.
 8. **React re-renders** with the new data.
 

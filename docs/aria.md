@@ -89,7 +89,7 @@ finds it and hears why. `aria-busy` marks work in progress. Both are set as
 The shared helper behind every pressable:
 
 ```ts
-// src/ui/utils/pressable.ts
+// packages/ui/src/utils/pressable.ts
 'aria-disabled': isDisabled || undefined,
 'aria-busy': isLoading || undefined,
 ```
@@ -173,7 +173,7 @@ An error appears and is read straight away:
 
 ## Rules and checks
 
-Four checks guard ARIA, and [the UI library guide](../src/ui/README.md) (Every
+Four checks guard ARIA, and [the UI library guide](../packages/ui/README.md) (Every
 component) sets the patterns.
 
 - **Pass `aria-*` through.** A one-element component takes its element's
@@ -182,7 +182,7 @@ component) sets the patterns.
   region that mounts already holding text often isn't read. TextField
   feedback, PageHeader `status` and `ScreenReaderStatus` work this way.
 - **Let Base UI wire ARIA.** Focus traps, roving focus, dismissal,
-  `aria-expanded`, `aria-controls`; features reach it only through `@/ui`.
+  `aria-expanded`, `aria-controls`; features reach it only through `@swiftsolve/rove-ui`.
 - **Say plain words.** No symbols, brackets or slashes read aloud; use
   `SpokenText`.
 - **Booleans:** `aria-*` props are exempt from the `is`/`has` naming rule

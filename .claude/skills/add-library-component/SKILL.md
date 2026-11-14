@@ -1,33 +1,33 @@
 ---
 name: add-library-component
-description: Add a new component to Rove's UI library in src/ui, in code and in the Rove Design System Figma file, or change an existing one's API or look. Use when a feature needs markup no library component covers, or a component needs a new prop, variant or style.
+description: Add a new component to Rove's UI library in packages/ui/, in code and in the Rove Design System Figma file, or change an existing one's API or look. Use when a feature needs markup no library component covers, or a component needs a new prop, variant or style.
 ---
 
 # Add or change a library component
 
 The library's rules (stories, docs pages, what every component does) are in
-`src/ui/README.md`, which loads with any file under
-`src/ui/`. These are the steps.
+`packages/ui/README.md`, which loads with any file under
+`packages/ui/`. These are the steps.
 
 ## Before you start
 
-- Read `src/ui/components.gen.json` for a component that already fits, or one
+- Read `packages/ui/catalog/components.gen.json` for a component that already fits, or one
   that needs only a variant. A variant on an existing component beats a new one.
 - Name it, and its props, the way the library does (`variant`, `tone`,
-  `isDisabled`, `description`, `actions`; `src/ui/README.md`: Every component). The
+  `isDisabled`, `description`, `actions`; `packages/ui/README.md`: Every component). The
   Figma component takes the same name, in sentence case.
 
 ## Add one: the code side
 
-1. A kebab-case folder at the top of `src/ui` holding `Name.tsx`. A part of an
+1. A kebab-case folder at the top of `packages/ui/` holding `Name.tsx`. A part of an
    existing family goes in that family's `components/` instead, its context in
-   `context/` and a hook only it uses in `hooks/` (`src/ui/README.md`: The
+   `context/` and a hook only it uses in `hooks/` (`packages/ui/README.md`: The
    library). A component that renders one element takes
    `ComponentProps<'div'>` (its element's).
    Styles are a CVA recipe; its defaults go in `defaultVariants` and in the
    destructured props.
 2. A doc comment on the component and on each prop of its own.
-3. An export from `src/ui/index.ts`, under its group's comment.
+3. An export from `packages/ui/src/index.ts`, under its group's comment.
 4. Stories beside it (`Name.stories.tsx`), titled by its group
    (`Data display/Name`), with an `AllStates` story when it has several states,
    a usage guide, and a `play` story if it takes a handler. A part shown on its
@@ -46,7 +46,7 @@ The library's rules (stories, docs pages, what every component does) are in
 ## As you go
 
 - Run its folder's tests in seconds:
-  `npx vitest run --project=storybook --project=dom src/ui/<folder>`.
+  `npm test -w @swiftsolve/rove-ui -- --project=storybook --project=dom src/<folder>`.
 - `gen/components.ts --check` (`npm run gen`, then `npm run check`) says what's
   missing: a doc comment, a usage guide, a `play` story for a handler, a
   version bump. Fix what it names rather than guessing.
@@ -56,7 +56,7 @@ The library's rules (stories, docs pages, what every component does) are in
 ## The Figma side
 
 The component lives on its group's page in the Rove Design System file
-(`src/ui/figma-components.json` has its URL; the file key is the part after `/design/`).
+(`packages/ui/catalog/figma-components.json` has its URL; the file key is the part after `/design/`).
 
 What you need:
 
@@ -91,9 +91,9 @@ Without the server, stop after the code side and say the Figma side is left.
      of its family's section: a "Parts" title, then per part its name, its
      code chip and a Guidance block.
 3. `npm run figma:export-guides`, then `npm run gen`, so
-   `src/ui/figma-guides.json` and `components.gen.json` hold the new or
+   `packages/ui/catalog/figma-guides.json` and `components.gen.json` hold the new or
    changed guide.
-4. Its entry in `src/ui/figma-components.json`: the `map-figma-component` skill
+4. Its entry in `packages/ui/catalog/figma-components.json`: the `map-figma-component` skill
    (`.claude/skills/map-figma-component/SKILL.md`). For a changed one too when
    a prop or value is renamed or removed: the check reads only the entry's
    keys, so a reason that names the old one goes stale without failing.

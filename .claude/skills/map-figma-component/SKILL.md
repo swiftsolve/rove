@@ -1,11 +1,11 @@
 ---
 name: map-figma-component
-description: Write or fix a library component's entry in src/ui/figma-components.json, which maps it to its Figma component in the Rove Design System file, with any deliberate differences and why. Use once a component exists in Figma, when gen/components.ts reports a missing entry, when checks/figma-library.ts reports a stale node, name or variant, or after a Figma component is renamed or rebuilt.
+description: Write or fix a library component's entry in packages/ui/catalog/figma-components.json, which maps it to its Figma component in the Rove Design System file, with any deliberate differences and why. Use once a component exists in Figma, when gen/components.ts reports a missing entry, when checks/figma-library.ts reports a stale node, name or variant, or after a Figma component is renamed or rebuilt.
 ---
 
 # Map a component to Figma
 
-`src/ui/figma-components.json` maps each library component to its Figma component. It's
+`packages/ui/catalog/figma-components.json` maps each library component to its Figma component. It's
 edited directly, and `npm run gen` copies each entry into
 `components.gen.json`. `schemas/figma-components.schema.json` says what
 each key means. Two checks hold it true:

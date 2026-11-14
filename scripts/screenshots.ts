@@ -14,7 +14,7 @@
  * ran before it, and several run at once.
  *
  * Runs against the Vite dev server, which installs the browser mock bridge
- * (src/bridge/mock-network-api.ts), so the shots show the mock's network, not
+ * (apps/rove/src/bridge/mock-network-api.ts), so the shots show the mock's network, not
  * yours. That's the point: they're reproducible, and they don't leak the SSID
  * and devices of whoever ran the script.
  *
@@ -32,7 +32,7 @@
 import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
 import { availableParallelism } from 'node:os'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { chromium, type Locator, type Page } from 'playwright-core'
@@ -156,8 +156,8 @@ async function startStorybook(): Promise<RunningServer> {
   const port = await freePort()
   const storybook = spawn(
     process.execPath,
-    ['node_modules/storybook/dist/bin/dispatcher.js', 'dev', '--ci', '--no-open', '--port', String(port)],
-    { cwd: ROOT, stdio: 'ignore' },
+    [join(ROOT, 'node_modules/storybook/dist/bin/dispatcher.js'), 'dev', '--ci', '--no-open', '--port', String(port)],
+    { cwd: join(ROOT, 'packages/ui'), stdio: 'ignore' },
   )
   const url = `http://127.0.0.1:${port}`
   const deadline = Date.now() + 120_000

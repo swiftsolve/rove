@@ -6,8 +6,8 @@ Part 8 of [Learning Rove's UI](README.md).
 
 ## What ✓ CHECKED means
 
-Some rules in [src/README.md](../../../src/README.md) and
-[src/ui/README.md](../../../src/ui/README.md) end with a tag like
+Some rules in [apps/rove/src/README.md](../../../apps/rove/src/README.md) and
+[packages/ui/README.md](../../../packages/ui/README.md) end with a tag like
 **[✓ CHECKED by `checks/raw-values.ts`]**. It means `npm run check` fails if
 you break the rule, and the file it names is the check, so you can open it to
 see exactly what counts. A rule without the tag is judgment: nothing stops
@@ -34,7 +34,7 @@ Each file's opening comment says what it guards. In short:
 
 | File | Fails on |
 | --- | --- |
-| [eslint.config.js](../../../eslint.config.js) | A feature importing inside `src/ui`, the library importing app code, a context read without its hook; a boolean not named as a question; `interface`; a bare `<button>` outside the library; a typed `·`, `•` or lone `—`; an em dash in copy; a lint exception with no reason |
+| [eslint.config.js](../../../eslint.config.js) | A feature importing inside `packages/ui/`, the library importing app code, a context read without its hook; a boolean not named as a question; `interface`; a bare `<button>` outside the library; a typed `·`, `•` or lone `—`; an em dash in copy; a lint exception with no reason |
 | [eslint/comments.ts](../../../scripts/eslint/comments.ts) | A `//` note over 6 lines, a `/** */` doc over 10 |
 | [checks/raw-values.ts](../../../scripts/checks/raw-values.ts) | A raw colour or easing, a value that has a token (`p-[12px]`), spacing or a corner off the scale |
 | [checks/text-styles.ts](../../../scripts/checks/text-styles.ts) | A font size with no text style |
@@ -52,7 +52,7 @@ written down, beside the exception
 
 ```js
   // A scanner needs dark modules on white in both themes.
-  { file: 'src/features/current-network/components/WifiShareDialog.tsx', value: '#ffffff' },
+  { file: 'apps/rove/src/features/current-network/components/WifiShareDialog.tsx', value: '#ffffff' },
 ```
 
 Why bother: an exception is fine, an unexplained one is how a design system
@@ -74,7 +74,7 @@ and each push. Which stage runs what:
 ## What review still catches
 
 The checks hold the mechanical rules. The list in
-[src/README.md: What review catches](../../../src/README.md#what-review-catches)
+[apps/rove/src/README.md: What review catches](../../../apps/rove/src/README.md#what-review-catches)
 is the judgment ones that slip most, and each slips for a reason.
 
 Things only a person can judge:

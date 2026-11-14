@@ -1,11 +1,11 @@
 /**
  * The shapes of the UI library's JSON files, as their schemas in schemas/
- * define them: src/ui/figma-components.json (edited by hand),
- * src/ui/figma-guides.json (exported from Figma by checks/figma-library.ts) and
- * src/ui/components.gen.json (written by gen/components.ts). gen/components.ts
+ * define them: packages/ui/catalog/figma-components.json (edited by hand),
+ * packages/ui/catalog/figma-guides.json (exported from Figma by checks/figma-library.ts) and
+ * packages/ui/catalog/components.gen.json (written by gen/components.ts). gen/components.ts
  * holds each to its schema, so a script reading them can trust these.
  */
-import type { Guidance } from '../../.storybook/guidance.ts'
+import type { Guidance } from '../../packages/ui/.storybook/guidance.ts'
 
 export type { Guidance }
 
@@ -24,10 +24,10 @@ export type FigmaComponent = {
 /** A library component with no Figma counterpart, and why. */
 export type NoFigmaComponent = { whyNoFigmaComponent: string }
 
-/** src/ui/figma-guides.json: each usage guide as the Figma file words it, by component. */
+/** packages/ui/catalog/figma-guides.json: each usage guide as the Figma file words it, by component. */
 export type FigmaGuidesJson = { $schema: string; $comment: string; guides: Record<string, Guidance> }
 
-/** src/ui/figma-components.json. */
+/** packages/ui/catalog/figma-components.json. */
 export type FigmaComponentsJson = {
   figmaFileUrl: string
   components: Record<string, FigmaComponent | NoFigmaComponent>
@@ -59,7 +59,7 @@ export type ComponentEntry = {
   figmaGuidance?: Guidance
 }
 
-/** src/ui/components.gen.json. */
+/** packages/ui/catalog/components.gen.json. */
 export type ComponentListJson = {
   $schema: string
   $comment: string

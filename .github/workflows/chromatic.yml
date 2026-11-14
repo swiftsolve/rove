@@ -34,8 +34,9 @@ jobs:
         uses: chromaui/action@v18
         with:
           projectToken: ${{ env.CHROMATIC_PROJECT_TOKEN }}
-          # Reads chromatic.config.json, so the build script and TurboSnap
-          # come from there.
+          # The library's workspace, whose chromatic.config.json names the
+          # build script and turns on TurboSnap.
+          workingDir: packages/ui
           configFile: chromatic.config.json
           # Changes on a branch are reviewed in Chromatic, not failed here.
           exitZeroOnChanges: true

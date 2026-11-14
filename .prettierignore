@@ -2,13 +2,14 @@
 # HTML. Everything below is someone else's, generated, or prose.
 
 # The Rust side has its own tooling.
-src-tauri
+apps/rove/src-tauri
 crates
 target
 
-# Build outputs and agent worktrees (other checkouts).
+# Build outputs, turbo's cache and agent worktrees (other checkouts).
 dist
 storybook-static
+.turbo
 .claude
 
 # Generated: rewritten by scripts/gen/, or by npm.
@@ -16,7 +17,7 @@ storybook-static
 package-lock.json
 
 # Exported from Figma by npm run figma:export-guides.
-src/ui/figma-guides.json
+packages/ui/catalog/figma-guides.json
 
 # Prose. Its line breaks and table layout are written by hand.
 *.md

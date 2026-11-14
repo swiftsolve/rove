@@ -1,0 +1,38 @@
+{
+  "name": "@swiftsolve/rove-ui",
+  "version": "0.0.3",
+  "description": "Rove's UI library: its components, styles, Storybook and component catalog",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/tailwind.css",
+    "./testing/setup": "./src/testing/setup.ts",
+    "./catalog/*": "./catalog/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "chromatic": "chromatic"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@swiftsolve/rove-tokens": "^4.6.3",
+    "class-variance-authority": "^0.7.1",
+    "ldrs": "^1.1.9",
+    "lucide-react": "^1.23.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.14"
+  },
+  "peerDependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14"
+  }
+}

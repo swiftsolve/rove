@@ -5,9 +5,9 @@ date: 2026-11-07
 
 # Components start in code, and Figma mirrors them
 
-A component's props, variants and usage guide are written in `src/ui`, with
+A component's props, variants and usage guide are written in `packages/ui/`, with
 its stories and tests; `components.gen.json` is generated from them, and the
-Figma component follows, mapped in `src/ui/figma-components.json`. Tokens run
+Figma component follows, mapped in `packages/ui/catalog/figma-components.json`. Tokens run
 the other way, from Figma (rove-tokens' ADR 0001). A component is behaviour
 as much as looks, and code is where that's built, tested and reviewed.
 

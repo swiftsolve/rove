@@ -20,7 +20,7 @@ npx prettier --check --ignore-unknown -- "${staged[@]}"
 
 for file in "${staged[@]}"; do
   case "$file" in
-    crates/* | src-tauri/* | Cargo.toml | Cargo.lock | rustfmt.toml)
+    crates/* | apps/rove/src-tauri/* | Cargo.toml | Cargo.lock | rustfmt.toml)
       cargo fmt --all -- --check
       cargo test --quiet -p rove-core
       break

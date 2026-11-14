@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src-tauri/icons/128x128.png" width="88" height="88" alt="Rove" />
+<img src="apps/rove/src-tauri/icons/128x128.png" width="88" height="88" alt="Rove" />
 
 # Rove
 
@@ -80,16 +80,16 @@ Rove is two programs talking over a thin, typed bridge:
 
 - **Request/response.** Each thing the UI needs is one Tauri *command*
   (`get_network_info`, `get_devices`, `run_speed_test`, …): a thin wrapper in
-  `src-tauri/src/commands.rs` around a pure-Rust service in
+  `apps/rove/src-tauri/src/commands.rs` around a pure-Rust service in
   `crates/rove-core`.
 - **Push.** Five *events* flow the other way, for data that's continuous or
   starts outside the app: `live-throughput`, `speed-test-progress`,
   `internet-status`, `services-timeline` and `network-changed`. The last
   carries no payload: it tells the UI to refetch within ~1 s of a cable pull
   or Wi-Fi join, instead of waiting for the 15 s poll.
-- **The contract.** TypeScript types in `src/types/` define every payload, and
+- **The contract.** TypeScript types in `apps/rove/src/types/` define every payload, and
   the Rust structs mirror them field for field. The UI never knows it's talking
-  to Rust: a browser mock (`src/bridge/mock-network-api.ts`) implements the same
+  to Rust: a browser mock (`apps/rove/src/bridge/mock-network-api.ts`) implements the same
   interface, which is why `npm run dev` runs in a plain browser.
 
 The bridge, pull vs push, and what an `invoke` is on the wire are in
@@ -98,7 +98,7 @@ The bridge, pull vs push, and what an `invoke` is on the wire are in
 ## Security model
 
 Tauri v2 is deny-by-default: the webview can only call what
-`src-tauri/capabilities/default.json` grants (our commands, event listening,
+`apps/rove/src-tauri/capabilities/default.json` grants (our commands, event listening,
 and the frameless-window controls). There is no Node runtime in the UI process
 and the backend is memory-safe Rust.
 
@@ -138,7 +138,7 @@ requires destroying superseded copies within 30 days of each twice-weekly
 release, a term a binary already on users' machines cannot honour.
 
 The Hosts view's country flags are drawn with the **Twemoji Country Flags**
-font (`src/assets/fonts/TwemojiCountryFlags.woff2`), because Windows ships no
+font (`packages/ui/src/fonts/TwemojiCountryFlags.woff2`), because Windows ships no
 flag emoji of its own. The glyph artwork is [Twemoji](https://github.com/twitter/twemoji),
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
@@ -173,6 +173,16 @@ npm run gen                  # rewrite the *.gen.* files after a library or them
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```
 
+### Workspaces
+
+The repository is two npm workspaces: the app in `apps/rove`, and the
+component library in `packages/ui`, which the app imports as
+`@swiftsolve/rove-ui` straight from its source, so a library change shows in
+the app at once, with no build or release between them. Run the commands above
+from the root. Its typecheck, tests and build go through
+[Turborepo](https://turborepo.com), which runs each workspace's own script and
+replays a result whose files haven't changed.
+
 ### Check a change
 
 ```bash
@@ -206,10 +216,12 @@ npm run tauri:build   # .deb ~5 MB, AppImage, dmg (macOS), nsis and msi (Windows
 ### Where things are
 
 ```
-src/                React UI: app/ (the shell), features/ (a folder per screen),
-                    ui/ (the component library), types/ and bridge/ (the contract)
+apps/rove/          the app: src/ (React UI: app/ the shell, features/ a folder
+                    per screen, types/ and bridge/ the contract) and src-tauri/
+                    (the thin Tauri shell: commands, events, capabilities)
+packages/ui/        the component library, @swiftsolve/rove-ui: src/, its
+                    Storybook, and catalog/ (the library as data)
 crates/rove-core/   every platform service, in pure Rust, plus the bundled data
-src-tauri/          the thin Tauri shell: commands, events, capabilities
 scripts/            checks, generators, git hooks, screenshots, the a11y audit
 docs/               the deeper dives, diagrams and screenshots
 ```
@@ -218,14 +230,14 @@ Folder by folder: [Where everything lives](docs/architecture.md#where-everything
 
 The UI's conventions (state from context and TanStack Query, Tailwind built
 only from the design tokens, library components before new markup) are in
-[src/README.md](src/README.md).
+[apps/rove/src/README.md](apps/rove/src/README.md).
 
 ### Design system
 
 Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
 in Figma and released from [rove-tokens](https://github.com/swiftsolve/rove-tokens),
 which exports them from Figma, one way, and checks that Figma and the package
-agree. Components start in `src/ui`, and Figma mirrors them. Without Figma,
+agree. Components start in `packages/ui/`, and Figma mirrors them. Without Figma,
 browse the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/)
 and the [Components Storybook](https://nabilr.com/rove/storybook/).
 
@@ -251,7 +263,7 @@ and the [Components Storybook](https://nabilr.com/rove/storybook/).
 - [How Rove Captures Network Data (per OS)](docs/networking/data-capture.md)
 - [How Rove Discovers & Identifies LAN Devices](docs/networking/device-discovery.md)
 - [The Networking Protocols Behind Rove's Device Discovery](docs/networking/protocols.md)
-- [Rove frontend](src/README.md) and [Rove UI library](src/ui/README.md): how
+- [Rove frontend](apps/rove/src/README.md) and [Rove UI library](packages/ui/README.md): how
   the UI and its components are built.
 - [Learning Rust & Tauri through Rove](docs/learning/rust-and-tauri/README.md)
   and [Learning Rove's UI](docs/learning/react-query-and-tailwind/README.md)

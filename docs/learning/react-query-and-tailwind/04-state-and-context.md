@@ -4,13 +4,13 @@ Part 4 of [Learning Rove's UI](README.md).
 
 [← `cva`, `cx` and `cn`](03-cva-cx-cn.md) · [How a library component is built →](05-library-components.md)
 
-The rule: [src/README.md: State](../../../src/README.md#state-context-not-prop-drilling).
+The rule: [apps/rove/src/README.md: State](../../../apps/rove/src/README.md#state-context-not-prop-drilling).
 
 ## Views take no props
 
 A view is a whole screen: `DevicesView`, `SpeedView`. Rove renders the current
 one from the tab registry, with nothing passed in
-([tab-registry.ts](../../../src/app/utils/tab-registry.ts)):
+([tab-registry.ts](../../../apps/rove/src/app/utils/tab-registry.ts)):
 
 ```ts
 export function renderScreen(location: AppLocation): ReactElement {
@@ -20,7 +20,7 @@ export function renderScreen(location: AppLocation): ReactElement {
 ```
 
 So the view asks for what it needs itself. The first line of
-[DevicesView.tsx](../../../src/features/devices/DevicesView.tsx):
+[DevicesView.tsx](../../../apps/rove/src/features/devices/DevicesView.tsx):
 
 ```tsx
 export function DevicesView() {
@@ -37,8 +37,8 @@ device a row shows, a dialog's `onClose`.
 ## The small contexts
 
 A React **context** is a value a provider puts high in the tree, for anything
-below to read. Rove's are in [src/app/context](../../../src/app/context), and
-[App.tsx](../../../src/app/App.tsx) stacks the providers around the shell:
+below to read. Rove's are in [apps/rove/src/app/context](../../../apps/rove/src/app/context), and
+[App.tsx](../../../apps/rove/src/app/App.tsx) stacks the providers around the shell:
 
 ```tsx
 <QueryClientProvider client={queryClient}>
@@ -55,7 +55,7 @@ below to read. Rove's are in [src/app/context](../../../src/app/context), and
 Each is read through a hook: `useNavigation()` (where you are, `navigate`,
 `back`), `useTheme()`, `useNetwork()` (network info), `useInternetStatus()` and
 `useConnectionStatus()`. A hook is a few lines
-([useTheme.ts](../../../src/app/hooks/useTheme.ts)):
+([useTheme.ts](../../../apps/rove/src/app/hooks/useTheme.ts)):
 
 ```ts
 export function useTheme(): Theme {
@@ -73,7 +73,7 @@ everyone else to the hook rather than to `ThemeContext` itself.
 Why several small contexts, not one "app state"? A component re-renders when
 the context it reads changes. If network info and the theme shared one object,
 every network poll would re-render everything that only wanted the theme.
-[NetworkProvider.tsx](../../../src/app/context/NetworkProvider.tsx) keeps three
+[NetworkProvider.tsx](../../../apps/rove/src/app/context/NetworkProvider.tsx) keeps three
 apart, and makes the title bar's verdict a new object only when it changes:
 
 ```tsx
@@ -85,16 +85,16 @@ apart, and makes the title bar's verdict a new object only when it changes:
 ## `navigate` moves focus for you
 
 The Devices card on Home opens Devices with one call
-([DevicesCard.tsx](../../../src/features/home/components/DevicesCard.tsx)):
+([DevicesCard.tsx](../../../apps/rove/src/features/home/components/DevicesCard.tsx)):
 
 ```tsx
       onOpen={() => navigate({ tab: 'devices' })}
 ```
 
 No focus code, on purpose. On every screen change,
-[useScreenFocus.ts](../../../src/app/hooks/useScreenFocus.ts) focuses the new
+[useScreenFocus.ts](../../../apps/rove/src/app/hooks/useScreenFocus.ts) focuses the new
 page's h1, so a screen reader announces the page and Tab starts inside it.
-Going back is the reverse: [return-point.ts](../../../src/app/utils/return-point.ts)
+Going back is the reverse: [return-point.ts](../../../apps/rove/src/app/utils/return-point.ts)
 remembered which control opened the screen and how far the page was scrolled,
 so Back lands on that control again, with its focus ring only if you got there
 by keyboard.
@@ -108,7 +108,7 @@ after `navigate` fights it, which is why review looks for that.
 
 [Chapter 1](01-tanstack-query.md) covered TanStack Query. The context side of
 it: data that belongs to one network puts the network in its key.
-[useNetworkKey.ts](../../../src/app/hooks/useNetworkKey.ts) builds it from
+[useNetworkKey.ts](../../../apps/rove/src/app/hooks/useNetworkKey.ts) builds it from
 `useNetwork()`:
 
 ```ts
@@ -118,7 +118,7 @@ export function useNetworkKey(): string | null {
 }
 ```
 
-and [useDevices.ts](../../../src/features/devices/hooks/useDevices.ts) uses it:
+and [useDevices.ts](../../../apps/rove/src/features/devices/hooks/useDevices.ts) uses it:
 
 ```ts
   const { data, isBusy, error, reload } = useBackendQuery({
@@ -144,7 +144,7 @@ Live throughput pushes a sample every second, and the speed test is a long job
 with a Stop button. Neither is "ask and get an answer", so neither is a query.
 Each keeps a **module store**: a variable at the top of its file, a set of
 listeners, and a setter that tells them. From
-[useLiveThroughput.ts](../../../src/features/live-throughput/hooks/useLiveThroughput.ts):
+[useLiveThroughput.ts](../../../apps/rove/src/features/live-throughput/hooks/useLiveThroughput.ts):
 
 ```ts
 let storeState: LiveThroughputState = INITIAL_STATE
@@ -172,7 +172,7 @@ component unmounts.
 
 The speed test's reader takes a selector, so a component re-renders only when
 its own piece changes
-([useSpeedTest.ts](../../../src/features/speed/hooks/useSpeedTest.ts)):
+([useSpeedTest.ts](../../../apps/rove/src/features/speed/hooks/useSpeedTest.ts)):
 
 ```ts
 export function useSpeedTest<T>(select: (test: SpeedTest) => T): T {
@@ -181,7 +181,7 @@ export function useSpeedTest<T>(select: (test: SpeedTest) => T): T {
 ```
 
 `useSpeedTest((test) => test.completedAt)` in
-[SpeedView.tsx](../../../src/features/speed/SpeedView.tsx) ignores the live
+[SpeedView.tsx](../../../apps/rove/src/features/speed/SpeedView.tsx) ignores the live
 peaks that change many times a second while a test runs.
 
 ---

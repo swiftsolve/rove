@@ -5,7 +5,7 @@ date: 2026-11-07
 
 # The UI library takes only props, and a view's className only places it
 
-`src/ui` is Rove's design system in code: it imports only itself and
+`packages/ui/` is Rove's design system in code: it imports only itself and
 packages, never app code or context, so every component renders in Storybook
 alone and matches its Figma component. A view adjusts a component through its
 variants (`density`, `align`); `className` from outside sets only placement
