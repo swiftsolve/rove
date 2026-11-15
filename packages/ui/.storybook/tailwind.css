@@ -1,0 +1,8 @@
+/* The library's styles, scanning what only Storybook renders too: its own
+   pages, and the app's connection card parts the Introduction borrows. The
+   library's stylesheet scans packages/ui/src alone, so a class only these use
+   (the strip's p-(--card-padding)) would otherwise be missing here. */
+@import '../src/styles/tailwind.css';
+
+@source './';
+@source '../../../apps/rove/src/features/current-network/components';

@@ -1,5 +1,5 @@
 // First, so the cascade layers are declared before any CSS uses them.
-import '../src/styles/tailwind.css'
+import './tailwind.css'
 import './preview.css'
 
 import { DocsContainer, type DocsContainerProps } from '@storybook/addon-docs/blocks'
