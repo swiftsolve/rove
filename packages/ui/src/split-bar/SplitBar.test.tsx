@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vitest'
 
 import { SplitBar } from './SplitBar'
 
-function segmentWidths(): string[] {
-  const segments = screen.getByRole('img').querySelectorAll('span')
-  return Array.from(segments, (segment) => segment.style.width)
+/** The fill's width on the track, then each segment's share of the fill. */
+function barWidths(): string[] {
+  const fill = screen.getByRole('img').querySelector<HTMLElement>('[data-part="fill"]')
+  if (!fill) throw new Error('SplitBar rendered no fill')
+  const segments = Array.from(fill.querySelectorAll('span'), (segment) => segment.style.width)
+  return [fill.style.width, ...segments]
 }
 
 describe('SplitBar', () => {
@@ -14,13 +17,13 @@ describe('SplitBar', () => {
     expect(screen.getByRole('img', { name: '1 MB down, 1 MB up' })).toBeInTheDocument()
   })
 
-  it('scales each segment against the max', () => {
+  it('scales the fill against the max, and splits it between the segments', () => {
     render(<SplitBar down={50} up={25} max={200} label="Traffic" />)
-    expect(segmentWidths()).toEqual(['25%', '12.5%'])
+    expect(barWidths()).toEqual(['37.5%', `${(50 / 75) * 100}%`, `${(25 / 75) * 100}%`])
   })
 
-  it('collapses both segments when the max is zero, rather than NaN', () => {
+  it('collapses the fill and both segments when everything is zero, rather than NaN', () => {
     render(<SplitBar down={0} up={0} max={0} label="No traffic" />)
-    expect(segmentWidths()).toEqual(['0%', '0%'])
+    expect(barWidths()).toEqual(['0%', '0%', '0%'])
   })
 })

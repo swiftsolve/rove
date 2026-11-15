@@ -15,10 +15,8 @@ const WAVE_STROKE = 3 // active + track thickness
 const WAVE_SPEED = 40 // px/second: Android moves the wave one wavelength per second
 const WAVE_MIN_FRACTION = 0.03 // draw a small sliver even at 0% so the bar reads as live
 const WAVE_SAMPLE_STEP = 3 // px between the points the squiggle path is built through
-const TRACK_GAP = 4 // px gap between the active tip and the track (Android LinearIndicatorTrackGapSize = 4dp)
 const LEAD_DOT_RADIUS = WAVE_STROKE + 2 // dot rides the leading edge of the wave
 const MIN_REDRAW_PX = 0.25 // skip DOM writes for moves smaller than this
-const MIN_TRACK_PX = 0.5 // hide the track once less than this is left of it
 
 /**
  * Module scope so a tab switch mid-test resumes the bar where it had crept to.
@@ -94,7 +92,6 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
     // Each frame only grows the clip rect over the drawn wave and moves the dot.
     let fillPct = persistedFill.runId === runId ? persistedFill.pct : 0
     let lastFillEnd = -1
-    let lastTrackStart = -1
     let frameId = 0
 
     const drawFill = (clip: SVGRectElement, dot: SVGCircleElement, track: SVGLineElement): void => {
@@ -105,19 +102,11 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
       clip.setAttribute('width', fillEnd.toFixed(2))
       dot.setAttribute('cx', fillEnd.toFixed(2))
 
-      // Track runs to just inside the right edge (round cap unclipped),
-      // starting a gap past the active tip.
+      // The track picks up at the wave's tip, under the lead dot, so there's
+      // no gap; it runs to just inside the right edge, its round cap unclipped.
       const trackEnd = width - WAVE_STROKE / 2
-      const trackStart = Math.min(fillEnd + LEAD_DOT_RADIUS + TRACK_GAP, trackEnd)
-      if (Math.abs(trackStart - lastTrackStart) < MIN_REDRAW_PX) return
-      lastTrackStart = trackStart
-      if (trackEnd - trackStart > MIN_TRACK_PX) {
-        track.setAttribute('x1', trackStart.toFixed(2))
-        track.setAttribute('x2', trackEnd.toFixed(2))
-        track.style.display = ''
-      } else {
-        track.style.display = 'none'
-      }
+      track.setAttribute('x1', Math.min(fillEnd, trackEnd).toFixed(2))
+      track.setAttribute('x2', trackEnd.toFixed(2))
     }
 
     const drawFrame = (): void => {
@@ -147,6 +136,10 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
             <rect ref={clipRef} x={0} y={0} width={0} height={WAVE_HEIGHT} />
           </clipPath>
         </defs>
+        {/* The track, the part still to go: a neutral groove one step darker
+            than the footer band it sits in, as a SplitBar's empty track is one
+            step darker than its card. */}
+        <line ref={trackRef} className="stroke-base stroke-3 [stroke-linecap:round]" y1={WAVE_MID} y2={WAVE_MID} />
         <g clipPath={`url(#${clipId})`}>
           <g
             className="animate-wavy-scroll will-change-transform motion-reduce:animate-none"
@@ -163,15 +156,6 @@ export function WavyProgress({ progress, runId }: { progress: number; runId: num
             />
           </g>
         </g>
-        {/* The remaining portion: the same accent, dimmed, as Android draws the
-            track at reduced emphasis behind the active indicator. */}
-        <line
-          ref={trackRef}
-          className="stroke-accent stroke-3 opacity-24 [stroke-linecap:round]"
-          y1={WAVE_MID}
-          y2={WAVE_MID}
-          style={{ display: 'none' }}
-        />
         <circle ref={dotRef} className="fill-accent" cy={WAVE_MID} r={LEAD_DOT_RADIUS} />
       </svg>
     </div>

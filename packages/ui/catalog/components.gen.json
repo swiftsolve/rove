@@ -2499,7 +2499,7 @@
     "SplitBar": {
       "libraryGroup": "Data display",
       "sourceFile": "packages/ui/src/split-bar/SplitBar.tsx",
-      "description": "A 3px track holding a download and an upload segment side by side, each\nscaled against `max`, for comparing rows' traffic at a glance.",
+      "description": "A 3px rounded track holding a download and an upload segment joined end to\nend, each scaled against `max`, for comparing rows' traffic at a glance.",
       "figmaComponent": {
         "figmaName": "Split bar",
         "figmaNodeId": "556:619",

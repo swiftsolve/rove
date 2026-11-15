@@ -9,10 +9,12 @@ function percentOf(value: number, max: number): number {
 }
 
 /**
- * The width eases so the bars glide in step with the count-up figures beside
+ * The widths ease so the bars glide in step with the count-up figures beside
  * them; the global reduced-motion rule turns it off.
  */
-const segmentVariants = cva('h-full transition-[width] duration-400 ease-out', {
+const EASED_WIDTH = 'transition-[width] duration-400 ease-out'
+
+const segmentVariants = cva(cn('h-full', EASED_WIDTH), {
   variants: {
     series: { down: 'bg-series-down', up: 'bg-series-up' },
   },
@@ -32,14 +34,23 @@ type SplitBarProps = {
 }
 
 /**
- * A 3px track holding a download and an upload segment side by side, each
- * scaled against `max`, for comparing rows' traffic at a glance.
+ * A 3px rounded track holding a download and an upload segment joined end to
+ * end, each scaled against `max`, for comparing rows' traffic at a glance.
  */
 export function SplitBar({ down, up, max, label, className }: SplitBarProps) {
+  const total = down + up
+  // The pair sits in one rounded fill, so both its ends are round and the
+  // segments meet flush; each segment's width is its share of that fill.
   return (
-    <div className={cn('flex h-[3px] overflow-hidden rounded-xs bg-inset', className)} role="img" aria-label={label}>
-      <span className={segmentVariants({ series: 'down' })} style={{ width: `${percentOf(down, max)}%` }} />
-      <span className={segmentVariants({ series: 'up' })} style={{ width: `${percentOf(up, max)}%` }} />
+    <div className={cn('flex h-[3px] overflow-hidden rounded-full bg-inset', className)} role="img" aria-label={label}>
+      <span
+        className={cn('flex h-full overflow-hidden rounded-full', EASED_WIDTH)}
+        style={{ width: `${percentOf(total, max)}%` }}
+        data-part="fill"
+      >
+        <span className={segmentVariants({ series: 'down' })} style={{ width: `${percentOf(down, total)}%` }} />
+        <span className={segmentVariants({ series: 'up' })} style={{ width: `${percentOf(up, total)}%` }} />
+      </span>
     </div>
   )
 }
