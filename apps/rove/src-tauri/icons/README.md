@@ -11,20 +11,28 @@ scripts that render the mark analytically to transparent RGBA PNGs.
 - `icon-source.py`: generates `icon-source.png`. Tweak tile margin, corner
   radius, colors, or glow here.
 - `tray-source.py`: generates `tray.png`, the monochrome menu-bar/tray icon
-  (black on transparent; the Rust side renders it as a macOS template image).
+  (black on transparent; macOS tints it as a template image).
+- `tray-light.png`: the same mark in white, the tray icon on Windows and Linux,
+  where a black icon vanishes on a dark taskbar. No script generates it: redraw
+  it by hand from `tray.png` when the mark changes.
+
+`apps/rove/src-tauri/src/tray.rs` embeds both with `include_bytes!`: `tray.png`
+on macOS, `tray-light.png` everywhere else.
 
 ## Regenerate
+
+Run these from `apps/rove/src-tauri/`:
 
 ```sh
 # app icon: render the master, then fan out every platform size/format
 python3 icons/icon-source.py icons/icon-source.png
-npm run tauri -- icon icons/icon-source.png     # run from the apps/rove/src-tauri/ dir
+npm run tauri -- icon icons/icon-source.png
 
-# tray icon (embedded via include_bytes! in apps/rove/src/lib.rs)
+# macOS tray icon (embedded in src/tray.rs)
 python3 icons/tray-source.py icons/tray.png
 ```
 
 `tauri icon` overwrites `icon.png`, `icon.icns`, `icon.ico`, the `Square*Logo`
 tiles, `StoreLogo.png`, and the `android/` + `ios/` sets. The tray icon is not
-managed by `tauri icon`; regenerate it with `tray-source.py` when the mark
-changes.
+managed by `tauri icon`; regenerate `tray.png` with `tray-source.py`, and
+redraw `tray-light.png` to match, when the mark changes.

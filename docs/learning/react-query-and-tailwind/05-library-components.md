@@ -2,7 +2,7 @@
 
 Part 5 of [Learning Rove's UI](README.md).
 
-[← State and context](04-state-and-context.md) · [Where code goes, and naming →](06-where-code-goes.md)
+Previous: [State and context](04-state-and-context.md). Next: [Where code goes, and naming](06-where-code-goes.md).
 
 `packages/ui/` is the library: Button, Card, Toggle and the rest, the Figma
 components in code. Features import them from `@swiftsolve/rove-ui`. Inside, they follow a
@@ -52,7 +52,11 @@ A card is assembled from parts, each with its own props
 
 ```tsx
     <Card>
-      <CardHeader title="Traffic" icon={<ActivityIcon size={15} />} actions={<LiveBadge updatedAt={throughput.timestamp} />} />
+      <CardHeader
+        title="Traffic"
+        icon={<ActivityIcon size={15} />}
+        actions={<LiveBadge updatedAt={throughput.timestamp} />}
+      />
       <CardBody>
 ```
 
@@ -73,8 +77,10 @@ Tooltip is the one exception, and its code says why
 ```tsx
   // Base UI lets the trigger's own props win, so a trigger that already has a
   // description gets the joined one set on it directly: the library's one
-  // cloneElement (packages/ui/README.md, The library).
+  // cloneElement (packages/ui/README.md, Every component).
 ```
+
+The rule is under [Every component](../../../packages/ui/README.md#every-component).
 
 ## State as data attributes
 
@@ -84,9 +90,9 @@ Toggle's track ([Toggle.tsx](../../../packages/ui/src/toggle/Toggle.tsx)):
 
 ```ts
 const TRACK = cx(
-  'relative shrink-0 w-[36px] h-20 rounded-full border',
+  'relative h-20 w-[36px] shrink-0 rounded-full border',
   'transition-[background,border-color] duration-(--duration-fast) ease-in-out',
-  'bg-inset border-line data-checked:bg-accent data-checked:border-accent',
+  'border-line bg-inset data-checked:border-accent data-checked:bg-accent',
   STATE_CLASSES,
 )
 ```
@@ -114,8 +120,8 @@ Button's recipe has three axes:
       },
       tone: { neutral: null, accent: null, negative: null },
       size: {
-        sm: 'gap-6 px-10 py-6 type-body-medium',
-        md: 'gap-6 px-(--card-padding) py-10 type-body-semibold',
+        sm: 'type-body-medium gap-6 px-10 py-6',
+        md: 'type-body-semibold gap-6 px-(--card-padding) py-10',
       },
 ```
 
@@ -181,8 +187,4 @@ covers that:
 So `usable:hover:bg-hover` applies only while the button would do something,
 and a disabled one doesn't light up as if you could press it.
 
----
-
----
-
-[← State and context](04-state-and-context.md) · [Where code goes, and naming →](06-where-code-goes.md)
+Previous: [State and context](04-state-and-context.md). Next: [Where code goes, and naming](06-where-code-goes.md).

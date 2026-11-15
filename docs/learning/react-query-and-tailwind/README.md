@@ -27,27 +27,28 @@ two guides below; these chapters explain why.
 
 ## Cheat sheet
 
-- New backend read → a hook in the feature's `hooks/` calling `useBackendQuery`
+- New backend read: a hook in the feature's `hooks/` calling `useBackendQuery`
   with a key that names the data (and the network, if it belongs to one).
 - Something the backend pushes:
-  - a stream, or a long job with its own state → a store with
+  - a stream, or a long job with its own state: a store with
     `useSyncExternalStore`;
-  - a new value for data you can also ask for → `setQueryData` on its query;
-  - a nudge with no payload → invalidate the query it's about.
-- A new spacing, colour or size → add it in Figma, release rove-tokens, map it
-  in `tailwind.css`, then `npm run gen`. Code takes only tokens.
-- Text → a `type-*` class.
-- A shared layout → an `@utility` in `utilities.css`.
-- A component's looks → `cva`; merging an outside `className` → `cn`; plain
-  joins → `cx`.
-- A view needs app state → its hook (`useNetwork()`, `useNavigation()`), not a
-  prop. Opening a screen → `navigate(…)`, which moves focus itself.
-- A library component → its element's props and `ref` passed through; parts
+  - a new value for data you can also ask for: `setQueryData` on its query;
+  - a nudge with no payload: invalidate the query it's about.
+- A new spacing, colour or size: add it in Figma and release rove-tokens, whose
+  generated `tailwind-theme.css` maps it to a class; update the package here,
+  then `npm run gen`. Code takes only tokens.
+- Text: a `type-*` class.
+- A shared layout: an `@utility` in `utilities.css`.
+- A component's looks: `cva`. Merging an outside `className`: `cn`. Plain
+  joins: `cx`.
+- A view needs app state: its hook (`useNetwork()`, `useNavigation()`), not a
+  prop. Opening a screen: `navigate(...)`, which moves focus itself.
+- A library component: its element's props and `ref` passed through; parts
   and slots, not `cloneElement`; runtime state as `data-*`; a new look is a
   value on an axis, not a new combined variant.
-- Folders → `components/`, `context/`, `hooks/`, `utils/`. A boolean →
-  `is`/`has`/`can`/`should`…; a shape → `type`; a comment → why.
-- A changing status → a region that's always mounted; a missing value →
-  `NoValue`; parts of a line → `InlineMeta`; an exit animation → `usePresence`.
-- Done → `npm run check`, then what review catches: both themes in
+- Folders: `components/`, `context/`, `hooks/`, `utils/`. A boolean:
+  `is`, `has`, `can`, `should` and the like. A shape: `type`. A comment: why.
+- A changing status: a region that's always mounted. A missing value:
+  `NoValue`. Parts of a line: `InlineMeta`. An exit animation: `usePresence`.
+- Done: `npm run check`, then what review catches: both themes in
   `npm run screenshots`, `npm run a11y`, Figma.

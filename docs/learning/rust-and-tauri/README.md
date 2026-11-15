@@ -1,8 +1,8 @@
 # Learning Rust & Tauri through Rove
 
 A guided tour of Rust and Tauri using Rove's own source code as the textbook.
-Every concept points at real code in this repo, with file/line references you can
-click through in your editor.
+Every concept points at real code in this repo, by file and function name, so
+you can open it in your editor.
 
 > **Companion pages:**
 > - [How Rove Is Put Together](../../architecture.md): the same boundary as a set of

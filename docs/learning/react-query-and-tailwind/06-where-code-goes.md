@@ -2,7 +2,7 @@
 
 Part 6 of [Learning Rove's UI](README.md).
 
-[← How a library component is built](05-library-components.md) · [Accessibility in practice →](07-accessibility.md)
+Previous: [How a library component is built](05-library-components.md). Next: [Accessibility in practice](07-accessibility.md).
 
 The rules: [apps/rove/src/README.md: Where code goes](../../../apps/rove/src/README.md#where-code-goes)
 and [Names and copy](../../../apps/rove/src/README.md#names-and-copy). The full map of
@@ -122,8 +122,4 @@ why after `--` ([return-point.ts](../../../apps/rove/src/app/utils/return-point.
   // eslint-disable-next-line @typescript-eslint/naming-convention -- the DOM names the option.
 ```
 
----
-
----
-
-[← How a library component is built](05-library-components.md) · [Accessibility in practice →](07-accessibility.md)
+Previous: [How a library component is built](05-library-components.md). Next: [Accessibility in practice](07-accessibility.md).

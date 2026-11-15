@@ -2,7 +2,7 @@
 
 Part 1 of [Learning Rove's UI](README.md).
 
-[← Contents](README.md) · [Tailwind and the design tokens →](02-tailwind-and-tokens.md)
+Back to [Contents](README.md). Next: [Tailwind and the design tokens](02-tailwind-and-tokens.md).
 
 ## The problem it solves
 
@@ -73,7 +73,7 @@ Most hooks don't call `useQuery` directly. They go through
 rules on top:
 
 - **Open.** Data refetches when a screen showing it opens, but only if it's
-  older than `freshForMs`. Going Home → Devices right after Home loaded doesn't
+  older than `freshForMs`. Going from Home to Devices right after Home loaded doesn't
   scan twice. Coming back after a while does. (`freshForMs` is TanStack's
   `staleTime` under a plainer name. It defaults to the poll interval, else 10s.)
 - **Busy.** `isBusy` is true for the first load, the refetch when a screen
@@ -132,8 +132,4 @@ wrapper, and easy to get subtly wrong. The cost is about 13 kB gzipped and one
 wrapper to learn. With three data sources it wouldn't pay off. With fifteen,
 shared and polled, it does.
 
----
-
----
-
-[← Contents](README.md) · [Tailwind and the design tokens →](02-tailwind-and-tokens.md)
+Back to [Contents](README.md). Next: [Tailwind and the design tokens](02-tailwind-and-tokens.md).

@@ -7,9 +7,12 @@ date: 2026-11-07
 
 The Hosts view knows which remote hosts each app reaches, which is browsing
 history in all but name. Country, ISP and ASN come from tables bundled in the
-binary, never from a lookup service. Only two kinds of request leave: your
+binary, never from a lookup service. Only two kinds of lookup leave: your
 own public IP and its city (api.ipify.org, then ipwho.is when it allows), and
 brand icons by domain for known apps and the services you add. All keyless.
+Measurements send traffic too, but no peer data: the speed test
+(speed.cloudflare.com and datapacket.com), a ping to 1.1.1.1, and a HEAD
+request to each service you check.
 
 ## Considered options
 

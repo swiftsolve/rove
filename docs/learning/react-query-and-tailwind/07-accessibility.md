@@ -2,7 +2,7 @@
 
 Part 7 of [Learning Rove's UI](README.md).
 
-[← Where code goes, and naming](06-where-code-goes.md) · [Checks and review →](08-checks-and-review.md)
+Previous: [Where code goes, and naming](06-where-code-goes.md). Next: [Checks and review](08-checks-and-review.md).
 
 Four patterns you'll meet in Rove, for people using a screen reader or the
 keyboard. The rules: [packages/ui/README.md: Every component](../../../packages/ui/README.md#every-component),
@@ -155,8 +155,4 @@ Checks catch the typed characters. What no unit check catches is a whole
 screen: `npm run a11y` runs axe on every screen and dialog, in both themes
 ([chapter 8](08-checks-and-review.md)).
 
----
-
----
-
-[← Where code goes, and naming](06-where-code-goes.md) · [Checks and review →](08-checks-and-review.md)
+Previous: [Where code goes, and naming](06-where-code-goes.md). Next: [Checks and review](08-checks-and-review.md).

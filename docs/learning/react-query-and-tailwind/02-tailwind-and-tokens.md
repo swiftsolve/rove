@@ -2,25 +2,28 @@
 
 Part 2 of [Learning Rove's UI](README.md).
 
-[← TanStack Query](01-tanstack-query.md) · [`cva`, `cx` and `cn` →](03-cva-cx-cn.md)
+Previous: [TanStack Query](01-tanstack-query.md). Next: [`cva`, `cx` and `cn`](03-cva-cx-cn.md).
 
 ## The chain, from Figma to a class
 
 ```
 Figma variables          (the source of truth: colours, spacing, radii, type)
-      ↓ exported and built by @swiftsolve/rove-tokens
+      exported and built by @swiftsolve/rove-tokens into:
 tokens.css               --spacing-12: 12px;  --bg-surface: #151618;
-      ↓ mapped by packages/ui/src/styles/tailwind.css (@theme)
+tailwind-theme.css       @theme inline reference { --spacing-12: var(--spacing-12); ... }
+      imported by packages/ui/src/styles/tailwind.css, which gives:
 Tailwind utilities       p-12   bg-surface   rounded-md
-      ↓ used in components
+      used in components:
 <div className="p-12 bg-surface">
 ```
 
 **Tokens** are named design values: `--spacing-12` is 12px, `--bg-surface` is
 the card background. They live in Figma. The `@swiftsolve/rove-tokens` package
 turns them into CSS variables in
-[`tokens.css`](../../../node_modules/@swiftsolve/rove-tokens/dist/tokens.css). Nobody
-edits that file by hand; it's generated.
+[`tokens.css`](../../../node_modules/@swiftsolve/rove-tokens/dist/tokens.css),
+and into the Tailwind theme that maps them to classes,
+[`tailwind-theme.css`](../../../node_modules/@swiftsolve/rove-tokens/dist/tailwind-theme.css).
+Nobody edits either file by hand; both are generated.
 
 **Tailwind** gives you small single-purpose classes: `p-12` means
 `padding: 12px`. You build a look by combining them in `className`, instead of
@@ -28,13 +31,20 @@ writing a CSS file per component.
 
 ## Joining the two: `@theme`
 
-[tailwind.css](../../../packages/ui/src/styles/tailwind.css) tells Tailwind which classes
-exist, using the tokens:
+rove-tokens' `tailwind-theme.css` tells Tailwind which classes exist, using the
+tokens. [tailwind.css](../../../packages/ui/src/styles/tailwind.css) only
+imports it, beside `tokens.css` and `text-styles.css`:
+
+```css
+@import '@swiftsolve/rove-tokens/tailwind-theme.css';
+```
+
+Three of its lines, with numbered comments added here:
 
 ```css
 @theme inline reference {
-  --*: initial;               /* 1. throw away Tailwind's default theme */
-  --spacing-12: var(--spacing-12);  /* 2. p-12, gap-12, m-12... use the token */
+  --*: initial;                       /* 1. throw away Tailwind's default theme */
+  --spacing-12: var(--spacing-12);    /* 2. p-12, gap-12, m-12... use the token */
   --color-surface: var(--bg-surface); /* 3. bg-surface, text-surface... */
 }
 ```
@@ -57,6 +67,11 @@ The two words after `@theme`:
   (`--spacing-12: var(--spacing-12)`), which breaks.
 - **`reference`**: don't write these variables into the page again. The tokens
   file already defines them.
+
+So a new token reaches code only through a rove-tokens release: add it in
+Figma, release rove-tokens, update the package here, then run `npm run gen`,
+which reads the new theme into the class merger `cn` uses
+(`packages/ui/src/utils/cn-theme.gen.json`).
 
 ## Light and dark for free
 
@@ -94,8 +109,10 @@ entrance animation. Those live in
 ```css
 @utility page {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--spacing-10);
+  /* ...then the cards' staggered fade-in */
 }
 ```
 
@@ -109,7 +126,7 @@ Also in `tailwind.css`:
 - **`hover:`** is plain `:hover`. (Tailwind's default only applies hover styles
   on devices with a mouse.)
 - **`usable:`** means "not disabled and not loading". Write
-  `usable:hover:bg-raised`, and a disabled button doesn't light up when
+  `usable:hover:bg-hover`, and a disabled button doesn't light up when
   hovered.
 
 ## Guard rails
@@ -124,8 +141,4 @@ Also in `tailwind.css`:
   through `className`. It may place it (margin, width, grid position), not
   change its look. A new look is a new variant in the component.
 
----
-
----
-
-[← TanStack Query](01-tanstack-query.md) · [`cva`, `cx` and `cn` →](03-cva-cx-cn.md)
+Previous: [TanStack Query](01-tanstack-query.md). Next: [`cva`, `cx` and `cn`](03-cva-cx-cn.md).

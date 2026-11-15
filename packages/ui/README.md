@@ -12,7 +12,7 @@ Features import the library from `@swiftsolve/rove-ui` and nothing else under `p
 library imports only itself (by relative path) and packages, never app code.
 [✓ CHECKED by `eslint.config.js`]
 
-- Each component has its own kebab-case folder at the top of `packages/ui/`, with
+- Each component has its own kebab-case folder in `packages/ui/src/`, with
   its tests (`button/` holds Button and IconButton). There are no tiers: a
   component that starts using another stays where it is.
 - A family's folder is laid out like a feature's. Its main component sits at

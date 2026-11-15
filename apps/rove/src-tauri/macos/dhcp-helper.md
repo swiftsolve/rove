@@ -1,5 +1,8 @@
 # macOS DHCP capture helper
 
+The helper is optional and does not ship: the app bundle doesn't include it,
+and nothing installs it. Build and run it by hand to test.
+
 > **Note (macOS 26.x):** This helper is a **fallback**, not the primary macOS path.
 > Modern macOS (verified on 26.3, stock `net.inet.ip.portrange` sysctls) lets an
 > **unprivileged** process bind UDP `:67`, so Rove's in-process listener captures
@@ -37,15 +40,17 @@ Binding `:67` needs root, so run the helper under `sudo`:
 # 1. build
 cargo build --release --bin rove-dhcp-helper
 
-# 2. run the helper as root, writing to a temp file
-sudo ./target/release/rove-dhcp-helper /tmp/rove-dhcp.json
+# 2. run the helper as root; with no argument it writes to the path the app reads
+sudo ./target/release/rove-dhcp-helper
 
 # 3. in another terminal, reconnect a device's Wi-Fi, then watch the file fill:
-cat /tmp/rove-dhcp.json
+cat "/Library/Application Support/Rove/dhcp-cache.json"
 ```
 
-Point the app at the same path (or use the default `helper_cache_path()`) and its
-Devices tab will show the DHCP-derived hostnames/OS even though the app is unprivileged.
+The app reads only that path: `helper_cache_path()` in
+`crates/rove-core/src/devices/dhcp.rs` hard-codes it, and there is no setting to
+change it. Give the helper a different path and the app won't see its file. With the helper writing there, the Devices tab shows the
+DHCP-derived hostnames and OS even though the app is unprivileged.
 
 ## Productionize (needs your Developer ID)
 

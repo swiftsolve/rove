@@ -2,7 +2,7 @@
 
 Part 4 of [Learning Rove's UI](README.md).
 
-[← `cva`, `cx` and `cn`](03-cva-cx-cn.md) · [How a library component is built →](05-library-components.md)
+Previous: [`cva`, `cx` and `cn`](03-cva-cx-cn.md). Next: [How a library component is built](05-library-components.md).
 
 The rule: [apps/rove/src/README.md: State](../../../apps/rove/src/README.md#state-context-not-prop-drilling).
 
@@ -124,7 +124,7 @@ and [useDevices.ts](../../../apps/rove/src/features/devices/hooks/useDevices.ts)
   const { data, isBusy, error, reload } = useBackendQuery({
     queryKey: ['devices', networkKey],
     queryFn: api ? () => scanDevices(api) : undefined,
-    isEnabled: shouldScanOnOpen && networkKey != null,
+    isEnabled: shouldScanOnOpen && isConnected && networkKey != null,
     errorMessage: 'Couldn’t scan for devices',
   })
 ```
@@ -132,7 +132,8 @@ and [useDevices.ts](../../../apps/rove/src/features/devices/hooks/useDevices.ts)
 Join another Wi-Fi and the key changes, so the screen starts a fresh entry
 instead of showing the last network's devices as if they were here. While
 network info is loading the key is `null` and the query stays off, so it
-doesn't scan once without a key and again with one.
+doesn't scan once without a key and again with one. Off a network
+(`isConnected` false) it stays off too: there's nothing to scan.
 
 Notice there's no devices provider. The hook lives in the feature's `hooks/`,
 and `DevicesView` and `DevicesCard` both call it. The shared cache entry is
@@ -184,8 +185,4 @@ export function useSpeedTest<T>(select: (test: SpeedTest) => T): T {
 [SpeedView.tsx](../../../apps/rove/src/features/speed/SpeedView.tsx) ignores the live
 peaks that change many times a second while a test runs.
 
----
-
----
-
-[← `cva`, `cx` and `cn`](03-cva-cx-cn.md) · [How a library component is built →](05-library-components.md)
+Previous: [`cva`, `cx` and `cn`](03-cva-cx-cn.md). Next: [How a library component is built](05-library-components.md).

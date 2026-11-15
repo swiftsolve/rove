@@ -19,9 +19,10 @@ eye on what's happening.
 
 **Networks roam; so does Rove.** A modern connection is not one fixed thing. You
 pull a cable, join a new SSID, drift between bands, walk from one router to
-another. Rove is built around that motion: the backend watches `ip monitor route`
-and re-reads the kernel routing table so the UI follows your *real* path within a
-second of any change (see the connection-card section in the [README](../README.md)
+another. Rove is built around that motion: the backend watches the OS's route changes
+(`ip monitor route` on Linux, `route -n monitor` on macOS, .NET's
+`NetworkChange` on Windows) so the UI follows your *real* path within a second
+of any change (see [the event that carries nothing](architecture.md#3-the-event-that-carries-nothing)
 and [How Rove Captures Network Data](networking/data-capture.md)). The name
 names that behaviour: the app doesn't assume a static setup, it **roves** with
 you.

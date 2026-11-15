@@ -2,24 +2,30 @@
 
 Part 3 of [Learning Rust & Tauri through Rove](README.md).
 
-[← Rust basics: functions, Result, ownership, structs](02-rust-basics.md) · [Async, tokio and traits →](04-async-and-traits.md)
+Previous: [Rust basics: functions, Result, ownership, structs](02-rust-basics.md). Next: [Async, tokio and traits](04-async-and-traits.md).
 
 ## 7. Shared state & fearless concurrency
 
 Rove runs background loops (sampling usage every 30s, broadcasting throughput
 every 1s) *and* handles commands, all touching shared state. In most languages
 that's a minefield. Rust makes the danger visible in the types. Look at
-`AppState` (`apps/rove/src-tauri/src/lib.rs:16`):
+`AppState` in `apps/rove/src-tauri/src/lib.rs` (doc comments and some fields
+left out):
 
 ```rust
 struct AppState {
-    speed_cancel: Mutex<Option<Arc<AtomicBool>>>,
+    speed_runs: Mutex<SpeedRuns>,
     usage: Mutex<Option<UsageTracker>>,
+    ...
     networks: Mutex<sysinfo::Networks>,
+    ...
     is_throughput_subscribed: AtomicBool,
     ...
 }
 ```
+
+`SpeedRuns`, just above it, holds the running speed test's token and its cancel
+flag (an `Arc<AtomicBool>`); chapter 5 reads how it's used.
 
 Three concurrency primitives, each teaching something:
 
@@ -38,19 +44,24 @@ Three concurrency primitives, each teaching something:
 - **`AtomicBool`**: a single bool you can flip from any thread without a lock,
   used for simple flags like `is_throughput_subscribed`.
 
-There's a lovely real-world detail at `lock()` (`apps/rove/src-tauri/src/lib.rs:34`):
+There's a lovely real-world detail in `lock`, in
+`crates/rove-core/src/utils/net.rs`, which both crates call instead of
+`.lock()`:
 
 ```rust
-fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
-    m.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+pub fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
+    m.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 ```
 
 If a thread panics *while holding* a Mutex, Rust marks it "poisoned", a signal
 that the protected data might be in a half-updated state. The default `.lock()`
-returns an `Err` in that case. This helper says "recover the data anyway instead
-of crashing every future caller." This is idiomatic Rust: the type forces you to
-confront the poisoned case, and you make a deliberate choice.
+returns an `Err` (a `PoisonError`) in that case. This helper says "recover the
+data anyway instead of crashing every future caller": `unwrap_or_else` passes
+that error to `PoisonError::into_inner`, a function named rather than written
+out as a closure, which hands back the guard inside it. This is idiomatic Rust:
+the type forces you to confront the poisoned case, and you make a deliberate
+choice.
 
 ---
 
@@ -63,42 +74,51 @@ Rove's actual files.
 
 Notice that Rove's React components **never call `invoke` directly.** They call
 `window.networkAPI.getDataUsage()`. That `window.networkAPI` object is installed
-at startup by `apps/rove/src/bridge/tauri-network-api.ts` (`installTauriBridge`), and it's the
-*only* file that imports `invoke`. Why the indirection? Because there's a second
+at startup by `installTauriBridge` in `apps/rove/src/bridge/tauri-network-api.ts`,
+and that's the *only* file that imports `invoke`. Why the indirection? Because there's a second
 implementation, `apps/rove/src/bridge/mock-network-api.ts`, used when the UI runs in a plain
 browser (no Rust backend). The components are written against an interface
 (`NetworkAPI`); at runtime either the real Tauri bridge or the mock is slotted in.
 This is the same "program to an interface" idea as `rove-core` staying
 Tauri-free: swappable implementations behind a stable boundary.
 
-### Direction A: a command (request → reply)
+### Direction A: a command (request, then reply)
 
 Trace `get_data_usage`, the Home screen's usage numbers:
 
 1. **React** wants data, calls `window.networkAPI.getDataUsage()`.
-2. **Bridge** (`tauri-network-api.ts:48`): `() => invoke<DataUsageSummary>('get_data_usage')`.
-   `invoke` is from `@tauri-apps/api/core`. The `<DataUsageSummary>` is just a
+2. **Bridge** (`tauri-network-api.ts`):
+   `getDataUsage: () => invokeCommand<DataUsageSummary>('get_data_usage')`.
+   `invokeCommand`, in the same file, calls `invoke` from `@tauri-apps/api/core`
+   and turns a rejected string into an `Error`. The `<DataUsageSummary>` is just a
    TypeScript type annotation for *your* benefit. It does nothing at runtime; it
    promises the compiler that whatever comes back is shaped like that type.
 3. **`invoke` serializes the call** (command name `"get_data_usage"` plus an args
    object, empty here) into a message and hands it to the webview's IPC channel
    (Tauri exposes it on `window.__TAURI_INTERNALS__`). This crosses the *process
    boundary*. It returns a `Promise` immediately.
-4. **Rust receives it.** Back in `apps/rove/src-tauri/src/lib.rs:640`, the
+4. **Rust receives it.** In `run`, in `apps/rove/src-tauri/src/lib.rs`, the
    `tauri::generate_handler![...]` macro built a dispatcher at compile time: it
    takes the incoming command name string and routes `"get_data_usage"` to your
-   `get_data_usage` function.
-5. **The function runs** (`lib.rs:192`):
+   `get_data_usage` function in `apps/rove/src-tauri/src/commands.rs`.
+5. **The function runs**:
 
    ```rust
    #[tauri::command]
-   fn get_data_usage(state: tauri::State<'_, AppState>) -> DataUsageSummary {
+   pub async fn get_data_usage(app: tauri::AppHandle) -> DataUsageSummary {
+       let summary = tokio::task::spawn_blocking(move || {
+           let state = app.state::<AppState>();
    ```
 
-   Note: `state: tauri::State<AppState>` was **not** sent from JavaScript; the JS
-   call passed no arguments. Tauri recognizes certain "special" parameter types
-   (`State`, `AppHandle`, `Window`) and **injects them on the Rust side** from the
-   app's managed state. Only *ordinary* parameters are read from the JSON args.
+   Note: `app: tauri::AppHandle` was **not** sent from JavaScript; the JS call
+   passed no arguments. Tauri recognizes certain "special" parameter types
+   (`State`, `AppHandle`, `Window`) and **injects them on the Rust side**. Only
+   *ordinary* parameters are read from the JSON args. The summary reads the
+   store from disk, so the work runs on tokio's blocking pool
+   (`spawn_blocking`), and the closure fetches `AppState` there through the
+   handle. It takes an `AppHandle` rather than a `State` because a `State`
+   borrows from Tauri, and a closure sent to another thread can't hold a
+   borrow; the handle is an owned value that can move in.
    (That's why `saveSpeedResult(entry)` in the bridge passes `{ entry }`, and the
    Rust fn declares `entry: SpeedHistoryRecord`: the JSON key must match the
    parameter name.)
@@ -110,49 +130,57 @@ Trace `get_data_usage`, the Home screen's usage numbers:
    string into an `Error`, and `useBackendQuery` shows its message.
 8. **React re-renders** with the new data.
 
-That's the whole loop: JS call → serialize → cross boundary → dispatch → run →
-serialize → cross back → resolve Promise → re-render.
+That's the whole loop: the JS call is serialized, crosses the boundary, is
+dispatched and run, and its result is serialized, crosses back, resolves the
+Promise, and React re-renders.
 
 ### Direction B: an event (backend pushes, unprompted)
 
 Live throughput isn't something the UI asks for repeatedly; Rust *pushes* a
 sample every second. Trace `live-throughput`:
 
-1. **Rust loop** (`spawn_throughput_broadcaster`, `lib.rs:342`) wakes every second
-   and calls:
+1. **Rust loop** (`spawn_throughput_broadcaster` in
+   `apps/rove/src-tauri/src/monitors.rs`) wakes every second and calls:
 
    ```rust
-   let _ = handle.emit("live-throughput", &sample);
+   emit_to_ui(&handle, "live-throughput", &sample);
    ```
 
-   `emit` serializes `sample` (a `LiveThroughput`, which derives `Serialize`) and
-   broadcasts it to the webview as a named event. The `let _ =` deliberately
-   ignores the `Result`: if the UI window is gone, a failed emit is harmless.
-2. **JS is listening.** In the bridge, `onLiveThroughput` (`tauri-network-api.ts:63`)
+   `emit_to_ui` (in `apps/rove/src-tauri/src/ui_events.rs`) calls Tauri's
+   `handle.emit`, which serializes `sample` (a `LiveThroughput`, which derives
+   `Serialize`) and broadcasts it to the webview as a named event. `emit`
+   returns a `Result`; `emit_to_ui` hands it to `log_if_failed`, which writes a
+   warning to the log on an `Err` rather than returning it. A failed emit (the
+   app shutting down, say) can't fail the loop, but it still leaves a trace, and
+   the UI's poll catches up either way.
+2. **JS is listening.** In the bridge, `onLiveThroughput` (`tauri-network-api.ts`)
    calls `subscribeEvent('live-throughput', callback)`, which uses `listen` from
    `@tauri-apps/api/event` to register a handler for that event name.
-3. **Each emit fires the callback** with the deserialized payload, which flows into
-   `useLiveThroughput.ts` → `setState` → the chart re-renders.
+3. **Each emit fires the callback** with the deserialized payload. In
+   `apps/rove/src/features/live-throughput/hooks/useLiveThroughput.ts`,
+   `ingestSample` adds it to the store's history and calls every listener;
+   `useLiveThroughput` reads that store through React's `useSyncExternalStore`,
+   so the Traffic chart re-renders.
 
 ### The two directions combined
 
 Live throughput actually uses **both** directions together, which is a nice
 pattern to internalize:
 
-- A **command** turns the tap on/off: `subscribe_live_throughput` /
-  `unsubscribe_live_throughput` (`lib.rs:240-248`) just flip an `AtomicBool`. The
-  Rust loop only emits while that flag is true (`lib.rs:349`).
+- A **command** turns the tap on or off: `subscribe_live_throughput` and
+  `unsubscribe_live_throughput` (in `apps/rove/src-tauri/src/commands.rs`) just
+  flip an `AtomicBool`. The loop in `spawn_throughput_broadcaster` reads that
+  flag each second and emits only while it's true.
 - The **event** stream (`live-throughput`) is the water flowing through the tap.
 
-So: commands are for "do this / give me that, and reply"; events are for a
-continuous or unsolicited stream. The subscribe command is the request to *start*
-the stream; the stream itself arrives as events. Rove's `useLiveThroughput` hook
-even reference-counts the subscribe command (`backendRefCount`, line 53) so that N
-React consumers share one backend subscription: the first attach turns the tap on,
-the last detach turns it off.
+So: commands are for "do this, or give me that, and reply"; events are for a
+continuous or unsolicited stream. The subscribe command is the request to
+*start* the stream; the stream itself arrives as events. On the React side, one
+hook owns the tap: `useLiveThroughputSource`, which `NetworkProvider` calls once
+with whether the window is visible. It turns the tap on when the window shows;
+when it hides, it waits a 2 s grace period (`SUBSCRIPTION_GRACE_MS`) before
+turning it off, so a brief blip or a StrictMode remount doesn't flip the
+backend flag off and on. Every component that shows the data calls
+`useLiveThroughput`, which only reads the store and never touches the tap.
 
----
-
----
-
-[← Rust basics: functions, Result, ownership, structs](02-rust-basics.md) · [Async, tokio and traits →](04-async-and-traits.md)
+Previous: [Rust basics: functions, Result, ownership, structs](02-rust-basics.md). Next: [Async, tokio and traits](04-async-and-traits.md).

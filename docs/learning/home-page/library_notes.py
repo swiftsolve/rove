@@ -2,15 +2,15 @@ CARD = [
     (1, "The recipe maker for the card's look, and React pieces: prop types and useId."),
     (4, "The invisible full-card link, the class joiner, and the provider that shares what the card knows with its header."),
     (8, "Card's props: which HTML element to be, what clicking the card does, the link's spoken name, layout classes, and the content."),
-    (32, "The card's look: a rounded surface that clips its content. An openable card also lifts on hover and dips 1px when pressed."),
-    (50, "Starts Card. `as: Element = 'section'` means it renders a <section> unless told otherwise."),
-    (51, "A unique id for the title, so the card can be named by it."),
-    (52, "The card is openable when it's given something to do on a click."),
-    (54, "CardProvider shares the title id and openable flag with whatever is inside (the CardHeader)."),
-    (55, "The card element: its classes, its name for screen readers (its title), and a marker other code can find."),
-    (64, "An openable card puts an invisible link over its whole area, so a click anywhere opens it. It comes first so it's first in Tab order."),
-    (67, "Whatever was put inside the card."),
-    (78, "Moves keyboard focus to the card's link: for a button inside the card that's about to disappear (Devices' Discover), so focus isn't lost."),
+    (34, "The card's look: a rounded surface that clips its content. An openable card also lifts on hover and dips 1px when pressed."),
+    (52, "Starts Card. `as: Element = 'section'` means it renders a <section> unless told otherwise."),
+    (53, "A unique id for the title, so the card can be named by it."),
+    (54, "The card is openable when it's given something to do on a click."),
+    (56, "CardProvider shares the title id and openable flag with whatever is inside (the CardHeader)."),
+    (57, "The card element: its classes, its name for screen readers (its title), and a marker other code can find."),
+    (66, "An openable card puts an invisible link over its whole area, so a click anywhere opens it. It comes first so it's first in Tab order."),
+    (69, "Whatever was put inside the card."),
+    (80, "Moves keyboard focus to the card's link: for a button inside the card that's about to disappear (Devices' Discover), so focus isn't lost."),
 ]
 CARD_CONTEXT = [
     (1, "createContext makes a context: a value shared with everything inside a provider."),
@@ -21,19 +21,19 @@ CARD_HEADER = [
     (1, "Class joining, and React's prop types."),
     (4, "The caret icon, the class joiner, and useCardContext, which reads what the Card around it knows."),
     (9, "The header row's layout: a fixed height, title on the left, actions on the right."),
-    (13, "The caret on an openable card: grey, brighter when the card is hovered or its link focused."),
-    (18, "CardHeader's props: the title, an optional icon before it, and optional actions after it."),
-    (28, "Starts CardHeader."),
-    (29, "Reads the title id and openable flag from the Card around it, through useCardContext()."),
-    (32, "The icon and title, side by side. The icon is hidden from screen readers; the title names the card."),
-    (43, "The title, nudged down 0.75px so it lines up visually with its icon."),
-    (47, "On the right: the actions (like the Live badge or a button), raised above the card's link, then a caret if the card opens something."),
+    (15, "The caret on an openable card: grey, brighter when the card is hovered or its link focused."),
+    (20, "CardHeader's props: the title, an optional icon before it, and optional actions after it."),
+    (30, "Starts CardHeader."),
+    (31, "Reads the title id and openable flag from the Card around it, through useCardContext()."),
+    (34, "The icon and title, side by side. The icon is hidden from screen readers; the title names the card."),
+    (45, "The title, nudged down 0.75px so it lines up visually with its icon."),
+    (49, "On the right: the actions (like the Live badge or a button), raised above the card's link, then a caret if the card opens something."),
 ]
 CARD_BODY = [
     (1, "The recipe maker, prop types, the class joiner, and the helper that turns a recipe option into a prop type."),
-    (11, "CardBody's padding recipe: `default` pads all round with a little less on top; `rows` for rows with their own padding, tighter above a footer; `flush` for full-width lists."),
-    (22, "CardBody's props: which layout, and the content."),
-    (34, "Starts CardBody: a div with the chosen padding around its content."),
+    (13, "CardBody's padding recipe: `default` pads all round with a little less on top; `rows` for rows with their own padding, tighter above a footer; `flush` for full-width lists."),
+    (24, "CardBody's props: which layout, and the content."),
+    (36, "Starts CardBody: a div with the chosen padding around its content."),
 ]
 CARD_FOOTER = [
     (1, "Prop types and the class joiner."),
@@ -60,24 +60,19 @@ COLLAPSIBLE_PANEL = [
 
 DATA_LIST = [
     (1, "The recipe maker, React's types, the class joiner and the variant type helper."),
-    (10, "The list's row spacing, set as a CSS variable its rows read: 8px normally, 4px for `compact`."),
-    (20, "DataList's props: its density, layout classes, and the rows."),
-    (33, "DataList is a <dl>, HTML's list of terms and descriptions, so a screen reader reads each label with its value."),
+    (12, "The list's row spacing, set as a CSS variable its rows read: 8px normally, 4px for `compact`."),
+    (22, "DataList's props: its density, layout classes, and the rows."),
+    (35, "DataList is a <dl>, HTML's list of terms and descriptions, so a screen reader reads each label with its value."),
 ]
 DATA_ROW = [
     (1, "The recipe maker, React's types, and the variant type helper."),
-    (8, "A row's layout: label left, value right. The first and last rows sit flush, so the padding only adds space between rows."),
-    (15, "Label text: medium weight, tertiary grey. Value text: body, primary colour, tabular digits, right-aligned."),
-    (18, "DataRow's props: alignment, the label, the value as text, or children for a value that isn't plain text (a badge, signal bars)."),
-    (30, "Starts DataRow."),
-    (32, "No value and no children: draw nothing. `== null`, so a real 0 still shows."),
-    (34, "The row: the label in a <dt>, the value in a <dd>."),
+    (10, "A row's layout: label left, value right. The first and last rows sit flush, so the padding only adds space between rows."),
+    (17, "Label text: medium weight, tertiary grey. Value text: body, primary colour, tabular digits, right-aligned."),
+    (20, "DataRow's props: alignment, the label, the value as text, or children for a value that isn't plain text (a badge, signal bars)."),
+    (32, "Starts DataRow."),
+    (34, "No value and no children: draw nothing. `== null`, so a real 0 still shows."),
+    (36, "The row: the label in a <dt>, the value in a <dd>."),
 ]
-DATA_LIST_STACK = [
-    (1, "React's types and the class joiner."),
-    (11, "DataListStack stacks DataLists with a hairline between them and 12px either side of it, as in the network card's details."),
-]
-
 ICON_TILE = [
     (1, "The recipe helper, and React types for props, styles and click handlers."),
     (4, "The class joiner, the shared press behaviour for buttons, the tint helper, and the variant type helper."),
@@ -90,12 +85,12 @@ ICON_TILE = [
     (56, "IconTileButton's props: the shared ones plus a label for screen readers, a click handler, and whether it's disabled."),
     (67, "Starts IconTileButton, the clickable tile: Home's rated capability tiles."),
     (80, "A real <button>. On hover or keyboard focus the tint deepens and the tile lifts 2px and grows 6%. `usable:` means only while it's not disabled."),
-    (91, "Its name for screen readers, since an icon says nothing."),
-    (92, "The shared press behaviour: ignores clicks while disabled, but stays focusable."),
+    (97, "Its name for screen readers, since an icon says nothing."),
+    (98, "The shared press behaviour: ignores clicks while disabled, but stays focusable."),
 ]
 
 DOT_SEPARATOR = [
-    (6, "DotSeparator: a 3px round grey dot, hidden from screen readers."),
+    (10, "DotSeparator: a 3px round grey dot, hidden from screen readers."),
     (14, "The row's look: items 6px apart, either wrapping or kept on one line."),
     (21, "Each item can shrink and, on one line, end with \"…\" when there's no room."),
     (27, "InlineMeta's props: the items, layout classes, and whether to keep them on one line."),
@@ -125,20 +120,20 @@ READOUT = [
 
 BAR_METER = [
     (3, "Reads the screen's pixel density, so the bars can snap to whole screen pixels."),
-    (12, "Bar sizes: 2px wide, 3 to 9px tall, 2px apart. The comment explains why they're drawn as an SVG snapped to screen pixels: plain boxes looked jagged at 125% or 150% scaling."),
-    (17, "How each bar is filled: lit in the full colour, unlit in a faint tint of it, or two greys when dimmed."),
-    (33, "Picks a bar's fill from whether it's lit and whether the meter is dimmed."),
-    (38, "BarMeter's props: how many bars are lit (0–4), the colour, whether it's dimmed, and layout classes."),
-    (53, "Starts BarMeter. The signal bars in the network card are a BarMeter."),
-    (54, "Turns every size into whole screen pixels, so all bars are equally wide and none sits between pixels."),
-    (64, "The SVG: drawn in screen pixels, then shown at the right CSS size. Hidden from screen readers; whatever holds it says the value."),
-    (72, "The four bars, bottom-aligned, rounded at the ends, each lit or not."),
+    (14, "Bar sizes: 2px wide, 2 to 8px tall, 2px apart. The comment explains why they're drawn as an SVG snapped to screen pixels: plain boxes looked jagged at 125% or 150% scaling."),
+    (19, "How each bar is filled: lit in the full colour, unlit in a faint tint of it, or two greys when dimmed."),
+    (35, "Picks a bar's fill from whether it's lit and whether the meter is dimmed."),
+    (40, "BarMeter's props: how many bars are lit (0–4), the colour, whether it's dimmed, and layout classes."),
+    (55, "Starts BarMeter. The signal bars in the network card are a BarMeter."),
+    (56, "Turns every size into whole screen pixels, so all bars are equally wide and none sits between pixels."),
+    (66, "The SVG: drawn in screen pixels, then shown at the right CSS size. Hidden from screen readers; whatever holds it says the value."),
+    (74, "The four bars, bottom-aligned, rounded at the ends, each lit or not."),
 ]
 
 STATUS_DOT = [
     (7, "The dot's look: 5px and round, in the text colour, green, or the accent, with an optional pulse at one of three speeds."),
     (23, "StatusDot's props: its tone, its pulse, and layout classes."),
-    (40, "Starts StatusDot: a decorative dot, hidden from screen readers because the words beside it carry the meaning. The \"online\" dot and the Live badge's dot are StatusDots."),
+    (44, "Starts StatusDot: a decorative dot, hidden from screen readers because the words beside it carry the meaning. The \"online\" dot and the Live badge's dot are StatusDots."),
 ]
 
 DIRECTION_ICON = [
@@ -180,23 +175,24 @@ BUTTON_SPINNER = [
 ]
 
 LINK = [
-    (8, "The link's look: secondary grey text the size of the line around it, accent and underlined on hover or focus. Its padding hangs outside the text, so it adds no height to its line."),
-    (24, "The icons are a touch dimmer at rest and brighten with the link."),
-    (32, "Only the words underline, not the icons."),
-    (38, "Every icon in a link is 13px."),
-    (40, "The two kinds of link: one that opens a view in the app (onClick), or one that opens a web address (href)."),
-    (70, "Starts Link."),
-    (71, "With an address: an <a> that opens a new window, ends in an ↗ arrow, and tells screen readers it opens a new window."),
-    (82, "Without one: a <button> that screen readers hear as a link, since it moves you somewhere. It ends in a › caret. Home's \"Speed test ›\" is this kind."),
+    (13, "The link's look: secondary grey text the size of the line around it, accent and underlined on hover or focus. Its padding hangs outside the text, so it adds no height to its line."),
+    (28, "The icons are a touch dimmer at rest and brighten with the link."),
+    (38, "Only the words underline, not the icons."),
+    (44, "Every icon in a link is 13px."),
+    (46, "The two kinds of link: one that opens a view in the app (onClick), or one that opens a web address (href)."),
+    (76, "Starts Link."),
+    (77, "With an address: an <a> that opens a new window, ends in an ↗ arrow, and tells screen readers it opens a new window."),
+    (88, "Without one: a <button> that screen readers hear as a link, since it moves you somewhere. It ends in a caret. Home's Speed test link is this kind."),
 ]
 
 BADGE = [
     (8, "A tinted flag in green, amber or red. Home doesn't use Badge itself."),
-    (35, "LiveBadge: a dark pill with a pulsing green dot and the word \"Live\". The Traffic card's header shows one."),
+    (40, "LiveDot: the badge's pulsing dot. A new key on each update restarts its breath, and it starts as far in as the update is old, so a dot that mounts between updates stays in step."),
+    (47, "LiveBadge: a dark pill with a pulsing green dot and the word \"Live\". updatedAt is when the last sample came. The Traffic card's header shows one."),
 ]
 
 SCREEN_READER_STATUS = [
-    (5, "A line only screen readers hear, read out each time its text changes. role=\"status\" is what makes it announced. It stays mounted, because a region that appears already holding text often isn't read."),
+    (11, "A line only screen readers hear, read out each time its text changes. role=\"status\" is what makes it announced. It stays mounted, because a region that appears already holding text often isn't read."),
 ]
 
 TOOLTIP = [

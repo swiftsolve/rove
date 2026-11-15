@@ -2,7 +2,7 @@
 
 Part 8 of [Learning Rove's UI](README.md).
 
-[← Accessibility in practice](07-accessibility.md) · [Contents →](README.md)
+Previous: [Accessibility in practice](07-accessibility.md). Back to [Contents](README.md).
 
 ## What ✓ CHECKED means
 
@@ -47,12 +47,12 @@ Each file's opening comment says what it guards. In short:
 ## Exceptions carry a reason
 
 Sometimes a raw value is right. The check doesn't ban it; it wants the reason
-written down, beside the exception
+written down, beside the exception in the check's `ALLOWED` list
 ([raw-values.ts](../../../scripts/checks/raw-values.ts)):
 
 ```js
-  // A scanner needs dark modules on white in both themes.
-  { file: 'apps/rove/src/features/current-network/components/WifiShareDialog.tsx', value: '#ffffff' },
+  // A scanner needs dark modules on white in both themes, and the mark's tile is that white.
+  { file: 'apps/rove/src/features/current-network/components/WifiQrCode.tsx', value: '#ffffff' },
 ```
 
 Why bother: an exception is fine, an unexplained one is how a design system
@@ -99,8 +99,4 @@ Things no automatic check looks at:
 Green checks mean the mechanical rules hold. They don't mean the change is
 done.
 
----
-
----
-
-[← Accessibility in practice](07-accessibility.md) · [Contents →](README.md)
+Previous: [Accessibility in practice](07-accessibility.md). Back to [Contents](README.md).

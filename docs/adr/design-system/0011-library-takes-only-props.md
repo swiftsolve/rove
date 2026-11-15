@@ -16,4 +16,4 @@ passed in is a missing variant.
 
 - **A tweak two views need becomes a variant,** documented and drawn in
   Figma, not a class one view passes.
-- **Lint and `checks/ui-classname.ts` enforce both rules.**
+- **Lint and `scripts/checks/ui-classname.ts` enforce both rules.**

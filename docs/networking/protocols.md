@@ -39,7 +39,7 @@ exchange, which lands even a silent device in the neighbor table.
 
 **TCP (Transmission Control Protocol)**: the reliable, connection-based protocol
 most apps use (web, SSH, file sharing). A connection begins with a handshake
-(SYN → SYN-ACK). Rove's probe tries to open TCP connections to telling **ports**.
+(SYN, then SYN-ACK). Rove's probe tries to open TCP connections to telling **ports**.
 This reaches devices that ignore ping, and a port that answers is a strong clue
 about the device type.
 
@@ -50,8 +50,8 @@ ports like `80` (web), `22` (SSH), `9100` (printer), `62078` (iPhone).
 
 ## "Devices announce themselves"
 
-**DNS (Domain Name System)**: translates names to IPs (`google.com` → an IP).
-**Reverse DNS** goes the other way: IP → hostname. Rove uses reverse DNS to get a
+**DNS (Domain Name System)**: translates names to IPs (`google.com` to an IP).
+**Reverse DNS** goes the other way: IP to hostname. Rove uses reverse DNS to get a
 name for each device.
 
 **mDNS (multicast DNS)**: "DNS without a server." Devices on the local network
@@ -93,7 +93,7 @@ about *how* a device asks, not its identity.
 
 **OUI (Organizationally Unique Identifier)**: the first 24 bits of a MAC
 address, assigned by the IEEE to each manufacturer. Rove ships an offline copy of
-the IEEE registry, so `a4:83:e7` → "Apple", `00:0e:58` → "Sonos". This yields the
+the IEEE registry, so `a4:83:e7` is Apple and `00:0e:58` is Sonos. This yields the
 vendor.
 
 ---

@@ -72,7 +72,7 @@ export function Tooltip({
   const ownDescription = children.props['aria-describedby']
   // Base UI lets the trigger's own props win, so a trigger that already has a
   // description gets the joined one set on it directly: the library's one
-  // cloneElement (src/ui/README.md, Every component).
+  // cloneElement (packages/ui/README.md, Every component).
   const trigger =
     isDescribing && ownDescription
       ? cloneElement(children, { 'aria-describedby': `${ownDescription} ${descriptionId}` })

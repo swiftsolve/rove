@@ -2,7 +2,7 @@
 
 Part 3 of [Learning Rove's UI](README.md).
 
-[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [State and context →](04-state-and-context.md)
+Previous: [Tailwind and the design tokens](02-tailwind-and-tokens.md). Next: [State and context](04-state-and-context.md).
 
 Three small helpers for building `className` strings.
 
@@ -13,7 +13,7 @@ the classes every version shares, plus the classes for each option. From
 [Badge.tsx](../../../packages/ui/src/badge/Badge.tsx):
 
 ```ts
-const badgeVariants = cva('inline-flex items-center rounded-full px-8 py-4 type-badge', {
+const badgeVariants = cva('type-badge inline-flex shrink-0 items-center rounded-full px-8 py-4', {
   variants: {
     tone: {
       positive: 'bg-status-positive/(--opacity-tint-md) text-positive',
@@ -24,7 +24,7 @@ const badgeVariants = cva('inline-flex items-center rounded-full px-8 py-4 type-
 })
 
 badgeVariants({ tone: 'warning' })
-// → 'inline-flex items-center rounded-full px-8 py-4 type-badge bg-status-warning/… text-warning'
+// → 'type-badge inline-flex shrink-0 items-center rounded-full px-8 py-4 bg-status-warning/(--opacity-tint-md) text-warning'
 ```
 
 Why bother: every option is listed in one place, TypeScript knows the allowed
@@ -38,8 +38,8 @@ component.
 `cx` glues class names together and skips anything falsy:
 
 ```ts
-cx('rounded-md p-12', isOpen && 'bg-raised')
-// isOpen true  → 'rounded-md p-12 bg-raised'
+cx('rounded-md p-12', isOpen && 'bg-inset')
+// isOpen true  → 'rounded-md p-12 bg-inset'
 // isOpen false → 'rounded-md p-12'
 ```
 
@@ -88,8 +88,4 @@ one, and any size, weight or spacing before it; a utility after it tweaks it.
 `cn` everywhere would work, but it costs a parse on every render, and seeing
 `cn` should tell a reader "this component accepts overrides".
 
----
-
----
-
-[← Tailwind and the design tokens](02-tailwind-and-tokens.md) · [State and context →](04-state-and-context.md)
+Previous: [Tailwind and the design tokens](02-tailwind-and-tokens.md). Next: [State and context](04-state-and-context.md).
