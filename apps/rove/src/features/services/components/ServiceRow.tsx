@@ -27,12 +27,12 @@ const KEBAB_REVEAL = cx(
   // Shown, it reaches into the row's right padding, stopping the row's gap
   // (8px) from the edge, so it has the same space on both sides. Collapsed,
   // it also gives back the row's gap, so the values keep the card's padding.
-  '-mr-[calc(var(--card-padding)-8px)]',
+  '-mr-[calc(var(--card-padding)-var(--spacing-8))]',
   '[@media(hover:hover)]:mr-0 [@media(hover:hover)]:-ml-8 [@media(hover:hover)]:w-0',
   '[@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
-  'group-hover/row:-mr-[calc(var(--card-padding)-8px)] group-hover/row:ml-0 group-hover/row:w-[30px] group-hover/row:opacity-100',
-  'focus-visible:-mr-[calc(var(--card-padding)-8px)] focus-visible:ml-0 focus-visible:w-[30px] focus-visible:opacity-100',
-  'data-popup-open:-mr-[calc(var(--card-padding)-8px)] data-popup-open:ml-0 data-popup-open:w-[30px] data-popup-open:opacity-100',
+  'group-hover/row:-mr-[calc(var(--card-padding)-var(--spacing-8))] group-hover/row:ml-0 group-hover/row:w-[30px] group-hover/row:opacity-100',
+  'focus-visible:-mr-[calc(var(--card-padding)-var(--spacing-8))] focus-visible:ml-0 focus-visible:w-[30px] focus-visible:opacity-100',
+  'data-popup-open:-mr-[calc(var(--card-padding)-var(--spacing-8))] data-popup-open:ml-0 data-popup-open:w-[30px] data-popup-open:opacity-100',
 )
 
 /**
