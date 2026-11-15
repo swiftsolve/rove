@@ -24,14 +24,15 @@ import { formatLatencyMs } from '@/utils/format'
  */
 const KEBAB_REVEAL = cx(
   'transition-[width,margin,opacity,color,background] duration-(--duration-fast) ease-in-out',
-  // Shown, it sits inside the row's right padding, so its hover box keeps the
-  // card's padding from the edge, as a card header's actions do. Collapsed, it
-  // also gives back the row's gap, so the values keep that padding.
-  '[@media(hover:hover)]:-ml-8 [@media(hover:hover)]:w-0',
+  // Shown, it reaches into the row's right padding, stopping the row's gap
+  // (8px) from the edge, so it has the same space on both sides. Collapsed,
+  // it also gives back the row's gap, so the values keep the card's padding.
+  '-mr-[calc(var(--card-padding)-8px)]',
+  '[@media(hover:hover)]:mr-0 [@media(hover:hover)]:-ml-8 [@media(hover:hover)]:w-0',
   '[@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
-  'group-hover/row:ml-0 group-hover/row:w-[30px] group-hover/row:opacity-100',
-  'focus-visible:ml-0 focus-visible:w-[30px] focus-visible:opacity-100',
-  'data-popup-open:ml-0 data-popup-open:w-[30px] data-popup-open:opacity-100',
+  'group-hover/row:-mr-[calc(var(--card-padding)-8px)] group-hover/row:ml-0 group-hover/row:w-[30px] group-hover/row:opacity-100',
+  'focus-visible:-mr-[calc(var(--card-padding)-8px)] focus-visible:ml-0 focus-visible:w-[30px] focus-visible:opacity-100',
+  'data-popup-open:-mr-[calc(var(--card-padding)-8px)] data-popup-open:ml-0 data-popup-open:w-[30px] data-popup-open:opacity-100',
 )
 
 /**
