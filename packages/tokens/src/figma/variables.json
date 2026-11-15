@@ -761,7 +761,7 @@
       "collection": "Spacing",
       "type": "FLOAT",
       "code": "var(--spacing-20)",
-      "description": "Content bottom inset",
+      "description": "Dialog to window edge, error states",
       "scopes": [
         "GAP"
       ],

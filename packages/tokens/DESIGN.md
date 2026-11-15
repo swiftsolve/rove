@@ -113,7 +113,7 @@ spacing: # Keys: --spacing-<key>
   "12": "12px" # Side and top inset
   "14": "14px" # Card padding
   "16": "16px" # Between readouts
-  "20": "20px" # Content bottom inset
+  "20": "20px" # Dialog to window edge, error states
 font-size: # Font sizes; a text style sets its own. Keys: --<key>
   font-size-2xs: "10px" # Badges
   font-size-xs: "11px" # Captions, hints, chart axes
