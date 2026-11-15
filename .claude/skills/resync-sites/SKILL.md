@@ -44,5 +44,7 @@ build output, so change them only through the sync scripts.
   out.
 - The new build is in it: the demo's asset hash changed, or a changed value
   (a token's hex, a story) shows up in the built files.
-- Pushing nabilr.com deploys it, so ask before pushing, and say in the summary
-  what is committed but not pushed.
+- Both commits are on nabilr.com's `develop`, where its checkout stays.
+  Pushing `develop` builds nothing. The site goes live only with
+  `git push origin develop:main`, which deploys, so do that only when asked,
+  and say in the summary what is committed but not shipped.
