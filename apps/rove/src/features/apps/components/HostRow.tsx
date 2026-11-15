@@ -78,7 +78,9 @@ function HostName({ host }: { host: HostUsage }) {
 export const HostRow = memo(function HostRow({ host }: { host: HostUsage }) {
   return (
     <li className="flex items-center justify-between gap-12">
-      <span className="inline-flex min-w-0 items-center gap-(--gap-icon-label)">
+      {/* 1px under the icon-label gap: the 18px flag sits 1px wider each side
+          than the 16px app icon it centres under, so the names line up. */}
+      <span className="inline-flex min-w-0 items-center gap-[calc(var(--gap-icon-label)-1px)]">
         <HostIcon host={host} />
         <HostName host={host} />
       </span>

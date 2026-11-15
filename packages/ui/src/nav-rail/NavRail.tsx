@@ -52,7 +52,7 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       ref={railRef}
       data-nav-rail
       className={cx(
-        'relative flex shrink-0 flex-col items-center justify-between gap-12',
+        'relative flex shrink-0 flex-col items-center justify-between gap-(--divider-space)',
         'border-r border-line bg-chrome p-(--page-inset)',
         LAYER_CHROME,
       )}
@@ -75,7 +75,7 @@ export function NavRail({ label, main, footer }: NavRailProps) {
           like the panel borders. */}
       <NavGroup
         className={cx(
-          'relative pt-12',
+          'relative pt-(--divider-space)',
           'before:absolute before:top-0 before:-right-(--page-inset) before:-left-(--page-inset)',
           "before:h-px before:bg-line before:content-['']",
         )}

@@ -72,6 +72,7 @@ const ALLOWED: AllowedEntry[] = [
   { file: 'apps/rove/src/features/speed/components/HistoryCard.tsx', value: 'px-[calc(var(--card-padding)-1px)]' },
   // Lined up with something that isn't spacing: an icon's width, a label column.
   { file: 'apps/rove/src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-padding)+19px)]' },
+  { file: 'apps/rove/src/features/apps/components/HostRow.tsx', value: 'gap-[calc(var(--gap-icon-label)-1px)]' },
   { file: 'apps/rove/src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--gap-media-text))]' },
   {
     file: 'apps/rove/src/features/live-throughput/components/ThroughputChart.tsx',
