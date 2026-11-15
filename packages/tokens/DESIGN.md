@@ -136,16 +136,25 @@ opacity: # Tint strengths (color-mix with transparent) and dimming. Keys: --<key
   opacity-tint-xl: "28%" # The download series’ fill
   opacity-high: "80%" # Chart lines, nearly opaque
   opacity-disabled: "40%" # Disabled controls
-layout: # Fixed sizes and insets of the shell and cards. Keys: --<key>
+layout: # Fixed sizes, insets and gaps of the shell and cards, by role. Keys: --<key>
   titlebar-height: "56px" # Title bar
   rail-item-size: "38px" # Rail items
   card-padding: "14px" # Card inset
   card-header-padding-y: "14px" # Card header, above and below
   card-header-padding-x: "14px" # Card header, sides
   card-header-min-height: "42px" # Compact card header
-  card-header-height: "44px" # Card header
+  card-header-height: "48px" # Card header
   card-body-padding: "14px" # Card body inset
+  card-gap: "10px" # Between cards
   row-padding-y: "8px" # Data row, above and below
+  page-inset: "12px" # Window edge to content
+  divider-space: "14px" # Either side of a divider or band, and inside a band
+  gap-icon-title: "8px" # Icon to card title
+  gap-icon-label: "6px" # Icon or dot to its label
+  gap-media-text: "12px" # Icon tile to its text
+  gap-stacked-lines: "4px" # Line to the caption under it
+  gap-label-value: "8px" # Label to its value
+  gap-readouts: "16px" # Between readouts
 shadows: # Box shadows; Light has its own (light group). Keys: --<key>
   shadow-panel: "0 1px 2px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.1)" # Resting cards
   shadow-raised: "0 12px 32px rgba(0, 0, 0, 0.22)" # Hover, dialogs
@@ -354,9 +363,27 @@ should stay nearly solid, like a chart line behind another.
 
 - Every gap, padding and margin is a `--spacing-*` step.
   [✓ CHECKED by Rove's `checks/raw-values.ts`].
-- Cards use `--card-padding` on every side. The rail and the content column
-  share the side inset `--spacing-12`.
-- A card header is `--card-header-height` tall. A header-like strip that can
+- **Pick spacing by what it separates, not by eye.** A role token names the
+  relationship, so the same relationship gets the same space everywhere:
+
+  | Between | Token |
+  | --- | --- |
+  | The window edge and the content, the rail and the content | `--page-inset` |
+  | Two cards | `--card-gap` |
+  | A card's edge and its content, on every side | `--card-padding` |
+  | Content and a divider or band, either side, and inside a band | `--divider-space` |
+  | A card header's icon and its title | `--gap-icon-title` |
+  | Any other icon or dot and its label | `--gap-icon-label` |
+  | An icon tile and its text | `--gap-media-text` |
+  | A line and the caption under it | `--gap-stacked-lines` |
+  | A label and its value | `--gap-label-value` |
+  | Two readouts | `--gap-readouts` |
+
+  A raw `--spacing-*` step is for a gap no role names.
+- A card is `--card-padding` from its edge on every side, the title included:
+  a `--card-header-height` header centres its 20px title line with the same
+  space above and below. A divider or band keeps that rhythm with
+  `--divider-space`, which equals the card padding. A header-like strip that can
   grow with its content takes `--card-header-min-height` as its minimum instead.
 - **Off the scale only when something else sets the length**, and say why where
   it's used:

@@ -33,7 +33,11 @@ export const EXTRA_GROUPS: [group: string, holds: string, prefixes: string[]][] 
   ['font-family', 'Font stacks', ['font-family']],
   ['font-weight', 'Font weights', ['weight']],
   ['opacity', 'Tint strengths (color-mix with transparent) and dimming', ['opacity']],
-  ['layout', 'Fixed sizes and insets of the shell and cards', ['titlebar', 'rail', 'card', 'row']],
+  [
+    'layout',
+    'Fixed sizes, insets and gaps of the shell and cards, by role',
+    ['titlebar', 'rail', 'page', 'card', 'divider', 'row', 'gap'],
+  ],
   ['shadows', 'Box shadows; Light has its own (light group)', ['shadow']],
   ['focus', 'The keyboard focus ring', ['focus']],
   ['motion', 'Durations and easing curves', ['duration', 'ease']],

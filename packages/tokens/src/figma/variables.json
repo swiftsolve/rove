@@ -2290,7 +2290,7 @@
         "WIDTH_HEIGHT"
       ],
       "values": {
-        "Value": 44
+        "Value": 48
       }
     },
     {
@@ -2795,6 +2795,141 @@
           "spring": {
             "bounce": 0.15
           }
+        }
+      }
+    },
+    {
+      "name": "page/inset",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--page-inset)",
+      "description": "Window edge to content",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/12"
+        }
+      }
+    },
+    {
+      "name": "card/gap",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-gap)",
+      "description": "Between cards",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/10"
+        }
+      }
+    },
+    {
+      "name": "divider/space",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--divider-space)",
+      "description": "Either side of a divider or band, and inside a band",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "gap/icon-title",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-icon-title)",
+      "description": "Icon to card title",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/8"
+        }
+      }
+    },
+    {
+      "name": "gap/icon-label",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-icon-label)",
+      "description": "Icon or dot to its label",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/6"
+        }
+      }
+    },
+    {
+      "name": "gap/media-text",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-media-text)",
+      "description": "Icon tile to its text",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/12"
+        }
+      }
+    },
+    {
+      "name": "gap/stacked-lines",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-stacked-lines)",
+      "description": "Line to the caption under it",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/4"
+        }
+      }
+    },
+    {
+      "name": "gap/label-value",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-label-value)",
+      "description": "Label to its value",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/8"
+        }
+      }
+    },
+    {
+      "name": "gap/readouts",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-readouts)",
+      "description": "Between readouts",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/16"
         }
       }
     }
