@@ -47,7 +47,7 @@ type ListRowProps = Omit<ComponentProps<'button'>, 'children' | 'onClick' | 'dis
 export function ListRow({ onClick, isDisabled = false, className, children, ...props }: ListRowProps) {
   return (
     <button {...props} type="button" className={cn(ROW, className)} {...pressableProps({ isDisabled, onClick })}>
-      <span className="flex min-w-0 flex-1 items-center gap-12">{children}</span>
+      <span className="flex min-w-0 flex-1 items-center gap-(--gap-media-text)">{children}</span>
       <ChevronRightIcon size={16} className={CHEVRON} />
     </button>
   )

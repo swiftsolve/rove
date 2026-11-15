@@ -31,7 +31,7 @@ export function HomeView(): JSX.Element | null {
 
       {/* Two different summaries side by side, not a list: each card is its own
           section. Usage carries two numbers, so it gets the wider column. */}
-      <div className="grid grid-cols-[3fr_2fr] gap-10">
+      <div className="grid grid-cols-[3fr_2fr] gap-(--card-gap)">
         <UsageCard />
         <DevicesCard />
       </div>

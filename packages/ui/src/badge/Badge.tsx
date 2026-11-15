@@ -62,7 +62,7 @@ export function LiveBadge({
   return (
     <span
       className={cn(
-        'type-caption inline-flex items-center gap-6 rounded-full bg-inset px-8 py-4 text-positive',
+        'type-caption inline-flex items-center gap-(--gap-icon-label) rounded-full bg-inset px-8 py-4 text-positive',
         className,
       )}
       {...props}

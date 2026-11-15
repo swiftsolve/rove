@@ -53,7 +53,7 @@ export function UpdateDialog({ update, onDismiss }: { update: PendingUpdate; onD
           )}
           {update.notes && (
             <>
-              <h3 className="type-body-medium mb-8 text-tertiary">What&rsquo;s new</h3>
+              <h3 className="type-body-medium mb-(--gap-label-value) text-tertiary">What&rsquo;s new</h3>
               <ul
                 className={cx(
                   'max-h-[168px] list-disc overflow-y-auto py-10 pr-12 pl-[26px]',

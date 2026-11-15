@@ -8,7 +8,7 @@ import { spokenText } from '@/utils/spoken'
 type SecurityLevel = 'secured' | 'weak' | 'open'
 
 /** Block flex, not inline-flex, which sits the lock on the baseline a little low. */
-const securityBadgeVariants = cva('flex min-w-0 items-center gap-6 in-[dl]:justify-end', {
+const securityBadgeVariants = cva('flex min-w-0 items-center gap-(--gap-icon-label) in-[dl]:justify-end', {
   variants: {
     level: { secured: null, weak: null, open: 'text-negative' },
   },

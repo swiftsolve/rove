@@ -40,9 +40,9 @@ export function CapabilitiesCard() {
                 <UnratedCapability key={capability.id} capability={capability} />
               ))}
         </ul>
-        <CapabilitiesFooter hasResults={hasResults} />
         <ScreenReaderTestStatus />
       </CardBody>
+      <CapabilitiesFooter hasResults={hasResults} />
     </Card>
   )
 }

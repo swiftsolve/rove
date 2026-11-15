@@ -26,12 +26,12 @@ type CardHeaderProps = Omit<ComponentProps<'div'>, 'title' | 'children'> & {
   actions?: ReactNode
 }
 
-/** The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something. */
+/** The card's 48px title row, its title as far from the top as the card's padding: an icon, the title and its actions, then a caret when the card opens something. */
 export function CardHeader({ title, icon, actions, className, ...props }: CardHeaderProps) {
   const { titleId, isOpenable } = useCardContext()
   return (
     <div className={cn(HEADER, className)} {...props}>
-      <div className="flex min-w-0 items-center gap-8">
+      <div className="flex min-w-0 items-center gap-(--gap-icon-title)">
         {icon != null && (
           <span className="inline-flex shrink-0 text-tertiary" aria-hidden>
             {icon}

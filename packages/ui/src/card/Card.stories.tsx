@@ -83,7 +83,7 @@ export const WithEverything: Story = {
   ),
 }
 
-/** A control at the end of the header; the row keeps its 44px height. */
+/** A control at the end of the header; the row keeps its 48px height. */
 export const HeaderActions: Story = {
   render: (args) => (
     <Card {...args}>
@@ -95,7 +95,7 @@ export const HeaderActions: Story = {
   ),
 }
 
-/** Rows that carry their own vertical padding sit in a `rows` body; a footer below gets 12px of air. */
+/** Rows that carry their own vertical padding sit in a `rows` body, which takes their padding back so the text sits the card's padding from its edges. */
 export const RowsBody: Story = {
   render: (args) => (
     <Card {...args}>

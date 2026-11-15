@@ -25,7 +25,7 @@ function HistoryList({ entries }: { entries: SpeedHistoryEntry[] }) {
   }
 
   return (
-    <ul role="list" className="flex flex-col gap-10">
+    <ul role="list" className="flex flex-col gap-(--card-gap)">
       {/* Keyed by when the result was saved, one per test: a new result on top
           leaves the rows below with the keys they had. */}
       {entries.map((entry) => (

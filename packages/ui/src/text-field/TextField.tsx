@@ -5,7 +5,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { cn } from '../utils/cn'
 
 /** The same 8px above the field as the feedback line below it. */
-const LABEL = 'type-body-medium text-tertiary mb-8 block'
+const LABEL = 'type-body-medium text-tertiary mb-(--gap-label-value) block'
 
 /**
  * Explicit line-height pins the field to an even height (18 + 20 = 38px), so the

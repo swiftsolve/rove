@@ -33,7 +33,7 @@ function InterfacesBody({
     return <EmptyState title="No network interfaces found" actions={<Button onClick={onRefresh}>Refresh</Button>} />
   }
   return (
-    <ul role="list" aria-label="Network interfaces" aria-busy={isLoading} className="flex flex-col gap-10">
+    <ul role="list" aria-label="Network interfaces" aria-busy={isLoading} className="flex flex-col gap-(--card-gap)">
       {interfaces.map((iface) => (
         <InterfacePanel key={iface.name} iface={iface} />
       ))}

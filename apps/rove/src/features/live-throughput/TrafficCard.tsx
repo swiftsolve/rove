@@ -1,4 +1,4 @@
-import { ActivityIcon, Card, CardBody, CardHeader, LiveBadge } from '@swiftsolve/rove-ui'
+import { ActivityIcon, Card, CardBody, CardFooter, CardHeader, LiveBadge } from '@swiftsolve/rove-ui'
 
 import { SpeedReadout } from '@/features/live-throughput/components/SpeedReadout'
 import { ThroughputChart } from '@/features/live-throughput/components/ThroughputChart'
@@ -23,17 +23,15 @@ export function TrafficCard() {
         actions={<LiveBadge updatedAt={throughput.timestamp} />}
       />
       <CardBody>
-        <dl className="mb-12 grid grid-cols-2 gap-16">
+        <dl className="grid grid-cols-2 gap-(--gap-readouts)">
           {/* Each counts to the rate the chart's dot is heading to, once a sample. */}
           <SpeedReadout label="Download" mbps={headMbps(history.download, 1)} series="down" />
           <SpeedReadout label="Upload" mbps={headMbps(history.upload, 1)} series="up" />
         </dl>
-
-        {/* Bleeds to the card edges, then pads the graph back in line with the title. */}
-        <div className="-mx-(--card-body-padding) -mb-(--card-body-padding) bg-inset p-(--card-body-padding)">
-          <ThroughputChart download={history.download} upload={history.upload} maxMbps={scaleMaxMbps} />
-        </div>
       </CardBody>
+      <CardFooter>
+        <ThroughputChart download={history.download} upload={history.upload} maxMbps={scaleMaxMbps} />
+      </CardFooter>
     </Card>
   )
 }

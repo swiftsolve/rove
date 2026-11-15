@@ -44,8 +44,8 @@ const ABOVE_TOGGLE = 'relative z-1 pointer-events-none'
 
 const stripVariants = cva(
   [
-    'relative flex w-full items-start gap-12 text-left',
-    'min-h-(--card-header-min-height) px-(--card-header-padding-x) py-(--card-header-padding-y)',
+    'relative flex w-full items-start gap-(--gap-media-text) text-left',
+    'min-h-(--card-header-min-height) p-(--card-padding)',
   ],
   {
     variants: {
@@ -104,7 +104,7 @@ export function ConnectionStrip({ info, titleId, isExpanded }: ConnectionStripPr
         className={cx(ABOVE_TOGGLE, 'translate-y-px self-center')}
         icon={<Icon size={16} />}
       />
-      <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-2 py-2')}>
+      <div className={cx(ABOVE_TOGGLE, 'flex min-w-0 flex-1 flex-col gap-(--gap-stacked-lines) py-2')}>
         <h2 id={titleId} className="type-title truncate text-primary">
           {display.title}
         </h2>

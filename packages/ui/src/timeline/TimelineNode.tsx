@@ -35,7 +35,7 @@ const markerVariants = cva('z-1 flex size-[28px] shrink-0 items-center justify-c
  * visual gap matches the flex gap. Nudged down so the first line's cap height
  * lines up with the marker.
  */
-const CONTENT = 'flex min-w-0 flex-col gap-4 pt-2 *:leading-[1.3]'
+const CONTENT = 'flex min-w-0 flex-col gap-(--gap-stacked-lines) pt-2 *:leading-[1.3]'
 
 /** A TimelineNode colour: any CSS colour, usually a token (`var(--status-positive)`), or `neutral`. */
 export type TimelineNodeColor = TintColor

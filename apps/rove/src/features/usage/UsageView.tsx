@@ -44,20 +44,20 @@ export function UsageView() {
           <Card>
             <CardHeader title="Today" icon={<TodayIcon size={15} />} />
             <CardBody>
-              <dl className="grid grid-cols-2 gap-16">
+              <dl className="grid grid-cols-2 gap-(--gap-readouts)">
                 <BytesMetric label="Downloaded" bytes={today?.rxBytes ?? 0} series="down" />
                 <BytesMetric label="Uploaded" bytes={today?.txBytes ?? 0} series="up" />
               </dl>
-              <TotalsFooter label="Since boot" rxBytes={usage.bootRxBytes} txBytes={usage.bootTxBytes} />
             </CardBody>
+            <TotalsFooter label="Since boot" rxBytes={usage.bootRxBytes} txBytes={usage.bootTxBytes} />
           </Card>
 
           <Card>
             <CardHeader title="Last 7 days" icon={<WeekIcon size={15} />} />
             <CardBody>
               <WeekChart days={usage.days} />
-              <TotalsFooter label="Week total" rxBytes={weekRx} txBytes={weekTx} />
             </CardBody>
+            <TotalsFooter label="Week total" rxBytes={weekRx} txBytes={weekTx} />
           </Card>
         </>
       )}

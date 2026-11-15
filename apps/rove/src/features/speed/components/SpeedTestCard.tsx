@@ -1,6 +1,7 @@
 import {
   Card,
   CardBody,
+  CardFooter,
   CardHeader,
   DirectionIcon,
   InlineMeta,
@@ -27,14 +28,12 @@ import { getLinkCapacityMbps, isMeasuredLatency } from '@/types'
 import { formatLatencyMs, formatSpeedMbps, splitSpeedMbps } from '@/utils/format'
 
 /** The connection the footer names, its icon tinted by medium. */
-const CONNECTION_LABEL = 'inline-flex items-center gap-6 font-medium text-secondary'
+const CONNECTION_LABEL = 'inline-flex items-center gap-(--gap-icon-label) font-medium text-secondary'
 
 /** A hero speed's digits. */
 const SPEED_VALUE = 'type-display metric-value'
 
 const SUBSTAT_VALUE = 'type-body num leading-body text-primary'
-
-const INSET_PANEL = cx('-mx-(--card-body-padding) mt-16 -mb-(--card-body-padding)', 'bg-inset p-(--card-body-padding)')
 
 /**
  * A substat's value: the measured one; before any test, a dimmed zero; else
@@ -104,22 +103,24 @@ function TestProgress() {
   const progress = useSpeedTest((test) => test.progress)
   const runId = useSpeedTest((test) => test.runId)
   return (
-    <div className={cx(INSET_PANEL, 'flex flex-col gap-8')}>
-      <div className="flex items-baseline justify-between gap-12">
-        <span className="type-body text-secondary">{progress.message || 'Starting…'}</span>
-        <span className="type-body num leading-body text-accent-text">{Math.round(progress.progress)}%</span>
+    <CardFooter>
+      <div className="flex flex-col gap-8">
+        <div className="flex items-baseline justify-between gap-12">
+          <span className="type-body text-secondary">{progress.message || 'Starting…'}</span>
+          <span className="type-body num leading-body text-accent-text">{Math.round(progress.progress)}%</span>
+        </div>
+        <div
+          className="w-full"
+          role="progressbar"
+          aria-label="Speed test progress"
+          aria-valuenow={Math.round(progress.progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <WavyProgress progress={progress.progress} runId={runId} />
+        </div>
       </div>
-      <div
-        className="w-full"
-        role="progressbar"
-        aria-label="Speed test progress"
-        aria-valuenow={Math.round(progress.progress)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        <WavyProgress progress={progress.progress} runId={runId} />
-      </div>
-    </div>
+    </CardFooter>
   )
 }
 
@@ -141,8 +142,8 @@ function HeroCell({
   isPlaceholder: boolean
 }) {
   return (
-    <div className="flex flex-col gap-8">
-      <dt className="flex items-center gap-6">
+    <div className="flex flex-col gap-(--gap-label-value)">
+      <dt className="flex items-center gap-(--gap-icon-label)">
         <DirectionIcon series={series} />
         <span className="type-body-medium text-tertiary">{label}</span>
       </dt>
@@ -153,7 +154,7 @@ function HeroCell({
 
 function Substat({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-(--gap-label-value)">
       <dt className="type-body-medium text-tertiary">{label}</dt>
       <dd className={SUBSTAT_VALUE}>{value}</dd>
     </div>
@@ -168,7 +169,7 @@ function ResultFooter({
   linkCapacityMbps: number | null
 }) {
   return (
-    <div className={INSET_PANEL}>
+    <CardFooter>
       <p className="type-caption flex w-full min-w-0 items-center justify-between gap-12 text-tertiary">
         {connection != null && <ConnectionTag connection={connection} />}
         {linkCapacityMbps != null && (
@@ -177,7 +178,7 @@ function ResultFooter({
           </span>
         )}
       </p>
-    </div>
+    </CardFooter>
   )
 }
 
@@ -239,28 +240,28 @@ export const SpeedTestCard = memo(function SpeedTestCard() {
           </p>
         )}
 
-        <dl className="grid grid-cols-2 gap-16">
+        <dl className="grid grid-cols-2 gap-(--gap-readouts)">
           <HeroCell label="Download" series="down" mbps={downloadMbps} isPlaceholder={isEmpty} />
           <HeroCell label="Upload" series="up" mbps={uploadMbps} isPlaceholder={isEmpty} />
         </dl>
 
         {!isTesting && (
-          <dl className="mt-16 grid grid-cols-3 gap-16">
+          <dl className="mt-(--gap-readouts) grid grid-cols-3 gap-(--gap-readouts)">
             <Substat label="Ping" value={substatValue(measuredPing, '0 ms', isEmpty)} />
             <Substat label="Jitter" value={substatValue(measuredJitter, '0 ms', isEmpty)} />
             <Substat label="Loss" value={substatValue(measuredLoss, '0%', isEmpty)} />
           </dl>
         )}
 
-        {isTesting && <TestProgress />}
-        {!isTesting && hasResults && hasFooterInfo && (
-          <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
-        )}
-
         {/* Always mounted so screen readers hear each phase and the result as they
             land; the visible readouts count up every frame, so they can't be live. */}
         <TestStatus />
       </CardBody>
+
+      {isTesting && <TestProgress />}
+      {!isTesting && hasResults && hasFooterInfo && (
+        <ResultFooter connection={connection} linkCapacityMbps={linkCapacityMbps} />
+      )}
     </Card>
   )
 })

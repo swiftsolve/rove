@@ -60,7 +60,6 @@ const ALLOWED: AllowedEntry[] = [
   // leave ~2px empty each side at 11px, ~3px at 13px.
   { file: 'apps/rove/src/features/apps/components/TransferFigures.tsx', value: 'gap-[5px]' },
   { file: 'apps/rove/src/features/apps/components/UsageRow.tsx', value: 'ml-[3px]' },
-  { file: 'packages/ui/src/link/Link.tsx', value: 'gap-[5px]' },
   { file: 'packages/ui/src/link/Link.tsx', value: '-mx-[3px]' },
   // The pill's padding hangs outside the words, so they line up with the text around them.
   { file: 'packages/ui/src/link/Link.tsx', value: 'ml-[-9.5px]' },
@@ -68,12 +67,12 @@ const ALLOWED: AllowedEntry[] = [
   // A 1px border given back, so the content stays on the grid above.
   {
     file: 'apps/rove/src/features/capabilities/components/CapabilityDetailCard.tsx',
-    value: 'px-[calc(var(--card-header-padding-x)-1px)]',
+    value: 'px-[calc(var(--card-padding)-1px)]',
   },
-  { file: 'apps/rove/src/features/speed/components/HistoryCard.tsx', value: 'px-[calc(var(--card-body-padding)-1px)]' },
+  { file: 'apps/rove/src/features/speed/components/HistoryCard.tsx', value: 'px-[calc(var(--card-padding)-1px)]' },
   // Lined up with something that isn't spacing: an icon's width, a label column.
-  { file: 'apps/rove/src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-body-padding)+21px)]' },
-  { file: 'apps/rove/src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--spacing-12))]' },
+  { file: 'apps/rove/src/features/apps/components/AppGroup.tsx', value: 'pl-[calc(var(--card-padding)+19px)]' },
+  { file: 'apps/rove/src/features/services/components/ServiceRow.tsx', value: 'pl-[calc(16px+var(--gap-media-text))]' },
   {
     file: 'apps/rove/src/features/live-throughput/components/ThroughputChart.tsx',
     value: 'pr-[calc(28px+var(--spacing-12))]',
@@ -86,7 +85,6 @@ const ALLOWED: AllowedEntry[] = [
   // Corners off the scale. The About tile redraws the app icon, whose corner is its own.
   { file: 'apps/rove/src/features/about/AboutView.tsx', value: 'rounded-[16px]' },
   // No reason recorded yet: check each against Figma, then snap it to a step or say why.
-  { file: 'apps/rove/src/features/apps/components/HostRow.tsx', value: 'gap-[7px]' },
   { file: 'apps/rove/src/features/timeline/components/TimelineDay.tsx', value: 'mt-[18px]' },
   { file: 'apps/rove/src/app/components/UpdateDialog.tsx', value: 'pl-[26px]' },
 ]

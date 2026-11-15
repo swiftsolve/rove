@@ -73,7 +73,7 @@ export function Readout({ label, icon, size = 'large', className, ...valueParts 
   }
   return (
     <div className={className}>
-      <dt className="mb-8 flex items-center gap-6">
+      <dt className="mb-(--gap-label-value) flex items-center gap-(--gap-icon-label)">
         {icon}
         <span className="type-body-medium text-tertiary">{label}</span>
       </dt>

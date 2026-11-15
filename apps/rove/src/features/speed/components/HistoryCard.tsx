@@ -15,7 +15,7 @@ import {
 } from '@/utils/format'
 
 /** Connection badge; its icon is tinted by medium. */
-const CONNECTION_LABEL = 'inline-flex min-w-0 items-center gap-6 type-body-medium'
+const CONNECTION_LABEL = 'inline-flex min-w-0 items-center gap-(--gap-icon-label) type-body-medium'
 
 type MetricProps = {
   label: string
@@ -45,8 +45,8 @@ function ConnectionBadge({ entry }: { entry: SpeedHistoryEntry }) {
 
 function Metric({ label, value, unit, series }: MetricProps) {
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <dt className="flex items-center gap-6">
+    <div className="flex min-w-0 flex-col gap-(--gap-label-value)">
+      <dt className="flex items-center gap-(--gap-icon-label)">
         {series && <DirectionIcon series={series} size={13} />}
         <span className="type-body-medium text-tertiary">{label}</span>
       </dt>
@@ -63,7 +63,7 @@ function Metric({ label, value, unit, series }: MetricProps) {
  * the content stays aligned with the grid above.
  */
 const CARD_FOOTER = cx(
-  '-mx-(--card-body-padding) mt-8 px-[calc(var(--card-body-padding)-1px)] py-12',
+  '-mx-(--card-padding) mt-(--divider-space) px-[calc(var(--card-padding)-1px)] py-(--divider-space)',
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
@@ -77,15 +77,15 @@ export function HistoryCard({ entry }: { entry: SpeedHistoryEntry }) {
   return (
     // No bottom padding: the footer bleeds to the card's rounded bottom edge.
     <Card as="li">
-      <div className="px-(--card-body-padding) pt-(--card-body-padding)">
-        <div className="mb-12 flex items-center justify-between gap-12">
+      <div className="px-(--card-padding) pt-(--card-padding)">
+        <div className="mb-(--card-padding) flex items-center justify-between gap-12">
           <ConnectionBadge entry={entry} />
           <time className="type-caption shrink-0 text-tertiary" dateTime={new Date(entry.timestamp).toISOString()}>
             {formatDateTime(entry.timestamp)}
           </time>
         </div>
 
-        <dl className="grid grid-cols-3 gap-12">
+        <dl className="grid grid-cols-3 gap-(--gap-readouts)">
           <Metric label="Download" value={download.value} unit={download.unit} series="down" />
           <Metric label="Upload" value={upload.value} unit={upload.unit} series="up" />
           <Metric label="Ping" value={ping?.value ?? <NoValue label="Not measured" />} unit={ping?.unit} />

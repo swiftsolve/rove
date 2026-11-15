@@ -26,7 +26,7 @@ const CHEVRON = [
 ].join(' ')
 
 /** The rows sit on a dark inset panel under the header, as on the connection card. */
-const DETAILS = 'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)'
+const DETAILS = 'bg-inset px-(--card-body-padding) py-(--divider-space)'
 
 /** The connection card's details: a trigger row and the rows it shows. */
 function details() {

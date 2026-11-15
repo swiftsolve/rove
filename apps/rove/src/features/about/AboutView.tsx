@@ -19,7 +19,7 @@ export function AboutView() {
 
   return (
     <div className="page">
-      <div className="flex flex-col items-center gap-4 px-12 pt-16 pb-12 text-center">
+      <div className="flex flex-col items-center gap-(--gap-stacked-lines) px-12 pt-16 pb-12 text-center">
         <span className={APP_ICON_TILE}>
           <BrandIcon size={53} hasGradient />
         </span>

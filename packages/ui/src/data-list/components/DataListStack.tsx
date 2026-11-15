@@ -4,7 +4,7 @@ import { cn } from '../../utils/cn'
 
 /**
  * DataLists grouped by topic, one after another: a hairline between groups,
- * with 12px of air either side of it. The hairline runs end to end, so place
+ * with `--divider-space` either side of it. The hairline runs end to end, so place
  * the stack flush to the card's sides (`CardBody layout="flush"`); each
  * group carries the side inset itself.
  */
@@ -21,7 +21,7 @@ export function DataListStack({
     <div
       className={cn(
         'divide-y divide-line-subtle [&>dl]:px-(--card-body-padding)',
-        '[&>dl:not(:first-child)]:pt-12 [&>dl:not(:last-child)]:pb-12',
+        '[&>dl:not(:first-child)]:pt-(--divider-space) [&>dl:not(:last-child)]:pb-(--divider-space)',
         className,
       )}
     >

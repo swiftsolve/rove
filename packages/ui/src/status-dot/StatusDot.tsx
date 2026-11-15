@@ -36,7 +36,7 @@ type StatusDotProps = Omit<ComponentProps<'span'>, 'children'> & {
    * update for 3s it fades to dim, as the data has stalled.
    */
   pulse?: VariantOf<typeof dotVariants, 'pulse'>
-  /** Its place in a line: a gap and alignment beside text (`mr-8 align-middle`). */
+  /** Its place in a line: a gap and alignment beside text (`mr-(--gap-icon-label) align-middle`). */
   className?: string
 }
 

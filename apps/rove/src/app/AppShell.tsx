@@ -15,14 +15,14 @@ import { locationKey } from '@/app/utils/location'
 /**
  * Column flex so <main> fills the visible area and centres the loading screen.
  * overflow-y: scroll, not scrollbar-gutter, which WebKitGTK ignores until the
- * content overflows. The right inset is 7px of padding plus the 5px scrollbar
- * (base.css), matching the rail's 12px.
+ * content overflows. The right inset is padding plus the 5px scrollbar
+ * (base.css), together the page inset, as on the left and the rail.
  */
 const SCROLL = cx(
   'flex min-h-0 min-w-0 flex-1 flex-col',
   'overflow-x-hidden overflow-y-scroll overscroll-contain [-webkit-overflow-scrolling:touch]',
-  'py-12 pr-(--content-inset-right) pl-12',
-  '[&>.banner]:mb-12',
+  'py-(--page-inset) pr-(--content-inset-right) pl-(--page-inset)',
+  '[&>.banner]:mb-(--card-gap)',
 )
 
 /**
@@ -58,7 +58,7 @@ export function AppShell() {
               <div ref={scrollRef} className={SCROLL} data-scroll-root>
                 <NetworkErrorBanner />
 
-                <main ref={mainRef} className="flex flex-1 flex-col gap-10">
+                <main ref={mainRef} className="flex flex-1 flex-col gap-(--card-gap)">
                   <AppErrorBoundary key={locationKey(location)}>
                     <CurrentScreen />
                   </AppErrorBoundary>

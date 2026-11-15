@@ -15,7 +15,7 @@ import { formatLatencyMs } from '@/utils/format'
  * address field's outer height (line-height 18 + 20 padding + 2 border), so it
  * reads as a same-sized box.
  */
-const RESULT_ROW = 'flex min-h-[40px] items-center gap-8 rounded-sm border border-line bg-inset px-12'
+const RESULT_ROW = 'flex min-h-[40px] items-center gap-(--gap-media-text) rounded-sm border border-line bg-inset px-12'
 
 const resultStatusVariants = cva('type-body shrink-0 font-sans', {
   variants: {

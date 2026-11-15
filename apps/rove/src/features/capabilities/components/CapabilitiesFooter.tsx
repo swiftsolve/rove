@@ -1,25 +1,14 @@
-import { HistoryIcon, Link } from '@swiftsolve/rove-ui'
-import { cx } from 'class-variance-authority'
+import { CardFooter, HistoryIcon, Link } from '@swiftsolve/rove-ui'
 import type { JSX } from 'react'
 
 import { UpdatedAgo } from '@/app/components/UpdatedAgo'
 import { useNavigation } from '@/app/hooks/useNavigation'
 import { useSpeedTest } from '@/features/speed/hooks/useSpeedTest'
 
-const FOOTER_STATUS = 'inline-flex min-w-0 items-center gap-4 truncate text-tertiary'
+const FOOTER_STATUS = 'inline-flex min-w-0 items-center gap-(--gap-icon-label) truncate text-tertiary'
 
-/**
- * Bleeds to the card's edges; the card's own clip rounds its bottom corners.
- * Hand-built, not CardFooter: this band pads 14px and sits 16px below the
- * tiles, where CardFooter pads 12px under the body's 14px. The same before and
- * after a test, so the card keeps its height.
- */
-const FOOTER = cx(
-  'type-caption mt-16 flex items-center justify-between gap-12',
-  'w-[calc(100%+2*var(--card-body-padding))]',
-  '-mx-(--card-body-padding) -mb-(--card-body-padding)',
-  'bg-inset px-(--card-body-padding) py-(--card-header-padding-y)',
-)
+/** The same before and after a test, so the card keeps its height. */
+const FOOTER = 'type-caption flex items-center justify-between gap-12'
 
 /**
  * The Capabilities card's footer: the results' status on the left ("Updated
@@ -28,10 +17,12 @@ const FOOTER = cx(
  */
 export function CapabilitiesFooter({ hasResults }: { hasResults: boolean }): JSX.Element {
   return (
-    <div className={FOOTER}>
-      <FooterStatus hasResults={hasResults} />
-      <OpenSpeedLink />
-    </div>
+    <CardFooter>
+      <div className={FOOTER}>
+        <FooterStatus hasResults={hasResults} />
+        <OpenSpeedLink />
+      </div>
+    </CardFooter>
   )
 }
 

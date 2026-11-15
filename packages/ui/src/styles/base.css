@@ -171,12 +171,12 @@
   }
 
   /* Native controls, carets and autofill follow the theme, not index.html's
-     dark. The content column's right inset is 12px like the left, its
+     dark. The content column's right inset is the page inset like the left, its
      always-on scrollbar included: padding makes up what the bar doesn't. */
   :root {
     color-scheme: dark;
     --scrollbar-size: 5px;
-    --content-inset-right: calc(var(--spacing-12) - var(--scrollbar-size));
+    --content-inset-right: calc(var(--page-inset) - var(--scrollbar-size));
   }
 
   :root.theme-light {

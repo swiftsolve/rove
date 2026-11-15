@@ -53,7 +53,7 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       data-nav-rail
       className={cx(
         'relative flex shrink-0 flex-col items-center justify-between gap-12',
-        'border-r border-line bg-chrome px-12 py-12',
+        'border-r border-line bg-chrome p-(--page-inset)',
         LAYER_CHROME,
       )}
       aria-label={label}
@@ -76,7 +76,7 @@ export function NavRail({ label, main, footer }: NavRailProps) {
       <NavGroup
         className={cx(
           'relative pt-12',
-          'before:absolute before:top-0 before:-right-12 before:-left-12',
+          'before:absolute before:top-0 before:-right-(--page-inset) before:-left-(--page-inset)',
           "before:h-px before:bg-line before:content-['']",
         )}
       >

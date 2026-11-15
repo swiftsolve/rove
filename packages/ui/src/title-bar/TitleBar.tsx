@@ -24,7 +24,7 @@ export function TitleBar({ brand, status, controls }: TitleBarProps) {
     <header
       className={cx(
         'relative flex min-h-(--titlebar-height) shrink-0 items-center justify-between',
-        'border-b border-line bg-chrome pr-(--card-header-padding-x) pl-16 [-webkit-app-region:drag]',
+        'border-b border-line bg-chrome px-(--page-inset) [-webkit-app-region:drag]',
         LAYER_CHROME,
       )}
       data-tauri-drag-region

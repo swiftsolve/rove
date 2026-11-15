@@ -30,7 +30,7 @@ import { useNow } from '@/hooks/useNow'
 import type { LanDevice, LanDeviceKind } from '@/types'
 import { formatMac } from '@/utils/format'
 
-const DEVICE_ROW = cx('flex items-start gap-12', 'px-(--card-header-padding-x) py-(--card-header-padding-y)')
+const DEVICE_ROW = 'flex items-start gap-(--gap-media-text) p-(--card-padding)'
 
 /**
  * A device's kind icon, in a tile coloured by its group so groups scan at a
@@ -56,7 +56,7 @@ const KIND_COLORS: Record<LanDeviceKind, IconTileColor> = {
 }
 
 /** The Online / Offline status beside a device's name. */
-const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6', {
+const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-(--gap-icon-label)', {
   variants: {
     isReachable: { true: 'text-positive', false: 'text-tertiary' },
   },
@@ -169,10 +169,8 @@ export function DeviceRow({ device }: { device: LanDevice }) {
     <Card as="li">
       <div className={DEVICE_ROW}>
         <IconTile color={deviceTileColor(device)} icon={<KindIcon kind={device.kind} />} />
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          {/* mb-2 adds a touch more air below the larger name, on top of the
-              column's 4px gap. */}
-          <div className="mb-2 flex items-start justify-between gap-8">
+        <div className="flex min-w-0 flex-1 flex-col gap-(--gap-stacked-lines)">
+          <div className="flex items-start justify-between gap-8">
             <h2 className={DEVICE_NAME}>
               <InlineMeta items={nameParts} />
             </h2>

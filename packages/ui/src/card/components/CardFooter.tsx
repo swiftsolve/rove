@@ -7,10 +7,14 @@ type CardFooterProps = Omit<ComponentProps<'div'>, 'children'> & {
   children: ReactNode
 }
 
-/** A sunken band below the body, flush to the card's edges: a footnote or status. */
+/** A sunken band below the body, flush to the card's edges: a footnote or status. It pads `--divider-space`, as the body above it does. */
 export function CardFooter({ className, children, ...props }: CardFooterProps) {
   return (
-    <div className={cn('bg-inset px-(--card-body-padding) py-12', className)} data-card-footer="" {...props}>
+    <div
+      className={cn('bg-inset px-(--card-body-padding) py-(--divider-space)', className)}
+      data-card-footer=""
+      {...props}
+    >
       {children}
     </div>
   )

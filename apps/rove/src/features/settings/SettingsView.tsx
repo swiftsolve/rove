@@ -41,14 +41,14 @@ const rowVariants = cva('flex justify-between py-(--row-padding-y)', {
 const statusVariants = cva('type-caption flex items-center', {
   variants: {
     kind: {
-      'up-to-date': 'gap-6 text-positive',
+      'up-to-date': 'gap-(--gap-icon-label) text-positive',
       available: 'justify-between gap-12 text-secondary',
       failed: 'text-negative',
     },
   },
 })
 
-const ROW_TEXT = 'flex flex-col gap-4 min-w-0'
+const ROW_TEXT = 'flex flex-col gap-(--gap-stacked-lines) min-w-0'
 const ROW_TITLE = 'type-body font-medium text-primary'
 const ROW_DESCRIPTION = 'type-caption text-tertiary'
 

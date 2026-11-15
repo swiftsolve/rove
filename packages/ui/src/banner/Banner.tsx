@@ -61,7 +61,7 @@ export function Banner({ variant, title, description, onRetry }: BannerProps): J
         <AlertIcon size={16} />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-8">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-(--gap-stacked-lines)">
           <p className="text-primary">{title}</p>
           <p className="type-body text-secondary">{description}</p>
         </div>

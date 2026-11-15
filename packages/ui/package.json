@@ -26,7 +26,7 @@
     "@base-ui/react": "^1.9.0",
     "@clack/core": "^1.6.0",
     "@clack/prompts": "^1.9.0",
-    "@swiftsolve/rove-tokens": "^4.6.3",
+    "@swiftsolve/rove-tokens": "^4.7.0",
     "class-variance-authority": "^0.7.1",
     "commander": "^15.1.0",
     "ldrs": "^1.1.9",

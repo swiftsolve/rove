@@ -110,7 +110,7 @@ const captionVariants = cva('flex items-center gap-2', {
   },
 })
 
-const columnVariants = cva('flex w-[120px] min-w-0 flex-col gap-4', {
+const columnVariants = cva('flex w-[120px] min-w-0 flex-col gap-(--gap-stacked-lines)', {
   variants: {
     align: { start: 'items-start text-left', center: 'items-center text-center', end: 'items-end text-right' },
   },
@@ -435,7 +435,7 @@ function Node({ align, name, detail }: { align: 'start' | 'center' | 'end'; name
 }
 
 function FooterStatus({ isTesting, lastTest }: { isTesting: boolean; lastTest: SpeedHistoryEntry | null }) {
-  const STATUS = 'inline-flex min-w-0 items-center gap-4 truncate text-tertiary'
+  const STATUS = 'inline-flex min-w-0 items-center gap-(--gap-icon-label) truncate text-tertiary'
   if (isTesting) return <span className={STATUS}>Testing…</span>
   if (!lastTest) return <span className={STATUS}>Not tested yet</span>
   return (

@@ -33,7 +33,7 @@ const PREVIEW_CAPABILITIES = PREVIEW_IDS.flatMap((id) =>
 const LIST = 'flex flex-col'
 
 /** Name over description, as in a service row: Body, then Caption 2px below. */
-const ROW_TEXT = 'flex min-w-0 flex-1 flex-col gap-2'
+const ROW_TEXT = 'flex min-w-0 flex-1 flex-col gap-(--gap-stacked-lines)'
 
 /** Tertiary while a test runs, like the muted tile: the rating is about to change. */
 const levelVariants = cva('type-caption shrink-0', {
@@ -83,7 +83,7 @@ function PreviewRow({ definition }: { definition: CapabilityDefinition }) {
   return (
     // The a11y audit waives colour contrast inside this attribute: the fade is meant.
     <li className={PREVIEW_ROW} data-faded-preview>
-      <div className="flex min-w-0 flex-1 items-center gap-12">
+      <div className="flex min-w-0 flex-1 items-center gap-(--gap-media-text)">
         <IconTile color="neutral" icon={<CapabilityIcon id={definition.id} size={17} />} />
         <div className={ROW_TEXT}>
           <span className="type-body truncate text-primary">{definition.label}</span>

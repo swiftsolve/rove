@@ -23,7 +23,7 @@ export function ConnectionDetailsPanel({ info }: ConnectionDetailsPanelProps) {
     // Keeps its padding when closed, so the rows hold their inset through the
     // height animation; the wrapper does the clipping. The sides take the
     // card's own inset, so the rows line up with the strip above.
-    <div className="bg-inset px-(--card-body-padding) py-12">
+    <div className="bg-inset px-(--card-padding) py-(--divider-space)">
       {isWifiNetwork(info) && <WifiLinkRows info={info} />}
       {isEthernetNetwork(info) && <EthernetLinkRows info={info} />}
     </div>

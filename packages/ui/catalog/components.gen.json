@@ -2008,7 +2008,7 @@
     "DataListStack": {
       "libraryGroup": "Data display",
       "sourceFile": "packages/ui/src/data-list/components/DataListStack.tsx",
-      "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith 12px of air either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
+      "description": "DataLists grouped by topic, one after another: a hairline between groups,\nwith `--divider-space` either side of it. The hairline runs end to end, so place\nthe stack flush to the card's sides (`CardBody layout=\"flush\"`); each\ngroup carries the side inset itself.",
       "figmaComponent": {
         "whyNoFigmaComponent": "Only arranges Data lists with a hairline between groups; Figma draws the stack by hand from Data rows and a divider, as in the Router card."
       },
@@ -3044,7 +3044,7 @@
     "CardBody": {
       "libraryGroup": "Containers",
       "sourceFile": "packages/ui/src/card/components/CardBody.tsx",
-      "description": "The padded body. A little top padding gives the content more room below the title than above it.",
+      "description": "The padded body: the card's padding on every side, counting the header's space under the title.",
       "figmaComponent": {
         "figmaName": "Card",
         "figmaNodeId": "565:7535"
@@ -3112,7 +3112,7 @@
     "CardFooter": {
       "libraryGroup": "Containers",
       "sourceFile": "packages/ui/src/card/components/CardFooter.tsx",
-      "description": "A sunken band below the body, flush to the card's edges: a footnote or status.",
+      "description": "A sunken band below the body, flush to the card's edges: a footnote or status. It pads `--divider-space`, as the body above it does.",
       "figmaComponent": {
         "figmaName": "Card",
         "figmaNodeId": "565:7535"
@@ -3169,7 +3169,7 @@
     "CardHeader": {
       "libraryGroup": "Containers",
       "sourceFile": "packages/ui/src/card/components/CardHeader.tsx",
-      "description": "The card's 44px title row: an icon, the title and its actions, then a caret when the card opens something.",
+      "description": "The card's 48px title row, its title as far from the top as the card's padding: an icon, the title and its actions, then a caret when the card opens something.",
       "figmaComponent": {
         "figmaName": "Card header",
         "figmaNodeId": "4:65"

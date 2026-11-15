@@ -62,5 +62,5 @@ export const Default: Story = {}
 /** A badge at the end of the row. */
 export const WithBadge: Story = { args: { actions: ACTIONS.badge } }
 
-/** A control at the end; the row keeps its 44px height. */
+/** A control at the end; the row keeps its 48px height. */
 export const WithButton: Story = { args: { title: 'DNS', actions: ACTIONS.button } }

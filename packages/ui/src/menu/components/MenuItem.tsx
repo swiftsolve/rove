@@ -8,7 +8,7 @@ import type { VariantOf } from '../../utils/variants'
 
 const itemVariants = cva(
   [
-    'type-body-medium flex w-full items-center gap-8 rounded-xs p-8 text-left',
+    'type-body-medium flex w-full items-center gap-(--gap-icon-label) rounded-xs p-8 text-left',
     'transition-[color,background] duration-(--duration-fast) ease-in-out',
     // The pointer and the arrow keys highlight an item the same way, as in a
     // native menu (Base UI's data-highlighted). The highlight is the focus

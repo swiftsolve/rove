@@ -12,7 +12,7 @@ import { CAPABILITY_LEVEL_LABELS } from '@/features/capabilities/utils/capabilit
 import type { CapabilityLevel, CapabilityRating, SpeedResult } from '@/types'
 
 /** Three tiers: an intro row with the level, a metrics grid on an inset panel, then the verdict. */
-const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-header-padding-y)'
+const CARD_CONTENT = 'flex flex-col px-(--card-padding) pt-(--card-padding)'
 
 /**
  * One row whatever the values: each column hugs its text, which never wraps,
@@ -21,7 +21,7 @@ const CARD_CONTENT = 'flex flex-col px-(--card-header-padding-x) pt-(--card-head
  */
 const METRICS = cx(
   'grid auto-cols-max grid-flow-col justify-between gap-x-8',
-  '-mx-(--card-header-padding-x) bg-inset px-(--card-header-padding-x) py-12',
+  '-mx-(--card-padding) bg-inset px-(--card-padding) py-(--divider-space)',
 )
 
 const metricValueVariants = cva('type-body leading-[1.25] font-medium whitespace-nowrap', {
@@ -37,7 +37,7 @@ const metricValueVariants = cva('type-body leading-[1.25] font-medium whitespace
  */
 const VERDICT = cx(
   'flex items-center gap-12',
-  '-mx-(--card-header-padding-x) px-[calc(var(--card-header-padding-x)-1px)] py-12',
+  '-mx-(--card-padding) px-[calc(var(--card-padding)-1px)] py-(--divider-space)',
   'rounded-b-lg border border-t-0 border-inset bg-base',
 )
 
@@ -63,12 +63,12 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
   return (
     <Card as="li" className="scroll-mt-12" data-capability-id={capability.id}>
       <div className={CARD_CONTENT}>
-        <div className="flex items-center gap-10 pb-12">
+        <div className="flex items-center gap-(--gap-media-text) pb-(--divider-space)">
           <IconTile
             color={CAPABILITY_LEVEL_TILE_COLORS[capability.level]}
             icon={<CapabilityIcon id={capability.id} size={17} />}
           />
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex min-w-0 flex-1 flex-col gap-(--gap-stacked-lines)">
             <h2 className="type-heading">{capability.label}</h2>
             <span className="type-caption text-tertiary">{capability.description}</span>
           </div>
@@ -79,7 +79,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
 
         <dl className={METRICS}>
           {checks.map((check) => (
-            <div key={check.label} className="flex min-w-0 flex-col gap-6">
+            <div key={check.label} className="flex min-w-0 flex-col gap-(--gap-label-value)">
               <dt className="type-body-medium leading-[1.15] whitespace-nowrap text-tertiary">{check.label}</dt>
               <dd className={cx(metricValueVariants({ isUnmet: !check.isMet }), 'num')}>
                 {check.have ?? <NoValue label="Not measured" />}
@@ -92,7 +92,7 @@ export function CapabilityDetailCard({ capability, speed }: { capability: Capabi
         </dl>
 
         <div className={VERDICT}>
-          <p className="type-body flex min-w-0 flex-1 items-start gap-6 text-secondary">
+          <p className="type-body flex min-w-0 flex-1 items-start gap-(--gap-icon-label) text-secondary">
             <span className={verdictIconVariants({ level: capability.level })}>
               <VerdictIcon level={capability.level} />
             </span>

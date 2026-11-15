@@ -35,7 +35,7 @@ export function ErrorNotice({ icon, title, description, size, onRetry }: ErrorNo
       <span className={chipVariants({ size })} aria-hidden>
         {icon}
       </span>
-      <div className="flex flex-col items-center gap-4 text-center">
+      <div className="flex flex-col items-center gap-(--gap-stacked-lines) text-center">
         <p className="type-heading leading-body text-primary">{title}</p>
         <p className="type-body max-w-[260px] text-tertiary">{description}</p>
       </div>

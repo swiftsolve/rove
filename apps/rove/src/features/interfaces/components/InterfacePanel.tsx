@@ -12,7 +12,7 @@ import {
   Tooltip,
   WifiIcon,
 } from '@swiftsolve/rove-ui'
-import { cva, cx } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 
 import type { NetworkInterfaceSummary } from '@/types'
 import { formatConnectionType, formatDisplayValue, formatMac, formatOperState, formatSpeedMbps } from '@/utils/format'
@@ -38,20 +38,14 @@ const tagVariants = cva('type-caption', {
 })
 
 /** The link state: green while up. */
-const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-6 capitalize', {
+const stateVariants = cva('type-caption inline-flex shrink-0 items-center gap-(--gap-icon-label) capitalize', {
   variants: {
     state: { up: 'text-positive', down: 'text-tertiary', unknown: 'text-tertiary' },
   },
 })
 
-/**
- * The bottom pad is trimmed: with no divider, header and body padding stacked
- * into too big a gap below the name.
- */
-const PANEL_HEADER = cx(
-  'flex items-center justify-between gap-12',
-  'px-(--card-header-padding-x) pt-(--card-header-padding-y) pb-8',
-)
+/** The card's padding all round, so the body starts as far below the name as the name sits from the top. */
+const PANEL_HEADER = 'flex items-center justify-between gap-12 p-(--card-padding)'
 
 function InterfaceIcon({ iface }: { iface: NetworkInterfaceSummary }) {
   if (iface.connectionType === 'wifi') return <WifiIcon size={15} />

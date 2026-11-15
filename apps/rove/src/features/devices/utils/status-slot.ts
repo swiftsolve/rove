@@ -8,7 +8,7 @@ export const LEAVING_OVERLAY = ['absolute top-0 left-0', 'animate-scan-slide-out
  * Nudged up 1px from the x-height middle to centre on the digits, identical in
  * both so the dot doesn't move when they swap.
  */
-export const STATUS_DOT = 'relative -top-px mr-8 align-middle'
+export const STATUS_DOT = 'relative -top-px mr-(--gap-icon-label) align-middle'
 
 /** Matches --duration-normal, the length of `animate-scan-slide-out`. */
 export const SCAN_EXIT_MS = 220

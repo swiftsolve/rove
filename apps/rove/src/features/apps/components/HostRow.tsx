@@ -58,7 +58,7 @@ function HostName({ host }: { host: HostUsage }) {
   return (
     <UiTooltip
       content={
-        <span className="flex flex-col gap-2">
+        <span className="flex flex-col gap-(--gap-stacked-lines)">
           {/* break-all fills each line to the edge, rather than breaking at a
               hyphen and leaving the box padded out to its cap. */}
           <span className="break-all text-primary">{host.host}</span>
@@ -78,7 +78,7 @@ function HostName({ host }: { host: HostUsage }) {
 export const HostRow = memo(function HostRow({ host }: { host: HostUsage }) {
   return (
     <li className="flex items-center justify-between gap-12">
-      <span className="inline-flex min-w-0 items-center gap-[7px]">
+      <span className="inline-flex min-w-0 items-center gap-(--gap-icon-label)">
         <HostIcon host={host} />
         <HostName host={host} />
       </span>

@@ -5,17 +5,19 @@ import { cn } from '../../utils/cn'
 import type { VariantOf } from '../../utils/variants'
 
 /**
- * The body's padding, by what it holds. Rows that carry their own vertical
- * padding stack with none above them, and just enough below to clear a footer
- * (CardFooter marks itself `data-card-footer`).
+ * The body's padding, by what it holds. The header already leaves the card's
+ * padding under its title, so no body pads its top. Rows carry their own
+ * vertical padding, so a `rows` body takes it back above and below: the first
+ * and last rows' words still sit the card's padding from the title and the
+ * edge (or a CardFooter, which marks itself `data-card-footer`).
  * It grows to fill an openable card, so content can sit at its foot.
  */
 const bodyVariants = cva('grow', {
   variants: {
     layout: {
-      default: 'px-(--card-body-padding) pt-4 pb-(--card-body-padding)',
-      rows: 'flex flex-col px-(--card-body-padding) pb-(--card-body-padding) has-[+[data-card-footer]]:pb-12',
-      flush: 'pt-4 pb-(--card-body-padding)',
+      default: 'px-(--card-body-padding) pb-(--card-body-padding)',
+      rows: '-mt-(--row-padding-y) flex flex-col px-(--card-body-padding) pb-[calc(var(--card-body-padding)-var(--row-padding-y))]',
+      flush: 'pb-(--card-body-padding)',
     },
   },
   defaultVariants: { layout: 'default' },
@@ -32,7 +34,7 @@ type CardBodyProps = Omit<ComponentProps<'div'>, 'children'> & {
   children: ReactNode
 }
 
-/** The padded body. A little top padding gives the content more room below the title than above it. */
+/** The padded body: the card's padding on every side, counting the header's space under the title. */
 export function CardBody({ layout = 'default', className, children, ...props }: CardBodyProps) {
   return (
     <div className={cn(bodyVariants({ layout }), className)} {...props}>

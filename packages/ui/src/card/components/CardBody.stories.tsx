@@ -88,7 +88,7 @@ type Story = StoryObj<typeof meta>
 /** Padded all round. */
 export const Default: Story = {}
 
-/** Rows that carry their own vertical padding: none above them, 12px above a footer. */
+/** Rows that carry their own vertical padding: the body takes it back, so the text sits the card's padding from its edges. */
 export const Rows: Story = { args: { layout: 'rows' } }
 
 /** A DataListStack, its hairlines running to the card's sides. */

@@ -12,7 +12,7 @@ import type { VariantOf } from '../../utils/variants'
 const statusVariants = cva(
   [
     'type-body-medium',
-    'mt-px inline-flex items-center gap-6 [-webkit-app-region:no-drag]',
+    'mt-px inline-flex items-center gap-(--gap-icon-label) [-webkit-app-region:no-drag]',
     'transition-[color] duration-(--duration-normal) ease-in-out',
   ],
   {

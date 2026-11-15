@@ -44,7 +44,7 @@ export function CapabilityDetailsView({ targetId }: CapabilityDetailsViewProps) 
         description={completedAt != null ? <UpdatedAgo timestamp={completedAt} /> : undefined}
         onBack={back}
       />
-      <ul role="list" className="flex flex-col gap-10" ref={listRef}>
+      <ul role="list" className="flex flex-col gap-(--card-gap)" ref={listRef}>
         {/* The Speed view only opens this page once a result is in. */}
         {speed != null &&
           capabilities.map((capability) => (

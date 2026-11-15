@@ -83,8 +83,8 @@ function DevicesBody({
     )
   }
   return (
-    <div className="flex flex-col gap-10">
-      <ul role="list" aria-label="Devices" aria-busy={isScanning} className="flex flex-col gap-10">
+    <div className="flex flex-col gap-(--card-gap)">
+      <ul role="list" aria-label="Devices" aria-busy={isScanning} className="flex flex-col gap-(--card-gap)">
         {devices.map((device) => (
           <DeviceRow key={`${device.mac}-${device.ip}`} device={device} />
         ))}

@@ -11,7 +11,7 @@ import { totalBytes, type Transfer, transferLabel } from '@/features/apps/utils/
  * The row, not the list, owns the inset, so the hairlines between rows span the
  * full width.
  */
-const rowVariants = cva('flex flex-col gap-8 px-(--card-body-padding) py-12', {
+const rowVariants = cva('flex flex-col gap-8 px-(--card-padding) py-(--divider-space)', {
   variants: {
     isLink: {
       true: cx(

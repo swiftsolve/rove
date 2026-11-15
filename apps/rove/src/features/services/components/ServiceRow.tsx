@@ -23,18 +23,23 @@ import { formatLatencyMs } from '@/utils/format'
  * it has focus or its menu is open. Touch can't hover, so it always shows there.
  */
 const KEBAB_REVEAL = cx(
-  'transition-[width,opacity,color,background] duration-(--duration-fast) ease-in-out',
-  '[@media(hover:hover)]:w-0 [@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
-  'group-hover/row:w-[30px] group-hover/row:opacity-100',
-  'focus-visible:w-[30px] focus-visible:opacity-100',
-  'data-popup-open:w-[30px] data-popup-open:opacity-100',
+  'transition-[width,margin,opacity,color,background] duration-(--duration-fast) ease-in-out',
+  // Shown, it reaches into the row's right padding: its 30px hit area centres the
+  // dots, so their ink still sits about the card's padding from the edge.
+  // Collapsed, it also gives back the row's gap, so the values keep that padding.
+  '-mr-(--card-padding)',
+  '[@media(hover:hover)]:mr-0 [@media(hover:hover)]:-ml-8 [@media(hover:hover)]:w-0',
+  '[@media(hover:hover)]:overflow-hidden [@media(hover:hover)]:opacity-0',
+  'group-hover/row:-mr-(--card-padding) group-hover/row:ml-0 group-hover/row:w-[30px] group-hover/row:opacity-100',
+  'focus-visible:-mr-(--card-padding) focus-visible:ml-0 focus-visible:w-[30px] focus-visible:opacity-100',
+  'data-popup-open:-mr-(--card-padding) data-popup-open:ml-0 data-popup-open:w-[30px] data-popup-open:opacity-100',
 )
 
 /**
  * One line of a row's body: left-hand text that ellipsises, right-hand value
  * that holds its width.
  */
-const LINE = 'flex min-w-0 items-center gap-12'
+const LINE = 'flex min-w-0 items-center gap-(--gap-media-text)'
 
 type RowMenuProps = {
   service: ServiceDefinition
@@ -112,11 +117,9 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
   const isDown = probe ? isErroring || (probe.latencyMs === null && !isInternetUnreachable) : false
 
   return (
-    // Less right padding than left so the kebab sits closer to the card edge: its
-    // 30px hit area already carries visual breathing room around the dots.
-    <li className="group/row flex items-center gap-8 py-12 pr-6 pl-16">
+    <li className="group/row flex items-center gap-8 px-(--card-padding) py-(--divider-space)">
       {/* Takes the row's free width so both lines can ellipsise their left-hand text. */}
-      <div className="flex min-w-0 flex-auto flex-col gap-2">
+      <div className="flex min-w-0 flex-auto flex-col gap-(--gap-stacked-lines)">
         <div className={LINE}>
           <ServiceIcon host={service.host} name={service.name} />
           <span className="type-body min-w-0 flex-auto truncate text-primary">{service.name}</span>
@@ -133,7 +136,7 @@ export function ServiceRow({ service, probe, seededLatencyMs, samples, isInterne
         </div>
         {/* Indent the URL line so it starts under the name, clearing the favicon
             (16px) and its gap that lead the line above. */}
-        <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--spacing-12))]')}>
+        <div className={cx(LINE, 'min-h-[1.25em] pl-[calc(16px+var(--gap-media-text))]')}>
           <span className="type-caption min-w-0 flex-auto truncate text-tertiary">{service.host}</span>
           {/* A steady min-width so the URL's ellipsis to its left doesn't shift as
               the animated latency number changes width poll to poll. */}

@@ -98,7 +98,7 @@ export function PageHeader({ title, description, status, actions, info, icon, on
           {icon}
         </span>
       )}
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-(--gap-stacked-lines)">
         <h1 className="type-title text-primary">{title}</h1>
         {hasLine && (
           <div className={LINE}>
