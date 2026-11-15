@@ -21,6 +21,7 @@ Read the rows your task matches:
 | A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
+| A diagram in `docs/` | `docs/assets/README.md`: the style, and `npm run diagrams`, which draws them |
 
 ## Procedures
 

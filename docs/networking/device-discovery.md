@@ -4,7 +4,7 @@ The Devices screen answers a deceptively hard question: **"what's on my network,
 and what is each thing?"**, without admin rights, without installing a driver,
 and in a couple of seconds. This page walks the whole pipeline, from an empty
 subnet to a labelled list of "Living-Room-AppleTV / tv" entries, using the real
-code in `crates/rove-core/src/devices/` and its `mdns.rs` and `oui.rs`.
+code in `crates/rove-core/src/devices.rs` and `devices/`.
 
 > Rove fuses **nine** signal sources: an ICMP sweep, a TCP `connect()` probe,
 > mDNS, SSDP/UPnP, reverse DNS, an HTTP banner grab, a NetBIOS name query, an
@@ -21,9 +21,9 @@ compile-time-embedded data, all in service of one feature.
 ## The core problem
 
 There is no OS API that just *returns* your LAN devices. What exists is the
-kernel's **neighbor table** (a.k.a. the ARP cache on IPv4): a map of `IP → MAC`
-for hosts the machine has *recently communicated with*. That's the closest thing
-to ground truth: if an IP↔MAC pair is in there, that device provably exists and
+kernel's **neighbor table** (a.k.a. the ARP cache on IPv4): a map from IP to
+MAC for hosts the machine has *recently communicated with*. That's the closest thing
+to ground truth: if an IP and MAC pair is in there, that device provably exists and
 responded at the link layer.
 
 Two problems with using it directly:
@@ -43,7 +43,7 @@ identified device. That's the pipeline.
 From `scan()` in `crates/rove-core/src/devices.rs`:
 
 <div align="center">
-  <img src="../assets/pipeline-glance.svg" width="840" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
+  <img src="../assets/pipeline-glance.svg" width="820" alt="Device discovery in five steps: Scope finds the subnet, Provoke wakes every host, Read takes the neighbor table, Enrich adds a vendor, name and kind, and Assemble adds this machine, sorts and dedupes by MAC" />
 </div>
 
 1. **Scope**: find my subnet (e.g. `192.168.1.0/24`).
@@ -54,7 +54,7 @@ From `scan()` in `crates/rove-core/src/devices.rs`:
 4. **Enrich**: per host: vendor (OUI), name (mDNS, SSDP, NetBIOS, DHCP,
    reverse DNS), model (mDNS, SSDP, SNMP), OS (DHCP), kind (classify), and
    liveness.
-5. **Assemble**: add this machine, sort gateway→self→by-IP, dedupe by MAC.
+5. **Assemble**: add this machine, sort gateway, then self, then by IP, and dedupe by MAC.
 
 The stage-2 probes/listeners all run concurrently, bounded by a single
 `DISCOVERY_WINDOW` of 3.2 seconds (in `devices.rs`), not the sum of
@@ -115,21 +115,20 @@ ways, plus two passive listeners (mDNS and SSDP), all at once (the stage-2
 Ping every address in the subnet, 64 at a time:
 
 ```rust
-futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
+futures_util::stream::iter(hosts)
     .map(|ip| async move {
-        let cmd = crate::platform::ping_command(&ip, 1, PING_WAIT_MS); // 700 ms
-        let replied = crate::utils::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT)
-            .await
-            .is_some();
+        let cmd = crate::platform::ping_command(&ip.to_string(), 1, PING_WAIT_MS);
+        let replied = crate::utils::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT).await.is_some();
         replied.then_some(ip)
     })
-    .buffer_unordered(CONCURRENT_PROBES)   // 64
+    .buffer_unordered(CONCURRENT_PROBES) // 64
     .filter_map(|replied| async move { replied })
-    .collect::<HashSet<String>>()
+    .collect::<HashSet<Ipv4Addr>>()
     .await
 ```
 
-**Discovery doesn't need the reply.** The ping is bait: the ARP exchange has
+Each ping waits 700 ms for its reply (1 s on Linux, where `ping -W` takes whole
+seconds). **Discovery doesn't need the reply.** The ping is bait: the ARP exchange has
 already happened. The IPs that did reply are kept only as a liveness signal
 (4j). It only runs on `/24`–`/30` subnets (`hosts` in `subnet.rs`, shared with
 the TCP probe). Sweeping a `/16` would be 65k pings, which is antisocial, and
@@ -154,17 +153,17 @@ no privileges*, unlike a real ARP or SYN scan. It's just `TcpStream::connect`
 (the `//!` header of `probe.rs`).
 
 There's a bonus: a port that actually *accepts* is a strong hint about the device
-type (9100 → printer, 32400 → Plex, 62078 → iPhone). So the probe returns the
+type (9100 means printer, 32400 means Plex, 62078 means iPhone). So the probe returns the
 map of open ports for the classifier, plus the set of hosts that accepted or
 refused, for liveness.
 
 ```rust
 match timeout(CONNECT_TIMEOUT, TcpStream::connect(addr)).await {
-    Ok(Ok(_stream)) => Some((ip.to_string(), Some(port))),  // accepted → record it
-    Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => {
-        Some((ip.to_string(), None))                          // refused: alive, port closed
-    }
-    _ => None,                                                // timeout proves nothing
+    Ok(Ok(_stream)) => Some((ip, Some(port))), // accepted: record the open port
+    // Refused (RST): the port is closed but the host is alive.
+    Ok(Err(e)) if e.kind() == ErrorKind::ConnectionRefused => Some((ip, None)),
+    // Timeout or unreachable proves nothing.
+    _ => None,
 }
 ```
 
@@ -222,7 +221,7 @@ Like mDNS, it's **pure Rust with no platform branch**: a `tokio` UDP socket plus
 
 After the provocation window, `neighbor_table()` (in `platform.rs`) reads
 the now-populated table: `ip neigh show` on Linux (which carries a
-`REACHABLE`/`STALE`/… state) or `arp -a` elsewhere, with no state. Entries are
+`REACHABLE`/`STALE`/… state), `arp -an` on macOS or `arp -a` on Windows, with no state. Entries are
 filtered to the scan's subnet (the `in_scope` filter in `scan()`). **This list,
 not the ping/probe results, is the authoritative "who exists."** The probes were only there to fill it.
 
@@ -348,11 +347,13 @@ the privileged helper) the cache stays empty.
 
 ### 4h. Choosing the name: the preference chain
 
-With up to five name sources in hand, `build_device` (in `devices.rs`) picks
-the most human-friendly one available, in order:
+With up to five name sources in hand, `pick_hostname` (in `devices.rs`) picks
+the most human-friendly one available, in order, with a synthetic label
+(`NameRank::Synthetic`, e.g. "Amazon Echo" from a fingerprint) as a last
+resort:
 
 ```
-mDNS friendly name  →  SSDP friendlyName  →  NetBIOS name  →  DHCP hostname  →  reverse-DNS
+mDNS friendly name  →  SSDP friendlyName  →  NetBIOS name  →  DHCP hostname  →  reverse-DNS  →  synthetic
 ```
 
 So "Living room clock" (mDNS) beats "Living Room TV" (SSDP) beats "DESKTOP-3F9K2"
@@ -405,9 +406,9 @@ anything). The scoring only changes the outcome when several weak signals
 corroborate against a lone noisy one, e.g. an SSDP `modelName`, `friendlyName`
 and `deviceType` agreeing on a printer. Ties break first toward the kind with the
 strongest single signal, then toward the *more specific* kind (nas over computer,
-camera over iot), via ordering in `KIND_NAMES` (in `classify.rs`). A win by less
+camera over iot), via the order of `DeviceKind::VOTABLE` (in `kind.rs`). A win by less
 than one vendor-grade vote, with nothing hostname-grade behind it, comes back as
-`Confidence::Low`, and the UI hedges it ("Phone?").
+`KindConfidence::Low`, and the UI hedges it ("Phone?").
 
 Two hard short-circuits come first: the gateway is always `"router"`, and this
 machine is always `"computer"` (the top of `classify`).
@@ -418,7 +419,7 @@ TV not a phone, and a Kasa smart plug types as IoT even though TP-Link mostly
 makes routers. There's a whole test suite (`devices/classify/tests.rs`) pinning
 down the tricky cases: an iPad (tablet) vs iPhone (phone)
 (`tablet_is_split_out_from_phone`), "Camerons-MacBook-Pro" not tripping the
-"cam"→camera rule (`a_persons_name_does_not_trip_iot_substrings`), a Plex port
+"cam" camera rule (`a_persons_name_does_not_trip_iot_substrings`), a Plex port
 reading as NAS-class (`nas_is_distinguished_from_a_plain_computer`).
 
 > **Rust note:** the `Tally` uses two fixed-size arrays indexed by kind
@@ -463,16 +464,18 @@ Because device names and models come *off the network* from untrusted neighbors,
 every such string passes through `sanitize_display` (in `utils/net.rs`) before it's
 stored or rendered, stripping control characters and Unicode bidi overrides so a
 hostile device can't inject terminal escapes or right-to-left text into your
-device list. And every IP interpolated into a `ping`/`getent` shell command is
-first validated by `is_shell_safe_ip` (it must parse as a real `IpAddr`), closing
-the shell-injection path.
+device list. The sweep's IPs are typed `Ipv4Addr` values from the subnet parse,
+so they can't carry shell syntax. Where an IP still arrives as a string, in the
+reverse-DNS batch (`hostname.rs`) and the Diagnostics ping (`diagnostics.rs`),
+`is_shell_safe_ip` checks it parses as a real `IpAddr` first, closing the
+shell-injection path.
 
 ---
 
 ## The whole thing in one diagram
 
 <div align="center">
-  <img src="../assets/discovery-fusion.svg" width="860" alt="Full discovery pipeline: two active probes (ICMP sweep, TCP connect) provoke the kernel neighbor table, two passive listeners (mDNS, SSDP) supply self-announced identity, enrichment adds vendor and hostname, and a weighted vote in classify() decides each device kind before assembly into a LanDeviceScan" />
+  <img src="../assets/discovery-fusion.svg" width="820" alt="Four probes at once: an ICMP sweep and TCP connects fill the kernel neighbor table, mDNS and SSDP give self-announced identity; each host is enriched, classify() runs a weighted vote over every signal, and the result is assembled into a LanDeviceScan" />
 </div>
 
 **The philosophy:** you can't ask the network "who are you," so you *provoke*

@@ -35,11 +35,40 @@ How the features measure what they show.
 - [How Rove Discovers & Identifies LAN Devices](networking/device-discovery.md)
 - [The Networking Protocols Behind Rove's Device Discovery](networking/protocols.md)
 
+## Decisions
+
+Why things are the way they are, one record per choice, under `adr/`.
+
+### Architecture
+
+- [0001: A Tauri shell over a Rust core crate that knows nothing of Tauri](adr/architecture/0001-tauri-with-a-rust-core.md)
+- [0002: The UI talks to one interface, which a browser mock can stand in for](adr/architecture/0002-bridge-seam-and-browser-mock.md)
+- [0003: The UI pulls; Rust pushes only what the UI can't ask for](adr/architecture/0003-pull-by-default.md)
+
+### Design system
+
+- [0006: Components start in code, and Figma mirrors them](adr/design-system/0006-components-start-in-code.md)
+- [0008: Styles are Tailwind utilities from the token theme, with no defaults](adr/design-system/0008-tailwind-on-the-token-theme.md)
+- [0011: The UI library takes only props, and a view's className only places it](adr/design-system/0011-library-takes-only-props.md)
+- [0013: Every story is a test, with accessibility checked](adr/design-system/0013-stories-are-tests.md)
+
+### Frontend
+
+- [0007: The desktop app handles back and forward shortcuts itself](adr/frontend/0007-history-shortcuts.md)
+- [0009: Backend data lives in TanStack Query, keyed by network; streams in module stores](adr/frontend/0009-tanstack-query-for-backend-data.md)
+- [0010: App-wide state comes from small contexts; views take no props](adr/frontend/0010-small-contexts-not-props.md)
+- [0012: Navigation runs on the window's history, one entry per screen](adr/frontend/0012-navigation-on-history.md)
+
+### Privacy and data
+
+- [0004: Nothing about the hosts you talk to leaves the machine](adr/privacy-and-data/0004-peer-data-stays-local.md)
+- [0005: Bundled lookup tables come from sources a binary may redistribute](adr/privacy-and-data/0005-redistributable-bundled-data.md)
 ## Project
 
 Background.
 
 - [Why "Rove"?](why-rove.md)
 
-`assets/` holds the docs' diagrams, and `screenshots/` the app's screens
-(`npm run screenshots`).
+`assets/` holds the docs' diagrams, drawn by `npm run diagrams` in the style
+[`assets/README.md`](assets/README.md) sets, and `screenshots/` the app's
+screens (`npm run screenshots`).

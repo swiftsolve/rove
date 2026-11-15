@@ -75,18 +75,19 @@ Wi-Fi network name behind it. Without it, everything but the name still shows.
 Rove is two programs talking over a thin, typed bridge:
 
 <div align="center">
-  <img src="docs/assets/architecture-v2.svg" width="820" alt="Rove architecture: a React UI and a Rust backend communicating over a typed Tauri bridge" />
+  <img src="docs/assets/architecture.svg" width="820" alt="Two programs: React in apps/rove/src calls Rust in crates/rove-core with invoke(), about thirty commands answered with JSON, and Rust pushes seven events back with emit(); Rust reads the kernel and OS tools" />
 </div>
 
 - **Request/response.** Each thing the UI needs is one Tauri *command*
   (`get_network_info`, `get_devices`, `run_speed_test`, …): a thin wrapper in
   `apps/rove/src-tauri/src/commands.rs` around a pure-Rust service in
   `crates/rove-core`.
-- **Push.** Five *events* flow the other way, for data that's continuous or
-  starts outside the app: `live-throughput`, `speed-test-progress`,
-  `internet-status`, `services-timeline` and `network-changed`. The last
-  carries no payload: it tells the UI to refetch within ~1 s of a cable pull
-  or Wi-Fi join, instead of waiting for the 15 s poll.
+- **Push.** Seven *events* flow the other way, for data that's continuous or
+  starts outside the app, such as live throughput, speed-test progress and
+  `network-changed`. Several carry no payload: they tell the UI to refetch,
+  so a cable pull or Wi-Fi join shows within ~1 s instead of at the 15 s poll.
+  The full list is in
+  [How Rove Is Put Together](docs/architecture.md#2-two-directions-and-only-seven-exceptions).
 - **The contract.** TypeScript types in `apps/rove/src/types/` define every payload, and
   the Rust structs mirror them field for field. The UI never knows it's talking
   to Rust: a browser mock (`apps/rove/src/bridge/mock-network-api.ts`) implements the same
@@ -105,13 +106,13 @@ and the backend is memory-safe Rust.
 The Hosts view knows which remote hosts each app talks to, a list that is
 browsing history in all but name. *That list* never leaves your machine: country
 flags are resolved against an IP-to-country table bundled in the binary
-(`utils/geoip.rs`), not by asking a geolocation API about each peer.
+(`crates/rove-core/src/utils/geoip.rs`), not by asking a geolocation API about each peer.
 
 Two things do leave, neither of them a peer address:
 
 - **Your own WAN identity**, when the Connection tab asks: your public IP
   (api.ipify.org). Your ISP, ASN, and country are then resolved from that IP
-  against bundled tables (`utils/geoip.rs`), no request. A best-effort call to
+  against bundled tables (`crates/rove-core/src/utils/geoip.rs`), no request. A best-effort call to
   ipwho.is only *enriches* the card with your city and ISP website when it isn't
   rate-limited; the card stays populated without it. Every request here is about
   your own address.
@@ -127,10 +128,11 @@ All of it is keyless: Rove ships no API credentials.
 
 | Table | Source | License | Refresh |
 |---|---|---|---|
-| MAC OUI → vendor (`data/oui.tsv`) | [IEEE Registration Authority](https://standards-oui.ieee.org/) | Public registry | `cargo run -p rove-core --example gen_oui` |
-| IP → country (`data/dbip-country-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
-| IP → ASN (`data/dbip-asn-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
+| MAC OUI to vendor (`data/oui.tsv`) | [IEEE Registration Authority](https://standards-oui.ieee.org/) | Public registry | `cargo run -p rove-core --example gen_oui` |
+| IP to country (`data/dbip-country-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
+| IP to ASN (`data/dbip-asn-lite.mmdb.gz`) | [IP Geolocation by DB-IP](https://db-ip.com) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `cargo run -p rove-core --example gen_geoip` |
 | Hosting/VPN ASNs (`data/hosting-asns.txt`) | [brianhama/bad-asn-list](https://github.com/brianhama/bad-asn-list) | [MIT](https://opensource.org/licenses/MIT) | `cargo run -p rove-core --example gen_hosting_asns` |
+| DHCP fingerprint to OS and device kind (`data/dhcp_fingerprints.tsv`) | Curated by hand from publicly documented fingerprints | Rove's own | Edit by hand |
 
 The OUI and IP sources are chosen to be freely redistributable in a shipped binary: IEEE over
 Wireshark's GPL-2.0 `manuf`, and DB-IP over MaxMind's GeoLite2, whose EULA

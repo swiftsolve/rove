@@ -23,7 +23,7 @@ veth, vpn…) are excluded.
 in full in [How Rove Discovers & Identifies LAN Devices](networking/device-discovery.md):
 
 <div align="center">
-  <img src="assets/pipeline-glance.svg" width="820" alt="Five stages: Scope the subnet, Provoke every host, Read the neighbor table, Enrich each host, Assemble the list" />
+  <img src="assets/pipeline-glance.svg" width="820" alt="Device discovery in five steps: Scope finds the subnet, Provoke wakes every host, Read takes the neighbor table, Enrich adds a vendor, name and kind, and Assemble adds this machine, sorts and dedupes by MAC" />
 </div>
 
 1. *Scope*: take the active interface's subnet (e.g. `192.168.1.0/24`).
@@ -44,7 +44,7 @@ in full in [How Rove Discovers & Identifies LAN Devices](networking/device-disco
    models, SSDP descriptions, open ports, and hostname and vendor patterns. The
    router also gets an SNMP `sysDescr` read, and DHCP fingerprints count when
    the passive listener can bind :67.
-5. *Assemble*: add this machine, sort gateway → self → by address, dedupe by
+5. *Assemble*: add this machine, sort the gateway first, then this machine, then the rest by address, dedupe by
    MAC.
 
 A device that blocks every probe still appears, just unnamed. What gets missed:
@@ -99,8 +99,11 @@ Platform branches are runtime `cfg!()` checks, so they typecheck on every OS.
 The in-process OS APIs (CoreWLAN, the Windows Native Wi-Fi API, app icons)
 compile only on their own OS; CI (`.github/workflows/build.yml`) builds all three bundles for
 each release tag. The
-instant network-change monitor (`ip monitor route`) is Linux-only; macOS and
-Windows fall back to the 15 s poll.
+instant network-change monitor runs on all three: `ip monitor route` on Linux,
+`route -n monitor` on macOS, and a PowerShell listener on .NET's
+`NetworkChange` on Windows. The 15 s poll stays as the safety net. The events
+Rust pushes to the UI are listed in
+[How Rove Is Put Together](architecture.md#2-two-directions-and-only-seven-exceptions).
 
 On macOS 14.4+ the private `airport` tool was gutted (it now only prints a
 deprecation notice), so Rove reads Wi-Fi in-process via CoreWLAN, including the

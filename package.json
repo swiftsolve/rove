@@ -20,6 +20,7 @@
     "typecheck": "turbo run typecheck && tsc -p scripts",
     "check": "npm run typecheck && npm run lint && npm test",
     "screenshots": "node scripts/screenshots.ts",
+    "diagrams": "node scripts/gen/docs-diagrams.ts",
     "storybook": "npm run storybook -w @swiftsolve/rove-ui",
     "build:storybook": "npm run build:storybook -w @swiftsolve/rove-ui --",
     "chromatic": "npm run chromatic -w @swiftsolve/rove-ui",

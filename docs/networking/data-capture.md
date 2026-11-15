@@ -6,8 +6,9 @@ system exposes these through a single API**. Each OS has its own tools, output
 formats, and quirks. This page documents *how* Rove actually gets each piece of
 data on Linux, Windows, and macOS, and the design patterns that keep it sane.
 
-All the code lives in `crates/rove-core/`. The OS-specific probes were recently
-consolidated into one place: `crates/rove-core/src/platform/`, one file per OS.
+All the code lives in `crates/rove-core/`. The OS-specific probes live in one
+place, `crates/rove-core/src/platform/`: mostly one module per OS, plus
+`windows/` (the native Wi-Fi API), `mac_native.rs` (CoreWLAN) and `app_icon/`.
 
 ---
 
@@ -64,8 +65,10 @@ Two gatekeepers in `crates/rove-core/src/utils/net.rs`:
 
 - **`is_shell_safe_ip`** (in `utils/net.rs`): an address is safe to interpolate
   *only if it parses as a real `IpAddr`*, because a parsed address can only
-  contain `[0-9a-fA-F:.]`, never a `;`, `|`, `$`, or backtick. Guards the
-  `ping`/`getent` call sites that take an IP straight from the ARP table.
+  contain `[0-9a-fA-F:.]`, never a `;`, `|`, `$`, or backtick. It guards the
+  reverse-DNS batch (`devices/hostname.rs`) and the Diagnostics ping
+  (`diagnostics.rs`), where an IP arrives as a string. The sweep never needs it:
+  its IPs are typed `Ipv4Addr` values from the subnet parse.
 - **`is_shell_safe_iface`** (in `utils/net.rs`): interface names are bounded to
   ≤40 chars of a safe alphabet. It deliberately *allows spaces* (Windows really
   has interfaces named `"Ethernet 2"` and `"Local Area Connection"`) but rejects
@@ -85,8 +88,9 @@ The cross-platform *contract* (which probe to call, in what order) lives in the
 feature modules; the OS-specific probes live in `platform/`. `connection.rs`
 shows the dispatch pattern. Two flavours:
 
-**Runtime dispatch with `cfg!`**: a boolean checked at runtime, so all branches
-compile on every OS:
+**Dispatch with `cfg!`**: it expands to a compile-time constant `true` or
+`false`, yet every branch still compiles on every OS, and the optimizer drops
+the dead ones:
 
 ```rust
 pub async fn default_gateway() -> Option<String> {
@@ -112,9 +116,9 @@ then `ip route` (Linux), and if that returns `None` (iproute2 not installed, or
 we're on macOS without a physical route), fall through to `route -n get` (the
 BSD/macOS tool). One function, three platforms, graceful degradation.
 
-**Compile-time dispatch with `match` on `std::env::consts::OS`**:
-`connection_details` (in `connection.rs`) routes to a different probe per
-(OS, connection-type) pair:
+**Dispatch with a `match` on `std::env::consts::OS`**: a runtime match on a
+constant string, so again every arm compiles. `connection_details` (in
+`connection.rs`) routes to a different probe per (OS, connection-type) pair:
 
 ```rust
 match (std::env::consts::OS, connection_type) {
@@ -142,8 +146,8 @@ actual command run on each OS.
 
 | Data | Linux | Windows | macOS |
 |------|-------|---------|-------|
-| **Default gateway** | `ip route show default` | ranked `Get-NetRoute -DestinationPrefix 0.0.0.0/0` → `.NextHop` | `netstat -rn -f inet`, then `route -n get default` |
-| **Default interface** | `ip route show default` (`dev` field) | same ranking → `.InterfaceAlias` | `netstat -rn -f inet`, then `route -n get default` |
+| **Default gateway** | `ip route show default` | ranked `Get-NetRoute -DestinationPrefix 0.0.0.0/0`, its `.NextHop` | `netstat -rn -f inet`, then `route -n get default` |
+| **Default interface** | `ip route show default` (`dev` field) | same ranking, its `.InterfaceAlias` | `netstat -rn -f inet`, then `route -n get default` |
 | **DNS servers** | `/etc/resolv.conf` (`nameserver` lines) | `Get-DnsClientServerAddress` | `/etc/resolv.conf` |
 | **Interface list** | `ip -j addr` (JSON) + `/sys/class/net/*/speed` | `Get-NetAdapter` + `Get-NetIPAddress` | `sysinfo` + `ifconfig -a` states |
 | **Wi‑Fi details** | `nmcli`, then `iw dev link`/`info`, then `iwgetid` | Native Wi-Fi API (`wlanapi.dll`, in-process) | CoreWLAN (in-process) + `system_profiler` |
@@ -237,9 +241,10 @@ same everywhere.
 
 The device scanner (`crates/rove-core/src/devices.rs`) is a small pipeline,
 and it's a nice piece of network engineering. The **ground truth for "who's on my
-LAN" is the kernel's neighbor table** (the ARP cache on IPv4): the map of IP →
-MAC the kernel has already resolved. Rove reads it via `ip neigh show` on Linux
-(which includes a reachability state) or `arp -a` elsewhere (`neighbor_table` in
+LAN" is the kernel's neighbor table** (the ARP cache on IPv4): the map from IP
+to MAC the kernel has already resolved. Rove reads it via `ip neigh show` on
+Linux (which includes a reachability state), `arp -an` on macOS or `arp -a` on
+Windows (`neighbor_table` in
 `platform.rs`).
 
 But the ARP cache only holds hosts the machine has *recently talked to*: idle
@@ -248,17 +253,15 @@ in the subnet** (`devices/sweep.rs`):
 
 ```rust
 // ping every address in the /24..30, 64 at a time
-futures_util::stream::iter(hosts.map(|ip| ip.to_string()))
+futures_util::stream::iter(hosts)
     .map(|ip| async move {
-        let cmd = crate::platform::ping_command(&ip, 1, 700);
-        let replied = crate::utils::shell::try_run_timeout(&cmd, Duration::from_secs(3))
-            .await
-            .is_some();
+        let cmd = crate::platform::ping_command(&ip.to_string(), 1, PING_WAIT_MS);
+        let replied = crate::utils::shell::try_run_timeout(&cmd, PING_PROCESS_TIMEOUT).await.is_some();
         replied.then_some(ip)
     })
-    .buffer_unordered(CONCURRENT_PROBES)   // 64 concurrent
+    .buffer_unordered(CONCURRENT_PROBES) // 64 concurrent
     .filter_map(|replied| async move { replied })
-    .collect::<HashSet<String>>()
+    .collect::<HashSet<Ipv4Addr>>()
     .await
 ```
 
@@ -271,7 +274,8 @@ listeners (**mDNS** and **SSDP/UPnP**) that catch devices announcing their own
 friendly names and models.
 
 Everything then gets enriched: vendor from the MAC's OUI prefix; hostname from
-whichever source is friendliest (mDNS → SSDP → NetBIOS → DHCP → reverse DNS); a
+whichever source is friendliest (mDNS, then SSDP, NetBIOS, DHCP and reverse DNS,
+with a synthetic label as a last resort); a
 hardware model from mDNS/SSDP/SNMP; an OS family from a passive DHCP
 fingerprint; and a device `kind` from a weighted-vote classifier that also folds
 in HTTP-banner hints. The local machine is added manually because it never
@@ -320,7 +324,7 @@ Linux `-c <count> -i 0.2 -W 1`, macOS `-W <ms>` (its `-W` takes milliseconds).
 ## 8. The design in one picture
 
 <div align="center">
-  <img src="../assets/data-capture.svg" width="860" alt="OS-agnostic feature modules dispatch via cfg!(target_os)/match to per-OS platform probes (linux, windows, macos) plus a generic sysinfo fallback; the native probes run through one shell runner returning an Option, then everything normalizes into each module's Serialize structs that serialize across IPC to the UI" />
+  <img src="../assets/data-capture.svg" width="820" alt="Feature modules ask for facts without naming an OS; one platform module per OS (linux, windows, macos) answers through shell::try_run, which returns Option<String>, with sysinfo as the fallback; everything is normalized and serialized to the UI" />
 </div>
 
 **The whole philosophy:** define the facts once as OS-agnostic functions, dispatch

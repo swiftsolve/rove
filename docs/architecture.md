@@ -20,7 +20,7 @@ Every screen reads from one object on `window`. Two things can supply it, and
 nothing above the line can tell which one did.
 
 <div align="center">
-  <img src="assets/bridge-seam.svg" width="820" alt="React views and hooks sit above a dashed seam labelled window.networkAPI; below it the path splits into a Tauri bridge leading to the Rust backend, or a browser mock leading to nothing at all" />
+  <img src="assets/bridge-seam.svg" width="820" alt="React views and data hooks sit on one contract, window.networkAPI; in the desktop app a Tauri bridge reaches the Rust backend, and in the browser demo a mock bridge reaches nothing" />
 </div>
 
 `apps/rove/src/types/api.ts` declares the interface. Two files implement it:
@@ -57,26 +57,28 @@ Two consequences worth knowing:
 
 **Not everything goes through the bridge.** Two files call Tauri directly:
 `features/about/hooks/useAppVersion.ts` (app version) and
-`app/utils/updater.ts` (check + relaunch). All are desktop-only by nature with nothing
+`app/utils/updater.ts` (check and relaunch). Both are desktop-only by nature with nothing
 meaningful to mock, and each degrades to nothing in a browser. The rule is:
 *anything the UI renders goes through the bridge; anything that only exists on a
 desktop doesn't.*
 
 ---
 
-## 2. Two directions, and only five exceptions
+## 2. Two directions, and only seven exceptions
 
 <div align="center">
-  <img src="assets/pull-push.svg" width="820" alt="React on the left and Rust on the right: React sends about thirty invoke commands rightward and receives JSON back, while Rust pushes five named events leftward without being asked" />
+  <img src="assets/pull-push.svg" width="820" alt="React pulls from Rust with invoke(cmd, args), 31 commands answered with JSON, and Rust pushes seven events with emit(event): live-throughput, speed-test-progress, internet-status, network-changed, services-timeline, app-usage and host-usage" />
 </div>
 
 **Pull when React knows it needs something**: a tab opened, a button was
 pressed, a poll fired. That covers roughly thirty commands, registered in
 `apps/rove/src-tauri/src/lib.rs` and implemented in `apps/rove/src-tauri/src/commands.rs`.
 
-**Push when only Rust knows something happened.** Five events qualify, each
+**Push when only Rust knows something happened.** Seven events qualify, each
 because it is continuous, arrives mid-operation, or is triggered from outside
-the app:
+the app. Rust emits them all through `emit_to_ui` in
+`apps/rove/src-tauri/src/ui_events.rs`, mostly from
+`apps/rove/src-tauri/src/monitors.rs`:
 
 | Event | Why it can't be pulled |
 |---|---|
@@ -85,10 +87,15 @@ the app:
 | `network-changed` | only the kernel knows you pulled the cable |
 | `internet-status` | a background heartbeat notices, not the UI |
 | `services-timeline` | runs even with the window closed |
+| `app-usage` | a background sampler reads per-app bytes every 4 s |
+| `host-usage` | a background sampler reads remote hosts every 6 s, then again once names and flags land |
+
+`network-changed`, `services-timeline`, `app-usage` and `host-usage` carry no
+payload: each says "this changed, refetch" (the next section).
 
 Push costs more than pull: subscribe, unsubscribe, tear down on unmount, and
 handle events that land *after* teardown (`useOnNetworkChanged` keeps an
-`active` flag for exactly that race). So it stays rare.
+`isActive` flag for exactly that race). So it stays rare.
 
 Two places the directions mix:
 
@@ -103,35 +110,40 @@ Two places the directions mix:
 ## 3. The event that carries nothing
 
 <div align="center">
-  <img src="assets/network-changed.svg" width="820" alt="The kernel's routing table changes; a Rust monitor emits a network-changed event carrying no payload; React responds by re-running the fetch it already had" />
+  <img src="assets/network-changed.svg" width="820" alt="The kernel sees a cable pulled or a network joined, a Rust monitor emits network-changed with no payload, and React re-runs the fetch it already had; the 15 s poll still runs underneath" />
 </div>
 
 A 15-second poll is correct and feels dead. Rather than build a second data path
 for instant updates, `network-changed` ships **no payload at all**:
 
 ```rust
-let _ = handle.emit("network-changed", &());
+emit_to_ui(&handle, "network-changed", ());
 ```
+
+`emit_to_ui` logs a failed emit through `log_if_failed` rather than returning
+it: the poll catches up either way.
 
 React answers it by re-running the fetch it already had:
 
 ```ts
-useOnNetworkChanged(() => void refresh(true))
+useOnNetworkChanged(() => void refetch({ cancelRefetch: false }))
 ```
 
 So the connection card updates within about a second of a cable pull, the poll
 stays as the safety net, and there is no second payload to keep in sync with the
 request path. The tap says *when*; the existing pull says *what*.
 
-The monitor behind it watches `ip monitor route` and is Linux-only; macOS and
-Windows fall back to the poll.
+The monitor behind it, `spawn_route_monitor` in
+`apps/rove/src-tauri/src/monitors.rs`, runs on all three OSes: `ip monitor route`
+on Linux, `route -n monitor` on macOS, and a long-lived PowerShell listening to
+.NET's `NetworkChange` on Windows. If it can't start, the poll still runs.
 
 ---
 
 ## 4. What one `invoke` actually is
 
 <div align="center">
-  <img src="assets/ipc-anatomy.svg" width="820" alt="A POST to ipc://localhost/get_network_info carrying a Tauri-Invoke-Key header and a JSON body; the reply is application/json with a Tauri-Response header reading ok" />
+  <img src="assets/ipc-anatomy.svg" width="820" alt="One invoke on the wire: a request, POST ipc://localhost/get_network_info with a Tauri-Invoke-Key and JSON arguments, then a response, Tauri-Response ok with a camelCase JSON body" />
 </div>
 
 Tauri registers custom URI schemes with the webview, the same mechanism that
@@ -160,9 +172,10 @@ the type system would warn you. Inside an `async` command, a database call still
 blocks, so it goes through `Store::run_blocking`, which runs it on tokio's
 blocking pool instead of an async worker.
 
-Commands fail with `CommandError` (`src-tauri/src/error.rs`), which wraps each
-core error type (the store's, the speed test's, the Wi-Fi share's) and
-serializes as its message: the UI only ever sees a string.
+Commands fail with `CommandError` (`apps/rove/src-tauri/src/error.rs`), which
+wraps each core error type (the store's, the speed test's, the Wi-Fi share's),
+an `io::Error`, and the elevation errors (declined on Windows, unsupported
+elsewhere), and serializes as its message: the UI only ever sees a string.
 
 ---
 
@@ -172,7 +185,7 @@ serializes as its message: the UI only ever sees a string.
 |---|---|
 | The bridge: one object on `window`, two implementations | The window: native, frameless, from JSON config |
 | The contract: TypeScript types mirrored by Rust structs | The IPC transport plus the `#[tauri::command]` glue |
-| The mock: data *and* time, ~960 lines | Asset embedding: the UI compiled into the binary |
+| The mock: data *and* time, ~1,500 lines | Asset embedding: the UI compiled into the binary |
 | `useBackendQuery`: loading, polling, pause-when-hidden, race handling | Permissions: the deny-by-default capability manifest |
 | The live store: one owner, 60 s history, idle hysteresis | Installers: deb, AppImage, dmg, nsis, msi, and signing |
 | Every measurement in `crates/rove-core` | Rendering: React renders; it has no opinion on fetching |
@@ -202,16 +215,18 @@ rove/
 │   │   │                       useInternetStatus, useConnectionStatus, …)
 │   │   │                       and utils/ (incl. the TanStack query client)
 │   │   ├── features/           one folder per area: home, speed,
-│   │   │   │                   capabilities, connection, live-throughput,
-│   │   │   │                   interfaces, devices, events, usage, apps,
-│   │   │   │                   diagnostics, services, settings, about
+│   │   │   │                   capabilities, connection, current-network,
+│   │   │   │                   live-throughput, interfaces, devices, events,
+│   │   │   │                   usage, apps, services, timeline, settings,
+│   │   │   │                   about
 │   │   │   └── <area>/         its views at the top
 │   │   │       ├── components/ parts of those views, when a view has them
 │   │   │       ├── context/    its own context, if it ever needs one
 │   │   │       ├── hooks/      that area's data and state hooks
 │   │   │       └── utils/      its plain helpers (no React)
-│   │   │                       (capabilities, connection and live-throughput
-│   │   │                       have no view, so their parts sit at the top)
+│   │   │                       (capabilities, current-network and
+│   │   │                       live-throughput have no view, so their parts
+│   │   │                       sit at the top; timeline holds only components)
 │   │   ├── hooks/              shared hooks (useBackendQuery is the
 │   │   │                       useQuery shape every data hook builds on)
 │   │   ├── utils/              shared helpers (format, platform, highlight)
@@ -248,15 +263,18 @@ rove/
 │   │                           interfaces, live_throughput, services, speed,
 │   │                           usage; plus platform/ (per-OS probes), store/
 │   │                           (SQLite, a file per domain) and utils/ (net,
-│   │                           shell, geoip, tls)
-│   └── data/                   bundled lookup tables (OUI, IP-to-country)
+│   │                           shell, geoip, mac, tls)
+│   └── data/                   bundled lookup tables: OUI, IP-to-country,
+│                               IP-to-ASN, hosting-asns.txt and
+│                               dhcp_fingerprints.tsv
 ├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
 │                               runs), gen/ (the *.gen.* files `npm run gen`
 │                               writes), hooks/ (git and Claude Code), eslint/,
 │                               screenshots and the a11y audit; TypeScript that
 │                               Node runs as is, typed by its own tsconfig.json
 ├── schemas/                    a JSON Schema for each project JSON file
-│                               (figma-components, components, cn-theme): what
+│                               (components, figma-components,
+│                               figma-differences, figma-guides, cn-theme): what
 │                               each key means; the generators validate against them
 ├── docs/                       the deeper dives (index in docs/README.md),
 │                               diagrams and screenshots

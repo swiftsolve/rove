@@ -2,14 +2,14 @@
 
 Part 1 of [Learning Rust & Tauri through Rove](README.md).
 
-[← Contents](README.md) · [Rust basics: functions, Result, ownership, structs →](02-rust-basics.md)
+Back to [Contents](README.md). Next: [Rust basics: functions, Result, ownership, structs](02-rust-basics.md).
 
 ## 1. The shape of a Tauri app
 
 A Tauri app is two worlds glued together:
 
 <div align="center">
-  <img src="../../assets/tauri-ipc.svg" width="840" alt="A sandboxed frontend webview process (React + TypeScript, no OS access) and a native Rust backend process (full OS access) exchange JSON across a process boundary: commands via invoke(), events via emit()" />
+  <img src="../../assets/tauri-ipc.svg" width="820" alt="A webview process running React and a native process running Rust: commands go from React to Rust through invoke(), events from Rust to React through emit(), each copied across as JSON" />
 </div>
 
 The frontend is literally a web page. It can't open a socket or read `/sys`.
@@ -22,11 +22,13 @@ the binary is tiny.
 Rove splits the Rust side into **two crates** (a "crate" = a Rust compilation
 unit / library or binary):
 
-- `crates/rove-core/`: pure logic. The doc comment on line 1 says it:
-  *"Pure Rust (no Tauri/GTK dependency) so it compiles and tests anywhere."*
-  This is where the actual network measuring lives.
-- `apps/rove/src-tauri/`: the "thin Tauri shell." Line 1: *"each command maps 1:1 to a
-  service."*
+- `crates/rove-core/`: pure logic. The doc comment at the top of its `lib.rs`
+  says it: *"Pure Rust with no Tauri or GTK dependency, so it compiles and tests
+  anywhere."* This is where the actual network measuring lives.
+- `apps/rove/src-tauri/`: the thin Tauri shell. Its `lib.rs` opens with *"Thin
+  Tauri shell over rove-core: each command wraps one service."* The commands
+  live in `commands.rs`, the background loops in `monitors.rs`, and the helper
+  that pushes events to the UI in `ui_events.rs`.
 
 That separation is a deliberate architecture lesson: keep your real logic free
 of framework dependencies so you can unit-test it and reason about it in
@@ -62,22 +64,26 @@ IPC.
 
 Tauri hides the plumbing behind two directions of message flow:
 
-- **Frontend → Backend: commands.** The JS calls
-  `invoke("get_public_ip", { args })`. Tauri serializes the call (command name +
+- **Frontend to backend: commands.** The JS calls
+  `invoke("get_public_ip", { args })`. Tauri serializes the call (command name and
   arguments) into JSON, ships it across the IPC channel, and on the Rust side
   deserializes it, finds the matching `#[tauri::command]` function, runs it, then
   serializes the return value back as JSON. `invoke` returns a `Promise`, so from
   JS it feels like a normal async function call; the process boundary and the
   JSON round-trip are invisible.
 
-- **Backend → Frontend: events.** Rust can push messages the other way *without*
-  being asked, using `app.emit("event-name", payload)`. The frontend subscribes
+- **Backend to frontend: events.** Rust can push messages the other way *without*
+  being asked. Rove sends every event through one helper, `emit_to_ui` in
+  `apps/rove/src-tauri/src/ui_events.rs`, which calls Tauri's
+  `handle.emit(event, payload)` and logs a failed emit. The frontend subscribes
   with `listen("event-name", handler)`. Rove uses this for anything streaming
   or unsolicited: `speed-test-progress` (progress bar updates during a speed
   test), `live-throughput` (a sample every second), and `network-changed`
-  (fired the instant a cable is pulled). See `apps/rove/src-tauri/src/lib.rs`:
-  `run_speed_test` emits progress at line 168-170, and `spawn_throughput_broadcaster`
-  emits at line 362.
+  (fired the instant a cable is pulled). See `run_speed_test` in
+  `apps/rove/src-tauri/src/commands.rs`, which emits `speed-test-progress` from
+  its progress callback, and `spawn_throughput_broadcaster` in
+  `apps/rove/src-tauri/src/monitors.rs`, which emits `live-throughput` once a
+  second.
 
 ### Why everything must be JSON-serializable
 
@@ -101,8 +107,4 @@ design.
 > events are letters the backend sends you unprompted. Every letter is written
 > in JSON.
 
----
-
----
-
-[← Contents](README.md) · [Rust basics: functions, Result, ownership, structs →](02-rust-basics.md)
+Back to [Contents](README.md). Next: [Rust basics: functions, Result, ownership, structs](02-rust-basics.md).
