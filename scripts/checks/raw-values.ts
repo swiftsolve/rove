@@ -44,10 +44,20 @@ const ALLOWED: AllowedEntry[] = [
   // The brand icon's gradient, the same as the app icon's.
   { file: 'packages/ui/src/icons/BrandIcon.tsx', value: '#7aa4ff' },
   { file: 'packages/ui/src/icons/BrandIcon.tsx', value: '#5484f5' },
-  // The About tile redraws the dock icon, which looks the same in both themes.
-  { file: 'apps/rove/src/features/about/AboutView.tsx', value: 'rgba(' },
-  { file: 'apps/rove/src/features/about/AboutView.tsx', value: '#1f2125' },
-  { file: 'apps/rove/src/features/about/AboutView.tsx', value: '#16171a' },
+  // The About tile draws the app icon, which looks the same in both themes:
+  // its tile, the ring's groove and the dot copy the icon's own colours.
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: 'rgba(' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#282a2f' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#1c1d21' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#121316' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#7aa4ff' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#5484f5' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#76a0ff' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#6893fa' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#5f8df7' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#020617' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#cfdcff' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#ffffff' },
   // The theme swap's circular reveal, tuned on its own.
   { file: 'apps/rove/src/app/utils/theme-transition.ts', value: 'cubic-bezier(' },
   // A mask reads only alpha, so its colour is no design choice.
@@ -83,8 +93,8 @@ const ALLOWED: AllowedEntry[] = [
   // Lifts the empty state a little above centre, under the page header.
   { file: 'packages/ui/src/empty-state/EmptyState.tsx', value: 'pb-[56px]' },
 
-  // Corners off the scale. The About tile redraws the app icon, whose corner is its own.
-  { file: 'apps/rove/src/features/about/AboutView.tsx', value: 'rounded-[16px]' },
+  // Corners off the scale. The About tile draws the app icon, whose corner is its own.
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: 'rounded-[16px]' },
   // No reason recorded yet: check each against Figma, then snap it to a step or say why.
   { file: 'apps/rove/src/features/timeline/components/TimelineDay.tsx', value: 'mt-[18px]' },
   { file: 'apps/rove/src/app/components/UpdateDialog.tsx', value: 'pl-[26px]' },
