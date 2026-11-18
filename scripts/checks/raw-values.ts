@@ -49,7 +49,7 @@ const ALLOWED: AllowedEntry[] = [
   { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: 'rgba(' },
   { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#282a2f' },
   { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#1c1d21' },
-  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#121316' },
+  { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#16171a' },
   { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#7aa4ff' },
   { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#5484f5' },
   { file: 'apps/rove/src/features/about/components/AppIconTile.tsx', value: '#76a0ff' },

@@ -20,11 +20,11 @@ export function AppIconTile() {
       className="relative mb-8 inline-flex size-[72px] items-center justify-center overflow-hidden rounded-[16px]"
       style={{
         // Lighter where the light falls, darkening to the foot.
-        background: 'radial-gradient(130% 130% at 50% 30%, #282a2f 0%, #1c1d21 55%, #121316 100%)',
+        background: 'radial-gradient(130% 130% at 50% 30%, #282a2f 0%, #1c1d21 55%, #16171a 100%)',
         // A soft light along the top, a shade inside the foot only (shaded
         // round every edge, the rim read as an outline), and a drop below.
         boxShadow:
-          'inset 0 2px 4px rgba(255,255,255,0.06), inset 0 -10px 18px -8px rgba(0,0,0,0.45), 0 14px 26px -12px rgba(0,0,0,0.55)',
+          'inset 0 2px 4px rgba(255,255,255,0.06), inset 0 -10px 18px -8px rgba(0,0,0,0.25), 0 10px 22px -10px rgba(0,0,0,0.4)',
       }}
     >
       {/* The dome: a light crown over the middle, and a shade from halfway out
@@ -36,7 +36,7 @@ export function AppIconTile() {
           background: [
             'radial-gradient(70% 62% at 50% 42%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.005) 72%, rgba(255,255,255,0) 90%)',
             'radial-gradient(closest-side at 50% 46%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.06) 65%, rgba(0,0,0,0.14) 88%, rgba(0,0,0,0.18) 100%)',
-            'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.2) 100%)',
+            'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.1) 100%)',
           ].join(', '),
         }}
       />
