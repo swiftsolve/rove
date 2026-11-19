@@ -28,7 +28,7 @@ Every command is the same six edits across the boundary.
 4. **The type** in `apps/rove/src/types/` (camelCase, as serde sends it), and the method
    on `NetworkAPI` in `apps/rove/src/types/api.ts`.
 5. **Both bridges**: `apps/rove/src/bridge/tauri-network-api.ts` invokes the command;
-   `apps/rove/src/bridge/mock-network-api.ts` answers with plausible data, so `npm run dev`
+   `apps/rove/src/bridge/mock-network-api.ts` answers with plausible data, so `pnpm dev`
    keeps working in a browser. A value the backend can add to later (a kind,
    an event type) is narrowed in `apps/rove/src/bridge/narrow.ts`.
 6. **The hook** in the feature's `hooks/`, on `useBackendQuery`, keyed by the
@@ -38,8 +38,8 @@ Every command is the same six edits across the boundary.
 ## Done
 
 - `cargo test -p rove-core`, `cargo clippy --workspace --all-targets -- -D
-  warnings` and `cargo fmt --all` pass, and `npm run check` does.
-- `npm run dev` shows it against the mock, and `npm run tauri:dev` against the
+  warnings` and `cargo fmt --all` pass, and `pnpm check` does.
+- `pnpm dev` shows it against the mock, and `pnpm tauri:dev` against the
   real backend.
 - A screen that renders it is a change a user would see: commit, then the
   `resync-sites` skill.

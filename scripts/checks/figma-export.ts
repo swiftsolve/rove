@@ -1,7 +1,7 @@
 /**
  * Read the library's side of the Rove Design System Figma file and check the
  * export in packages/ui/catalog/figma/ still matches it, so a change made in
- * Figma fails here until it's exported. `npm run figma:export` (`--export`)
+ * Figma fails here until it's exported. `pnpm figma:export` (`--export`)
  * writes the export instead:
  *
  *   - figma/components.json: each library component's Figma component, its
@@ -15,12 +15,12 @@
  *     Figma component of its own (CardBody, DialogRoot), the one under its name
  *     in the Parts block at the end of its family's section.
  *
- * `npm run gen` merges both into components.gen.json, offline, and compares
+ * `pnpm gen` merges both into components.gen.json, offline, and compares
  * them with the code: each variant property with a prop (lib/figma-variants.ts),
  * each guide with the stories' guide.
  *
  * It needs a token and the network, and skips (passing) without either, so
- * `npm run check` still runs on a machine that has neither. FIGMA_TOKEN is a
+ * `pnpm check` still runs on a machine that has neither. FIGMA_TOKEN is a
  * personal access token with the `file_content:read` scope (Figma → Settings →
  * Security → Personal access tokens). Put it in `.env.local` as
  * `FIGMA_TOKEN=figd_…` (git-ignored), or set it in the shell. CI reads it from
@@ -55,7 +55,7 @@ const FIGMA_DIFFERENCES_JSON = join(CATALOG_DIR, 'figma-differences.json')
 const EXPORTED_COMPONENTS_JSON = join(CATALOG_DIR, 'figma/components.json')
 const EXPORTED_GUIDES_JSON = join(CATALOG_DIR, 'figma/guides.json')
 const EXPORT_COMMENT =
-  'Exported from the Figma file by `npm run figma:export`; change it in Figma, then export again and run `npm run gen`.'
+  'Exported from the Figma file by `pnpm figma:export`; change it in Figma, then export again and run `pnpm gen`.'
 const FIGMA_API = 'https://api.figma.com/v1'
 const COMPONENT_TYPES = new Set(['COMPONENT', 'COMPONENT_SET'])
 /** Text inside these is a live component, not the docs around it. */
@@ -347,7 +347,7 @@ if (problems.length > 0) {
 const counts = `${Object.keys(exportedComponents).length} components, ${Object.keys(exportedGuides).length} usage guides`
 if (isExport) {
   for (const { path, text } of exportFiles) await writeFile(path, text)
-  console.log(`Figma exported to packages/ui/catalog/figma/ (${counts}): run npm run gen`)
+  console.log(`Figma exported to packages/ui/catalog/figma/ (${counts}): run pnpm gen`)
 } else {
   const staleFiles: string[] = []
   for (const { path, text } of exportFiles) {
@@ -356,7 +356,7 @@ if (isExport) {
   }
   if (staleFiles.length > 0) {
     console.error(
-      `Figma has changed since ${staleFiles.join(' and ')} was exported: run npm run figma:export, then npm run gen`,
+      `Figma has changed since ${staleFiles.join(' and ')} was exported: run pnpm figma:export, then pnpm gen`,
     )
     process.exit(1)
   }

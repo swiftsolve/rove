@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lint and format-check what this commit holds, and format-check and test the
 # Rust when it holds Rust. Only the staged files: other sessions' uncommitted work in the
-# same checkout isn't this commit's to fail on. `npm run check` in CI covers
+# same checkout isn't this commit's to fail on. `pnpm check` in CI covers
 # the whole tree.
 set -euo pipefail
 
@@ -14,9 +14,9 @@ for file in "${staged[@]}"; do
 done
 
 if [ ${#scripts[@]} -gt 0 ]; then
-  npx eslint --no-warn-ignored -- "${scripts[@]}"
+  pnpm exec eslint --no-warn-ignored -- "${scripts[@]}"
 fi
-npx prettier --check --ignore-unknown -- "${staged[@]}"
+pnpm exec prettier --check --ignore-unknown -- "${staged[@]}"
 
 for file in "${staged[@]}"; do
   case "$file" in

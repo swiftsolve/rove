@@ -1,14 +1,14 @@
 /**
  * Capture a PNG of every screen in the app, at the real window size.
  *
- *   npm run screenshots                    # dark theme -> docs/screenshots
- *   npm run screenshots -- --theme light   # light theme
- *   npm run screenshots -- --out /tmp/shots
- *   npm run screenshots -- --url http://localhost:5173   # reuse a running dev server
- *   CHROME_PATH=/usr/bin/chromium npm run screenshots    # no Google Chrome installed
- *   npm run screenshots -- --stable        # identical pixels run to run, to diff a refactor
- *   npm run screenshots -- --stable --storybook-url http://127.0.0.1:6006   # reuse a running Storybook
- *   npm run screenshots -- --jobs 4        # pages shot at once (default: half the cores, up to 8)
+ *   pnpm screenshots                       # dark theme -> docs/screenshots
+ *   pnpm screenshots --theme light         # light theme
+ *   pnpm screenshots --out /tmp/shots
+ *   pnpm screenshots --url http://localhost:5173         # reuse a running dev server
+ *   CHROME_PATH=/usr/bin/chromium pnpm screenshots       # no Google Chrome installed
+ *   pnpm screenshots --stable              # identical pixels run to run, to diff a refactor
+ *   pnpm screenshots --stable --storybook-url http://127.0.0.1:6006         # reuse a running Storybook
+ *   pnpm screenshots --jobs 4              # pages shot at once (default: half the cores, up to 8)
  *
  * Each shot loads the app in a fresh page, so it doesn't depend on which shots
  * ran before it, and several run at once.

@@ -91,7 +91,7 @@ Rove is two programs talking over a thin, typed bridge:
 - **The contract.** TypeScript types in `apps/rove/src/types/` define every payload, and
   the Rust structs mirror them field for field. The UI never knows it's talking
   to Rust: a browser mock (`apps/rove/src/bridge/mock-network-api.ts`) implements the same
-  interface, which is why `npm run dev` runs in a plain browser.
+  interface, which is why `pnpm dev` runs in a plain browser.
 
 The bridge, pull vs push, and what an `invoke` is on the wire are in
 [How Rove Is Put Together](docs/architecture.md).
@@ -148,8 +148,9 @@ flag emoji of its own. The glyph artwork is [Twemoji](https://github.com/twitter
 
 ### Prerequisites
 
-[Node.js](https://nodejs.org) 24, as `.nvmrc` says (`nvm use`) and [Rust](https://rustup.rs), plus
-Tauri's system libraries:
+[Node.js](https://nodejs.org) 24, as `.nvmrc` says (`nvm use`), [pnpm](https://pnpm.io)
+at the version `packageManager` in `package.json` names (`corepack enable pnpm`
+fetches it) and [Rust](https://rustup.rs), plus Tauri's system libraries:
 
 - **Linux** (Debian, Ubuntu):
   ```bash
@@ -164,21 +165,21 @@ Tauri's system libraries:
 ### Run
 
 ```bash
-npm install                  # also turns on the git hooks (scripts/hooks/git)
-npx playwright install chromium   # once, for the story tests
-npm run tauri:dev            # run the desktop app (hot-reloads the UI)
-npm run dev                  # UI only, in a browser, against the mock bridge
-npm run storybook            # the UI library's components, at localhost:6006
-npm run screenshots          # refresh docs/screenshots: every screen, at window size
-npm run format               # lay out the code with Prettier
-npm run gen                  # rewrite the *.gen.* files after a library or theme change
-npx rove-ui                  # find a library component: pick one, or list, show, search (--md for agents)
+pnpm install                 # also turns on the git hooks (scripts/hooks/git)
+pnpm exec playwright install chromium   # once, for the story tests
+pnpm tauri:dev               # run the desktop app (hot-reloads the UI)
+pnpm dev                     # UI only, in a browser, against the mock bridge
+pnpm storybook               # the UI library's components, at localhost:6006
+pnpm screenshots             # refresh docs/screenshots: every screen, at window size
+pnpm format                  # lay out the code with Prettier
+pnpm gen                     # rewrite the *.gen.* files after a library or theme change
+pnpm rove-ui                 # find a library component: pick one, or list, show, search (--md for agents)
 cargo run -p rove-core --example scan   # print a live LAN scan
 ```
 
 ### Workspaces
 
-The repository is two npm workspaces: the app in `apps/rove`, and the
+The repository is two pnpm workspaces: the app in `apps/rove`, and the
 component library in `packages/ui`, which the app imports as
 `@swiftsolve/rove-ui` straight from its source, so a library change shows in
 the app at once, with no build or release between them. Run the commands above
@@ -189,9 +190,9 @@ replays a result whose files haven't changed.
 ### Check a change
 
 ```bash
-npm run check                # typecheck, lint, the repo's checks and every Vitest test
-npm test                     # just the UI's unit, DOM and story tests
-npm run a11y                 # axe on every screen and dialog, both themes
+pnpm check                   # typecheck, lint, the repo's checks and every Vitest test
+pnpm test                    # just the UI's unit, DOM and story tests
+pnpm a11y                    # axe on every screen and dialog, both themes
 cargo test -p rove-core      # the service layer's tests
 cargo clippy --workspace --all-targets -- -D warnings   # the Rust lints (Cargo.toml)
 cargo fmt --all              # the Rust layout (rustfmt.toml)
@@ -201,9 +202,9 @@ Each stage runs part of this on its own:
 
 | Stage | Runs |
 | --- | --- |
-| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a direct edit to a `*.gen.*` file (run `npm run gen`) |
-| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
-| Each push and pull request (CI) | `npm run check` (`test.yml`); `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
+| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a force push, `git reset --hard`, and a direct edit to a `*.gen.*` file (run `pnpm gen`) |
+| Each commit (`scripts/hooks/git/`, on after `pnpm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
+| Each push and pull request (CI) | `pnpm check` (`test.yml`); `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
 | A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs on demand from Actions |
 | A rove-tokens release (its CI) | Its `npm run check` (build, lint, contrast, the DESIGN.md format, the Figma plugin test) and `DESIGN.md` committed as built; it publishes only if they pass |
 
@@ -213,7 +214,7 @@ What to run yourself for each kind of change is in
 ### Release build
 
 ```bash
-npm run tauri:build   # .deb ~5 MB, AppImage, dmg (macOS), nsis and msi (Windows)
+pnpm tauri:build      # .deb ~5 MB, AppImage, dmg (macOS), nsis and msi (Windows)
 ```
 
 ### Where things are
@@ -224,7 +225,7 @@ apps/rove/          the app: src/ (React UI: app/ the shell, features/ a folder
                     (the thin Tauri shell: commands, events, capabilities)
 packages/ui/        the component library, @swiftsolve/rove-ui: src/, its
                     Storybook, catalog/ (the library as data) and cli/
-                    (npx rove-ui, which looks a component up in it)
+                    (pnpm rove-ui, which looks a component up in it)
 crates/rove-core/   every platform service, in pure Rust, plus the bundled data
 scripts/            checks, generators, git hooks, screenshots, the a11y audit
 docs/               the deeper dives, diagrams and screenshots
@@ -245,12 +246,12 @@ agree. Components start in `packages/ui/`, and Figma mirrors them. Without Figma
 browse the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/)
 and the [Components Storybook](https://nabilr.com/rove/storybook/).
 
-In a terminal, `npx rove-ui` looks a component up: `pick` to find one by
+In a terminal, `pnpm rove-ui` looks a component up: `pick` to find one by
 typing, `show <Name>` for its props, usage guide and Figma component, and
 `--md` for an agent.
 
 <p align="center">
-  <img src="docs/assets/rove-ui-pick.png" width="620" alt="npx rove-ui in a terminal: a welcome box, ROVE UI in large letters, then a list of components narrowed by typing card, with CardHeader picked" />
+  <img src="docs/assets/rove-ui-pick.png" width="620" alt="pnpm rove-ui in a terminal: a welcome box, ROVE UI in large letters, then a list of components narrowed by typing card, with CardHeader picked" />
 </p>
 
 ### Troubleshooting on Linux

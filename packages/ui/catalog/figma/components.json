@@ -1,6 +1,6 @@
 {
   "$schema": "../../../../schemas/figma-components.schema.json",
-  "$comment": "Exported from the Figma file by `npm run figma:export`; change it in Figma, then export again and run `npm run gen`.",
+  "$comment": "Exported from the Figma file by `pnpm figma:export`; change it in Figma, then export again and run `pnpm gen`.",
   "figmaFileUrl": "https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System",
   "components": {
     "Button": {

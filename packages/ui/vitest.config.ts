@@ -31,7 +31,7 @@ export default defineConfig({
         },
       },
       {
-        // React and Tailwind, as `npm run storybook` builds with.
+        // React and Tailwind, as `pnpm storybook` builds with.
         extends: './vite.config.ts',
         plugins: [storybookTest({ configDir: path.join(__dirname, '.storybook') })],
         test: {

@@ -23,4 +23,4 @@ off-scale length or a size without a style unless an allow-list says why.
 - **A view adjusts a library component through its variants,** and
   `className` only places it (ADR 0011).
 - **`cn` knows the theme's names,** so a later utility overrides an earlier
-  one that sets the same thing; a new theme name needs `npm run gen`.
+  one that sets the same thing; a new theme name needs `pnpm gen`.

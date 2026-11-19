@@ -11,7 +11,7 @@ The library's rules (stories, docs pages, what every component does) are in
 
 ## Before you start
 
-- Look in the catalog (`npx rove-ui --md list`, `npx rove-ui --md search <words>`) for a component that already fits, or one
+- Look in the catalog (`pnpm rove-ui --md list`, `pnpm rove-ui --md search <words>`) for a component that already fits, or one
   that needs only a variant. A variant on an existing component beats a new one.
 - Name it, and its props, the way the library does (`variant`, `tone`,
   `isDisabled`, `description`, `actions`; `packages/ui/README.md`: Every component). The
@@ -33,24 +33,24 @@ The library's rules (stories, docs pages, what every component does) are in
    a usage guide, and a `play` story if it takes a handler. A part shown on its
    family's page instead gets its guide in that page's `partGuidance`.
 5. A DOM test beside it (`Name.test.tsx`) for its behaviour and accessibility.
-6. `npm run gen`.
+6. `pnpm gen`.
 
 ## Change one: the code side
 
 1. Change the code, its doc comments, and its stories and usage guide if its
    use changed.
-2. `npm run gen`.
-3. For a change meant to look the same, diff `npm run screenshots -- --stable`
+2. `pnpm gen`.
+3. For a change meant to look the same, diff `pnpm screenshots --stable`
    from before and after.
 
 ## As you go
 
 - Run its folder's tests in seconds:
-  `npm test -w @swiftsolve/rove-ui -- --project=storybook --project=dom src/<folder>`.
-- `gen/components.ts --check` (`npm run gen`, then `npm run check`) says what's
+  `pnpm --filter @swiftsolve/rove-ui test --project=storybook --project=dom src/<folder>`.
+- `gen/components.ts --check` (`pnpm gen`, then `pnpm check`) says what's
   missing: a doc comment, a usage guide, a `play` story for a handler, a
   version bump. Fix what it names rather than guessing.
-- Look at every story in Storybook (`npm run storybook`) in both themes before
+- Look at every story in Storybook (`pnpm storybook`) in both themes before
   the Figma side.
 
 ## The Figma side
@@ -90,7 +90,7 @@ Without the server, stop after the code side and say the Figma side is left.
      component; MenuItem has none) has its guide in a Parts block at the end
      of its family's section: a "Parts" title, then per part its name, its
      code chip and a Guidance block.
-3. `npm run figma:export`, then `npm run gen`, so `packages/ui/catalog/figma/`
+3. `pnpm figma:export`, then `pnpm gen`, so `packages/ui/catalog/figma/`
    and `components.gen.json` hold the new or changed component, its variants
    and its guide.
 4. Where it differs from Figma on purpose, or Figma names it otherwise, its
@@ -102,8 +102,8 @@ Without the server, stop after the code side and say the Figma side is left.
 
 ## Done
 
-- `npm run check` passes, with `FIGMA_TOKEN` in `.env.local` so
-  `checks/figma-export.ts` holds the export to the file, and `npm run gen`
+- `pnpm check` passes, with `FIGMA_TOKEN` in `.env.local` so
+  `checks/figma-export.ts` holds the export to the file, and `pnpm gen`
   holds the variants, values and guides to the code.
 - A screenshot of the Figma docs section matches the stories.
 - Commit, then run the `resync-sites` skill: the Storybooks change, and the

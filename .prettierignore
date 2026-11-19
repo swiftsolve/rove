@@ -12,11 +12,11 @@ storybook-static
 .turbo
 .claude
 
-# Generated: rewritten by scripts/gen/, or by npm.
+# Generated: rewritten by scripts/gen/, or by pnpm.
 *.gen.*
-package-lock.json
+pnpm-lock.yaml
 
-# Exported from Figma by npm run figma:export.
+# Exported from Figma by pnpm figma:export.
 packages/ui/catalog/figma
 
 # Prose. Its line breaks and table layout are written by hand.

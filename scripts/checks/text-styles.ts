@@ -24,14 +24,13 @@
  *   node scripts/checks/text-styles.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
-import { createRequire } from 'node:module'
 import { join, relative } from 'node:path'
 
-import { APP_SRC, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
+import { APP_SRC, resolveFromLibrary, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
 
 const SKIPPED = [join(APP_SRC, 'assets'), join(APP_SRC, 'bridge', 'mock-network-api.ts')]
 /** The Tailwind theme packages/ui/src/styles/tailwind.css imports. */
-const THEME = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tailwind-theme.css')
+const THEME = resolveFromLibrary('@swiftsolve/rove-tokens/tailwind-theme.css')
 
 type AllowedEntry = { file: string; value: string }
 

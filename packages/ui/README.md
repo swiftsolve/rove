@@ -81,14 +81,14 @@ library imports only itself (by relative path) and packages, never app code.
 - `components.gen.json` is the library's API in one file: each component's
   group, doc comment, props, Figma component, story ids and usage guide, its
   usage guide as Figma words it (`figmaGuidance`), and for a part, its family
-  (`partOf`). `npm run gen` writes it from the code and the files beside it
+  (`partOf`). `pnpm gen` writes it from the code and the files beside it
   in `catalog/`, so a change goes in those and the file is regenerated. Every
   component and prop of its own has a doc comment; every component has a
   Figma component or a reason it has none; each Figma variant property is a
   prop with the same values; and each Figma guide has as many When to use and
   When not to use lines as the code's, and names the same alternatives, unless
   `figma-differences.json` says why not. [✓ CHECKED by `gen/components.ts`]
-- `npx rove-ui` reads `components.gen.json` a component at a time, for an
+- `pnpm rove-ui` reads `components.gen.json` a component at a time, for an
   agent or a person: `list`, `show <Name>`, `search <words>`, `icons [text]`.
   Text is laid out for a terminal, in columns wrapped to its width; `--md`
   prints Markdown for an agent, the fewest tokens, and `--json` the raw
@@ -106,11 +106,11 @@ library imports only itself (by relative path) and packages, never app code.
   `program.ts` holds the commands, `catalog/` reads the file and builds the
   links, `output/` writes text and Markdown, and `pick/` holds the prompts.
   Node runs it
-  as .ts, so it reads the file as `npm run gen` last wrote it.
-- `catalog/figma/` is exported from the Figma file by `npm run figma:export`:
+  as .ts, so it reads the file as `pnpm gen` last wrote it.
+- `catalog/figma/` is exported from the Figma file by `pnpm figma:export`:
   `components.json` (each component's Figma name, node and variant
   properties) and `guides.json` (the usage guides). Never edit them by hand:
-  change Figma, export again, then `npm run gen`. A component's Figma
+  change Figma, export again, then `pnpm gen`. A component's Figma
   component is the one named its code name in sentence case.
 - `catalog/figma-differences.json` is kept by hand: a Figma name that isn't
   the sentence-case one, why a component has no Figma component, and each

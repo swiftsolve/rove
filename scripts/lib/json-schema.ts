@@ -1,7 +1,7 @@
 /**
  * Holds a JSON file to its schema (draft-07, in schemas/ as
  * `<name>.schema.json`). The generators check what they read and write, so a
- * wrong or misspelt key fails `npm run gen` and `npm run lint`.
+ * wrong or misspelt key fails `pnpm gen` and `pnpm lint`.
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'

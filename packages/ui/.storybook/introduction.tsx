@@ -120,7 +120,7 @@ const LINE_ICONS = {
   ],
   // The file of differences from Figma kept on purpose: a file with a plus and a minus.
   fileDiff: ['M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z', 'M9 10h6', 'M12 13V7', 'M9 17h6'],
-  // The command line, `npx rove-ui`.
+  // The command line, `pnpm rove-ui`.
   terminal: ['M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'm7 11 2-2-2-2', 'M11 13h4'],
   arrow: ['M5 12h14', 'm12 5 7 7-7 7'],
   fileText: [
@@ -199,7 +199,7 @@ const STEPS: Step[] = [
     icons: ['figma', 'step', 'braces'],
     items: [
       {
-        name: '`npm run figma:export`',
+        name: '`pnpm figma:export`',
         body: 'Reads each Figma component and its guide into `catalog/figma/`. Never edited by hand.',
       },
     ],
@@ -219,7 +219,7 @@ const STEPS: Step[] = [
     icons: ['node', 'step', 'braces'],
     items: [
       {
-        name: '`npm run gen`',
+        name: '`pnpm gen`',
         body: 'Reads every prop, variant value, story and guide from the code, and the Figma side from `catalog/`.',
       },
       {
@@ -243,11 +243,11 @@ const STEPS: Step[] = [
     icons: ['terminal'],
     items: [
       {
-        name: '`npx rove-ui`',
+        name: '`pnpm rove-ui`',
         body: 'One component at a time: `list`, `show`, `search`, `icons`. `--md` prints Markdown for agents.',
       },
       {
-        name: '`npx rove-ui pick`',
+        name: '`pnpm rove-ui pick`',
         body: 'For a person: type to narrow, then show it, copy it, or open it in Storybook or Figma.',
       },
     ],
@@ -280,7 +280,7 @@ const CHECKS: Card[] = [
   {
     icon: 'braces',
     name: 'Catalog check',
-    body: '`npm run gen` holds the catalog to its schemas and fails on a difference from Figma with no reason.',
+    body: '`pnpm gen` holds the catalog to its schemas and fails on a difference from Figma with no reason.',
   },
   {
     icon: 'figma',
@@ -303,7 +303,7 @@ const CONSUMERS: Card[] = [
   {
     icons: ['claude', 'openai', 'cursor', 'copilot', 'gemini'],
     name: 'Coding agents',
-    body: 'Run `npx rove-ui --md list`, then `show <Name>`, so they pick a component, not new markup.',
+    body: 'Run `pnpm rove-ui --md list`, then `show <Name>`, so they pick a component, not new markup.',
   },
   {
     icon: 'storybook',
@@ -331,7 +331,7 @@ const PRINCIPLES: { icon: IconName; lead: string; body: string }[] = [
   {
     icon: 'sparkles',
     lead: 'Written down for agents',
-    body: '`npx rove-ui --md` gives an agent one component’s props, values and guide, in few tokens.',
+    body: '`pnpm rove-ui --md` gives an agent one component’s props, values and guide, in few tokens.',
   },
 ]
 

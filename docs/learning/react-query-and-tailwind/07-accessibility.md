@@ -152,7 +152,7 @@ Without a band, you get just the name and no dangling dot. A string like
 hold a drawn dot.
 
 Checks catch the typed characters. What no unit check catches is a whole
-screen: `npm run a11y` runs axe on every screen and dialog, in both themes
+screen: `pnpm a11y` runs axe on every screen and dialog, in both themes
 ([chapter 8](08-checks-and-review.md)).
 
 Previous: [Where code goes, and naming](06-where-code-goes.md). Next: [Checks and review](08-checks-and-review.md).

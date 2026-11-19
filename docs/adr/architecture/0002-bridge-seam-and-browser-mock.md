@@ -8,7 +8,7 @@ date: 2026-11-07
 Every screen reads from `window.networkAPI`, typed by `apps/rove/src/types/api.ts`. At
 startup Rove installs either the Tauri bridge or a browser mock that fakes
 time as well as data: calls resolve after a delay, throughput ticks, a speed
-test ramps. So `npm run dev` runs a full UI in a plain browser, screenshots
+test ramps. So `pnpm dev` runs a full UI in a plain browser, screenshots
 come out the same on any machine without a real SSID, and the same build runs
 as the live demo on the website.
 

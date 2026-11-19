@@ -39,8 +39,8 @@ if (isTauri()) {
 The mock isn't a fixture file: it fakes *time* as well as data: calls resolve
 after a plausible delay, live throughput ticks once a second with a periodic
 burst, and a speed test runs a scripted ten-second ramp that can be cancelled
-mid-flight. Which is why `npm run dev` gives a fully populated UI in a plain
-browser, why `npm run screenshots` produces the same shots on any machine
+mid-flight. Which is why `pnpm dev` gives a fully populated UI in a plain
+browser, why `pnpm screenshots` produces the same shots on any machine
 without leaking a real SSID, and why the same build can run inside an iframe as
 a live demo.
 
@@ -232,7 +232,7 @@ rove/
 │   │   ├── utils/              shared helpers (format, platform, highlight)
 │   │   ├── types/              the UI↔backend contract (mirrored in Rust)
 │   │   └── bridge/             the contract's two implementations: Tauri, and
-│   │                           the browser mock (npm run dev without Tauri)
+│   │                           the browser mock (pnpm dev without Tauri)
 │   └── src-tauri/              thin Tauri shell: one #[tauri::command] per
 │       │                       service, events, capabilities, window config
 │       ├── linux/              .deb install/remove scripts, AppArmor profile
@@ -247,12 +247,12 @@ rove/
 │   │   │                       type styles and layout, as utilities)
 │   │   └── fonts/              the faces base.css loads
 │   ├── catalog/                the library as data: components.gen.json
-│   │                           (written by npm run gen), figma/ (components
-│   │                           and guides, exported from Figma by npm run
+│   │                           (written by pnpm gen), figma/ (components
+│   │                           and guides, exported from Figma by pnpm
 │   │                           figma:export) and figma-differences.json (by
 │   │                           hand: where code and Figma differ, and why)
 │   ├── cli/                    rove-ui, which prints the catalog a component
-│   │                           at a time (npx rove-ui --help): program.ts
+│   │                           at a time (pnpm rove-ui --help): program.ts
 │   │                           (the commands), catalog/ (reads it), output/
 │   │                           (text and Markdown) and pick/ (the prompts)
 │   └── .storybook/             the library's Storybook and its Docs pages
@@ -267,8 +267,8 @@ rove/
 │   └── data/                   bundled lookup tables: OUI, IP-to-country,
 │                               IP-to-ASN, hosting-asns.txt and
 │                               dhcp_fingerprints.tsv
-├── scripts/                    tooling: checks/ (the lint gates `npm run lint`
-│                               runs), gen/ (the *.gen.* files `npm run gen`
+├── scripts/                    tooling: checks/ (the lint gates `pnpm lint`
+│                               runs), gen/ (the *.gen.* files `pnpm gen`
 │                               writes), hooks/ (git and Claude Code), eslint/,
 │                               screenshots and the a11y audit; TypeScript that
 │                               Node runs as is, typed by its own tsconfig.json

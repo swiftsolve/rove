@@ -4,7 +4,7 @@ How the React UI, the app in `apps/rove/src` and the library in `packages/ui`, i
 is in `rove-tokens`' [DESIGN.md](../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md),
 and the library has its own guide, [packages/ui/README.md](../../../packages/ui/README.md).
 
-**[✓ CHECKED by `file`]** marks a rule `npm run check` enforces. The file it
+**[✓ CHECKED by `file`]** marks a rule `pnpm check` enforces. The file it
 names is the check (`checks/`, `gen/` and `eslint/` are in `scripts/`), and
 says what it guards. A rule without the tag is judgment:
 [What review catches](#what-review-catches) lists the ones that slip most.
@@ -16,7 +16,7 @@ says what it guards. A rule without the tag is judgment:
 Each Figma component has a counterpart in the library: build from these before
 writing new markup. Which one to use, and its props, variants and usage guide,
 are in `packages/ui/catalog/components.gen.json`, generated from the code.
-Look one up there before the sources, through `npx rove-ui`, which prints it a
+Look one up there before the sources, through `pnpm rove-ui`, which prints it a
 component at a time: `list` (each by group), `show
 Button` (its props, parts, usage guide, Figma component and stories), `search
 tooltip`, `icons wifi`, `pick` (type to narrow the list, then show, copy or open one, in a terminal),
@@ -244,7 +244,7 @@ apply here. This section is how they're written as Tailwind utilities.
   wherever a component merges a `className` from outside, which is how a view
   adjusts a child. `cx` only joins fixed classes. tailwind-merge groups the
   theme's names and `type-*` classes from `cn-theme.gen.json`, so after a new
-  theme name or text style, `npm run gen`. [✓ CHECKED by `gen/cn-theme.ts`]
+  theme name or text style, `pnpm gen`. [✓ CHECKED by `gen/cn-theme.ts`]
 - A view adjusts a shared component through its variants (`density`,
   `align`, `shouldTruncate`, `CardBody`'s `layout`); a tweak more than one
   view needs becomes a new variant.
@@ -283,9 +283,9 @@ apply here. This section is how they're written as Tailwind utilities.
 - Every story is a test too. It renders in headless Chromium with the real
   styles, runs its `play` function and fails on any accessibility violation
   (`@storybook/addon-vitest`). A new machine needs
-  `npx playwright install chromium` once.
-- Looks and screen-level axe run outside `npm test`: AGENTS.md's Check your
-  work has the commands. `npm run screenshots` also shoots open menus,
+  `pnpm exec playwright install chromium` once.
+- Looks and screen-level axe run outside `pnpm test`: AGENTS.md's Check your
+  work has the commands. `pnpm screenshots` also shoots open menus,
   dialogs, tooltips, a focus ring and every component's All States story.
 
 ## Validation
@@ -301,7 +301,7 @@ These judgment rules slip through most often:
   (AGENTS.md: Write plain code);
 - a hint over two short sentences, or one that explains how it works;
 - the light theme, and any screen: Chromatic snapshots only stories, in dark,
-  so read `npm run screenshots` in both themes;
-- a screen, subpage or dialog without `npm run a11y`, which no check runs;
+  so read `pnpm screenshots` in both themes;
+- a screen, subpage or dialog without `pnpm a11y`, which no check runs;
 - Figma out of sync beyond its variants and guides (a component's spacing, a
   guide line's wording).

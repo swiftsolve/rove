@@ -5,29 +5,25 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "npm@11.19.1",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@12.17.0",
   "scripts": {
-    "dev": "npm run dev -w rove",
+    "dev": "pnpm --filter rove dev",
     "build:web": "turbo run build --filter=rove",
     "lint": "eslint . && prettier --check . && node scripts/checks/run.ts",
     "format": "prettier --write .",
     "gen": "node scripts/gen/components.ts && node scripts/gen/cn-theme.ts",
     "figma:export": "node scripts/checks/figma-export.ts --export",
     "typecheck": "turbo run typecheck && tsc -p scripts",
-    "check": "npm run typecheck && npm run lint && npm test",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
     "screenshots": "node scripts/screenshots.ts",
     "diagrams": "node scripts/gen/docs-diagrams.ts",
-    "storybook": "npm run storybook -w @swiftsolve/rove-ui",
-    "build:storybook": "npm run build:storybook -w @swiftsolve/rove-ui --",
-    "chromatic": "npm run chromatic -w @swiftsolve/rove-ui",
+    "storybook": "pnpm --filter @swiftsolve/rove-ui storybook",
+    "build:storybook": "pnpm --filter @swiftsolve/rove-ui build:storybook",
+    "chromatic": "pnpm --filter @swiftsolve/rove-ui chromatic",
     "a11y": "node scripts/a11y-audit.ts",
-    "tauri": "npm run tauri -w rove --",
-    "tauri:dev": "npm run tauri:dev -w rove",
-    "tauri:build": "npm run tauri:build -w rove",
+    "tauri": "pnpm --filter rove tauri",
+    "tauri:dev": "pnpm --filter rove tauri:dev",
+    "tauri:build": "pnpm --filter rove tauri:build",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "prepare": "git config core.hooksPath scripts/hooks/git || true"
@@ -40,10 +36,12 @@
     "@storybook/addon-docs": "^10.6.5",
     "@storybook/addon-vitest": "^10.6.5",
     "@storybook/react-vite": "^10.6.5",
+    "@swiftsolve/rove-ui": "workspace:*",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
+    "@types/estree": "^1.0.9",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -62,15 +60,12 @@
     "playwright-core": "^1.61.1",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "react-docgen-typescript": "^2.4.0",
     "storybook": "^10.6.5",
     "turbo": "^2.11.11",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.63.0",
     "vite": "^7.3.6",
     "vitest": "^4.1.12"
-  },
-  "overrides": {
-    "glob": "^14.0.3",
-    "minimatch": "^11.0.4"
   }
 }

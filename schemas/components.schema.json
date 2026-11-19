@@ -77,7 +77,7 @@
           "const": true
         },
         "storyIds": {
-          "description": "Its stories' ids: open one at http://localhost:6006/?path=/story/<id> (npm run storybook).",
+          "description": "Its stories' ids: open one at http://localhost:6006/?path=/story/<id> (pnpm storybook).",
           "type": "array",
           "items": {
             "type": "string"

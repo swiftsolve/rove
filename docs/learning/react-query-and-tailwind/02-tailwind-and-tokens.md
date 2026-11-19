@@ -69,7 +69,7 @@ The two words after `@theme`:
   file already defines them.
 
 So a new token reaches code only through a rove-tokens release: add it in
-Figma, release rove-tokens, update the package here, then run `npm run gen`,
+Figma, release rove-tokens, update the package here, then run `pnpm gen`,
 which reads the new theme into the class merger `cn` uses
 (`packages/ui/src/utils/cn-theme.gen.json`).
 
@@ -131,7 +131,7 @@ Also in `tailwind.css`:
 
 ## Guard rails
 
-`npm run check` stops you from slipping:
+`pnpm check` stops you from slipping:
 
 - `scripts/checks/raw-values.ts` flags a raw colour (`#fff`, `rgb()`) and a
   value that has a token (`p-[12px]` is `p-12`).

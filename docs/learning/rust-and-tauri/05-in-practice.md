@@ -94,7 +94,7 @@ Say you want to surface the machine's uptime:
    interface: the contract both bridge implementations must satisfy.
 5. **Implement the bridge** in `apps/rove/src/bridge/tauri-network-api.ts`
    (`getUptime: () => invokeCommand<number | null>('get_uptime')`) *and* mirror it in
-   `apps/rove/src/bridge/mock-network-api.ts` so `npm run dev` keeps working in a plain browser.
+   `apps/rove/src/bridge/mock-network-api.ts` so `pnpm dev` keeps working in a plain browser.
 6. **Consume it** from a hook via `useBackendQuery` and render it in a view.
 
 Notice what *doesn't* change: the IPC plumbing, the serialization, the event
@@ -105,7 +105,7 @@ thought goes, and steps 2 to 6 mechanical. The
 is the same six steps as a checklist.
 
 ```bash
-npm run tauri:dev            # build and run the desktop app, hot-reloading the UI
+pnpm tauri:dev               # build and run the desktop app, hot-reloading the UI
 cargo test -p rove-core      # test the pure logic in isolation
 ```
 

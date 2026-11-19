@@ -1,5 +1,5 @@
 # Machine-written: GitHub collapses their diffs and leaves them out of the
-# language stats. *.gen.* is generated from this repo by npm run gen;
-# catalog/figma/ is exported from the Figma file by npm run figma:export.
+# language stats. *.gen.* is generated from this repo by pnpm gen;
+# catalog/figma/ is exported from the Figma file by pnpm figma:export.
 *.gen.* linguist-generated=true
 packages/ui/catalog/figma/** linguist-generated=true

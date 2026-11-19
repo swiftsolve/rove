@@ -20,18 +20,18 @@ const relativePath = editedFile ? relative(ROOT, resolve(editedFile)) : ''
 // Outside this checkout (another worktree, the scratchpad) isn't ours to lint.
 if (!relativePath || relativePath.startsWith('..')) process.exit(0)
 
-const runNpx = (command: string, args: string[]) =>
-  spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
+const runLocalBin = (command: string, args: string[]) =>
+  spawnSync('pnpm', ['exec', command, ...args], { cwd: ROOT, encoding: 'utf8' })
 
 if (relativePath.endsWith('.rs')) {
   // rustfmt finds rustfmt.toml from the file's directory up.
   spawnSync('rustfmt', ['--edition', '2021', relativePath], { cwd: ROOT })
   process.exit(0)
 }
-runNpx('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', relativePath])
+runLocalBin('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', relativePath])
 if (!LINTED_FILE.test(relativePath)) process.exit(0)
 
-const lint = runNpx('eslint', ['--no-warn-ignored', relativePath])
+const lint = runLocalBin('eslint', ['--no-warn-ignored', relativePath])
 if (lint.status !== 0) {
   console.error(`ESLint found problems in ${relativePath}:\n${lint.stdout}${lint.stderr}`)
   process.exit(2)

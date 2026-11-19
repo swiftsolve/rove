@@ -7,7 +7,7 @@
  * an arrow that crosses a card or a label fails it. `--check` also fails when
  * an SVG on disk isn't what the data draws, so a hand edit can't stay.
  *
- *   node scripts/gen/docs-diagrams.ts           # rewrite them (npm run diagrams)
+ *   node scripts/gen/docs-diagrams.ts           # rewrite them (pnpm diagrams)
  *   node scripts/gen/docs-diagrams.ts --check   # fail if one breaks the style or is stale
  */
 import { readFile, writeFile } from 'node:fs/promises'
@@ -34,7 +34,7 @@ for (const diagram of DIAGRAMS) {
   const drawn = await drawDiagram(diagram)
   if (isCheck) {
     if ((await readIfThere(path)) !== drawn) {
-      problems.push(`docs/assets/${diagram.file} isn't what its data draws: run npm run diagrams`)
+      problems.push(`docs/assets/${diagram.file} isn't what its data draws: run pnpm diagrams`)
     }
   } else if (problems.length === 0) {
     await writeFile(path, drawn)

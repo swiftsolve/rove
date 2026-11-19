@@ -35,7 +35,7 @@ stay identical.
    `??` against `||`, empty strings, null against undefined). Revert anything
    a reviewer could call a matter of taste, and move a comment that drifted
    off the line it describes. Done when each remaining hunk passes both tests.
-4. **Check.** `npm run check`, with no screenshot run going at the same time:
+4. **Check.** `pnpm check`, with no screenshot run going at the same time:
    both start Vite servers, and Vitest fails on the port clash even with
    every test green.
 5. **Commit by folder**, by path (AGENTS.md: Commit only your paths), as

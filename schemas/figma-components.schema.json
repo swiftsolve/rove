@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Figma components export",
-  "description": "Each library component's Figma component in the Rove Design System file: its name, node id and variant properties. Exported from Figma by npm run figma:export, never edited by hand: a component's Figma name is its code name in sentence case unless figma-differences.json gives another. checks/figma-export.ts fails when Figma has changed since, and npm run gen merges each entry into components.gen.json and compares its variants with the props.",
+  "description": "Each library component's Figma component in the Rove Design System file: its name, node id and variant properties. Exported from Figma by pnpm figma:export, never edited by hand: a component's Figma name is its code name in sentence case unless figma-differences.json gives another. checks/figma-export.ts fails when Figma has changed since, and pnpm gen merges each entry into components.gen.json and compares its variants with the props.",
   "type": "object",
   "required": ["$schema", "$comment", "figmaFileUrl", "components"],
   "additionalProperties": false,

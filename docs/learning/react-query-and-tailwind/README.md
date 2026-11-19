@@ -36,7 +36,7 @@ two guides below; these chapters explain why.
   - a nudge with no payload: invalidate the query it's about.
 - A new spacing, colour or size: add it in Figma and release rove-tokens, whose
   generated `tailwind-theme.css` maps it to a class; update the package here,
-  then `npm run gen`. Code takes only tokens.
+  then `pnpm gen`. Code takes only tokens.
 - Text: a `type-*` class.
 - A shared layout: an `@utility` in `utilities.css`.
 - A component's looks: `cva`. Merging an outside `className`: `cn`. Plain
@@ -50,5 +50,5 @@ two guides below; these chapters explain why.
   `is`, `has`, `can`, `should` and the like. A shape: `type`. A comment: why.
 - A changing status: a region that's always mounted. A missing value:
   `NoValue`. Parts of a line: `InlineMeta`. An exit animation: `usePresence`.
-- Done: `npm run check`, then what review catches: both themes in
-  `npm run screenshots`, `npm run a11y`, Figma.
+- Done: `pnpm check`, then what review catches: both themes in
+  `pnpm screenshots`, `pnpm a11y`, Figma.

@@ -2,10 +2,10 @@
  * Run axe-core on every screen, subpage and dialog, in both themes, and list
  * the accessibility problems it finds.
  *
- *   npm run a11y                                   # starts its own dev server
- *   npm run a11y -- --url http://localhost:5173    # reuse a running dev server
- *   CHROME_PATH=/usr/bin/chromium npm run a11y     # no Google Chrome installed
- *   npm run a11y -- --limit all                    # list every place, not the first 12
+ *   pnpm a11y                                      # starts its own dev server
+ *   pnpm a11y --url http://localhost:5173          # reuse a running dev server
+ *   CHROME_PATH=/usr/bin/chromium pnpm a11y        # no Google Chrome installed
+ *   pnpm a11y --limit all                          # list every place, not the first 12
  *
  * It saves no images: axe reads the live page, colours included. It reaches
  * each place the way scripts/screenshots.ts does: the Vite dev server and the

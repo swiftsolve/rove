@@ -26,7 +26,7 @@ Run these from `apps/rove/src-tauri/`:
 ```sh
 # app icon: render the master, then fan out every platform size/format
 python3 icons/icon-source.py icons/icon-source.png
-npm run tauri -- icon icons/icon-source.png
+pnpm tauri icon icons/icon-source.png
 
 # macOS tray icon (embedded in src/tray.rs)
 python3 icons/tray-source.py icons/tray.png

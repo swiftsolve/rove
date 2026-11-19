@@ -19,15 +19,15 @@ The rules a screen follows (where code goes, names and copy, styles) are in
    navigating need no code.
 3. **Copy** follows `apps/rove/src/README.md`'s Names and copy. The empty, loading and
    failed states use the library's `EmptyState`, `LoadingState` and `Banner`.
-4. **Markup** from the library (`npx rove-ui --md list`, then `npx rove-ui --md show <Name>`). Markup no
+4. **Markup** from the library (`pnpm rove-ui --md list`, then `pnpm rove-ui --md show <Name>`). Markup no
    component covers is a new one: the `add-library-component` skill.
 
 ## Done
 
-- `npm run check` and `npm run a11y` pass. The audit visits only the places
+- `pnpm check` and `pnpm a11y` pass. The audit visits only the places
   in `SCENARIOS` (`scripts/a11y-audit.ts`): it fails on a tab with none, but
   a new subpage, dialog or menu gets its line there by hand.
-- `npm run dev` in both themes, and `npm run screenshots -- --stable --out
+- `pnpm dev` in both themes, and `pnpm screenshots --stable --out
   <dir>` (and `--theme light`): read the PNGs for the new screen.
 - Commit, then the `resync-sites` skill: a new screen is a change a user would
   see.

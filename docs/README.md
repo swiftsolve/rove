@@ -69,6 +69,6 @@ Background.
 
 - [Why "Rove"?](why-rove.md)
 
-`assets/` holds the docs' diagrams, drawn by `npm run diagrams` in the style
+`assets/` holds the docs' diagrams, drawn by `pnpm diagrams` in the style
 [`assets/README.md`](assets/README.md) sets, and `screenshots/` the app's
-screens (`npm run screenshots`).
+screens (`pnpm screenshots`).

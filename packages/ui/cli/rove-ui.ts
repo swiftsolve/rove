@@ -2,7 +2,7 @@
 /**
  * rove-ui: looks up the UI library's components in catalog/components.gen.json,
  * so an agent or a person reads one component instead of the whole file.
- * `npx rove-ui --help` lists the commands. Node runs it as .ts (>= 24).
+ * `pnpm rove-ui --help` lists the commands. Node runs it as .ts (>= 24).
  */
 import { CommanderError } from 'commander'
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Figma differences",
-  "description": "Where a library component and its Figma component differ on purpose, and why, by component; a component that matches its Figma component isn't listed. Edited by hand (the write-figma-differences skill). npm run figma:export reads its Figma names, and npm run gen fails on a difference not written here, or one written here that's gone.",
+  "description": "Where a library component and its Figma component differ on purpose, and why, by component; a component that matches its Figma component isn't listed. Edited by hand (the write-figma-differences skill). pnpm figma:export reads its Figma names, and pnpm gen fails on a difference not written here, or one written here that's gone.",
   "type": "object",
   "required": ["components"],
   "additionalProperties": false,

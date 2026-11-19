@@ -8,7 +8,7 @@ Previous: [Accessibility in practice](07-accessibility.md). Back to [Contents](R
 
 Some rules in [apps/rove/src/README.md](../../../apps/rove/src/README.md) and
 [packages/ui/README.md](../../../packages/ui/README.md) end with a tag like
-**[✓ CHECKED by `checks/raw-values.ts`]**. It means `npm run check` fails if
+**[✓ CHECKED by `checks/raw-values.ts`]**. It means `pnpm check` fails if
 you break the rule, and the file it names is the check, so you can open it to
 see exactly what counts. A rule without the tag is judgment: nothing stops
 you, and review has to notice.
@@ -17,12 +17,12 @@ Why bother marking which is which: some rules can be checked by a script ("no
 raw colour") and some can't ("a comment says why"). The tag tells you which
 you can lean on, and where you're on your own.
 
-## What `npm run check` runs
+## What `pnpm check` runs
 
 From [package.json](../../../package.json):
 
 ```json
-    "check": "npm run typecheck && npm run lint && npm test",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
 ```
 
 In order: TypeScript; ESLint, Prettier and every script in `scripts/checks`
@@ -40,7 +40,7 @@ Each file's opening comment says what it guards. In short:
 | [checks/text-styles.ts](../../../scripts/checks/text-styles.ts) | A font size with no text style |
 | [checks/ui-classname.ts](../../../scripts/checks/ui-classname.ts) | A `className` that restyles a library component instead of placing it |
 | [checks/custom-properties.ts](../../../scripts/checks/custom-properties.ts) | A `var(--…)` nothing defines, such as a typo |
-| [checks/figma-export.ts](../../../scripts/checks/figma-export.ts) | Figma changed since the last export of its components and usage guides (skipped without `FIGMA_TOKEN`); `npm run gen` then compares the export with the code |
+| [checks/figma-export.ts](../../../scripts/checks/figma-export.ts) | Figma changed since the last export of its components and usage guides (skipped without `FIGMA_TOKEN`); `pnpm gen` then compares the export with the code |
 | [gen/components.ts](../../../scripts/gen/components.ts) | A stale `components.gen.json`; a component or prop without a doc comment, a Figma entry or a usage guide; a handler no `play` story drives |
 | [gen/cn-theme.ts](../../../scripts/gen/cn-theme.ts) | A stale `cn-theme.gen.json`, so `cn` would miss a theme name ([chapter 3](03-cva-cx-cn.md)) |
 
@@ -62,7 +62,7 @@ A lint exception works the same way, with its reason after `--`
 
 ## Generated files
 
-`components.gen.json` and `cn-theme.gen.json` are written by `npm run gen`
+`components.gen.json` and `cn-theme.gen.json` are written by `pnpm gen`
 from the code, never by hand. The code is the source; the file is a view of
 it that's easy to read in one go. `--check` fails when the file is stale, so
 the view can't quietly fall behind the code.
@@ -90,8 +90,8 @@ Things only a person can judge:
 Things no automatic check looks at:
 
 - **The light theme, and any whole screen.** Chromatic snapshots only stories,
-  in dark. So run `npm run screenshots` in both themes and read the pictures.
-- **A screen, subpage or dialog without `npm run a11y`.** Story tests run axe
+  in dark. So run `pnpm screenshots` in both themes and read the pictures.
+- **A screen, subpage or dialog without `pnpm a11y`.** Story tests run axe
   on components, not on screens put together.
 - **Figma beyond its variants and guides.** The Figma check compares variant
   properties and guide lines, not a component's spacing or a line's wording.

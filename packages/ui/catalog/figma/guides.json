@@ -1,6 +1,6 @@
 {
   "$schema": "../../../../schemas/figma-guides.schema.json",
-  "$comment": "Exported from the Figma file by `npm run figma:export`; change it in Figma, then export again and run `npm run gen`.",
+  "$comment": "Exported from the Figma file by `pnpm figma:export`; change it in Figma, then export again and run `pnpm gen`.",
   "guides": {
     "Button": {
       "whenToUse": [

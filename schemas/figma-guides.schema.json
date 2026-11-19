@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Figma usage guides",
-  "description": "Each library component's usage guide as the Rove Design System Figma file words it, by component. Exported from Figma by npm run figma:export, never edited by hand; checks/figma-export.ts fails when Figma has changed since, and npm run gen merges each guide into components.gen.json as figmaGuidance.",
+  "description": "Each library component's usage guide as the Rove Design System Figma file words it, by component. Exported from Figma by pnpm figma:export, never edited by hand; checks/figma-export.ts fails when Figma has changed since, and pnpm gen merges each guide into components.gen.json as figmaGuidance.",
   "type": "object",
   "required": ["$schema", "$comment", "guides"],
   "additionalProperties": false,

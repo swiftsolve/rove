@@ -1,7 +1,7 @@
 /**
  * The doc diagrams in docs/assets/, as data: scripts/gen/docs-diagrams.ts draws
  * each in the style docs/assets/README.md sets. Change a diagram here, never
- * in its SVG, then run `npm run diagrams`.
+ * in its SVG, then run `pnpm diagrams`.
  *
  * Every count and name on a diagram is a claim about the code: check it there
  * when you change one.

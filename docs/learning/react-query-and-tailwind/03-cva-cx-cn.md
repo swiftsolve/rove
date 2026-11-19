@@ -72,7 +72,7 @@ result would depend on CSS order.
 
 `cn` has one catch. tailwind-merge has to know Rove's custom names, or it
 mixes them up: it would read `text-md` (a size) and `text-secondary` (a colour)
-as two colours and drop one. So `npm run gen` reads every theme name from
+as two colours and drop one. So `pnpm gen` reads every theme name from
 `tailwind.css` and every `type-*` class from rove-tokens into
 `cn-theme.gen.json`, which `cn.ts` hands to tailwind-merge. A later `type-*` class replaces an earlier
 one, and any size, weight or spacing before it; a utility after it tweaks it.

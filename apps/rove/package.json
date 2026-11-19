@@ -16,7 +16,7 @@
     "tauri:build": "tauri build"
   },
   "dependencies": {
-    "@swiftsolve/rove-ui": "0.0.3",
+    "@swiftsolve/rove-ui": "workspace:*",
     "@tanstack/react-query": "^5.105.0",
     "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-process": "^2.4.0",

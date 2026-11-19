@@ -27,13 +27,12 @@
  *   node scripts/checks/raw-values.ts
  */
 import { readdir, readFile } from 'node:fs/promises'
-import { createRequire } from 'node:module'
 import { join, relative } from 'node:path'
 
-import { APP_SRC, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
+import { APP_SRC, resolveFromLibrary, ROOT, SOURCE_DIRS } from '../lib/source-dirs.ts'
 
 const SKIPPED = [join(APP_SRC, 'assets'), join(APP_SRC, 'bridge', 'mock-network-api.ts')]
-const TOKENS_CSS = createRequire(import.meta.url).resolve('@swiftsolve/rove-tokens/tokens.css')
+const TOKENS_CSS = resolveFromLibrary('@swiftsolve/rove-tokens/tokens.css')
 
 type AllowedEntry = { file: string; value: string }
 

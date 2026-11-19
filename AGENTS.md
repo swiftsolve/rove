@@ -2,7 +2,7 @@
 
 A React app (`apps/rove/src`), its component library (`packages/ui`, imported
 as `@swiftsolve/rove-ui`) and a Rust backend (`crates/rove-core`, behind a thin
-Tauri shell in `apps/rove/src-tauri/`) over a typed bridge. The two npm
+Tauri shell in `apps/rove/src-tauri/`) over a typed bridge. The two pnpm
 workspaces share the root's scripts, and turbo runs their typecheck, tests and
 build. Claude Code loads the UI's guides with the first file it reads in their
 folder, through `apps/rove/src/AGENTS.md` and `packages/ui/AGENTS.md`. Before
@@ -16,12 +16,12 @@ Read the rows your task matches:
 | --- | --- |
 | Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
 | UI | `apps/rove/src/README.md` and DESIGN.md; for the library, also `packages/ui/README.md` |
-| Which library component, and its props | `npx rove-ui --md list`, then `npx rove-ui --md show <Name>`: one component from `packages/ui/catalog/components.gen.json`, generated from the code (`apps/rove/src/README.md`: Components) |
+| Which library component, and its props | `pnpm rove-ui --md list`, then `pnpm rove-ui --md show <Name>`: one component from `packages/ui/catalog/components.gen.json`, generated from the code (`apps/rove/src/README.md`: Components) |
 | The UI↔backend boundary, commands, events | `docs/architecture.md` |
 | A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
 | Anything that sends data off the machine, or bundled data | `README.md`: Security model, Bundled data |
-| A diagram in `docs/` | `docs/assets/README.md`: the style, and `npm run diagrams`, which draws them |
+| A diagram in `docs/` | `docs/assets/README.md`: the style, and `pnpm diagrams`, which draws them |
 
 ## Procedures
 
@@ -98,12 +98,12 @@ of it (README.md: Check a change lists each stage). Fix what a hook reports.
 
 | Changed | Run |
 | --- | --- |
-| Anything | `npm run check`: typecheck, lint, `scripts/checks/`, the `scripts/gen/` freshness checks, and every Vitest test, the stories with their play functions and axe |
-| A library component, while you work | `npm test -w @swiftsolve/rove-ui -- --project=storybook --project=dom src/<folder>`: its stories and DOM tests, in seconds |
+| Anything | `pnpm check`: typecheck, lint, `scripts/checks/`, the `scripts/gen/` freshness checks, and every Vitest test, the stories with their play functions and axe |
+| A library component, while you work | `pnpm --filter @swiftsolve/rove-ui test --project=storybook --project=dom src/<folder>`: its stories and DOM tests, in seconds |
 | Rust | `cargo test -p rove-core`, `cargo clippy --workspace --all-targets -- -D warnings` and `cargo fmt --all` |
-| How the UI looks | `npm run screenshots -- --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: a wrong shade or a cramped gap shows only there. Library stories are in `25-library/`. `docs/screenshots` is committed, so point `--out` at a scratch folder |
+| How the UI looks | `pnpm screenshots --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: a wrong shade or a cramped gap shows only there. Library stories are in `25-library/`. `docs/screenshots` is committed, so point `--out` at a scratch folder |
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
-| A screen, subpage or dialog | `npm run a11y`: axe on each, in both themes |
+| A screen, subpage or dialog | `pnpm a11y`: axe on each, in both themes |
 | A token | `rove-tokens`' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
 
 ### Done means

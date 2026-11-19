@@ -12,7 +12,7 @@ it out with the spacing below, and `scripts/gen/docs-diagrams.ts` writes it.
 Change the data, never an SVG, then run:
 
 ```bash
-npm run diagrams
+pnpm diagrams
 ```
 
 A new diagram is a new entry there. `rove-ui-pick.png` is a terminal
@@ -89,7 +89,7 @@ that table doesn't belong on a diagram.
 
 ## Check
 
-`npm run lint` runs `scripts/gen/docs-diagrams.ts --check`. It fails when:
+`pnpm lint` runs `scripts/gen/docs-diagrams.ts --check`. It fails when:
 
 - a line of text is wider than its card, chip or label column;
 - a section's title and summary are taller than its cards;

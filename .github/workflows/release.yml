@@ -34,10 +34,12 @@ jobs:
           sudo apt-get install -y build-essential libwebkit2gtk-4.1-dev \
             libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev
 
+      # pnpm at the version package.json's packageManager names.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -45,7 +47,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       # Enable macOS code signing only when a certificate secret is present.
       # If it's absent, we fall back to an unsigned build so the release still
@@ -142,3 +144,5 @@ jobs:
           args: ${{ matrix.args }}
           # The app's workspace, where its tauri script and src-tauri live.
           projectPath: apps/rove
+          # Named, so the action runs pnpm rather than guessing the package manager.
+          tauriScript: pnpm tauri

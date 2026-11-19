@@ -39,15 +39,17 @@ jobs:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
 
+      # pnpm at the version package.json's packageManager names.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Typecheck UI
-        run: npm run typecheck
+        run: pnpm typecheck
 
       # On every OS, so each platform's cfg-gated code (ETW on Windows,
       # CoreWLAN on macOS) is linted where it compiles. Lints: Cargo.toml.
@@ -104,7 +106,7 @@ jobs:
       # there — acceptable for a private repo. Signed/notarized installers for
       # end users are produced by release.yml on `v*` tags.
       - name: Build app bundle
-        run: npm run tauri:build
+        run: pnpm tauri:build
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}

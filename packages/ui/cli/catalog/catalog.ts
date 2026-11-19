@@ -1,6 +1,6 @@
 /**
  * Reads catalog/components.gen.json and finds components in it, for the
- * rove-ui CLI. The file is written by `npm run gen`, which holds it to its
+ * rove-ui CLI. The file is written by `pnpm gen`, which holds it to its
  * schema, so its shape can be trusted.
  */
 import { readFileSync } from 'node:fs'

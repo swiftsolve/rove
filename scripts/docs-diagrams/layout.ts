@@ -6,17 +6,17 @@
  * Every distance comes from SPACING, and every line of text is measured with
  * font-metrics.json. `diagramProblems` then checks the result, so a diagram
  * whose text overflows, whose label outgrows its cards, or whose arrow crosses
- * a card or a label fails `npm run lint` rather than shipping.
+ * a card or a label fails `pnpm lint` rather than shipping.
  */
 import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { resolveFromLibrary } from '../lib/source-dirs.ts'
+
 const HERE = dirname(fileURLToPath(import.meta.url))
 const FONTS = join(resolve(HERE, '../..'), 'packages/ui/src/fonts')
-const require = createRequire(import.meta.url)
-const LUCIDE_ICONS = join(dirname(require.resolve('lucide-react')), '../esm/icons')
+const LUCIDE_ICONS = join(dirname(resolveFromLibrary('lucide-react')), '../esm/icons')
 
 /** Rove Tokens' dark values, as the spec names them. */
 const COLOR = {

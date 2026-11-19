@@ -190,7 +190,7 @@ component) sets the patterns.
 
 | Check | Runs |
 | --- | --- |
-| `eslint-plugin-jsx-a11y-x` | `npm run check` (lint) |
-| `@storybook/addon-a11y` (axe on every story) | `npm run check` (Vitest storybook project) |
-| DOM tests asserting `aria-*` values | `npm run check` |
-| `npm run a11y` (axe on each screen, both themes) | By hand; no hook or CI runs it |
+| `eslint-plugin-jsx-a11y-x` | `pnpm check` (lint) |
+| `@storybook/addon-a11y` (axe on every story) | `pnpm check` (Vitest storybook project) |
+| DOM tests asserting `aria-*` values | `pnpm check` |
+| `pnpm a11y` (axe on each screen, both themes) | By hand; no hook or CI runs it |
