@@ -256,7 +256,7 @@ const PIPELINES = [
         icons: ['node', 'step', 'dtcg', 'step', 'css'],
         items: [
           {
-            name: '`npm run build`',
+            name: '`pnpm build`',
             body: 'Writes DTCG, then the CSS with Style Dictionary, the Tailwind theme and DESIGN.md’s token list.',
           },
         ],
@@ -282,13 +282,13 @@ const PIPELINES = [
 const CHECKS = [
   {
     icon: 'node',
-    name: '`npm run check`',
+    name: '`pnpm check`',
     body: 'The build stops on a token that points nowhere, has no description, or a CSS name off its Figma name. Then every colour is held to WCAG AA, and DESIGN.md to its format.',
   },
   {
     icon: 'figma',
     name: 'Figma check',
-    body: '`npm run figma:check` lists every token that differs between the Figma file and the repo.',
+    body: '`pnpm figma:check` lists every token that differs between the Figma file and the repo.',
   },
   {
     icon: 'eslint',

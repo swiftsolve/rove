@@ -2,7 +2,7 @@
 
 `@swiftsolve/rove-tokens`: Rove's design tokens. The Figma plugin in
 `figma-plugin/` exports the Rove Design System's variables, text styles and
-shadows into `src/figma/`, and `npm run build` turns them into `dist/`
+shadows into `src/figma/`, and `pnpm build` turns them into `dist/`
 (`tokens/` in DTCG, `tokens.css`, `text-styles.css`, `tailwind-theme.css`) and
 `DESIGN.md`'s front matter, every token with its value and use.
 
@@ -39,8 +39,8 @@ released, and taken up by Rove. Nothing here writes to Figma.
   in `DESIGN.md` below the front matter is edited directly. Only what Figma can't hold (font
   stacks, easing curves, the focus expressions) is written here, in
   `src/code-tokens.json`.
-- **`npm run figma:check` reports `inSync: true`.**
-  - It and `npm run figma:export` print the plugin's own code
+- **`pnpm figma:check` reports `inSync: true`.**
+  - It and `pnpm figma:export` print the plugin's own code
     (`figma-plugin/code.js`) to run through the Figma MCP's `use_figma`, so
     the plugin's Check tab and an agent check the same way.
   - A difference means the repo is behind Figma (export again) or was edited
@@ -57,16 +57,16 @@ are.
 
 ### Check your work
 
-Run `npm run check` before you commit: the build (which refuses a token
+Run `pnpm check` before you commit: the build (which refuses a token
 without a description), the typecheck of the scripts (`tsc`, as Node runs the
 `.ts` files without checking types), lint (ESLint and Prettier), the WCAG AA contrast check, the
 DESIGN.md format check (Google's linter) and the Figma plugin's test
-(`npm test`). Commit the rebuilt `DESIGN.md` with the change. Fix what a hook reports.
+(`pnpm test`). Commit the rebuilt `DESIGN.md` with the change. Fix what a hook reports.
 
 ### What runs on its own
 
 | Stage | Runs |
 | --- | --- |
 | Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a plain force push and `git reset --hard` |
-| Each commit (`scripts/hooks/git/`, on after `npm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
-| Each release tag (CI, `publish.yml`) | `npm run check` and `DESIGN.md` committed as built, then publish to npm only if they pass |
+| Each commit (`scripts/hooks/git/`, on after `pnpm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
+| Each release tag (CI, `publish.yml`) | `pnpm check` and `DESIGN.md` committed as built, then publish to npm only if they pass |

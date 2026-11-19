@@ -20,13 +20,13 @@ const path = editedFile ? relative(ROOT, resolve(editedFile)) : ''
 // Outside this checkout (another worktree, the scratchpad) isn't ours to lint.
 if (!path || path.startsWith('..')) process.exit(0)
 
-const runNpx = (command: string, args: string[]) =>
-  spawnSync('npx', [command, ...args], { cwd: ROOT, encoding: 'utf8' })
+const runLocalBin = (command: string, args: string[]) =>
+  spawnSync('pnpm', ['exec', command, ...args], { cwd: ROOT, encoding: 'utf8' })
 
-runNpx('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', path])
+runLocalBin('prettier', ['--write', '--ignore-unknown', '--log-level', 'warn', path])
 if (!LINTED_FILE.test(path)) process.exit(0)
 
-const lint = runNpx('eslint', ['--no-warn-ignored', path])
+const lint = runLocalBin('eslint', ['--no-warn-ignored', path])
 if (lint.status !== 0) {
   console.error(`ESLint found problems in ${path}:\n${lint.stdout}${lint.stderr}`)
   process.exit(2)

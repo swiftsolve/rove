@@ -6,7 +6,7 @@
  *     takes tokens from an export;
  *   - Check must find no differences, then find each one planted in the file.
  *
- *   npm test
+ *   pnpm test
  */
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'

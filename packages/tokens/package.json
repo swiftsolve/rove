@@ -25,12 +25,13 @@
     "typecheck": "tsc -p .",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run build && npm run typecheck && npm run lint && node scripts/checks/contrast.ts && node scripts/checks/design-md-format.ts && npm test",
+    "check": "pnpm build && pnpm typecheck && pnpm lint && node scripts/checks/contrast.ts && node scripts/checks/design-md-format.ts && pnpm test",
     "test": "node --test figma-plugin/code.test.ts",
     "figma:export": "node scripts/figma/use-figma.ts export",
     "figma:save": "node scripts/figma/use-figma.ts save",
     "figma:check": "node scripts/figma/use-figma.ts check",
-    "prepare": "git config core.hooksPath scripts/hooks/git || true; npm run build",
+    "release": "pnpm version -m \"chore: release v%s\"",
+    "prepare": "git config core.hooksPath scripts/hooks/git || true; pnpm build",
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build"
   },
@@ -60,5 +61,6 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^7.3.7"
-  }
+  },
+  "packageManager": "pnpm@12.17.0"
 }

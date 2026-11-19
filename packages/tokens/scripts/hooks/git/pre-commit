@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lint and format-check what this commit holds. Only the staged files: other
 # sessions' uncommitted work in the same checkout isn't this commit's to fail
-# on. `npm run check` covers the whole tree.
+# on. `pnpm check` covers the whole tree.
 set -euo pipefail
 
 mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACMR)
@@ -13,6 +13,6 @@ for file in "${staged[@]}"; do
 done
 
 if [ ${#scripts[@]} -gt 0 ]; then
-  npx eslint --no-warn-ignored -- "${scripts[@]}"
+  pnpm exec eslint --no-warn-ignored -- "${scripts[@]}"
 fi
-npx prettier --check --ignore-unknown -- "${staged[@]}"
+pnpm exec prettier --check --ignore-unknown -- "${staged[@]}"

@@ -1,7 +1,7 @@
 # Prettier formats the package's code: JavaScript, JSX, CSS, JSON, YAML and
 # HTML. Everything below is generated, Figma's, or prose.
 
-# Build outputs: rewritten by npm run build and npm run build:storybook.
+# Build outputs: rewritten by pnpm build and pnpm build:storybook.
 /dist/
 /storybook-static/
 
@@ -10,9 +10,9 @@
 /.claude/*
 !/.claude/settings.json
 
-# The Figma export, written by figma-plugin/, and npm's lockfile.
+# The Figma export, written by figma-plugin/, and pnpm's lockfile.
 src/figma
-package-lock.json
+pnpm-lock.yaml
 
 # Prose. Its line breaks and table layout are written by hand.
 *.md

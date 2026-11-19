@@ -54,12 +54,12 @@ earn one, create it in Figma like its neighbours:
 
 ## 2. Into this repo
 
-- `npm run figma:export` prints a script; run it through `use_figma`, save the
-  result as JSON, and `npm run figma:save <result.json>`. Never edit
+- `pnpm figma:export` prints a script; run it through `use_figma`, save the
+  result as JSON, and `pnpm figma:save <result.json>`. Never edit
   `src/figma/` directly.
-- `npm run build`, then `npm run check`. Contrast failing means the shade
+- `pnpm build`, then `pnpm check`. Contrast failing means the shade
   misses WCAG AA: fix it in Figma, not here. Commit the rebuilt `DESIGN.md` with the change.
-- `npm run figma:check` prints the check script; run it through `use_figma`.
+- `pnpm figma:check` prints the check script; run it through `use_figma`.
   It must return `inSync: true`.
 - Commit only your paths: `git commit -m "…" -- <paths>`.
 
@@ -74,18 +74,18 @@ unreleased, unless Rove needs it now or the user asks for a release.
 - On the Figma cover, set Version to the new version and Updated to today.
 - Pick the bump by what Rove sees: patch when no CSS variable is added,
   removed or renamed; minor for a new token; major for a rename or removal.
-  Say which and why, then `npm version <bump>` and
+  Say which and why, then `pnpm release <bump>` and
   `git push --follow-tags`. The tag's workflow checks, then publishes to
   npm; `gh run list` shows it.
 
 ## 4. In Rove
 
-- In `../rove`, once npm serves it: `npm install @swiftsolve/rove-tokens@<version>`,
-  then `npm run gen` and `npm run check`, and commit `package.json`,
-  `package-lock.json` and any `*.gen.*` file that changed.
+- In `../rove`, once npm serves it: `pnpm --filter @swiftsolve/rove-ui add @swiftsolve/rove-tokens@<version>`,
+  then `pnpm gen` and `pnpm check`, and commit `packages/ui/package.json`,
+  `pnpm-lock.yaml` and any `*.gen.*` file that changed.
 - The Tailwind theme comes with the package (`tailwind-theme.css`), so a new
   token's utility exists once Rove installs the version. A rename needs its
-  uses in Rove's code updated in the same commit; `npm run gen` rereads the
+  uses in Rove's code updated in the same commit; `pnpm gen` rereads the
   theme for `cn`.
 - Then run Rove's `resync-sites` skill (`../rove/.claude/skills/resync-sites/`).
 
@@ -93,5 +93,5 @@ unreleased, unless Rove needs it now or the user asks for a release.
 
 - `figma:check` reported `inSync: true`, and every Figma page showing the token
   matches.
-- `npm run check` passes here and in Rove.
+- `pnpm check` passes here and in Rove.
 - The summary says both sides changed and how that was checked.

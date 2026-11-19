@@ -33,14 +33,14 @@ They flow one way. Figma is the source of truth and git is the record: nothing h
 - **One source, four outputs.** `tokens.css`, a class per text style, a Tailwind theme with Tailwind's own scales cleared, and DTCG for other tools, all from one Figma export.
 - **Accessible by construction.** Every text and graphic colour is measured against what it sits on, in both themes, and the build fails below WCAG 2.2 AA.
 - **Written for agents too.** [`DESIGN.md`](DESIGN.md) ships in the package, in the [DESIGN.md format](https://github.com/google-labs-code/design.md): every token with its value and its use.
-- **Checked against Figma.** `npm run figma:check` compares the repo with the Figma file, token by token, and reports every difference.
+- **Checked against Figma.** `pnpm figma:check` compares the repo with the Figma file, token by token, and reports every difference.
 
 ## Getting started
 
 Install the package:
 
 ```bash
-npm install @swiftsolve/rove-tokens
+pnpm add @swiftsolve/rove-tokens
 ```
 
 Import the tokens, and the Tailwind theme if you use Tailwind v4:
@@ -95,16 +95,16 @@ Then style with the tokens, never raw values:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-it-works-dark.png">
-  <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by npm run build, and ship as @swiftsolve/rove-tokens (tokens.css, text-styles.css, the Tailwind theme and DTCG) and DESIGN.md. Checked by npm run check, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
+  <img src="docs/assets/how-it-works-light.png" width="100%" alt="Tokens: variables, text styles and shadows in Figma are exported to src/figma/*.json (with src/code-tokens.json beside them), built by pnpm build, and ship as @swiftsolve/rove-tokens (tokens.css, text-styles.css, the Tailwind theme and DTCG) and DESIGN.md. Checked by pnpm check, the Figma check and Rove's lint. Used by Rove, coding agents and the Storybook.">
 </picture>
 
 ### Tokens
 
-The Rove Tokens plugin exports the file's variables, text styles and `Shadow/*` effect styles to `src/figma/`. `npm run build` turns them into DTCG, then into CSS with [Style Dictionary](https://styledictionary.com/), the Tailwind theme and `DESIGN.md`'s token list. A release puts them on npm.
+The Rove Tokens plugin exports the file's variables, text styles and `Shadow/*` effect styles to `src/figma/`. `pnpm build` turns them into DTCG, then into CSS with [Style Dictionary](https://styledictionary.com/), the Tailwind theme and `DESIGN.md`'s token list. A release puts them on npm.
 
 ### Checked by
 
-`npm run check` builds, typechecks and lints, then holds every colour to WCAG AA and `DESIGN.md` to its format. `npm run figma:check` compares the repo with Figma. In Rove, a lint fails a raw colour or spacing where a token belongs.
+`pnpm check` builds, typechecks and lints, then holds every colour to WCAG AA and `DESIGN.md` to its format. `pnpm figma:check` compares the repo with Figma. In Rove, a lint fails a raw colour or spacing where a token belongs.
 
 ### Used by
 
@@ -129,11 +129,11 @@ To work on the repo:
 
 ```bash
 nvm use 24
-npm install
-npm run check
+pnpm install
+pnpm check
 ```
 
-`npm install` builds the tokens and turns on the git hooks. `npm run storybook` opens the Tokens Storybook on <http://localhost:6007>.
+`pnpm install` builds the tokens and turns on the git hooks. `pnpm storybook` opens the Tokens Storybook on <http://localhost:6007>.
 
 ## License
 

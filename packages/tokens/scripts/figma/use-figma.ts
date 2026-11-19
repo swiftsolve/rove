@@ -4,10 +4,10 @@
  * and the plugin export and check the same way. Nothing writes to the file:
  * tokens are designed in Figma and only exported from it.
  *
- *   npm run figma:export               # the file's variables, text styles and Shadow/* effect styles
- *   npm run figma:save <result.json>   # write an export's result into src/figma/
- *   npm run figma:check                # list every difference between the file and the repo
- *   npm run figma:check v2.0.0         # against a tag or commit, not the working tree
+ *   pnpm figma:export                  # the file's variables, text styles and Shadow/* effect styles
+ *   pnpm figma:save <result.json>      # write an export's result into src/figma/
+ *   pnpm figma:check                   # list every difference between the file and the repo
+ *   pnpm figma:check v2.0.0            # against a tag or commit, not the working tree
  *
  * The script goes to stdout (add `> file.js` to keep it). Pass it to use_figma
  * as `code`, with the file key from src/figma/variables.json.
@@ -32,17 +32,17 @@ const FILES: Record<string, string> = {
   'effect-styles.json': 'exportEffectStyles',
 }
 
-// No options, only words, so npm passes them through without `--`.
+// No options, only words, so pnpm passes them through as they are.
 // The second word is the result file to save, or the git ref to check against.
 const [action, actionArgument] = process.argv.slice(2)
 function exitWithUsage(message?: string): never {
-  console.error(message ?? 'Usage: npm run figma:export | figma:save <result.json> | figma:check [git ref]')
+  console.error(message ?? 'Usage: pnpm figma:export | figma:save <result.json> | figma:check [git ref]')
   process.exit(1)
 }
 if (!action || !['check', 'export', 'save'].includes(action)) exitWithUsage()
 
 if (action === 'save') {
-  if (!actionArgument) exitWithUsage('Usage: npm run figma:save <result.json>')
+  if (!actionArgument) exitWithUsage('Usage: pnpm figma:save <result.json>')
   await saveExport(actionArgument)
   process.exit(0)
 }

@@ -13,7 +13,7 @@
  * (docs/rationale.md, Text and Status, says how the others were picked), export
  * and build.
  *
- *   npm run build && node scripts/checks/contrast.ts
+ *   pnpm build && node scripts/checks/contrast.ts
  */
 import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
@@ -35,7 +35,7 @@ const GRAPHICS = 3
 
 const ruleBody = (selector: string) => {
   const start = css.indexOf(`${selector} {`)
-  if (start < 0) throw new Error(`dist/tokens.css has no ${selector} block: run npm run build`)
+  if (start < 0) throw new Error(`dist/tokens.css has no ${selector} block: run pnpm build`)
   return css.slice(start, css.indexOf('\n}', start))
 }
 const declarations = (text: string): Theme =>

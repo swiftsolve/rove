@@ -5,10 +5,10 @@ How the package's files name and hold the tokens. [`DESIGN.md`](../DESIGN.md) sa
 ## Install
 
 ```bash
-npm install @swiftsolve/rove-tokens
+pnpm add @swiftsolve/rove-tokens
 ```
 
-The package ships the tokens built, in `dist/`, and the import paths below point there. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v4.6.3`). npm then builds the tokens on install, which needs Node 24 (see `.nvmrc`).
+The package ships the tokens built, in `dist/`, and the import paths below point there. You can also install straight from a version tag (`github:swiftsolve/rove-tokens#v4.6.3`). The install then builds the tokens, which needs Node 24 (see `.nvmrc`).
 
 ## CSS variables
 
@@ -89,4 +89,4 @@ The colours meet [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA in both them
 - Text clears 4.5:1 ([1.4.3 Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)).
 - Icons, bars and dots clear 3:1 ([1.4.11 Non-text Contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)).
 
-AAA (7:1) isn't a target. `scripts/checks/contrast.ts` measures every pair in `npm run check`, which runs before every release, so a release can't break this. [Rationale](rationale.md) has the close calls.
+AAA (7:1) isn't a target. `scripts/checks/contrast.ts` measures every pair in `pnpm check`, which runs before every release, so a release can't break this. [Rationale](rationale.md) has the close calls.

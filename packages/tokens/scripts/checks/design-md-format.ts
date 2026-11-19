@@ -7,7 +7,7 @@
  * for Rove's own groups (OWN_GROUPS): the tokens the format has no group for,
  * and the Light theme.
  *
- *   npm run build && node scripts/checks/design-md-format.ts [file]
+ *   pnpm build && node scripts/checks/design-md-format.ts [file]
  *
  * The front matter is written by the build (scripts/tokens/design-front-matter.ts);
  * a section problem is in the prose, which is edited directly.
