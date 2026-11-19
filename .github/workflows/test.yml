@@ -50,6 +50,11 @@ jobs:
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
 
+      # The tokens' build rewrites DESIGN.md's front matter, so the committed
+      # one must match it.
+      - name: Tokens' DESIGN.md is up to date
+        run: git diff --exit-code -- packages/tokens/DESIGN.md
+
       # Linux only here; each platform's cfg-gated code is linted and tested on
       # its own OS by build.yml. Lints: Cargo.toml.
       - uses: dtolnay/rust-toolchain@stable

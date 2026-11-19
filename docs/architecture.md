@@ -256,6 +256,16 @@ rove/
 │   │                           (the commands), catalog/ (reads it), output/
 │   │                           (text and Markdown) and pick/ (the prompts)
 │   └── .storybook/             the library's Storybook and its Docs pages
+├── packages/tokens/            the design tokens' workspace,
+│   │                           @swiftsolve/rove-tokens, imported by the
+│   │                           library from its build and published to npm
+│   ├── src/figma/              the export from Figma (written by the plugin)
+│   ├── src/code-tokens.json    what Figma can't hold: font stacks, easing
+│   ├── scripts/                the build (tokens/), its checks, the Figma
+│   │                           bridge (figma/) and release.ts
+│   ├── figma-plugin/           the plugin that exports and checks the tokens
+│   ├── DESIGN.md               every token with its value and use
+│   └── .storybook/, stories/   the Tokens Storybook
 ├── crates/rove-core/           all platform services in pure Rust (no Tauri/GTK
 │   │                           deps, so it compiles and tests anywhere), a module per
 │   │                           domain, named as in apps/rove/src/features: apps/,

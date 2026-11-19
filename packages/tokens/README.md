@@ -8,7 +8,7 @@ The design tokens behind Rove, designed in Figma<br>
 and shipped as CSS, a Tailwind theme and DTCG.
 
 [![npm](https://img.shields.io/npm/v/@swiftsolve/rove-tokens?logo=npm&logoColor=white&label=npm&labelColor=17181b&color=5b8cff)](https://www.npmjs.com/package/@swiftsolve/rove-tokens)
-[![Release](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove-tokens/publish.yml?label=release&labelColor=17181b)](https://github.com/swiftsolve/rove-tokens/actions/workflows/publish.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove/publish-tokens.yml?label=release&labelColor=17181b)](https://github.com/swiftsolve/rove/actions/workflows/publish-tokens.yml)
 [![DTCG](https://img.shields.io/badge/DTCG-2025.10-5b8cff?labelColor=17181b)](https://www.designtokens.org/tr/2025.10/format/)
 [![WCAG](https://img.shields.io/badge/WCAG_2.2-AA-5b8cff?labelColor=17181b)](docs/rationale.md)
 
@@ -24,7 +24,7 @@ and shipped as CSS, a Tailwind theme and DTCG.
 
 ## Overview
 
-Rove is a desktop network monitor, and every colour, space, type style, shadow and motion curve in its UI comes from this package. The tokens are designed in the Rove Design System in Figma, exported into this repo by a Figma plugin, and built into CSS variables, a Tailwind v4 theme and [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (DTCG) files.
+Rove is a desktop network monitor, and every colour, space, type style, shadow and motion curve in its UI comes from this package. The tokens are designed in the Rove Design System in Figma, exported into this package by a Figma plugin, and built into CSS variables, a Tailwind v4 theme and [Design Tokens Format](https://www.designtokens.org/tr/2025.10/format/) (DTCG) files.
 
 They flow one way. Figma is the source of truth and git is the record: nothing here writes back to Figma, and a check lists anything in the repo that no longer matches the file.
 
@@ -104,11 +104,11 @@ The Rove Tokens plugin exports the file's variables, text styles and `Shadow/*` 
 
 ### Checked by
 
-`pnpm check` builds, typechecks and lints, then holds every colour to WCAG AA and `DESIGN.md` to its format. `pnpm figma:check` compares the repo with Figma. In Rove, a lint fails a raw colour or spacing where a token belongs.
+Rove's `pnpm check` builds, typechecks and lints the tokens, then holds every colour to WCAG AA and `DESIGN.md` to its format. `pnpm tokens figma:check` compares the repo with Figma. In Rove, a lint fails a raw colour or spacing where a token belongs.
 
 ### Used by
 
-Rove and its component library, the coding agents that work on them, and the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/), which reads the DTCG files and follows every build.
+Rove and its component library, which use them from this folder, the sites that install them from npm, the coding agents that work on them, and the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/), which reads the DTCG files and follows every build.
 
 ## Project structure
 
@@ -123,9 +123,9 @@ Rove and its component library, the coding agents that work on them, and the [To
 
 ## Contributing
 
-Every token change starts in Figma. [CONTRIBUTING.md](CONTRIBUTING.md) walks through exporting, checking and releasing, lists every script, and says what each file does. Coding agents follow the same steps in the [`update-tokens` skill](.claude/skills/update-tokens/SKILL.md), under the rules in [AGENTS.md](AGENTS.md).
+Every token change starts in Figma. [CONTRIBUTING.md](CONTRIBUTING.md) walks through exporting, checking and releasing, lists every script, and says what each file does. Coding agents follow the same steps in Rove's [`update-tokens` skill](../../.claude/skills/update-tokens/SKILL.md), under the rules in [AGENTS.md](AGENTS.md).
 
-To work on the repo:
+The package lives in the Rove monorepo, in `packages/tokens`. To work on it, from the repo root:
 
 ```bash
 nvm use 24
@@ -133,7 +133,7 @@ pnpm install
 pnpm check
 ```
 
-`pnpm install` builds the tokens and turns on the git hooks. `pnpm storybook` opens the Tokens Storybook on <http://localhost:6007>.
+`pnpm install` builds the tokens and turns on the git hooks. `pnpm tokens storybook` opens the Tokens Storybook on <http://localhost:6007>.
 
 ## License
 

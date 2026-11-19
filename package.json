@@ -19,6 +19,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm test",
     "screenshots": "node scripts/screenshots.ts",
     "diagrams": "node scripts/gen/docs-diagrams.ts",
+    "tokens": "pnpm --filter @swiftsolve/rove-tokens",
     "storybook": "pnpm --filter @swiftsolve/rove-ui storybook",
     "build:storybook": "pnpm --filter @swiftsolve/rove-ui build:storybook",
     "chromatic": "pnpm --filter @swiftsolve/rove-ui chromatic",

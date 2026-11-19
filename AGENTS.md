@@ -1,12 +1,14 @@
 # Rove
 
 A React app (`apps/rove/src`), its component library (`packages/ui`, imported
-as `@swiftsolve/rove-ui`) and a Rust backend (`crates/rove-core`, behind a thin
-Tauri shell in `apps/rove/src-tauri/`) over a typed bridge. The two pnpm
+as `@swiftsolve/rove-ui`), its design tokens (`packages/tokens`, published as
+`@swiftsolve/rove-tokens`) and a Rust backend (`crates/rove-core`, behind a thin
+Tauri shell in `apps/rove/src-tauri/`) over a typed bridge. The three pnpm
 workspaces share the root's scripts, and turbo runs their typecheck, tests and
-build. Claude Code loads the UI's guides with the first file it reads in their
-folder, through `apps/rove/src/AGENTS.md` and `packages/ui/AGENTS.md`. Before
-then, or in another agent, open them from the UI row below.
+build. Claude Code loads the UI's and the tokens' guides with the first file
+it reads in their folder, through `apps/rove/src/AGENTS.md`,
+`packages/ui/AGENTS.md` and `packages/tokens/AGENTS.md`. Before then, or in
+another agent, open them from the rows below.
 
 ## What to read
 
@@ -17,6 +19,7 @@ Read the rows your task matches:
 | Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
 | UI | `apps/rove/src/README.md` and DESIGN.md; for the library, also `packages/ui/README.md` |
 | Which library component, and its props | `pnpm rove-ui --md list`, then `pnpm rove-ui --md show <Name>`: one component from `packages/ui/catalog/components.gen.json`, generated from the code (`apps/rove/src/README.md`: Components) |
+| A token's value, name or use, or the token build | `packages/tokens/AGENTS.md` and `packages/tokens/DESIGN.md` |
 | The UI↔backend boundary, commands, events | `docs/architecture.md` |
 | A backend service | `docs/what-rove-measures.md`, `docs/networking/data-capture.md` |
 | Device discovery | `docs/networking/device-discovery.md`, `docs/networking/protocols.md` |
@@ -32,7 +35,7 @@ agents, open the file.
 | --- | --- |
 | Add a screen, tab or subpage | `.claude/skills/add-screen/SKILL.md` |
 | Show new backend data, from `rove-core` to a hook | `.claude/skills/add-backend-data/SKILL.md` |
-| Add or change a token, text style or shadow | `../rove-tokens/.claude/skills/update-tokens/SKILL.md` |
+| Add or change a token, text style or shadow | `.claude/skills/update-tokens/SKILL.md` |
 | Add a library component, or change one's API or look | `.claude/skills/add-library-component/SKILL.md` |
 | Write where a library component differs from its Figma component, and why, in `packages/ui/catalog/figma-differences.json` | `.claude/skills/write-figma-differences/SKILL.md` |
 | Resync the sites and Storybooks after a change a user would see | `.claude/skills/resync-sites/SKILL.md` |
@@ -44,10 +47,10 @@ agents, open the file.
 
 A design change (a token, text style, component variant or prop, copy,
 spacing) lands on both sides in the same task: the Rove Design System file in
-Figma, `rove-tokens`, this code, and the docs that describe it.
+Figma, `packages/tokens`, the code that uses it, and the docs that describe it.
 
-- **A token, text style or shadow** starts in Figma and flows one way, through
-  `../rove-tokens` and a release, to here as `@swiftsolve/rove-tokens`.
+- **A token, text style or shadow** starts in Figma and flows one way: exported
+  into `packages/tokens`, built, and used by the library in the same commit.
 - **A component** starts here, in `packages/ui/`, and its Figma component follows.
 
 ### Write plain code
@@ -104,7 +107,7 @@ of it (README.md: Check a change lists each stage). Fix what a hook reports.
 | How the UI looks | `pnpm screenshots --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: a wrong shade or a cramped gap shows only there. Library stories are in `25-library/`. `docs/screenshots` is committed, so point `--out` at a scratch folder |
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
 | A screen, subpage or dialog | `pnpm a11y`: axe on each, in both themes |
-| A token | `rove-tokens`' `pnpm check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
+| A token | `pnpm check`, which builds and checks the tokens too, and `pnpm tokens figma:check` reporting `inSync: true` (the `update-tokens` skill) |
 
 ### Done means
 
@@ -113,7 +116,6 @@ of it (README.md: Check a change lists each stage). Fix what a hook reports.
   `apps/rove/src/README.md`'s What review catches names the ones that slip most.
 - A design change is on both sides, and the summary says how that was checked:
   the sync check's `inSync: true`, or an audit you name.
-- A change a user would see (anything under `apps/rove/src` or `packages/ui`
-  that renders, or a
-  `@swiftsolve/rove-tokens` bump) is committed and resynced: the
+- A change a user would see (anything under `apps/rove/src`, `packages/ui`
+  or `packages/tokens` that renders) is committed and resynced: the
   `resync-sites` skill.

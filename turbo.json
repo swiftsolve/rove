@@ -5,27 +5,34 @@
       "dependsOn": ["^transit"]
     },
     "typecheck": {
-      "dependsOn": ["transit"]
+      "dependsOn": ["transit", "^build"]
     },
     "test": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["transit", "^build"],
       "outputs": []
     },
     "@swiftsolve/rove-ui#typecheck": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["transit", "^build"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/rove/src/**"]
     },
     "@swiftsolve/rove-ui#test": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["transit", "^build"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/rove/src/**"],
       "outputs": []
     },
     "build": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["transit", "^build"],
       "outputs": ["dist/**"]
     },
+    "@swiftsolve/rove-tokens#build": {
+      "outputs": ["dist/**", "DESIGN.md"]
+    },
+    "@swiftsolve/rove-tokens#test": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
     "build:storybook": {
-      "dependsOn": ["transit"],
+      "dependsOn": ["transit", "^build"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/rove/src/**"],
       "outputs": ["storybook-static/**"]
     },

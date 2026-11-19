@@ -339,7 +339,7 @@ if (problems.length > 0) {
   console.error(`\n${problems.length} raw value${problems.length === 1 ? '' : 's'} where a token belongs`)
   console.error(
     "Which token, and when a value may leave the scale: DESIGN.md's Do's and Don'ts and Layout " +
-      '(node_modules/@swiftsolve/rove-tokens/DESIGN.md). One that has to stay goes in ALLOWED here, with why.',
+      '(packages/tokens/DESIGN.md). One that has to stay goes in ALLOWED here, with why.',
   )
   process.exit(1)
 }

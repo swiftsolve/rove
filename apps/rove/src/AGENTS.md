@@ -5,4 +5,4 @@ a file under `apps/rove/src/`: how the UI is built, then the design rules.
 
 @README.md
 
-@../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md
+@../../../packages/tokens/DESIGN.md

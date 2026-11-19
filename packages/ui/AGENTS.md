@@ -6,6 +6,6 @@ built, the design rules, then the library's own guide.
 
 @../../apps/rove/src/README.md
 
-@../../node_modules/@swiftsolve/rove-tokens/DESIGN.md
+@../tokens/DESIGN.md
 
 @README.md

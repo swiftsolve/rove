@@ -1,6 +1,6 @@
 ---
 name: resync-sites
-description: Resync nabilr.com/rove, which embeds Rove's UI as a live demo and hosts both Storybooks. Use after committing a Rove change a user would see (anything under apps/rove/src or packages/ui that renders, or a @swiftsolve/rove-tokens bump); not for backend-only, test or tooling changes.
+description: Resync nabilr.com/rove, which embeds Rove's UI as a live demo and hosts both Storybooks. Use after committing a Rove change a user would see (anything under apps/rove/src, packages/ui or packages/tokens that renders); not for backend-only, test or tooling changes.
 ---
 
 # Resync the site
@@ -15,14 +15,15 @@ rove.swiftsolve.net only redirects there, so it never needs a resync.
 | Change | Demo | Storybooks |
 | --- | --- | --- |
 | Anything under `apps/rove/src` or `packages/ui` that renders | yes | if under `packages/ui/` |
-| A `@swiftsolve/rove-tokens` bump | yes | yes |
+| Anything under `packages/tokens` that builds or renders | yes | yes |
 | Only stories or library docs pages | no | yes |
 | Backend, tests, tooling, docs | no | no |
 
 ## Steps
 
-Commit in Rove first. The demo builds from this checkout; the Storybooks build
-from `origin/master` and rove-tokens' `origin/main`, so push before step 2.
+Commit in Rove first. The demo builds from this checkout; both Storybooks
+build from `origin/master` (the Tokens Storybook from `packages/tokens`), so
+push before step 2.
 
 1. **Demo**, in `../nabilr.com`: `npm run sync:rove-demo`, then commit
    `public/rove-app/` as `Resync /rove for <change>`.

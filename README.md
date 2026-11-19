@@ -179,11 +179,13 @@ cargo run -p rove-core --example scan   # print a live LAN scan
 
 ### Workspaces
 
-The repository is two pnpm workspaces: the app in `apps/rove`, and the
+The repository is three pnpm workspaces: the app in `apps/rove`, the
 component library in `packages/ui`, which the app imports as
-`@swiftsolve/rove-ui` straight from its source, so a library change shows in
-the app at once, with no build or release between them. Run the commands above
-from the root. Its typecheck, tests, build and ESLint go through
+`@swiftsolve/rove-ui` straight from its source, and the design tokens in
+`packages/tokens`, `@swiftsolve/rove-tokens`, which the library imports from
+their build. A library or token change shows in the app with no release
+between them; the tokens are still published to npm for the sites that
+install them. Run the commands above from the root. Its typecheck, tests, build and ESLint go through
 [Turborepo](https://turborepo.com), which runs each workspace's own script and
 replays a result whose files haven't changed; CI keeps that cache between runs.
 ESLint is cached as a whole, never per file, as its typed rules read the types
@@ -209,7 +211,7 @@ Each stage runs part of this on its own:
 | Each commit (`scripts/hooks/git/`, on after `pnpm install`) | ESLint and Prettier on the staged files; Rust fmt and tests when Rust is staged. `commit-msg` refuses an agent attribution line |
 | Each push and pull request (CI) | `pnpm check` (`test.yml`); `rove-core`'s Rust fmt, clippy and tests on Linux (`test.yml`); Chromatic's visual snapshots |
 | A Rove release tag, `v*` (CI) | Rust fmt, clippy, tests and the app build on three OSes (`build.yml`), beside the release bundles (`release.yml`); `build.yml` also runs on demand from Actions |
-| A rove-tokens release (its CI) | Its `pnpm check` (build, lint, contrast, the DESIGN.md format, the Figma plugin test) and `DESIGN.md` committed as built; it publishes only if they pass |
+| A tokens release tag, `tokens-v*` (CI) | The tokens' build, typecheck and tests (the Figma plugin test, contrast, the DESIGN.md format) and `DESIGN.md` committed as built (`publish-tokens.yml`); it publishes to npm only if they pass |
 
 What to run yourself for each kind of change is in
 [AGENTS.md](AGENTS.md#check-your-work).
@@ -229,6 +231,9 @@ apps/rove/          the app: src/ (React UI: app/ the shell, features/ a folder
 packages/ui/        the component library, @swiftsolve/rove-ui: src/, its
                     Storybook, catalog/ (the library as data) and cli/
                     (pnpm rove-ui, which looks a component up in it)
+packages/tokens/    the design tokens, @swiftsolve/rove-tokens: exported from
+                    Figma into src/figma/, built into dist/ and DESIGN.md,
+                    with their Figma plugin, checks and Storybook
 crates/rove-core/   every platform service, in pure Rust, plus the bundled data
 scripts/            checks, generators, git hooks, screenshots, the a11y audit
 docs/               the deeper dives, diagrams and screenshots
@@ -243,9 +248,8 @@ only from the design tokens, library components before new markup) are in
 ### Design system
 
 Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)
-in Figma and released from [rove-tokens](https://github.com/swiftsolve/rove-tokens),
-which exports them from Figma, one way, and checks that Figma and the package
-agree. Components start in `packages/ui/`, and Figma mirrors them. Without Figma,
+in Figma and exported, one way, into [packages/tokens](packages/tokens/README.md),
+which checks that Figma and the package agree. Components start in `packages/ui/`, and Figma mirrors them. Without Figma,
 browse the [Tokens Storybook](https://nabilr.com/rove/storybook/tokens/)
 and the [Components Storybook](https://nabilr.com/rove/storybook/).
 

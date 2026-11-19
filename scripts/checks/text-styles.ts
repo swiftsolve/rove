@@ -130,7 +130,7 @@ if (problems.length > 0) {
   console.error(problems.join('\n'))
   console.error(`\n${problems.length} font size${problems.length === 1 ? '' : 's'} set without a text style`)
   console.error(
-    "Which style: DESIGN.md's typography, each style with its use (node_modules/@swiftsolve/rove-tokens/DESIGN.md). " +
+    "Which style: DESIGN.md's typography, each style with its use (packages/tokens/DESIGN.md). " +
       'Text no style fits goes in ALLOWED here, with why: a gap to settle in Figma.',
   )
   process.exit(1)

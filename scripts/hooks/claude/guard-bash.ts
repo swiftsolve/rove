@@ -9,8 +9,7 @@
  * dropped first, then each simple command between `&&`, `;`, `|` and the like
  * is read on its own.
  *
- * Wired up in .claude/settings.json; reads the hook's JSON on stdin. The same
- * file is in rove-tokens; keep the two alike.
+ * Wired up in .claude/settings.json; reads the hook's JSON on stdin.
  *
  *   node scripts/hooks/claude/guard-bash.ts --test   # check the cases below
  */

@@ -1,7 +1,7 @@
 # Rove frontend
 
 How the React UI, the app in `apps/rove/src` and the library in `packages/ui`, is organised, styled and tested. Which token to use
-is in `rove-tokens`' [DESIGN.md](../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md),
+is in the tokens' [DESIGN.md](../../../packages/tokens/DESIGN.md),
 and the library has its own guide, [packages/ui/README.md](../../../packages/ui/README.md).
 
 **[✓ CHECKED by `file`]** marks a rule `pnpm check` enforces. The file it

@@ -1,4 +1,4 @@
-# Prettier formats the UI's code: TypeScript, JavaScript, CSS, JSON, YAML and
+# Prettier formats the UI's and the tokens' code: TypeScript, JavaScript, CSS, JSON, YAML and
 # HTML. Everything below is someone else's, generated, or prose.
 
 # The Rust side has its own tooling.
@@ -16,8 +16,10 @@ storybook-static
 *.gen.*
 pnpm-lock.yaml
 
-# Exported from Figma by pnpm figma:export.
+# Exported from Figma: the library's components by pnpm figma:export, and
+# the tokens by the plugin in packages/tokens/figma-plugin.
 packages/ui/catalog/figma
+packages/tokens/src/figma
 
 # Prose. Its line breaks and table layout are written by hand.
 *.md

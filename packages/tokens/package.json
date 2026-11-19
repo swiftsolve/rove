@@ -6,7 +6,8 @@
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/swiftsolve/rove-tokens.git"
+    "url": "git+https://github.com/swiftsolve/rove.git",
+    "directory": "packages/tokens"
   },
   "exports": {
     "./tokens.css": "./dist/tokens.css",
@@ -23,15 +24,12 @@
   "scripts": {
     "build": "node scripts/tokens/build.ts",
     "typecheck": "tsc -p .",
-    "lint": "eslint . && prettier --check .",
-    "format": "prettier --write .",
-    "check": "pnpm build && pnpm typecheck && pnpm lint && node scripts/checks/contrast.ts && node scripts/checks/design-md-format.ts && pnpm test",
-    "test": "node --test figma-plugin/code.test.ts",
+    "test": "node --test figma-plugin/code.test.ts && node scripts/checks/contrast.ts && node scripts/checks/design-md-format.ts",
     "figma:export": "node scripts/figma/use-figma.ts export",
     "figma:save": "node scripts/figma/use-figma.ts save",
     "figma:check": "node scripts/figma/use-figma.ts check",
-    "release": "pnpm version -m \"chore: release v%s\"",
-    "prepare": "git config core.hooksPath scripts/hooks/git || true; pnpm build",
+    "release": "node scripts/release.ts",
+    "prepare": "pnpm build",
     "storybook": "storybook dev -p 6007",
     "build:storybook": "storybook build"
   },
@@ -61,6 +59,5 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^7.3.7"
-  },
-  "packageManager": "pnpm@12.17.0"
+  }
 }

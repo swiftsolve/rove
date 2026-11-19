@@ -20,9 +20,9 @@ Tailwind utilities       p-12   bg-surface   rounded-md
 **Tokens** are named design values: `--spacing-12` is 12px, `--bg-surface` is
 the card background. They live in Figma. The `@swiftsolve/rove-tokens` package
 turns them into CSS variables in
-[`tokens.css`](../../../node_modules/@swiftsolve/rove-tokens/dist/tokens.css),
+[`tokens.css`](../../../packages/tokens/dist/tokens.css),
 and into the Tailwind theme that maps them to classes,
-[`tailwind-theme.css`](../../../node_modules/@swiftsolve/rove-tokens/dist/tailwind-theme.css).
+[`tailwind-theme.css`](../../../packages/tokens/dist/tailwind-theme.css).
 Nobody edits either file by hand; both are generated.
 
 **Tailwind** gives you small single-purpose classes: `p-12` means

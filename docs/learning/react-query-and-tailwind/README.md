@@ -11,7 +11,7 @@ two guides below; these chapters explain why.
 > - [Rove frontend](../../../apps/rove/src/README.md): the rules, and where to find which component to use.
 > - [Rove UI library](../../../packages/ui/README.md): the rules every library component follows.
 > - [How Rove Is Put Together](../../architecture.md): the bridge the data comes over.
-> - [`DESIGN.md`](../../../node_modules/@swiftsolve/rove-tokens/DESIGN.md) in
+> - [`DESIGN.md`](../../../packages/tokens/DESIGN.md) in
 >   rove-tokens: which token to use for what.
 
 ## Contents

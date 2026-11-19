@@ -1,8 +1,11 @@
 # Rove Tokens
 
-`@swiftsolve/rove-tokens`: Rove's design tokens. The Figma plugin in
+`@swiftsolve/rove-tokens`: Rove's design tokens, a workspace of the Rove
+monorepo that the library imports from its build and npm serves to other
+sites. Run its scripts from the repo root as `pnpm tokens <script>`. The
+root `AGENTS.md`'s rules hold here too. The Figma plugin in
 `figma-plugin/` exports the Rove Design System's variables, text styles and
-shadows into `src/figma/`, and `pnpm build` turns them into `dist/`
+shadows into `src/figma/`, and `build` turns them into `dist/`
 (`tokens/` in DTCG, `tokens.css`, `text-styles.css`, `tailwind-theme.css`) and
 `DESIGN.md`'s front matter, every token with its value and use.
 
@@ -19,19 +22,16 @@ shadows into `src/figma/`, and `pnpm build` turns them into `dist/`
 
 ## Procedures
 
-Each is a skill: Claude Code loads its steps when the task comes up. Other
-agents, open the file.
-
 | Task | Skill |
 | --- | --- |
-| Add or change a token, text style or shadow, release it, and take it up in Rove | `.claude/skills/update-tokens/SKILL.md` |
+| Add or change a token, text style or shadow, use it in Rove, and release it | Rove's `.claude/skills/update-tokens/SKILL.md` |
 
 ## Rules
 
 ### Figma is the source of truth; git is the record
 
-Tokens flow one way: designed in Figma, exported into this repo, built,
-released, and taken up by Rove. Nothing here writes to Figma.
+Tokens flow one way: designed in Figma, exported into this package, built,
+and used by Rove in the same commit. Nothing here writes to Figma.
 
 - **Change a token in Figma, then export and build.** The export writes
   `src/figma/*.json` and the build writes `dist/` and `DESIGN.md`'s front
@@ -39,34 +39,18 @@ released, and taken up by Rove. Nothing here writes to Figma.
   in `DESIGN.md` below the front matter is edited directly. Only what Figma can't hold (font
   stacks, easing curves, the focus expressions) is written here, in
   `src/code-tokens.json`.
-- **`pnpm figma:check` reports `inSync: true`.**
-  - It and `pnpm figma:export` print the plugin's own code
+- **`pnpm tokens figma:check` reports `inSync: true`.**
+  - It and `figma:export` print the plugin's own code
     (`figma-plugin/code.js`) to run through the Figma MCP's `use_figma`, so
     the plugin's Check tab and an agent check the same way.
   - A difference means the repo is behind Figma (export again) or was edited
     directly (undo it, and change Figma).
 
-### Commit only your paths
-
-Other sessions work in this checkout and commit to `main` alongside you.
-Stage and commit your own files by name, `git add -A <paths>` then
-`git commit -m "…" -- <paths>`, and leave everyone else's changes where they
-are.
-
 ## Validation
 
-### Check your work
-
-Run `pnpm check` before you commit: the build (which refuses a token
-without a description), the typecheck of the scripts (`tsc`, as Node runs the
-`.ts` files without checking types), lint (ESLint and Prettier), the WCAG AA contrast check, the
-DESIGN.md format check (Google's linter) and the Figma plugin's test
-(`pnpm test`). Commit the rebuilt `DESIGN.md` with the change. Fix what a hook reports.
-
-### What runs on its own
-
-| Stage | Runs |
-| --- | --- |
-| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a plain force push and `git reset --hard` |
-| Each commit (`scripts/hooks/git/`, on after `pnpm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
-| Each release tag (CI, `publish.yml`) | `pnpm check` and `DESIGN.md` committed as built, then publish to npm only if they pass |
+Run the root's `pnpm check` before you commit: it builds the tokens (the
+build refuses a token without a description), typechecks the scripts (`tsc`,
+as Node runs the `.ts` files without checking types), runs the Figma plugin's
+test and the WCAG AA contrast and DESIGN.md format checks, lints this folder
+with its own `eslint.config.js` and `.prettierrc.json`, and then checks Rove
+against the new build. Commit the rebuilt `DESIGN.md` with the change.
