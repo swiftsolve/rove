@@ -1,0 +1,66 @@
+{
+  "name": "@swiftsolve/rove-tokens",
+  "version": "4.7.0",
+  "description": "Rove's design tokens, exported from the Rove Design System in Figma, as CSS and DTCG.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swiftsolve/rove-tokens.git"
+  },
+  "exports": {
+    "./tokens.css": "./dist/tokens.css",
+    "./text-styles.css": "./dist/text-styles.css",
+    "./tailwind-theme.css": "./dist/tailwind-theme.css",
+    "./tokens/*": "./dist/tokens/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "DESIGN.md"
+  ],
+  "scripts": {
+    "build": "node scripts/tokens/build.ts",
+    "typecheck": "tsc -p .",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "check": "pnpm build && pnpm typecheck && pnpm lint && node scripts/checks/contrast.ts && node scripts/checks/design-md-format.ts && pnpm test",
+    "test": "node --test figma-plugin/code.test.ts",
+    "figma:export": "node scripts/figma/use-figma.ts export",
+    "figma:save": "node scripts/figma/use-figma.ts save",
+    "figma:check": "node scripts/figma/use-figma.ts check",
+    "release": "pnpm version -m \"chore: release v%s\"",
+    "prepare": "git config core.hooksPath scripts/hooks/git || true; pnpm build",
+    "storybook": "storybook dev -p 6007",
+    "build:storybook": "storybook build"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@google/design.md": "^0.4.0",
+    "@storybook/addon-docs": "^10.6.5",
+    "@storybook/react-vite": "^10.6.5",
+    "@types/node": "^24.19.2",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "storybook": "^10.6.5",
+    "style-dictionary": "^5.7.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^7.3.7"
+  },
+  "packageManager": "pnpm@12.17.0"
+}

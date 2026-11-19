@@ -1,0 +1,72 @@
+# Rove Tokens
+
+`@swiftsolve/rove-tokens`: Rove's design tokens. The Figma plugin in
+`figma-plugin/` exports the Rove Design System's variables, text styles and
+shadows into `src/figma/`, and `pnpm build` turns them into `dist/`
+(`tokens/` in DTCG, `tokens.css`, `text-styles.css`, `tailwind-theme.css`) and
+`DESIGN.md`'s front matter, every token with its value and use.
+
+## What to read
+
+| Task | Read |
+| --- | --- |
+| Which token to use for what, and every value | `DESIGN.md` |
+| How the package's files name and hold the tokens | `docs/using-the-tokens.md` |
+| Why a value is what it is | `docs/rationale.md`, `docs/adr/` |
+| How the export, build and checks work | `README.md`: How it works |
+| Where each file is, and every script | `CONTRIBUTING.md`: What's where, Scripts |
+| Updating and releasing, step by step | `CONTRIBUTING.md`: Update the tokens, Release |
+
+## Procedures
+
+Each is a skill: Claude Code loads its steps when the task comes up. Other
+agents, open the file.
+
+| Task | Skill |
+| --- | --- |
+| Add or change a token, text style or shadow, release it, and take it up in Rove | `.claude/skills/update-tokens/SKILL.md` |
+
+## Rules
+
+### Figma is the source of truth; git is the record
+
+Tokens flow one way: designed in Figma, exported into this repo, built,
+released, and taken up by Rove. Nothing here writes to Figma.
+
+- **Change a token in Figma, then export and build.** The export writes
+  `src/figma/*.json` and the build writes `dist/` and `DESIGN.md`'s front
+  matter, so the next run undoes an edit there; the prose
+  in `DESIGN.md` below the front matter is edited directly. Only what Figma can't hold (font
+  stacks, easing curves, the focus expressions) is written here, in
+  `src/code-tokens.json`.
+- **`pnpm figma:check` reports `inSync: true`.**
+  - It and `pnpm figma:export` print the plugin's own code
+    (`figma-plugin/code.js`) to run through the Figma MCP's `use_figma`, so
+    the plugin's Check tab and an agent check the same way.
+  - A difference means the repo is behind Figma (export again) or was edited
+    directly (undo it, and change Figma).
+
+### Commit only your paths
+
+Other sessions work in this checkout and commit to `main` alongside you.
+Stage and commit your own files by name, `git add -A <paths>` then
+`git commit -m "…" -- <paths>`, and leave everyone else's changes where they
+are.
+
+## Validation
+
+### Check your work
+
+Run `pnpm check` before you commit: the build (which refuses a token
+without a description), the typecheck of the scripts (`tsc`, as Node runs the
+`.ts` files without checking types), lint (ESLint and Prettier), the WCAG AA contrast check, the
+DESIGN.md format check (Google's linter) and the Figma plugin's test
+(`pnpm test`). Commit the rebuilt `DESIGN.md` with the change. Fix what a hook reports.
+
+### What runs on its own
+
+| Stage | Runs |
+| --- | --- |
+| Each edit (Claude Code, `.claude/settings.json`) | Prettier and ESLint on the file. Refuses a hook skipped, a plain force push and `git reset --hard` |
+| Each commit (`scripts/hooks/git/`, on after `pnpm install`) | ESLint and Prettier on the staged files. `commit-msg` refuses a Claude co-author or "Generated with Claude" line |
+| Each release tag (CI, `publish.yml`) | `pnpm check` and `DESIGN.md` committed as built, then publish to npm only if they pass |

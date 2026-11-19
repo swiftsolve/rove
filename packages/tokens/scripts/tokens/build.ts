@@ -1,0 +1,170 @@
+/**
+ * Build the tokens in these steps:
+ *
+ *   1. Figma export -> DTCG files in dist/tokens/ (scripts/tokens/figma-to-dtcg.ts)
+ *   2. DTCG files -> dist/tokens.css, with Style Dictionary (scripts/tokens/dtcg-to-css.ts)
+ *   3. DTCG text styles -> dist/text-styles.css, a class per style (scripts/tokens/dtcg-to-text-styles.ts)
+ *   4. DTCG -> dist/tailwind-theme.css, a Tailwind v4 theme of the tokens (scripts/tokens/tailwind-theme.ts)
+ *   5. DESIGN.md's front matter, the tokens in the DESIGN.md format (scripts/tokens/design-front-matter.ts)
+ *
+ * so the CSS is generated from the same files other tools read.
+ *
+ *   src/figma/variables.json      raw export of the Figma variables (see figma-plugin/)
+ *   src/figma/text-styles.json    raw export of the Figma text styles
+ *   src/figma/effect-styles.json  raw export of the Figma Shadow/* effect styles
+ *   src/code-tokens.json          what Figma can't hold, which may pull Figma values in
+ *
+ * A Figma variable's code syntax must be its name with `/` as `-` (`bg/base`
+ * is `--bg-base`); variables without one are inputs only, not CSS variables.
+ */
+import { readFile, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { writeFrontMatter } from './design-front-matter.ts'
+import { buildCss } from './dtcg-to-css.ts'
+import { buildTextStylesCss } from './dtcg-to-text-styles.ts'
+import { aliasOf, valueInMode, writeDtcg } from './figma-to-dtcg.ts'
+import { cssColor, slug } from './shared.ts'
+import { writeTailwindTheme } from './tailwind-theme.ts'
+import type {
+  CodeTokens,
+  FigmaColor,
+  FigmaEffectStyle,
+  FigmaEffectStyles,
+  FigmaTextStyles,
+  FigmaVariable,
+  FigmaVariables,
+} from './types.ts'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+const readJson = async <T>(path: string) => JSON.parse(await readFile(resolve(ROOT, path), 'utf8')) as T
+
+const figmaVariables = await readJson<FigmaVariables>('src/figma/variables.json')
+const textStyles = await readJson<FigmaTextStyles>('src/figma/text-styles.json')
+const effectStyles = await readJson<FigmaEffectStyles>('src/figma/effect-styles.json')
+const codeTokens = await readJson<CodeTokens>('src/code-tokens.json')
+const pkg = await readJson<{ name: string; version: string }>('package.json')
+
+for (const v of figmaVariables.variables) {
+  const expected = `var(--${v.name.replace(/\//g, '-')})`
+  if (v.code && v.code !== expected) throw new Error(`${v.name} has code syntax ${v.code}; it must be ${expected}`)
+}
+
+// A token's description is its use, shown in Figma's picker, the Storybook,
+// tokens.css and DESIGN.md's front matter, so a token without one can't be chosen by its job. Add it in Figma.
+const undescribed = [...figmaVariables.variables, ...textStyles.styles, ...effectStyles.styles]
+  .filter((token) => !token.description?.trim())
+  .map((token) => token.name)
+if (undescribed.length) throw new Error(`No description in Figma: ${undescribed.join(', ')}`)
+
+const variableByName = new Map(figmaVariables.variables.map((v) => [v.name, v]))
+
+/** A Figma variable's raw value in a mode, following aliases, as CSS. */
+function rawValue(v: FigmaVariable, mode: string): string {
+  let value = valueInMode(v, mode)
+  // Eight hops is far more than any real chain, so more means a loop.
+  for (let hops = 0, alias = aliasOf(value); alias; hops++, alias = aliasOf(value)) {
+    if (hops === 8) throw new Error(`${v.name}: its aliases go round in a loop`)
+    const target = variableByName.get(alias)
+    if (!target) throw new Error(`${v.name}: alias to unknown Figma variable ${alias}`)
+    value = valueInMode(target, mode)
+  }
+  if (typeof value !== 'object') return String(value)
+  if (v.type !== 'COLOR') throw new Error(`${v.name}: code-tokens.json can't pull in a ${v.type} value`)
+  const { r, g, b, a } = value as FigmaColor
+  return cssColor([r, g, b], a)
+}
+
+/** A code-tokens.json template with `{figma/name}` filled in for a mode. */
+function interpolate(template: string, mode: string) {
+  return template.replace(/\{([\w/-]+)\}/g, (_, name: string) => {
+    const v = variableByName.get(name)
+    if (!v) throw new Error(`code-tokens.json references unknown Figma variable ${name}`)
+    return rawValue(v, mode)
+  })
+}
+
+/** A length as CSS: 0 bare, anything else in px. */
+const px = (n: number) => (n === 0 ? '0' : `${n}px`)
+
+/**
+ * A Shadow/* effect style as a shadow token: `Shadow/Panel` is `--shadow-panel`,
+ * each layer `x y blur [spread] {colour variable}`, as the build reads code tokens.
+ */
+function shadowToken({ name, layers }: FigmaEffectStyle): [string, string] {
+  const cssName = `--shadow-${name
+    .replace(/^Shadow\//, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')}`
+  const layersCss = layers.map(({ x, y, blur, spread, color }) => {
+    if (typeof color !== 'string') throw new Error(`${name}: bind each layer's colour to a variable in Figma`)
+    return [px(x), px(y), px(blur), ...(spread ? [px(spread)] : []), `{${color}}`].join(' ')
+  })
+  return [cssName, layersCss.join(', ')]
+}
+
+// code-tokens.json is edited by hand, so a misspelt key fails here rather than being skipped.
+const unknownSections = Object.keys(codeTokens).filter((key) => !['description', 'figma', 'tokens'].includes(key))
+if (unknownSections.length) {
+  throw new Error(`code-tokens.json has ${unknownSections.join(', ')}; it holds only description, figma and tokens`)
+}
+const unknownOverrides = Object.keys(codeTokens.figma).filter((name) => !variableByName.has(name))
+if (unknownOverrides.length) {
+  throw new Error(`code-tokens.json's figma names unknown Figma variables: ${unknownOverrides.join(', ')}`)
+}
+const unprefixedTokens = Object.keys(codeTokens.tokens).filter((name) => !name.startsWith('--'))
+if (unprefixedTokens.length) {
+  throw new Error(`code-tokens.json's tokens must be CSS variables starting --: ${unprefixedTokens.join(', ')}`)
+}
+
+// Shadows are designed in Figma, so code-tokens.json mustn't define its own.
+const ownShadows = Object.keys(codeTokens.tokens).filter((name) => name.startsWith('--shadow-'))
+if (ownShadows.length) throw new Error(`code-tokens.json defines ${ownShadows.join(', ')}; shadows come from Figma`)
+const shadows = Object.fromEntries(effectStyles.styles.map(shadowToken))
+
+const DIST = resolve(ROOT, 'dist')
+const tokensDir = resolve(DIST, 'tokens')
+const { written, cssOnly } = await writeDtcg({
+  dir: tokensDir,
+  variables: figmaVariables.variables,
+  textStyles: textStyles.styles,
+  codeTokens: { ...shadows, ...codeTokens.tokens },
+  figmaOverride: (v, mode) => {
+    const template = codeTokens.figma[v.name]
+    return template ? interpolate(template, mode) : undefined
+  },
+})
+console.log(`dist/tokens/: ${written.join(', ')}`)
+
+const header = `/* ${pkg.name} ${pkg.version}. Generated from Figma by scripts/tokens/build.ts; do not edit. */`
+const { css, count, overrides } = await buildCss({ dir: tokensDir, header, cssOnly })
+// package.json's `exports` maps `@swiftsolve/rove-tokens/tokens.css` here.
+await writeFile(resolve(DIST, 'tokens.css'), css)
+console.log(`dist/tokens.css: ${count} tokens, ${overrides} light overrides`)
+
+const textStylesCss = await buildTextStylesCss({ dir: tokensDir, header })
+await writeFile(resolve(DIST, 'text-styles.css'), textStylesCss.css)
+console.log(`dist/text-styles.css: ${textStylesCss.count} classes`)
+
+const tailwind = await writeTailwindTheme({
+  path: resolve(DIST, 'tailwind-theme.css'),
+  header,
+  variables: figmaVariables.variables,
+  textStyles: textStyles.styles,
+  slugOf: slug,
+  shadows: Object.keys(shadows),
+})
+console.log(`dist/tailwind-theme.css: ${tailwind.count} theme variables`)
+
+const frontMatter = await writeFrontMatter({
+  path: resolve(ROOT, 'DESIGN.md'),
+  variables: figmaVariables.variables,
+  textStyles: textStyles.styles,
+  shadows: effectStyles.styles,
+  slugOf: slug,
+  css,
+})
+console.log(
+  `DESIGN.md front matter: ${frontMatter.total - frontMatter.light} tokens (${frontMatter.colors} colours, ${frontMatter.typography} text styles), ${frontMatter.light} Light values`,
+)

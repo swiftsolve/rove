@@ -1,0 +1,49 @@
+/**
+ * Check DESIGN.md against the DESIGN.md format, with Google's linter
+ * (https://github.com/google-labs-code/design.md). The linter exits 0 on a
+ * warning, such as a missing `primary` colour or a section out of order, so
+ * this fails on any error or warning and prints what it found. One warning is
+ * allowed: that the format's export commands skip a group it doesn't know,
+ * for Rove's own groups (OWN_GROUPS): the tokens the format has no group for,
+ * and the Light theme.
+ *
+ *   pnpm build && node scripts/checks/design-md-format.ts [file]
+ *
+ * The front matter is written by the build (scripts/tokens/design-front-matter.ts);
+ * a section problem is in the prose, which is edited directly.
+ */
+import { spawnSync } from 'node:child_process'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { OWN_GROUPS } from '../tokens/design-front-matter.ts'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+/** One thing the linter found. */
+type Finding = { severity: string; path?: string; message: string; rule: string }
+
+const LINTER = resolve(ROOT, 'node_modules/@google/design.md/dist/index.js')
+
+const linter = spawnSync(process.execPath, [LINTER, 'lint', process.argv[2] ?? 'DESIGN.md'], {
+  cwd: ROOT,
+  encoding: 'utf8',
+})
+let report: { findings: Finding[] }
+try {
+  report = JSON.parse(linter.stdout) as typeof report
+} catch {
+  console.error(`The DESIGN.md linter didn't report:\n${linter.stdout}${linter.stderr}`)
+  process.exit(1)
+}
+
+const ownGroups = new Set(OWN_GROUPS)
+const isAllowed = (f: Finding) => f.rule === 'token-like-ignored' && ownGroups.has(f.path ?? '')
+const problems = report.findings.filter((f) => (f.severity === 'error' || f.severity === 'warning') && !isAllowed(f))
+if (problems.length > 0) {
+  for (const f of problems)
+    console.error(`DESIGN.md ${f.severity}${f.path ? ` at ${f.path}` : ''}: ${f.message} (${f.rule})`)
+  process.exit(1)
+}
+console.log(
+  `DESIGN.md follows the format: ${report.findings.find((f) => f.rule === 'token-summary')?.message ?? 'no findings'}`,
+)

@@ -1,0 +1,189 @@
+{
+  "file": {
+    "name": "Rove Design System",
+    "key": "NoICIoyhWNOya9tOnNfEhH"
+  },
+  "styles": [
+    {
+      "name": "Title",
+      "description": "Page and dialog titles, the wordmark. Code: .type-title",
+      "fontFamily": "Urbanist",
+      "fontStyle": "Bold",
+      "fontWeight": 700,
+      "fontSize": 17,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 24
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/display",
+        "fontSize": "font-size/2xl"
+      }
+    },
+    {
+      "name": "Heading",
+      "description": "Card headings and empty states. Code: .type-heading",
+      "fontFamily": "Urbanist",
+      "fontStyle": "Bold",
+      "fontWeight": 700,
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 20
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/display",
+        "fontSize": "font-size/lg"
+      }
+    },
+    {
+      "name": "Body/Medium",
+      "description": "Field labels, menus and soft buttons. Code: .type-body-medium",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "Medium",
+      "fontWeight": 500,
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 16
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/sm"
+      }
+    },
+    {
+      "name": "Caption",
+      "description": "Captions, hints and chart axes. Code: .type-caption",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "Regular",
+      "fontWeight": 400,
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 16
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/xs"
+      }
+    },
+    {
+      "name": "Body/SemiBold",
+      "description": "Buttons and chip labels. Code: .type-body-semibold",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
+      "fontWeight": 600,
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 16
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/sm"
+      }
+    },
+    {
+      "name": "Display",
+      "description": "Live speeds. Code: .type-display .metric-value",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "Medium",
+      "fontWeight": 500,
+      "fontSize": 28,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 28
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/3xl"
+      }
+    },
+    {
+      "name": "Stat",
+      "description": "Stat totals. Code: Readout size=compact",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "Medium",
+      "fontWeight": 500,
+      "fontSize": 17,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 20
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/2xl"
+      }
+    },
+    {
+      "name": "Body",
+      "description": "Body text, row names and values, data rows and units. Code: .type-body",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "Regular",
+      "fontWeight": 400,
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 16
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/sm"
+      }
+    },
+    {
+      "name": "Badge",
+      "description": "Badge labels. Code: .type-badge",
+      "fontFamily": "Hanken Grotesk",
+      "fontStyle": "SemiBold",
+      "fontWeight": 600,
+      "fontSize": 10,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 12
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 4
+      },
+      "textCase": "UPPER",
+      "boundVariables": {
+        "fontFamily": "font-family/sans",
+        "fontSize": "font-size/2xs"
+      }
+    }
+  ]
+}

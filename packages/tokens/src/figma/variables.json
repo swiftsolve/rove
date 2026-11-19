@@ -1,0 +1,2937 @@
+{
+  "file": {
+    "name": "Rove Design System",
+    "key": "NoICIoyhWNOya9tOnNfEhH"
+  },
+  "collections": [
+    {
+      "name": "Color",
+      "modes": [
+        "Dark",
+        "Light"
+      ]
+    },
+    {
+      "name": "Spacing",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Typography",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Icon tone",
+      "modes": [
+        "Primary",
+        "Secondary",
+        "Tertiary",
+        "Accent",
+        "Positive",
+        "Negative",
+        "On solid"
+      ]
+    },
+    {
+      "name": "Opacity",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Capability level",
+      "modes": [
+        "Excellent",
+        "Good",
+        "Fair",
+        "Poor",
+        "Unsupported"
+      ]
+    },
+    {
+      "name": "Palette",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Layout",
+      "modes": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Motion",
+      "modes": [
+        "Value"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "bg/base",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-base)",
+      "description": "Backdrop",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/850"
+        },
+        "Light": {
+          "alias": "neutral/50"
+        }
+      }
+    },
+    {
+      "name": "bg/surface",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-surface)",
+      "description": "Content on the backdrop",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/800"
+        },
+        "Light": {
+          "alias": "neutral/0"
+        }
+      }
+    },
+    {
+      "name": "bg/hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-hover)",
+      "description": "Hovered rows and buttons",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/750"
+        },
+        "Light": {
+          "alias": "neutral/100"
+        }
+      }
+    },
+    {
+      "name": "border/default",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--border-default)",
+      "description": "Hairlines",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a7"
+        },
+        "Light": {
+          "alias": "neutral/850-a10"
+        }
+      }
+    },
+    {
+      "name": "overlay/default",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--overlay-default)",
+      "description": "Menu highlights, placeholder shapes, dimmed meter bars",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a7"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "overlay/subtle",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--overlay-subtle)",
+      "description": "Header chips, rail and segment hovers",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a5"
+        },
+        "Light": {
+          "alias": "neutral/850-a5"
+        }
+      }
+    },
+    {
+      "name": "text/primary",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-primary)",
+      "description": "Titles, body text and values",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/50"
+        },
+        "Light": {
+          "alias": "neutral/800"
+        }
+      }
+    },
+    {
+      "name": "text/secondary",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-secondary)",
+      "description": "Supporting lines",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/250"
+        },
+        "Light": {
+          "alias": "neutral/550"
+        }
+      }
+    },
+    {
+      "name": "text/tertiary",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-tertiary)",
+      "description": "Default icon colour",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/350"
+        },
+        "Light": {
+          "alias": "neutral/500"
+        }
+      }
+    },
+    {
+      "name": "accent/default",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-default)",
+      "description": "Accent icons and lines",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/340"
+        },
+        "Light": {
+          "alias": "blue/450"
+        }
+      }
+    },
+    {
+      "name": "accent/hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-hover)",
+      "description": "Hovered accent icon or line",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/300"
+        },
+        "Light": {
+          "alias": "blue/480"
+        }
+      }
+    },
+    {
+      "name": "accent/press",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-press)",
+      "description": "Pressed accent icon or line",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/380"
+        },
+        "Light": {
+          "alias": "blue/520"
+        }
+      }
+    },
+    {
+      "name": "accent/muted",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-muted)",
+      "description": "Tinted accent background",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/340-a14"
+        },
+        "Light": {
+          "alias": "blue/450-a12"
+        }
+      }
+    },
+    {
+      "name": "text/accent",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-accent)",
+      "description": "Accent words, also on accent/muted",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "accent/default"
+        },
+        "Light": {
+          "alias": "accent/press"
+        }
+      }
+    },
+    {
+      "name": "accent/solid",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-solid)",
+      "description": "Under white labels",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/450"
+        },
+        "Light": {
+          "alias": "accent/default"
+        }
+      }
+    },
+    {
+      "name": "accent/solid-hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--accent-solid-hover)",
+      "description": "Hovered solid button",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/480"
+        },
+        "Light": {
+          "alias": "blue/500"
+        }
+      }
+    },
+    {
+      "name": "status/positive",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-positive)",
+      "description": "Positive icons, bars, dots",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "green/210"
+        },
+        "Light": {
+          "alias": "green/420"
+        }
+      }
+    },
+    {
+      "name": "status/good",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-good)",
+      "description": "Between positive and warning",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "lime/190"
+        },
+        "Light": {
+          "alias": "lime/420"
+        }
+      }
+    },
+    {
+      "name": "status/warning",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-warning)",
+      "description": "Warning icons, bars, dots",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "amber/160"
+        },
+        "Light": {
+          "alias": "amber/400"
+        }
+      }
+    },
+    {
+      "name": "status/poor",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-poor)",
+      "description": "Between warning and negative",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "orange/220"
+        },
+        "Light": {
+          "alias": "orange/390"
+        }
+      }
+    },
+    {
+      "name": "status/negative",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-negative)",
+      "description": "Negative icons, bars, dots",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "red/310"
+        },
+        "Light": {
+          "alias": "red/420"
+        }
+      }
+    },
+    {
+      "name": "status/negative-solid",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-negative-solid)",
+      "description": "Solid negative under white labels",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "red/470"
+        },
+        "Light": {
+          "alias": "red/470"
+        }
+      }
+    },
+    {
+      "name": "text/positive",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-positive)",
+      "description": "Positive words",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "status/positive"
+        },
+        "Light": {
+          "alias": "green/530"
+        }
+      }
+    },
+    {
+      "name": "text/good",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-good)",
+      "description": "Good words",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "status/good"
+        },
+        "Light": {
+          "alias": "lime/520"
+        }
+      }
+    },
+    {
+      "name": "text/warning",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-warning)",
+      "description": "Warning words",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "status/warning"
+        },
+        "Light": {
+          "alias": "amber/510"
+        }
+      }
+    },
+    {
+      "name": "text/poor",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-poor)",
+      "description": "Poor words",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "status/poor"
+        },
+        "Light": {
+          "alias": "orange/500"
+        }
+      }
+    },
+    {
+      "name": "text/negative",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-negative)",
+      "description": "Negative words",
+      "scopes": [
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "status/negative"
+        },
+        "Light": {
+          "alias": "red/500"
+        }
+      }
+    },
+    {
+      "name": "series/down",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--series-down)",
+      "description": "Download",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/300"
+        },
+        "Light": {
+          "alias": "blue/450"
+        }
+      }
+    },
+    {
+      "name": "series/up",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--series-up)",
+      "description": "Upload",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "violet/250"
+        },
+        "Light": {
+          "alias": "violet/440"
+        }
+      }
+    },
+    {
+      "name": "spacing/2",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-2)",
+      "description": "Meter gaps",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 2
+      }
+    },
+    {
+      "name": "spacing/4",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-4)",
+      "description": "Arrow to value, badge padding",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 4
+      }
+    },
+    {
+      "name": "spacing/6",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-6)",
+      "description": "Dot to label",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 6
+      }
+    },
+    {
+      "name": "spacing/8",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-8)",
+      "description": "Icon to title",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "spacing/10",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-10)",
+      "description": "Between cards",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "spacing/12",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-12)",
+      "description": "Side and top inset",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 12
+      }
+    },
+    {
+      "name": "spacing/14",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-14)",
+      "description": "Card padding",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 14
+      }
+    },
+    {
+      "name": "spacing/16",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-16)",
+      "description": "Between readouts",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 16
+      }
+    },
+    {
+      "name": "spacing/20",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--spacing-20)",
+      "description": "Dialog to window edge, error states",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": 20
+      }
+    },
+    {
+      "name": "radius/xs",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-xs)",
+      "description": "Window buttons, menu items, segments",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
+      "values": {
+        "Value": 5
+      }
+    },
+    {
+      "name": "radius/sm",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-sm)",
+      "description": "Buttons, inputs, tooltips, icon tiles",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "radius/md",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-md)",
+      "description": "Nav items, page-header chip",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "radius/lg",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-lg)",
+      "description": "Cards and dialogs",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
+      "values": {
+        "Value": 13
+      }
+    },
+    {
+      "name": "radius/full",
+      "collection": "Spacing",
+      "type": "FLOAT",
+      "code": "var(--radius-full)",
+      "description": "Badges, pills, dots",
+      "scopes": [
+        "CORNER_RADIUS"
+      ],
+      "values": {
+        "Value": 999
+      }
+    },
+    {
+      "name": "font-size/2xs",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-2xs)",
+      "description": "Badges",
+      "scopes": [
+        "FONT_SIZE"
+      ],
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "font-size/xs",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-xs)",
+      "description": "Captions, hints, chart axes",
+      "scopes": [
+        "FONT_SIZE"
+      ],
+      "values": {
+        "Value": 11
+      }
+    },
+    {
+      "name": "font-size/sm",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-sm)",
+      "description": "Body text, labels, buttons, data rows",
+      "scopes": [
+        "FONT_SIZE"
+      ],
+      "values": {
+        "Value": 12
+      }
+    },
+    {
+      "name": "font-size/lg",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-lg)",
+      "description": "Card headings",
+      "scopes": [
+        "FONT_SIZE"
+      ],
+      "values": {
+        "Value": 14
+      }
+    },
+    {
+      "name": "font-size/2xl",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-2xl)",
+      "description": "Titles, stat totals",
+      "scopes": [
+        "FONT_SIZE"
+      ],
+      "values": {
+        "Value": 17
+      }
+    },
+    {
+      "name": "font-size/3xl",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--font-size-3xl)",
+      "description": "Live speeds",
+      "scopes": [
+        "FONT_SIZE"
+      ],
+      "values": {
+        "Value": 28
+      }
+    },
+    {
+      "name": "font-family/sans",
+      "collection": "Typography",
+      "type": "STRING",
+      "code": "var(--font-family-sans)",
+      "description": "Text and numbers",
+      "scopes": [
+        "FONT_FAMILY"
+      ],
+      "values": {
+        "Value": "Hanken Grotesk"
+      }
+    },
+    {
+      "name": "shadow-color/panel-contact",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "Shadow/Panel, contact layer",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/panel-ambient",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "Shadow/Panel, ambient layer",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a10"
+        },
+        "Light": {
+          "alias": "neutral/850-a5"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/raised",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "Shadow/Raised",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a10"
+        }
+      }
+    },
+    {
+      "name": "icon/color",
+      "collection": "Icon tone",
+      "type": "COLOR",
+      "code": null,
+      "description": "Every icon stroke. Set by Icon tone mode.",
+      "scopes": [
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Primary": {
+          "alias": "text/primary"
+        },
+        "Secondary": {
+          "alias": "text/secondary"
+        },
+        "Tertiary": {
+          "alias": "text/tertiary"
+        },
+        "Accent": {
+          "alias": "accent/default"
+        },
+        "Positive": {
+          "alias": "status/positive"
+        },
+        "Negative": {
+          "alias": "status/negative"
+        },
+        "On solid": {
+          "alias": "text/on-solid"
+        }
+      }
+    },
+    {
+      "name": "text/on-solid",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--text-on-solid)",
+      "description": "Labels and icons on solids",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0"
+        },
+        "Light": {
+          "alias": "neutral/0"
+        }
+      }
+    },
+    {
+      "name": "status/negative-solid-hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--status-negative-solid-hover)",
+      "description": "Hovered negative solid button",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "red/540"
+        },
+        "Light": {
+          "alias": "red/540"
+        }
+      }
+    },
+    {
+      "name": "focus/ring",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--focus-ring)",
+      "description": "Keyboard focus ring",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "accent/default"
+        },
+        "Light": {
+          "alias": "accent/default"
+        }
+      }
+    },
+    {
+      "name": "opacity/tint-xs",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-xs)",
+      "description": "Wide, faint washes: inline errors, the upload series’ fill",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 8
+      }
+    },
+    {
+      "name": "opacity/tint-sm",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-sm)",
+      "description": "Status banners and panels",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 10
+      }
+    },
+    {
+      "name": "opacity/tint-md",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-md)",
+      "description": "Chips, badges and tiles at rest",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 14
+      }
+    },
+    {
+      "name": "opacity/tint-lg",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-lg)",
+      "description": "Hovered tints, unlit meter bars",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 22
+      }
+    },
+    {
+      "name": "opacity/tint-xl",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-tint-xl)",
+      "description": "The download series’ fill",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 28
+      }
+    },
+    {
+      "name": "level/color",
+      "collection": "Capability level",
+      "type": "COLOR",
+      "code": null,
+      "description": "Capability level colour. Capability glyphs bind to it.",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Excellent": {
+          "alias": "status/positive"
+        },
+        "Good": {
+          "alias": "status/good"
+        },
+        "Fair": {
+          "alias": "status/warning"
+        },
+        "Poor": {
+          "alias": "status/poor"
+        },
+        "Unsupported": {
+          "alias": "text/tertiary"
+        }
+      }
+    },
+    {
+      "name": "opacity/high",
+      "collection": "Opacity",
+      "type": "FLOAT",
+      "code": "var(--opacity-high)",
+      "description": "Chart lines, nearly opaque",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 80
+      }
+    },
+    {
+      "name": "overlay/faint",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--overlay-faint)",
+      "description": "Faintest wash, a hovered card",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a3"
+        },
+        "Light": {
+          "alias": "neutral/850-a3"
+        }
+      }
+    },
+    {
+      "name": "overlay/strong",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--overlay-strong)",
+      "description": "Scrollbars, lit bars in a dimmed meter",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a16"
+        },
+        "Light": {
+          "alias": "neutral/850-a16"
+        }
+      }
+    },
+    {
+      "name": "overlay/selection",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--overlay-selection)",
+      "description": "Text selection",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "blue/340-a35"
+        },
+        "Light": {
+          "alias": "blue/340-a35"
+        }
+      }
+    },
+    {
+      "name": "bg/scrim",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-scrim)",
+      "description": "Behind dialogs",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a50"
+        },
+        "Light": {
+          "alias": "neutral/1000-a50"
+        }
+      }
+    },
+    {
+      "name": "neutral/0",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light surface, labels on solids",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/50",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light backdrop, Dark text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.93333,
+          "g": 0.93333,
+          "b": 0.93725,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/100",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light hover",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.86667,
+          "g": 0.87059,
+          "b": 0.87843,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark secondary text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.67843,
+          "g": 0.68235,
+          "b": 0.69412,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/350",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark tertiary text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.55686,
+          "g": 0.56078,
+          "b": 0.57647,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light tertiary text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.38431,
+          "g": 0.38824,
+          "b": 0.40392,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/550",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light secondary text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.32941,
+          "g": 0.33333,
+          "b": 0.34902,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/750",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark hover",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.12941,
+          "g": 0.13333,
+          "b": 0.14118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/800",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark surface, Light text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.08235,
+          "g": 0.08627,
+          "b": 0.09412,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/850",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark backdrop",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/310",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark negative",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.96471,
+          "g": 0.40392,
+          "b": 0.35294,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/420",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light negative",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.81176,
+          "g": 0.2549,
+          "b": 0.20392,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light negative text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.67451,
+          "g": 0.19608,
+          "b": 0.15294,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/470",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Negative solid",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.69804,
+          "g": 0.25882,
+          "b": 0.21961,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "red/540",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Negative solid hover",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.56863,
+          "g": 0.22353,
+          "b": 0.18824,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "orange/220",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark poor",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.94118,
+          "g": 0.63922,
+          "b": 0.36863,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "orange/390",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light poor",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.79608,
+          "g": 0.36471,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "amber/160",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark warning",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.96078,
+          "g": 0.76863,
+          "b": 0.31765,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "amber/400",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light warning",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.66275,
+          "g": 0.45098,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "amber/510",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light warning text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.50196,
+          "g": 0.34118,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "lime/190",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark good",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.49804,
+          "g": 0.84706,
+          "b": 0.54118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "lime/420",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light good",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.28627,
+          "g": 0.55686,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "green/210",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark positive",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.26275,
+          "g": 0.83922,
+          "b": 0.62745,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "green/420",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light positive",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0.56471,
+          "b": 0.27843,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "green/530",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light positive text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0.42745,
+          "b": 0.21176,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/300",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark accent hover, download",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.43529,
+          "g": 0.60784,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/340",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark accent",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.35686,
+          "g": 0.54902,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/380",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark accent press",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.30196,
+          "g": 0.49412,
+          "b": 0.94118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/450",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light accent and download, Dark solid",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.22745,
+          "g": 0.41176,
+          "b": 0.83529,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/480",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light accent hover, Dark solid hover",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.2,
+          "g": 0.37647,
+          "b": 0.78824,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light solid hover",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.18431,
+          "g": 0.35686,
+          "b": 0.75294,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "blue/520",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light accent press",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.17255,
+          "g": 0.33333,
+          "b": 0.72157,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "violet/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark upload",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.70196,
+          "g": 0.61569,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "violet/440",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light upload",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.44314,
+          "g": 0.32941,
+          "b": 0.9098,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a3",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark faint and hover overlay",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.03
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a5",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark subtle overlay",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.05
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a7",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark default overlay, lines",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.07
+        }
+      }
+    },
+    {
+      "name": "neutral/0-a16",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark strong overlay",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.16
+        }
+      }
+    },
+    {
+      "name": "neutral/1000-a22",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark shadows",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.22
+        }
+      }
+    },
+    {
+      "name": "neutral/1000-a50",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Scrim",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.5
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a3",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light faint overlay",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.03
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a5",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light subtle overlay, panel shadow",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.05
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a7",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light default overlay, shadows",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.07
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a10",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light lines, shadows",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.1
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a16",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light strong overlay",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.16
+        }
+      }
+    },
+    {
+      "name": "blue/340-a14",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark muted accent",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.35686,
+          "g": 0.54902,
+          "b": 1,
+          "a": 0.14
+        }
+      }
+    },
+    {
+      "name": "blue/340-a35",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Text selection",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.35686,
+          "g": 0.54902,
+          "b": 1,
+          "a": 0.35
+        }
+      }
+    },
+    {
+      "name": "blue/450-a12",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light muted accent",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.22745,
+          "g": 0.41176,
+          "b": 0.83529,
+          "a": 0.12
+        }
+      }
+    },
+    {
+      "name": "neutral/25",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light inset and chrome",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.96471,
+          "g": 0.96863,
+          "b": 0.96863,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "neutral/825",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark inset and chrome",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.06275,
+          "g": 0.06275,
+          "b": 0.07059,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "bg/inset",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-inset)",
+      "description": "Sunken areas inside a surface",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/825"
+        },
+        "Light": {
+          "alias": "neutral/25"
+        }
+      }
+    },
+    {
+      "name": "neutral/1000-a10",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark panel shadow, wide layer",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.1
+        }
+      }
+    },
+    {
+      "name": "neutral/775",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark popover",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.11373,
+          "g": 0.11765,
+          "b": 0.12549,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "bg/popover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-popover)",
+      "description": "Tooltips and menus",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/775"
+        },
+        "Light": {
+          "alias": "neutral/0"
+        }
+      }
+    },
+    {
+      "name": "shadow-color/popover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": null,
+      "description": "Shadow/Popover",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/1000-a22"
+        },
+        "Light": {
+          "alias": "neutral/850-a10"
+        }
+      }
+    },
+    {
+      "name": "bg/chrome",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--bg-chrome)",
+      "description": "Title bar and rail",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/825"
+        },
+        "Light": {
+          "alias": "neutral/25"
+        }
+      }
+    },
+    {
+      "name": "neutral/850-a2",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light hover overlay",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.04314,
+          "g": 0.04314,
+          "b": 0.04706,
+          "a": 0.02
+        }
+      }
+    },
+    {
+      "name": "overlay/hover",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--overlay-hover)",
+      "description": "Hovered rows and headers",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a3"
+        },
+        "Light": {
+          "alias": "neutral/850-a2"
+        }
+      }
+    },
+    {
+      "name": "titlebar/height",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--titlebar-height)",
+      "description": "Title bar",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
+      "values": {
+        "Value": 56
+      }
+    },
+    {
+      "name": "rail/item-size",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--rail-item-size)",
+      "description": "Rail items",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
+      "values": {
+        "Value": 38
+      }
+    },
+    {
+      "name": "card/padding",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-padding)",
+      "description": "Card inset",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/14"
+        }
+      }
+    },
+    {
+      "name": "card/header-padding-y",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-padding-y)",
+      "description": "Card header, above and below",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "card/header-padding-x",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-padding-x)",
+      "description": "Card header, sides",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "card/header-min-height",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-min-height)",
+      "description": "Compact card header",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
+      "values": {
+        "Value": 42
+      }
+    },
+    {
+      "name": "card/header-height",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-header-height)",
+      "description": "Card header",
+      "scopes": [
+        "WIDTH_HEIGHT"
+      ],
+      "values": {
+        "Value": 48
+      }
+    },
+    {
+      "name": "card/body-padding",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-body-padding)",
+      "description": "Card body inset",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "row/padding-y",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--row-padding-y)",
+      "description": "Data row, above and below",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/8"
+        }
+      }
+    },
+    {
+      "name": "weight/regular",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--weight-regular)",
+      "description": "Body text",
+      "scopes": [
+        "FONT_WEIGHT"
+      ],
+      "values": {
+        "Value": 400
+      }
+    },
+    {
+      "name": "weight/medium",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--weight-medium)",
+      "description": "Labels and menus",
+      "scopes": [
+        "FONT_WEIGHT"
+      ],
+      "values": {
+        "Value": 500
+      }
+    },
+    {
+      "name": "weight/semibold",
+      "collection": "Typography",
+      "type": "FLOAT",
+      "code": "var(--weight-semibold)",
+      "description": "Buttons and chips",
+      "scopes": [
+        "FONT_WEIGHT"
+      ],
+      "values": {
+        "Value": 600
+      }
+    },
+    {
+      "name": "focus/offset",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--focus-offset)",
+      "description": "Focus ring offset",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "alias": "spacing/2"
+        }
+      }
+    },
+    {
+      "name": "focus/ring-width",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--focus-ring-width)",
+      "description": "Focus ring stroke",
+      "scopes": [
+        "STROKE_FLOAT"
+      ],
+      "values": {
+        "Value": 1
+      }
+    },
+    {
+      "name": "opacity/disabled",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--opacity-disabled)",
+      "description": "Disabled controls",
+      "scopes": [
+        "OPACITY"
+      ],
+      "values": {
+        "Value": 40
+      }
+    },
+    {
+      "name": "lime/520",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light good text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.21569,
+          "g": 0.43137,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "orange/500",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light poor text",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.61569,
+          "g": 0.27451,
+          "b": 0,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "font-family/display",
+      "collection": "Typography",
+      "type": "STRING",
+      "code": "var(--font-family-display)",
+      "description": "Headings",
+      "scopes": [
+        "FONT_FAMILY"
+      ],
+      "values": {
+        "Value": "Urbanist"
+      }
+    },
+    {
+      "name": "cyan/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark network devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.17255,
+          "g": 0.76471,
+          "b": 0.82353,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "cyan/470",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light network devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0,
+          "g": 0.48627,
+          "b": 0.52941,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "pink/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark smart-home devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.92549,
+          "g": 0.53333,
+          "b": 0.76078,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "pink/440",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light smart-home devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.69804,
+          "g": 0.27451,
+          "b": 0.54118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "device/network",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-network)",
+      "description": "Network devices: routers, NAS",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "cyan/250"
+        },
+        "Light": {
+          "alias": "cyan/470"
+        }
+      }
+    },
+    {
+      "name": "device/personal",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-personal)",
+      "description": "Personal devices: computers, phones, tablets, watches",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "indigo/340"
+        },
+        "Light": {
+          "alias": "indigo/490"
+        }
+      }
+    },
+    {
+      "name": "device/entertainment",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-entertainment)",
+      "description": "Entertainment devices: TVs, consoles, speakers",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "purple/250"
+        },
+        "Light": {
+          "alias": "purple/440"
+        }
+      }
+    },
+    {
+      "name": "device/smart-home",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--device-smart-home)",
+      "description": "Smart-home devices: cameras, printers, smart plugs",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "pink/250"
+        },
+        "Light": {
+          "alias": "pink/440"
+        }
+      }
+    },
+    {
+      "name": "indigo/340",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark personal devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.48627,
+          "g": 0.51373,
+          "b": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "indigo/490",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light personal devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.2902,
+          "g": 0.3098,
+          "b": 0.84706,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "purple/250",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Dark entertainment devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.81569,
+          "g": 0.54902,
+          "b": 0.94118,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "purple/440",
+      "collection": "Palette",
+      "type": "COLOR",
+      "code": null,
+      "description": "Light entertainment devices",
+      "scopes": [],
+      "values": {
+        "Value": {
+          "r": 0.61176,
+          "g": 0.24706,
+          "b": 0.81176,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "border/subtle",
+      "collection": "Color",
+      "type": "COLOR",
+      "code": "var(--border-subtle)",
+      "description": "Dividers between rows in a card",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "alias": "neutral/0-a5"
+        },
+        "Light": {
+          "alias": "neutral/850-a7"
+        }
+      }
+    },
+    {
+      "name": "duration/fast",
+      "collection": "Motion",
+      "type": "TIMING",
+      "code": "var(--duration-fast)",
+      "description": "Hovers, small changes",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": 0.14
+      }
+    },
+    {
+      "name": "duration/normal",
+      "collection": "Motion",
+      "type": "TIMING",
+      "code": "var(--duration-normal)",
+      "description": "Panels, page changes",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": 0.22
+      }
+    },
+    {
+      "name": "duration/spring",
+      "collection": "Motion",
+      "type": "TIMING",
+      "code": "var(--duration-spring)",
+      "description": "A spring’s full run",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": 0.45
+      }
+    },
+    {
+      "name": "ease/out",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-out)",
+      "description": "Entrances and moves",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_CUBIC_BEZIER",
+          "cubicBezier": {
+            "x1": 0.16,
+            "y1": 1,
+            "x2": 0.3,
+            "y2": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "ease/in-out",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-in-out)",
+      "description": "Colour changes, exits",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_CUBIC_BEZIER",
+          "cubicBezier": {
+            "x1": 0.4,
+            "y1": 0,
+            "x2": 0.2,
+            "y2": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "ease/pulse",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-pulse)",
+      "description": "Looping pulses",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_CUBIC_BEZIER",
+          "cubicBezier": {
+            "x1": 0.42,
+            "y1": 0,
+            "x2": 0.58,
+            "y2": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "ease/spring",
+      "collection": "Motion",
+      "type": "EASING",
+      "code": "var(--ease-spring)",
+      "description": "Panels resizing to fit",
+      "scopes": [
+        "ALL_SCOPES"
+      ],
+      "values": {
+        "Value": {
+          "type": "CUSTOM_SPRING",
+          "spring": {
+            "bounce": 0.15
+          }
+        }
+      }
+    },
+    {
+      "name": "page/inset",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--page-inset)",
+      "description": "Window edge to content",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/12"
+        }
+      }
+    },
+    {
+      "name": "card/gap",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--card-gap)",
+      "description": "Between cards",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/10"
+        }
+      }
+    },
+    {
+      "name": "divider/space",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--divider-space)",
+      "description": "Either side of a divider or band, and inside a band",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "card/padding"
+        }
+      }
+    },
+    {
+      "name": "gap/icon-title",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-icon-title)",
+      "description": "Icon to card title",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/8"
+        }
+      }
+    },
+    {
+      "name": "gap/icon-label",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-icon-label)",
+      "description": "Icon or dot to its label",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/6"
+        }
+      }
+    },
+    {
+      "name": "gap/media-text",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-media-text)",
+      "description": "Icon tile to its text",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/12"
+        }
+      }
+    },
+    {
+      "name": "gap/stacked-lines",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-stacked-lines)",
+      "description": "Line to the caption under it",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/4"
+        }
+      }
+    },
+    {
+      "name": "gap/label-value",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-label-value)",
+      "description": "Label to its value",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/8"
+        }
+      }
+    },
+    {
+      "name": "gap/readouts",
+      "collection": "Layout",
+      "type": "FLOAT",
+      "code": "var(--gap-readouts)",
+      "description": "Between readouts",
+      "scopes": [
+        "GAP"
+      ],
+      "values": {
+        "Value": {
+          "alias": "spacing/16"
+        }
+      }
+    }
+  ]
+}
