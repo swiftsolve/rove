@@ -250,7 +250,7 @@ for Light. Every token has both values, so a screen that only uses tokens themes
 itself.
 
 Tokens are designed in Figma and only exported here: to change one, follow
-[Update the tokens](https://github.com/swiftsolve/rove-tokens/blob/main/CONTRIBUTING.md#update-the-tokens)
+[Update the tokens](https://github.com/swiftsolve/rove/blob/master/packages/tokens/CONTRIBUTING.md#update-the-tokens)
 (or the `update-tokens` skill), never edit `tokens.css`, `tokens/` or
 `src/figma/` directly.
 

@@ -8,7 +8,9 @@ import { colorDark, flatten, palette, spacing, textStyles, tokensInGroup } from 
 
 export default { title: 'Introduction' }
 
-const REPO_URL = 'https://github.com/swiftsolve/rove-tokens'
+// The tokens live in the Rove monorepo, in packages/tokens.
+const REPO_URL = 'https://github.com/swiftsolve/rove/tree/master/packages/tokens'
+const REPO_FILE_URL = 'https://github.com/swiftsolve/rove/blob/master/packages/tokens'
 const FIGMA_URL = 'https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System'
 // The Rove Components Storybook, built from these tokens.
 const COMPONENTS_URL = 'https://nabilr.com/rove/storybook/'
@@ -534,8 +536,8 @@ const EXPLORE_CARDS = [
 // Line icons in the link's accent, so the four read as one row.
 const LINKS = [
   { icon: 'figmaLine', label: 'Figma file', href: FIGMA_URL },
-  { icon: 'fileText', label: 'DESIGN.md', href: `${REPO_URL}/blob/main/DESIGN.md` },
-  { icon: 'lightbulb', label: 'Rationale', href: `${REPO_URL}/blob/main/docs/rationale.md` },
+  { icon: 'fileText', label: 'DESIGN.md', href: `${REPO_FILE_URL}/DESIGN.md` },
+  { icon: 'lightbulb', label: 'Rationale', href: `${REPO_FILE_URL}/docs/rationale.md` },
   { icon: 'github', label: 'GitHub', href: REPO_URL },
   { icon: 'rove', label: 'Rove components', href: COMPONENTS_URL },
 ]
