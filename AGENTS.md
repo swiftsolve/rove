@@ -104,7 +104,7 @@ of it (README.md: Check a change lists each stage). Fix what a hook reports.
 | How the UI looks | `pnpm screenshots --stable --out <dir>`, then again with `--theme light` into another, and read the PNGs: a wrong shade or a cramped gap shows only there. Library stories are in `25-library/`. `docs/screenshots` is committed, so point `--out` at a scratch folder |
 | A refactor meant to look the same | The same shots before and after the change; `diff -rq <before> <after>` lists every one that moved, as `--stable` gives identical pixels run to run |
 | A screen, subpage or dialog | `pnpm a11y`: axe on each, in both themes |
-| A token | `rove-tokens`' `npm run check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
+| A token | `rove-tokens`' `pnpm check`, and `figma:check` reporting `inSync: true` (the `update-tokens` skill) |
 
 ### Done means
 
