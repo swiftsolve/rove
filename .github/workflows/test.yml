@@ -33,6 +33,17 @@ jobs:
       # The story tests' browser.
       - run: pnpm exec playwright install --with-deps chromium
 
+      # turbo's results (typecheck, ESLint, tests) and Prettier's, saved under
+      # each commit and restored from the latest, so a run redoes only the
+      # tasks whose files changed. Both key on file contents, never mtimes.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .turbo/cache
+            node_modules/.cache/prettier
+          key: check-${{ runner.os }}-${{ github.sha }}
+          restore-keys: check-${{ runner.os }}-
+
       # FIGMA_TOKEN lets checks/figma-export.ts hold the library to the Figma
       # file; it skips while the secret isn't set.
       - run: pnpm check

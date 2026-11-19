@@ -278,7 +278,8 @@ rove/
 │                               each key means; the generators validate against them
 ├── docs/                       the deeper dives (index in docs/README.md),
 │                               diagrams and screenshots
-└── turbo.json                  the workspaces' tasks (typecheck, test, build),
-                                which turbo runs in dependency order and caches
+└── turbo.json                  the tasks turbo runs and caches: each workspace's
+                                typecheck, test and build, and the root's ESLint
+                                and scripts typecheck
 ```
 

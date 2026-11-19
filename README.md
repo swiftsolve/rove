@@ -183,9 +183,12 @@ The repository is two pnpm workspaces: the app in `apps/rove`, and the
 component library in `packages/ui`, which the app imports as
 `@swiftsolve/rove-ui` straight from its source, so a library change shows in
 the app at once, with no build or release between them. Run the commands above
-from the root. Its typecheck, tests and build go through
+from the root. Its typecheck, tests, build and ESLint go through
 [Turborepo](https://turborepo.com), which runs each workspace's own script and
-replays a result whose files haven't changed.
+replays a result whose files haven't changed; CI keeps that cache between runs.
+ESLint is cached as a whole, never per file, as its typed rules read the types
+of the files a file imports. Prettier keeps its own per-file cache, and
+`scripts/checks/` always runs, since one asks the Figma file.
 
 ### Check a change
 

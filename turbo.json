@@ -29,6 +29,26 @@
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/rove/src/**"],
       "outputs": ["storybook-static/**"]
     },
+    "//#eslint": {
+      "inputs": [
+        "**/*.{ts,tsx,js,mjs,cjs,json}",
+        "pnpm-lock.yaml",
+        "!**/node_modules/**",
+        "!**/dist/**",
+        "!**/storybook-static/**",
+        "!.git/**",
+        "!.turbo/**",
+        "!.claude/**",
+        "!target/**",
+        "!apps/rove/src-tauri/**",
+        "!crates/**"
+      ],
+      "outputs": []
+    },
+    "//#typecheck:scripts": {
+      "inputs": ["scripts/**/*.{ts,json}", "apps/rove/src/**", "pnpm-lock.yaml"],
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
