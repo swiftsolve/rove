@@ -144,7 +144,7 @@ export async function writeFrontMatter({ path, variables, textStyles, shadows, s
     return index === -1 ? TYPE_GROUPS.length : index
   }
   // By group, then largest first; Figma lists late additions last.
-  const styles = [...textStyles].sort(
+  const styles = textStyles.toSorted(
     (a, b) => typeGroupOrder(a) - typeGroupOrder(b) || b.fontSize - a.fontSize || b.fontWeight - a.fontWeight,
   )
   for (const s of styles) {

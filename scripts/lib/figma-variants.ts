@@ -78,7 +78,7 @@ type NodeComparison = {
 function nodeProblems({ figmaName, variants, components, differencesOf, propsOf }: NodeComparison): string[] {
   const problems: string[] = []
   // The shortest name is the whole (Card); the rest are its parts (CardBody).
-  const wholeComponent = [...components].sort((a, b) => a.length - b.length)[0] ?? ''
+  const wholeComponent = components.toSorted((a, b) => a.length - b.length)[0] ?? ''
   const figmaVariantPropertiesNotInCode = new Set(
     components.flatMap((component) => Object.keys(differencesOf(component).figmaVariantPropertiesNotInCode ?? {})),
   )
