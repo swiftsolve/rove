@@ -85,6 +85,17 @@ A function is named for its effect:
 - an event handler is `onX`, as a prop and as a local: `onKeyDown`.
   [✓ CHECKED by `eslint.config.js`, for `handleX`]
 
+### Browser support
+
+The app runs in each system's own webview: WebKit on macOS (from macOS
+10.13, Tauri's default floor) and on Linux (WebKitGTK), WebView2 (Chromium)
+on Windows; its demo on nabilr.com runs in any browser. This project's
+Baseline target is Baseline Widely available. A newer feature ships
+feature-detected (`@supports`, `'x' in object`), with a fallback that keeps
+the screen working. JavaScript built-ins in `apps/rove/src` and `packages/ui`
+stay within their tsconfig `lib`, ES2022; the Node scripts (`scripts/`,
+`packages/tokens/scripts`) may use ES2024.
+
 ### Commit only your paths
 
 Other sessions work in this checkout and commit to `master` alongside you.
