@@ -8,3 +8,6 @@ allowBuilds:
 overrides:
   glob: ^14.0.3
   minimatch: ^11.0.4
+  # GHSA-mrhx-c7xc-m3w5. design.md asks for zod 3 but bundles its own copy into
+  # dist/index.js, so this one only supplies its type definitions.
+  '@google/design.md>zod': ^4.6.6
