@@ -16,7 +16,7 @@ Read the rows your task matches:
 
 | Task | Read |
 | --- | --- |
-| Any | `README.md`: How it works, Development; `docs/architecture.md`: Where everything lives |
+| Any | `README.md`: How it works; `CONTRIBUTING.md`; `docs/architecture.md`: Where everything lives |
 | UI | `apps/rove/src/README.md` and DESIGN.md; for the library, also `packages/ui/README.md` |
 | Which library component, and its props | `pnpm rove-ui --md list`, then `pnpm rove-ui --md show <Name>`: one component from `packages/ui/catalog/components.gen.json`, generated from the code (`apps/rove/src/README.md`: Components) |
 | A token's value, name or use, or the token build | `packages/tokens/AGENTS.md` and `packages/tokens/DESIGN.md` |
@@ -108,7 +108,7 @@ are.
 ### Check your work
 
 Run what your change needs before you commit: the hooks and CI run only part
-of it (README.md: Check a change lists each stage). Fix what a hook reports.
+of it (CONTRIBUTING.md: Check a change lists each stage). Fix what a hook reports.
 
 | Changed | Run |
 | --- | --- |

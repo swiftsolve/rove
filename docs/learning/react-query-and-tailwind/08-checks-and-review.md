@@ -69,7 +69,7 @@ the view can't quietly fall behind the code.
 
 The checks also run before you ask: on each edit (in Claude Code), each commit
 and each push. Which stage runs what:
-[README.md: Check a change](../../../README.md#check-a-change).
+[CONTRIBUTING.md: Check a change](../../../CONTRIBUTING.md#check-a-change).
 
 ## What review still catches
 
