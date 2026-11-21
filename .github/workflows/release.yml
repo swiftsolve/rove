@@ -129,6 +129,26 @@ jobs:
       # but ONLY when signing is enabled — so on the unsigned path they are
       # absent (not empty) and Tauri does an ad-hoc signature instead of
       # crashing in `security import`.
+      # The release notes are the annotated tag's message (git tag -a v1.2.3).
+      # They go into latest.json too, and the app's update dialog lists them
+      # under "What's new", one line per item. A lightweight tag gives none.
+      - name: Read the release notes from the tag
+        id: notes
+        shell: bash
+        run: |
+          git fetch --force origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
+          if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = "tag" ]; then
+            # The whole message, without a signature a signed tag carries.
+            notes="$(git tag -l --format='%(contents)' "$GITHUB_REF_NAME" | sed '/^-----BEGIN /,$d')"
+          else
+            notes=""
+          fi
+          {
+            echo "body<<__ROVE_EOF__"
+            echo "$notes"
+            echo "__ROVE_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -138,7 +158,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Rove ${{ github.ref_name }}'
-          releaseBody: 'Download the installer for your operating system from the assets below.'
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}

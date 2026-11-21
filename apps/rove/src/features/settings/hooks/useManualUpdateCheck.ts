@@ -19,7 +19,7 @@ type ManualUpdateCheck = {
 /**
  * Settings' "Check now": idle until pressed, checking while it runs, then up
  * to date, the update found, or failed (offline, or GitHub unreachable). The
- * check at launch is `useUpdateCheck`'s.
+ * automatic check, at launch and every few hours, is `useUpdateCheck`'s.
  */
 export function useManualUpdateCheck(): ManualUpdateCheck {
   const [check, setCheck] = useState<UpdateCheckState>({ kind: 'idle' })

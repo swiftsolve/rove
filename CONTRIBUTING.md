@@ -86,6 +86,24 @@ What to run yourself for each kind of change is in
 pnpm tauri:build      # .deb ~5 MB, AppImage, dmg (macOS), nsis and msi (Windows)
 ```
 
+## Release
+
+A `v*` tag builds Rove on all three OSes and publishes a GitHub release
+(`release.yml`). Each installer is signed with the updater key, and
+`latest.json` lists them, so every running copy of Rove finds the release
+within a few hours, or at its next launch, and offers to install it.
+
+1. Set the new version in `apps/rove/package.json`,
+   `apps/rove/src-tauri/tauri.conf.json` and `apps/rove/src-tauri/Cargo.toml`,
+   run `cargo check` to update `Cargo.lock`, and commit.
+2. Tag it with an annotated tag whose message is the release notes, one
+   change per line. The update dialog lists them under "What's new":
+   ```bash
+   git tag -a v1.2.3 -m "- Devices: names stay put across rescans
+   - Speed test: a steadier upload reading"
+   ```
+3. Push the tag: `git push origin v1.2.3`.
+
 ## Design system
 
 Tokens are designed in the [Rove Design System](https://www.figma.com/design/NoICIoyhWNOya9tOnNfEhH/Rove-Design-System)

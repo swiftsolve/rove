@@ -36,6 +36,7 @@
   "bundle": {
     "active": true,
     "targets": [
+      "app",
       "appimage",
       "deb",
       "dmg",

@@ -158,7 +158,7 @@ export function SettingsView() {
         <CardBody layout="rows">
           <SettingRow
             title="Check for updates automatically"
-            description="Look for a newer signed release each time Rove launches."
+            description="Look for a newer signed release at launch and every few hours."
             control={({ descriptionId }) => (
               <Toggle
                 isChecked={isAutoUpdateEnabled}
