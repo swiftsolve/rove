@@ -1,6 +1,6 @@
 {
   "name": "rove",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Rove — a desktop app for Wi-Fi and Ethernet network monitoring",
   "license": "MIT",
   "private": true,
