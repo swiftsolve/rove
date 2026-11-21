@@ -137,4 +137,4 @@ pnpm check
 
 ## License
 
-UNLICENSED. All rights reserved.
+[MIT](LICENSE).

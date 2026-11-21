@@ -3,7 +3,7 @@
   "version": "4.7.1",
   "description": "Rove's design tokens, exported from the Rove Design System in Figma, as CSS and DTCG.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/swiftsolve/rove.git",

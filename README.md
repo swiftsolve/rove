@@ -11,7 +11,7 @@ read straight from your operating system.
 [![Tests](https://img.shields.io/github/actions/workflow/status/swiftsolve/rove/test.yml?branch=master&label=tests&labelColor=17181b)](https://github.com/swiftsolve/rove/actions/workflows/test.yml)
 [![Tauri](https://img.shields.io/badge/Tauri-v2-5b8cff?logo=tauri&logoColor=white&labelColor=17181b)](https://v2.tauri.app)
 [![Platforms](https://img.shields.io/badge/Linux_·_macOS_·_Windows-5b8cff?labelColor=17181b)](#install)
-[![License](https://img.shields.io/badge/license-MIT-5b8cff?labelColor=17181b)](LICENSE)
+[![License](https://img.shields.io/badge/license-FSL--1.1--MIT-5b8cff?labelColor=17181b)](LICENSE)
 
 **[Try it in your browser](https://nabilr.com/rove)** &nbsp;·&nbsp;
 **[Download](https://github.com/swiftsolve/rove/releases/latest)** &nbsp;·&nbsp;
@@ -227,5 +227,11 @@ All of them, grouped: [docs/](docs/README.md).
 
 ## License
 
-[MIT](LICENSE). The bundled data and the flag font keep their own licences,
-listed in [Bundled data](#bundled-data).
+Rove is fair source, under the [Functional Source License, MIT future
+license](LICENSE) (FSL-1.1-MIT). You may read, build, modify and use it for
+anything except a competing commercial product, and each release becomes MIT
+two years after it ships. Releases up to v0.0.3 stay MIT.
+
+The [Rove UI library](packages/ui/LICENSE) and [Rove Tokens](packages/tokens/LICENSE)
+are MIT. The bundled data and the flag font keep their own licences, listed in
+[Bundled data](#bundled-data).
