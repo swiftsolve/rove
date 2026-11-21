@@ -125,7 +125,7 @@ Rove and its component library, which use them from this folder, the sites that 
 
 Every token change starts in Figma. [CONTRIBUTING.md](CONTRIBUTING.md) walks through exporting, checking and releasing, lists every script, and says what each file does. Coding agents follow the same steps in Rove's [`update-tokens` skill](../../.claude/skills/update-tokens/SKILL.md), under the rules in [AGENTS.md](AGENTS.md).
 
-The package lives in the Rove monorepo, in `packages/tokens`. To work on it, from the repo root:
+The package lives in the [Rove monorepo](https://github.com/swiftsolve/rove), in `packages/tokens`. [swiftsolve/rove-tokens](https://github.com/swiftsolve/rove-tokens) is a read-only mirror of that folder, so send issues and pull requests to Rove. To work on it, from the Rove repo root:
 
 ```bash
 nvm use 24
