@@ -12,8 +12,8 @@ Every command is the same six edits across the boundary.
 
 - Read `apps/rove/src/types/api.ts` (`NetworkAPI`) for a method that already returns it,
   or one that needs only a field more.
-- Anything that measures the network: README.md's What each feature actually
-  measures and Platform support. Anything that sends data off the machine:
+- Anything that measures the network: `docs/what-rove-measures.md`. Anything
+  that sends data off the machine:
   README.md's Security model, first.
 
 ## Steps
